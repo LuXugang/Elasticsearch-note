@@ -285,7 +285,7 @@ pkill -F pid
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docker.html)
 
 ### Configuring Elasticsearch
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/settings.html)
 
 &emsp;&emsp;Elasticsearch附带（ship with）了很好的默认配置并且只需要较小的配置。在一个运行中的集群中，大部分的设置可以通过[Cluster update settings](####Cluster-update-settings-API) API进行更改。
 
@@ -362,7 +362,7 @@ export HOSTNAME="host1,host2"
 
 &emsp;&emsp;集群跟节点的设置基于他们是如何被配置可以分类为：
 
-###### Dynamic
+###### Dynamic（settings）
 
 &emsp;&emsp;在一个正在运行的集群上，你可以使用[cluster update settings API](####Cluster-update-settings-API)来配置或更新动态设置。你也可以使用`elasticsearch.yml`对本地未启动或者关闭的节点配置动态设置。
 
@@ -390,7 +390,7 @@ export HOSTNAME="host1,host2"
 
 
 #### Important Elasticsearch configuration
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/7,15/important-settings.html)
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/7,15/important-settings.html)
 
 &emsp;&emsp;Elasticsearch只需要很少的配置就能启动。但是在生产中使用你的集群时必须要考虑这些条目：
 
@@ -470,7 +470,7 @@ path:
 
 ##### Migrate from multiple data paths
 
-&emsp;&emsp;在学习了 [rolling restart process](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/restart-cluster.html#restart-cluster-rolling)后再来写着一段内容。
+&emsp;&emsp;（未完成）
 
 ##### Cluster name setting
 
@@ -680,15 +680,15 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.events.include
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）在日志输出中指定事件类型（[kind of events](####Audit-events)），设置为`_all`会彻底的记录所有的日志事件，但通常不建议这么做因为会非常的verbose。默认值是一个list包含：`access_denied`, `access_granted`, `anonymous_access_denied`, `authentication_failed`, `connection_denied`, `tampered_request`, `run_as_denied`, `run_as_granted`, `security_config_change`。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）在日志输出中指定事件类型（[kind of events](####Audit-events)），设置为`_all`会彻底的记录所有的日志事件，但通常不建议这么做因为会非常的verbose。默认值是一个list包含：`access_denied`, `access_granted`, `anonymous_access_denied`, `authentication_failed`, `connection_denied`, `tampered_request`, `run_as_denied`, `run_as_granted`, `security_config_change`。
 
 ###### xpack.security.audit.logfile.events.exclude
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）从包含的（[kind of events](####Audit-events)）列表中指定排除部分选项。当xpack.security.audit.logfile.events.include的值设置为`_all`时，然后用`xpack.security.audit.logfile.events.exclude`来进行指定选项的排除是不错的方式。默认值是空的list。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）从包含的（[kind of events](####Audit-events)）列表中指定排除部分选项。当xpack.security.audit.logfile.events.include的值设置为`_all`时，然后用`xpack.security.audit.logfile.events.exclude`来进行指定选项的排除是不错的方式。默认值是空的list。
 
 ###### xpack.security.audit.logfile.events.emit_request_body
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）用于指定是否将REST请求的请求body作为日志事件的属性，这个设置可以用于[audit search queries](####Auditing-search-queries)。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用于指定是否将REST请求的请求body作为日志事件的属性，这个设置可以用于[audit search queries](####Auditing-search-queries)。
 
 &emsp;&emsp;默认是false，那么请求body不会被打印出来。
 
@@ -698,19 +698,19 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.emit_node_name
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）指定在每一个日志事件中，节点名字[node name](####Important-Elasticsearch-configuration)是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点名字[node name](####Important-Elasticsearch-configuration)是否作为其中的一个域field。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_host_address
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）指定在每一个日志事件中，节点的地址是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点的地址是否作为其中的一个域field。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_host_name
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）指定在每一个日志事件中，节点的主机名是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点的主机名是否作为其中的一个域field。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_id
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）指定在每一个日志事件中，节点的id是否作为其中的一个域field。不同于[node name](####Important-Elasticsearch-configuration)，管理员可以在配置文件中修改节点id，节点id在集群启动后将不可变更，默认值是true。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点的id是否作为其中的一个域field。不同于[node name](####Important-Elasticsearch-configuration)，管理员可以在配置文件中修改节点id，节点id在集群启动后将不可变更，默认值是true。
 
 ##### Audit Logfile Event Ignore Policies
 
@@ -718,23 +718,23 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.users
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）用户名字列表或者名字通配值（wildcards）。匹配该值的所有用户的日志事件不会打印出来。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用户名字列表或者名字通配值（wildcards）。匹配该值的所有用户的日志事件不会打印出来。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.realms
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）authentication realm的列表或者通配值，匹配该值的所有realm的日志事件不会打印出来。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）authentication realm的列表或者通配值，匹配该值的所有realm的日志事件不会打印出来。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.actions
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）action名字的列表或者通配值，action的名字可以在日志事件的`action`域中找到， 匹配该值的所有action的日志事件不会打印出来。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）action名字的列表或者通配值，action的名字可以在日志事件的`action`域中找到， 匹配该值的所有action的日志事件不会打印出来。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.roles
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）角色列表或者角色通配值（wildcards）。匹配该值并且拥有该角色的所有用户的日志事件不会打印出来。如果用户拥有多个角色，而一些角色没有被策略覆盖到，那么该策略不会覆盖其日志事件。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）角色列表或者角色通配值（wildcards）。匹配该值并且拥有该角色的所有用户的日志事件不会打印出来。如果用户拥有多个角色，而一些角色没有被策略覆盖到，那么该策略不会覆盖其日志事件。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.indices
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）索引名字列表或者通配值，日志事件中所有的索引名都匹配后才不会打印。如果事件中涉及（concern）了多条索引，并且一些索引没有被该策略覆盖到，那么该策略不会覆盖日志事件。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）索引名字列表或者通配值，日志事件中所有的索引名都匹配后才不会打印。如果事件中涉及（concern）了多条索引，并且一些索引没有被该策略覆盖到，那么该策略不会覆盖日志事件。
 
 #### Circuit breaker settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/circuit-breaker.html)
@@ -755,7 +755,7 @@ POST _nodes/reload_secure_settings
 
 ###### indices.breaker.total.limit
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）当`indices.breaker.total.use_real_memory`为false，并且虚拟机的内存使用量达到70%，或者当`indices.breaker.total.use_real_memory`为true时，并且虚拟机的内存使用量达到95%，所有的父熔断器开始限制内存使用。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）当`indices.breaker.total.use_real_memory`为false，并且虚拟机的内存使用量达到70%，或者当`indices.breaker.total.use_real_memory`为true时，并且虚拟机的内存使用量达到95%，所有的父熔断器开始限制内存使用。
 
 ##### Field data circuit breaker
 
@@ -763,11 +763,11 @@ POST _nodes/reload_secure_settings
 
 ###### indices.breaker.fielddata.limit
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）fielddata breaker的限制值，默认是40%的JVM堆内存量。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）fielddata breaker的限制值，默认是40%的JVM堆内存量。
 
 ###### indices.breaker.fielddata.overhead
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该配置是一个常量，所有field data的估算值乘以这个常量来计算出最终的估算值。默认是值1.03。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该配置是一个常量，所有field data的估算值乘以这个常量来计算出最终的估算值。默认是值1.03。
 
 ##### Request circuit breakeredit
 
@@ -775,11 +775,11 @@ POST _nodes/reload_secure_settings
 
 ###### indices.breaker.request.limit
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）Request熔断器的限制值，默认是60%的JVM堆内存量。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）Request熔断器的限制值，默认是60%的JVM堆内存量。
 
 ###### indices.breaker.request.overhead
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该配置是一个常量，所有Request的估算值乘以这个常量来计算出最终的估算值。默认是值1。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该配置是一个常量，所有Request的估算值乘以这个常量来计算出最终的估算值。默认是值1。
 
 ##### In flight requests circuit breaker
 
@@ -787,11 +787,11 @@ POST _nodes/reload_secure_settings
 
 ###### network.breaker.inflight_requests.limit
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）in flight Request熔断器的限制值，默认是60%的JVM堆内存量。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）in flight Request熔断器的限制值，默认是60%的JVM堆内存量。
 
 ###### network.breaker.inflight_requests.overhead
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该配置是一个常量，所有in flight Request的估算值乘以这个常量来计算出最终的估算值。默认是值2。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该配置是一个常量，所有in flight Request的估算值乘以这个常量来计算出最终的估算值。默认是值2。
 
 ##### Accounting requests circuit breaker
 
@@ -799,11 +799,11 @@ POST _nodes/reload_secure_settings
 
 ###### indices.breaker.accounting.limit
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）accounting熔断器的限制值，默认是100%的JVM堆内存量。这意味着受到父级熔断器的配置限制。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）accounting熔断器的限制值，默认是100%的JVM堆内存量。这意味着受到父级熔断器的配置限制。
 
 ###### indices.breaker.accounting.overhead
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该配置是一个常量，所有accounting Request的估算值乘以这个常量来计算出最终的估算值。默认是值1。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该配置是一个常量，所有accounting Request的估算值乘以这个常量来计算出最终的估算值。默认是值1。
 
 ##### Script compilation circuit breaker
 
@@ -813,7 +813,7 @@ POST _nodes/reload_secure_settings
 
 ###### script.max_compilations_rate
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）Limit for the number of unique dynamic scripts within a certain interval that are allowed to be compiled. Defaults to 150/5m, meaning 150 every 5 minutes。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）Limit for the number of unique dynamic scripts within a certain interval that are allowed to be compiled. Defaults to 150/5m, meaning 150 every 5 minutes。
 
 ##### Regex circuit breakeredit
 
@@ -861,44 +861,44 @@ POST _nodes/reload_secure_settings
 
 ###### cluster.routing.allocation.enable
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）开启或者关闭某些分片类型的分配：
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）开启或者关闭某些分片类型的分配：
 
 - `all`：（default）所有类型的分配都可以被分配
 - `primaries`：只有主分片才能被分配
 - `new_primaries`：只有主分片中新的索引才能被分配
 - `none`：任何分片中的任何索引都不能被分配
 
-&emsp;&emsp;在节点重启后，上述的配置不会影响本地主分片的恢复。重启后的节点的一个未分配的主分片的allocation id如果匹配集群状态中的active allocation ids，那么会立即恢复。
+&emsp;&emsp;在节点重启后，上述的配置不会影响本地主分片的恢复。重启后的节点上的未分配的主分片的allocation id如果匹配了集群状态中的active allocation ids，那么会立即恢复。
 
 ###### cluster.routing.allocation.node_concurrent_incoming_recoveries
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）在一个节点上允许同时进行恢复incoming recoveries的并发数量。incoming recoveries中的分片（大多数是副本分片或者就是分片正在重新分配位置relocating）将被分配到当前节点上。默认值是2。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）在一个节点上允许同时进行恢复incoming recoveries的并发数量。incoming recoveries中的分片（大多数是副本分片或者就是分片正在重新分配位置relocating）将被分配到当前节点上。默认值是2。
 
 ###### cluster.routing.allocation.node_concurrent_outgoing_recoveries
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）在一个节点上允许同时进行恢复outgoing recoveries的并发数量。outgoing recoveries中的分片（大多数是当前节点上的主分片或者就是分片正在重新分配位置relocating）将被分配到当前节点上。默认值是2。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）在一个节点上允许同时进行恢复outgoing recoveries的并发数量。outgoing recoveries中的分片（大多数是当前节点上的主分片或者就是分片正在重新分配位置relocating）将被分配到当前节点上。默认值是2。
 
 ###### cluster.routing.allocation.node_concurrent_recoveries
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）一种快捷方法shortcut来设置`cluster.routing.allocation.node_concurrent_incoming_recoveries`和`cluster.routing.allocation.node_concurrent_outgoing_recoveries`。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）一种快捷方法shortcut来设置`cluster.routing.allocation.node_concurrent_incoming_recoveries`和`cluster.routing.allocation.node_concurrent_outgoing_recoveries`。
 
 ###### cluster.routing.allocation.node_initial_primaries_recoveries
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）在一个节点重启后，副本分片replica的恢复是通过网络实现的，然而一个未分配的主分片unassigned primary则是通过读取本地磁盘数据恢复的。在同一个节点上通过这种本地恢复的方式是很快的，默认值是4。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）在一个节点重启后，副本分片replica的恢复是通过网络实现的，然而一个未分配的主分片unassigned primary则是通过读取本地磁盘数据恢复的。在同一个节点上通过这种本地恢复的方式是很快的，默认值是4。
 
 ###### cluster.routing.allocation.same_shard.host
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该值允许执行一个检查，防止在单个主机上上分配多个相同的分片，通过主机名以及主机地址来描述一台主机。默认值是false。意味着默认不会进行检查。只有在同一台机器上的多个节点启动后，该值才会作用（apply）。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该值允许执行一个检查，防止在单个主机上上分配多个相同的分片，通过主机名以及主机地址来描述一台主机。默认值是false。意味着默认不会进行检查。只有在同一台机器上的多个节点启动后，该值才会作用（apply）。
 
 ##### Shard rebalancing settings
 
-&emsp;&emsp;当每一个节点上的分片数量是相等并且在任何节点的任何索引上没有集中分片（concentration of shards），那么集群是平衡的。Elasticsearch会运行一个自动化处理（automatic process）称为rebalancing，它会在集群中的节点之间移动分片来提高平衡性。rebalancing遵守类似 [allocation filtering](#####Cluster-level-shard-allocation-filtering) 和 [forced awareness](#####Forced-awareness)的分片分配规则。这些规则会阻止完全的平衡集群，因此rebalancing会努力（strive to）在你配置的规则下尽可能的去平衡集群。如果你正在使用 [data tiers](###Data-tiers)，那么Elasticsearch会自动的应用分配过滤规则将每一个分配放到合适的数据层，这些规则意味着平衡器在每一层中独立工作。
+&emsp;&emsp;当每一个节点上的分片数量是相等并且在任何节点的任何索引上没有集中分片（concentration of shards），那么集群是平衡的。Elasticsearch会运行一个自动程序（automatic process）称为rebalancing，它会在集群中的节点之间移动分片来提高平衡性。rebalancing遵守类似 [allocation filtering](#####Cluster-level-shard-allocation-filtering) 和 [forced awareness](#####Forced-awareness)的分片分配规则。这些规则会阻止完全的平衡集群，因此rebalancing会努力（strive to）在你配置的规则下尽可能的去平衡集群。如果你正在使用 [data tiers](###Data-tiers)，那么Elasticsearch会自动的应用分配过滤规则将每一个分配放到合适的数据层，这些规则意味着平衡器在每一层中独立工作。
 
 &emsp;&emsp;你可以使用下面的设置在集群中控制分片的平衡：
 
 ###### cluster.routing.rebalance.enable
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）为指定的分片类型开启或关闭rebalancing：
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）为指定的分片类型开启或关闭rebalancing：
 
 - `all`：（default）所有类型的分片都允许rebalancing
 - `primaries`：只有主分片才允许rebalancing
@@ -907,7 +907,7 @@ POST _nodes/reload_secure_settings
 
 ###### cluster.routing.allocation.allow_rebalance
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）用于指定什么时候允许分片rebalancing
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用于指定什么时候允许分片rebalancing
 
 - `always`：总是允许rebalancing
 - `indices_primaries_active`：只有当集群中的所有主分片都被分配后
@@ -915,7 +915,7 @@ POST _nodes/reload_secure_settings
 
 ###### cluster.routing.allocation.cluster_concurrent_rebalance
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）用于控制集群范围（cluster wide）内分片平衡并发数，默认值是2。注意的是这个设置仅仅控制因为集群不平衡导致的分片重定位（shard relocating）的并发数。这个设置不会限制因 [allocation filtering](#####Cluster-level-shard-allocation-filtering) 和 [forced awareness](#####Forced-awareness)导致的分片重定位。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用于控制集群范围（cluster wide）内分片平衡并发数，默认值是2。注意的是这个设置仅仅控制因为集群不平衡导致的分片重定位（shard relocating）的并发数。这个设置不会限制因 [allocation filtering](#####Cluster-level-shard-allocation-filtering) 和 [forced awareness](#####Forced-awareness)导致的分片重定位。
 
 ##### Shard balancing heuristics settings
 
@@ -923,15 +923,15 @@ POST _nodes/reload_secure_settings
 
 ###### cluster.routing.allocation.balance.shard
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）为节点上分配的分片总数定义一个weight因子。默认值是0.45f。提高这个值会使集群中所有节点的分片数量趋于均衡。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）为节点上分配的分片总数定义一个weight因子。默认值是0.45f。提高这个值会使集群中所有节点的分片数量趋于均衡。
 
 ###### cluster.routing.allocation.balance.index
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）为每一个索引的分片数量定义一个weight因子。默认值是0.55f。提高这个值会使集群中所有节点上的每一个索引的的分片数量趋于均衡。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）为每一个索引的分片数量定义一个weight因子。默认值是0.55f。提高这个值会使集群中所有节点上的每一个索引的的分片数量趋于均衡。
 
 ###### cluster.routing.allocation.balance.threshold
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）该值时候一个非负的浮点之后，Minimal optimization value of operations that should be performed。提高这个值将导致集群在优化分片平衡方面不那么积极（leess aggressive）。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该值时候一个非负的浮点之后，Minimal optimization value of operations that should be performed。提高这个值将导致集群在优化分片平衡方面不那么积极（leess aggressive）。
 
 >NOTE：无论balancing算法的结果如何，rebalancing可能因为forced awareness或者allocation filtering而无法执行
 
@@ -945,7 +945,11 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;通过基于磁盘的分片分配器进行的分片移动必须满足（satisfy）其他的分片分配规则，例如 [allocation filtering](#####Cluster-level-shard-allocation-filtering) 和 [forced awareness](#####Forced-awareness)。如果这些规则过于严格，它们还可以防止碎片移动，以保持节点的磁盘使用在控制之下。如果你正在使用 [data tiers](###Data-tiers)，那么Elasticsearch会自动的应用分配过滤规则将每一个分配放到合适的数据层，这些规则意味着平衡器在每一层中独立工作。
 
-（未完成）
+&emsp;&emsp;如果某个节点填满磁盘的速度比Elasticsearch将分片移动到其他地方的速度还要快就会有磁盘被填满的风险。为了防止出现这个问题，万不得已的情况下（ as a last resort），一旦磁盘使用达到`flood-stage` watermark，Elasticsearch会阻塞受到影响的节点上的分片索引的写入。但仍然继续将分片移动到集群中的其他节点。当受到影响的节点上的磁盘使用降到high watermark，Elasticsearch会自动的移除write block。
+
+> TIP：集群中的节点各自使用不相同的磁盘空间是正常的。集群的[balance](#####Shard rebalancing settings)取决与每一个节点上分片的数量以及分片中的索引。基于下面的两个理由，集群的balance既不会考虑分片的大小，也不会考虑每一个节点上磁盘可用的空间：
+> - 磁盘的使用随着时间发生变化。平衡不同节点的磁盘使用将会有很多更多的分片移动，perhaps even wastefully undoing earlier movements。移动一个分片会消耗例如I/O资源以及网络带宽，并且可能从文件系统缓存中换出（evict）数据。这些资源最好用于你的查询和索引。
+> - 集群中每一个节点有相同的磁盘使用在性能上通常没有有不同磁盘使用的性能高，只要所有的磁盘不是太满
 
 ###### cluster.routing.allocation.disk.watermark.high
 
@@ -957,7 +961,7 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;你可以自定义节点属性作为感知属性（awareness attributes）让Elasticsearch在分配分片时考虑你物理硬件的配置。如果Elasticsearch知道哪些节点在同一台物理机上、同一个机架（rack）、或者同一个区域，使得在发布主分片跟副本分片时能最低限度的降低丢失所有副本分片的风险。
 
-&emsp;&emsp;当使用（[Dynamic](######Dynamic)）的`cluster.routing.allocation.awareness.attributes`的设置开启awareness attribute后，分片只会被分配到设置了awareness attributes的节点上。当你使用多个awareness attribute时，Elasticsearch在分配分片时会单独地（separately）考虑每一个attribute。
+&emsp;&emsp;当使用（[Dynamic](######Dynamic（settings）)）的`cluster.routing.allocation.awareness.attributes`的设置开启awareness attribute后，分片只会被分配到设置了awareness attributes的节点上。当你使用多个awareness attribute时，Elasticsearch在分配分片时会单独地（separately）考虑每一个attribute。
 
 > NOTE: attribute values的数量决定了每一个位置上分配副本的分配数量。如果在每一个位置上的节点数量是unbalanced并且有许多的副本，副本分片可能不会被分配
 
@@ -1016,7 +1020,7 @@ cluster.routing.allocation.awareness.force.zone.values: zone1,zone2
 
 &emsp;&emsp;Shard allocation filters可以基于自定义的节点属性或者内建的属性：`_name`, `_host_ip`, `_publish_ip`, `_ip`, `_host`,`_id` 和` _tier`。
 
-&emsp;&emsp;`cluster.routing.allocation`设置是动态的[Dynamic](######Dynamic)，允许将live indices从一组节点上移动到其他组。只有在不破坏路由约定（routing constraint）下才有可能重新分配分片，比如说不会将主分片和它的副本分片分配到同一个节点上。
+&emsp;&emsp;`cluster.routing.allocation`设置是动态的[Dynamic](######Dynamic（settings）)，允许将live indices从一组节点上移动到其他组。只有在不破坏路由约定（routing constraint）下才有可能重新分配分片，比如说不会将主分片和它的副本分片分配到同一个节点上。
 
 &emsp;&emsp;最常用的cluster-level shard allocation filtering用例是当你想要结束（decommission）一个节点。要在关闭节点之前将分片移出节点，您可以创建一个过滤器，通过其 IP 地址排除该节点：
 
@@ -1033,15 +1037,15 @@ PUT _cluster/settings
 
 ###### cluster.routing.allocation.include.{attribute}
 
-&emsp;&emsp;([Dynamic](######Dynamic))将分配分片到一个节点，这个节点的`{attribute}`至少是用逗号隔开的多个属性中的一个。
+&emsp;&emsp;([Dynamic](######Dynamic（settings）))将分配分片到一个节点，这个节点的`{attribute}`至少是用逗号隔开的多个属性中的一个。
 
 ###### cluster.routing.allocation.require.{attribute}
 
-&emsp;&emsp;([Dynamic](######Dynamic))只将分片分配到一个节点，这个节点的`{attribute}`包含所有用逗号隔开的多个属性。
+&emsp;&emsp;([Dynamic](######Dynamic（settings）))只将分片分配到一个节点，这个节点的`{attribute}`包含所有用逗号隔开的多个属性。
 
 ###### cluster.routing.allocation.exclude.{attribute}
 
-&emsp;&emsp;([Dynamic](######Dynamic))不将分片分配到一个节点，这个节点的`{attribute}`包含用逗号隔开的多个属性中的任意一个。
+&emsp;&emsp;([Dynamic](######Dynamic（settings）))不将分片分配到一个节点，这个节点的`{attribute}`包含用逗号隔开的多个属性中的任意一个。
 
 &emsp;&emsp;cluster allocation settings支持下面的内建属性：
 
@@ -1075,11 +1079,11 @@ PUT _cluster/settings
 
 ###### cluster.blocks.read_only
 
-&emsp;&emsp;([Dynamic](######Dynamic)) 让整个集群read only（索引不支持写操作），metadata不允许更改（创建或者删除索引）
+&emsp;&emsp;([Dynamic](######Dynamic（settings）)) 让整个集群read only（索引不支持写操作），metadata不允许更改（创建或者删除索引）
 
 ###### cluster.blocks.read_only_allow_delete
 
-&emsp;&emsp;([Dynamic](######Dynamic)) 与`cluster.blocks.read_only`一样，但是允许删除索引来释放资源。
+&emsp;&emsp;([Dynamic](######Dynamic（settings）)) 与`cluster.blocks.read_only`一样，但是允许删除索引来释放资源。
 
 > WARNING: 不要依赖这些设置来防止集群发生变更。任何有[cluster-update-settings API](####Cluster update settings API)  访问权限的用户都可以让集群再次read-write
 
@@ -1099,7 +1103,7 @@ PUT _cluster/settings
 
 ###### cluster.max_shards_per_node
 
-&emsp;&emsp;([Dynamic](######Dynamic)) 限制集群中主分片跟副本分片的总数量。Elasticsearch使用下面的公式统计limit：
+&emsp;&emsp;([Dynamic](######Dynamic（settings）)) 限制集群中主分片跟副本分片的总数量。Elasticsearch使用下面的公式统计limit：
 
 &emsp;&emsp;`cluster.max_shards_per_node * number of non-frozen data nodes`
 
@@ -1111,7 +1115,7 @@ PUT _cluster/settings
 
 ###### cluster.max_shards_per_node.frozen
 
-&emsp;&emsp;([Dynamic](######Dynamic)) 限制集群中主分片跟replica frozen shard的总数量。Elasticsearch使用下面的公式统计limit：
+&emsp;&emsp;([Dynamic](######Dynamic（settings）)) 限制集群中主分片跟replica frozen shard的总数量。Elasticsearch使用下面的公式统计limit：
 
 &emsp;&emsp;`cluster.max_shards_per_node * number of frozen data nodes`
 
@@ -1150,7 +1154,7 @@ PUT /_cluster/settings
 
 ##### Logger
 
-&emsp;&emsp;这个设置用来控制日志，使用`logger.`为前缀的key来[动态的](######Dynamic)更新。发布下面的请求（issue this request）来提高`indices.recovery`模块的日志等级为`DEBUG`：
+&emsp;&emsp;这个设置用来控制日志，使用`logger.`为前缀的key来[动态的](######Dynamic（settings）)更新。发布下面的请求（issue this request）来提高`indices.recovery`模块的日志等级为`DEBUG`：
 
 ```text
 PUT /_cluster/settings
@@ -1169,7 +1173,7 @@ PUT /_cluster/settings
 
 ###### cluster.persistent_tasks.allocation.enable
 
-([Dynamic](######Dynamic))开启或者关闭persistent task的分配：
+([Dynamic](######Dynamic（settings）))开启或者关闭persistent task的分配：
 
 - all - (default) 允许persistent task被分配到节点
 - none - 不允许分配任何类型的persistent task
@@ -1178,7 +1182,7 @@ PUT /_cluster/settings
 
 ###### cluster.persistent_tasks.allocation.recheck_interval
 
-([Dynamic](######Dynamic))master node会自动的检查在cluster state发生重大变化（change significantly）后persistent tast是否需要被分配。然而，也会有其他的一些因素，比如说memory usage，这个会影响persistent task能否被分配但这不会引起cluster state的变更。这个设置控制了检查的间隔。默认是30秒。最小允许的时间为10秒。
+([Dynamic](######Dynamic（settings）))master node会自动的检查在cluster state发生重大变化（change significantly）后persistent tast是否需要被分配。然而，也会有其他的一些因素，比如说memory usage，这个会影响persistent task能否被分配但这不会引起cluster state的变更。这个设置控制了检查的间隔。默认是30秒。最小允许的时间为10秒。
 
 #### Cross-cluster replication settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-settings.html#ccr-recovery-settings)
@@ -1579,7 +1583,7 @@ path.data:  /var/elasticsearch/data
 
 ##### search.max_buckets
 
-&emsp;&emsp;（[Dynamic](######Dynamic)，integer）在一次响应中，[aggregation buckets ](###Bucket aggregations)的最大分桶数量。默认值为65535。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)，integer）在一次响应中，[aggregation buckets ](###Bucket aggregations)的最大分桶数量。默认值为65535。
 
 &emsp;&emsp;尝试返回超过这个限制的请求会返回一个错误。
 
@@ -3234,7 +3238,7 @@ POST /_security/role/logstash-reader
 
 &emsp;&emsp;只能在索引创建期间或者对一个[closed index](####Open-index API)进行设置。
 
-##### dynamic
+##### dynamic（index modules）
 
 &emsp;&emsp;使用[update-index-settings](####Update-index-settings-API)对live index的索引配置进行变更。
 
@@ -3722,7 +3726,7 @@ PUT index_4/_settings
 
 ##### cluster.routing.allocation.total_shards_per_node
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）每一个节点上允许分配的主分片和副本分片的最大数量。默认值`-1`（没有限制）。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）每一个节点上允许分配的主分片和副本分片的最大数量。默认值`-1`（没有限制）。
 
 &emsp;&emsp;Elasticsearch会在分片分配时检查这个值，例如，某个集群的`cluster.routing.allocation.total_shards_per_node`的值为`100`，并且三个节点使用下面的分片分配：
 
@@ -20957,19 +20961,19 @@ xpack.searchable.snapshot.shared_cache.size: 4TB
 
 - searchable_snapshots.blob_cache.periodic_cleanup.interval
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）`.snapshot-blob-cache`索引周期性清除计划的间隔时间。默认值是每1小时 。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）`.snapshot-blob-cache`索引周期性清除计划的间隔时间。默认值是每1小时 。
 
 - searchable_snapshots.blob_cache.periodic_cleanup.retention_period
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）在`.snapshot-blob-cache`索引中保留过时文档的保留期。默认值是`100`。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）在`.snapshot-blob-cache`索引中保留过时文档的保留期。默认值是`100`。
 
 - searchable_snapshots.blob_cache.periodic_cleanup.batch_size
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）`.snapshot-blob-cach`周期性清除时，每次为bulk-delete查询的文档数量。默认值是`10m`。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）`.snapshot-blob-cach`周期性清除时，每次为bulk-delete查询的文档数量。默认值是`10m`。
 
 - searchable_snapshots.blob_cache.periodic_cleanup.pit_keep_alive
 
-&emsp;&emsp;（[Dynamic](######Dynamic)）The value used for the <point-in-time-keep-alive,point-in-time keep alive>> requests executed during the periodic cleanup of the .snapshot-blob-cache index. Defaults to 10m.
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）The value used for the <point-in-time-keep-alive,point-in-time keep alive>> requests executed during the periodic cleanup of the .snapshot-blob-cache index. Defaults to 10m.
 
 #### Reduce costs with searchable snapshots
 
