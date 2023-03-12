@@ -51,7 +51,38 @@
 &emsp;&emsp;
 
 ### Scalability and resilience: clusters, nodes, and shards
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scalability.html#scalability)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scalability.html#scalability)
+
+&emsp;&emsp;Elasticsearch总是可用的（available）并且根据你的需要进行扩展。It does this by being distributed by nature。你可以向一个集群中添加服务（节点）来提高承载力（capacity），Elasticsearch可以跨所有可用的节点，自动的分布/查询（distribute/query）数据。不需要overhaul你的应用，Elasticsearch知道如何平衡多个节点的集群来提供扩展以及高可用能力。The more nodes, the merrier。
+
+&emsp;&emsp;Elasticsearch是如何工作的？在底层实现中，一个Elasticsearch index只是一个或多个物理分片（physical shards）的逻辑组合（logical grouping）。每一个分片实际上是一个self-contained index。通过将索引中的文档分布到多个分片，将分片分布到多个节点，Elasticsearch可以确保冗余（ensure redundancy），使得应对硬件故障以及节点添加到集群后，查询能力的提升。随着集群的增长（收缩），Elasticsearch能自动的迁移（migrate）分片来rebalance集群。
+
+&emsp;&emsp;分片的类型有两种：主分片跟副本分片（primary  and replica shard）。索引中的每一篇文档属于某一个主分片。一个副本分片是某个主分片的拷贝。副本分片提供了数据的冗余来应对硬件故障以及提高例如查询或者检索一篇文档的读取请求的能力。
+
+&emsp;&emsp;某个索引中的主分片数量在索引创建后就固定了。但是副本分配的数量可以在任何时间内更改，不会影响（interrupt）索引或者查询操作。
+
+#### It depends…
+
+&emsp;&emsp;对于分片大小和索引的主分片数量，有很多性能考虑点以及trade off。分片越多，维护这些索引的开销就越大。分片大小越大，当Elasticsearch需要rebalance集群时，移动分片花费的时间越大。
+
+&emsp;&emsp;在很多较小的分片上查询时，在每一个分片上的查询很快，但是分片越多，查询次数就越多，开销就越大，所以在数量较小，体积较大的分片上的查询可能就更快。In short…it depends。
+
+&emsp;&emsp;As a starting point：
+
+- 将分片的平均大小保持在几个GB以及十几个GB之间。对于基于时间的数据，通常来说，分片的大小在20GB到40GB之间
+- 避免出现大量分片的问题。一个节点可以拥有的分片数量跟可用的堆内存成正比。一般来说（as a general rule），每1GB的堆内存中的分片数量应该小于20个。
+
+&emsp;&emsp;对于你的用例，确定最佳配置的最好方式是通过[testing with your own data and queries](https://www.elastic.co/cn/elasticon/conf/2016/sf/quantitative-cluster-sizing)。
+
+#### In case of disaster
+
+&emsp;&emsp;集群中的节点之间需要良好的，可靠的连接。若要能提供一个较好的连接，你通常会将节点放在相同的数据中心或者附近的数据中心。然而为了高可用，你同样需要避免单点故障（single point of failure）。某个地区（location）发生停电后，其他地区必须能接管服务。这个问题的答案就是使用CCR（Cross-cluster replication）。
+
+&emsp;&emsp;CCR提供了一种从主集群（primary cluster）自动同步索引到secondary remote cluster的方法，即secondary remote cluster作为一个热备（hot backup）。如果primary cluster发生了故障，secondary cluster可以进行接管。你可以使用CCR创建secondary cluster，给地理上靠近（geo-proximity）这个secondary cluster的用户提供读取请求。
+
+#### Care and feeding
+
+&emsp;&emsp;与任何企业系统一样，你需要工具来secure，manage，以及monitor你的Elasticsearch 集群。Security，monitoring，以及administrative features都集成到了Elasticsearch，使得你可以使用[Kibana](https://www.elastic.co/guide/en/kibana/8.2/introduction.html)作为控制中心来管理集群。比如[data rollups](###Rolling up historical data)、[index lifecycle management](###ILM: Manage the index lifecycle)这些功能能帮助你根据时间来管理你的数据。
 
 ## Set up Elasticsearch
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/setup.html)
