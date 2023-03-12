@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/03/08）
+# Elasticsearch-8.2文档（2023/03/12）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -3191,13 +3191,13 @@ POST /_security/role/logstash-reader
 
 
 ## Index Modules
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules.html)
 
-&emsp;&emsp;Index Modules是按索引创建的模块，控制与索引相关的所有方面。
+&emsp;&emsp;Index Modules是用于索引创建的模块，控制与索引相关的所有方面。
 
 #### Index Settings
 
-&emsp;&emsp;索引层的设置可以根据每一个索引进行配置，索引配置可以划分为：
+&emsp;&emsp;索引层的设置（index level settings）可以根据每一个索引进行配置，索引配置可以划分为：
 
 ##### static
 
@@ -3217,7 +3217,7 @@ POST /_security/role/logstash-reader
 
 ##### index.number_of_shards
 
-&emsp;&emsp;一个索引应该具有的主分片数量。默认值是1。这个设置只能在索引创建期间设置。不能对关闭的索引进行设置。
+&emsp;&emsp;一个索引应该拥有的主分片数量。默认值是1。这个设置只能在索引创建期间设置。不能对关闭的索引进行设置。
 
 ```text
 每个索引的分片的数量上限是1024。这个限制值是一个安全限制，它基于资源分配防止索引的创建导致集群的不稳定（destabilize）。这个限制可以通过对集群中所有节点的系统属性（system property）export ES_JAVA_OPTS="-Des.index.max_number_of_shards=128"进行变更
@@ -3241,11 +3241,11 @@ POST /_security/role/logstash-reader
 
 ##### index.codec
 
-&emsp;&emsp;默认使用[LZ4](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/37.html)对store data进行压缩，但是可以设置为`best_compression`，其使用[DEFLATE](https://en.wikipedia.org/wiki/Deflate)有更高压缩率，代价是降低了存储域[stored filed](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/169.html)的性能。如果你更新了压缩类型compression type，新的数据在段合并后会被应用apply。可以使用[force merge](####Force merge API)对段进行强制合并。
+&emsp;&emsp;默认使用[LZ4](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/37.html)对store data进行压缩，但是可以设置为`best_compression`，其使用[DEFLATE](https://en.wikipedia.org/wiki/Deflate)有更高压缩率，代价是降低了存储域[stored filed](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/169.html)的性能。如果你更新了压缩类型compression type，新的数据在段合并后会被应用（apply）。可以使用[force merge](####Force merge API)对段进行强制合并。
 
 ##### index.routing_partition_size
 
-&emsp;&emsp;使用自定义的[路由值](#####Routing to an index partition)可以被路由到的分片的数量（区别于路由到某一个分片，这里指的是可以被路由到某个分片集合中，集合的大小即index.routing_partition_size）。默认值是1并且只能在创建索引时设置，该值必须比`index.number_of_shards`小，除非`index.number_of_shards`的值就是1。见[Routing to an index partition](#####Routing to an index partition)查看如何使用该值。
+&emsp;&emsp;使用自定义的[路由值](#####Routing to an index partition)，路由到一定数量的分片中（区别于路由到某一个分片，这里指的是可以被路由到某个分片集合中，集合的大小即index.routing_partition_size）。默认值是1并且只能在创建索引时设置，该值必须比`index.number_of_shards`小，除非`index.number_of_shards`的值就是1。见[Routing to an index partition](#####Routing to an index partition)查看如何使用该值。
 
 ##### index.soft_deletes.enabled
 
@@ -3255,7 +3255,7 @@ POST /_security/role/logstash-reader
 
 ##### index.soft_deletes.retention_lease.period
 
-&emsp;&emsp;在分片的history retention lease过期之前被保留的最大时间。Shard history retention leases能保证在Lucene层的段合并后soft deletes仍然能被保留retain。如果soft deletes在follower节点上生成副本期间被合并了merge away，那么在随后的处理中会因为在leader节点上不完整的history而导致失败。默认值为12h。
+&emsp;&emsp;在分片的history retention lease过期之前，保留的最长时间。Shard history retention leases能保证在Lucene层的段合并后soft deletes仍然能被保留（retain）。如果soft deletes在follower节点上生成副本期间被合并了merge away，那么在随后的处理中会因为在leader节点上不完整的history而导致失败。默认值为12h。
 
 ##### index.load_fixed_bitset_filters_eagerly
 
@@ -3264,10 +3264,10 @@ POST /_security/role/logstash-reader
 ##### index.shard.check_on_startup
 
 ```text
-该配置仅针对专家用户。因为该配置允许在分片启动时进行一些开销较大的操作processsing并且只有在诊断集群中的问题时才有用。如果你确定要使用，你应该只是临时使用并且在不需要后移除这个配置
+WARNING：该配置仅针对专家用户。因为该配置允许在分片启动时进行一些开销较大的操作（processsing）并且只有在诊断集群中的问题时才有用。如果你确定要使用，你应该只是临时使用并且在不需要后移除这个配置
 ```
 
-&emsp;&emsp;Elasticsearch在分片的生命周期的不同时刻自动对其内容执行完整性检查。比如当恢复一个副本replica时，会对传输的每一个文件进行校验和的验证或者拍摄快照时take a snapshot。当启动一个节点或者完成一个分片的恢复跟重分配时，同样的会在打开一个分片时对重要的文件进行完整性的验证。因为你可以手动的对正在运行中的所有分片进行完整性的校验，方法是对其进行拍摄快照并放到新的仓库中fresh repository或者在一个新的节点恢复recovery它。
+&emsp;&emsp;Elasticsearch在分片生命周期的不同时刻自动对其内容执行完整性检查。比如当恢复一个副本replica时，会对传输的每一个文件进行校验和的验证或者拍摄快照时（take a snapshot）。当启动一个节点或者完成一个分片的恢复跟重分配时，同样的会在打开一个分片时对重要的文件进行完整性的验证。你可以在对其进行拍摄快照并放到新的仓库中（fresh repository）或者恢复到一个新的节点后，手动的对整个分片进行完整性的校验。
 
 &emsp;&emsp;当前配置用来描述Elasticsearch在打开一个分片时是否要对其进行额外的完整性检查。如果检查出corruption，那么阻止这个分片被打开，该配置接受下面的值：
 
@@ -3286,15 +3286,15 @@ POST /_security/role/logstash-reader
 
 ##### index.number_of_replicas
 
-&emsp;&emsp;每个主分片的副本的数量，默认值是1。
+&emsp;&emsp;每个主分片的副本分片（replica）的数量，默认值是1。
 
 ```text
-注意：该配置如果设置为0，可能导致在节点重启时临时可用性损失或者导致数据永久丢失
+WARNING：：该配置如果设置为0，可能导致在节点重启时临时可用性损失或者导致数据永久丢失
 ```
 
 ##### index.auto_expand_replicas
 
-&emsp;&emsp;基于集群中节点的数量自动增加auto-expand副本分片的数量。该值可以设置为一个用破折号来区分上下界的值（例如: 0-5），或者使用`all`作为上界（例如：0-all）。默认值是false。注意的是这种自动增加副本分片数量只会考虑[allocation filtering](####Index-level shard allocation filtering)规则，会忽视其他的分配allocation规则例如[total shards per node](####Total shards per node)，如果适用的规则applicable rules阻止分配所有的副本分片，会导致集群变成`yellow`。
+&emsp;&emsp;基于集群中节点的数量自动增加（auto-expand）副本分片的数量。该值可以设置为一个用破折号来区分上下界的值（例如: 0-5），或者使用`all`作为上界（例如：0-all）。默认值是false。注意的是这种自动增加副本分片数量只会考虑[allocation filtering](####Index-level shard allocation filtering)规则，会忽视其他的分配规则例如[total shards per node](####Total shards per node)，如果适用的规则（applicable rules）阻止分配所有的副本分片，会导致集群变成`yellow`。
 
 &emsp;&emsp;如果上界是`all`，那么[shard allocation awareness](####Cluster-level shard allocation and routing settings)跟[cluster.routing.allocation.same_shard.host](####Cluster-level shard allocation and routing settings)这两个配置在这个索引上会被忽略。
 
@@ -3303,7 +3303,7 @@ POST /_security/role/logstash-reader
 
 ##### index.refresh_interval
 
-&emsp;&emsp;多久执行一次refresh操作。该操作使得最近的修改能够被搜索到。默认值是1秒。可以被设置为`-1`来关闭refresh。如果没有显示的explicit设置这个值，那么分片在至少`index.search.idle.after`时间内没有收到搜索请求则不会收到后台刷新，直到分片收到查询请求。搜索时如果遇到某个分片正在进行refresh，那么会等待下一次后台refresh，这种行为的目的是在没有搜索请求时能优化bulk Indexing。为了避免这种行为，应该显式设置1s的值作为刷新间隔。
+&emsp;&emsp;多久执行一次refresh操作。该操作使得最近的修改能够被搜索到。默认值是1秒。可以被设置为`-1`来关闭refresh。如果没有显示的（explicit）设置这个值，那么分片在至少`index.search.idle.after`时间内没有收到搜索请求则不会收到后台刷新，直到分片收到查询请求。搜索时如果遇到某个分片正在进行refresh，那么会等待下一次后台refresh，这种行为的目的是在没有搜索请求时能优化bulk Indexing。为了避免这种行为，应该显式设置1s的值作为刷新间隔。
 
 ##### index.max_result_window
 
@@ -3311,14 +3311,135 @@ POST /_security/role/logstash-reader
 
 ##### index.max_inner_result_window
 
+&emsp;&emsp;`from + size`的最大值，用于索引的inner hits definition以及top hits aggregation。默认值为`100`。inner hits和top hits aggregation占用堆内存并且跟`from + size` 的大小成比例，该值用于限制内存的使用。
+
+##### index.max_rescore_window
+
+&emsp;&emsp;`rescore`请求中`window_size`的最大值。默认值为`index.max_result_window`，即`10000`。查询请求会占用堆内存并且跟`max(window_size, from + size)`的大小成比例，该值用于限制内存的使用。
+
+##### index.max_docvalue_fields_search
+
+&emsp;&emsp;某次查询中允许`docvalue_fileds`数量最大值。默认值为`100`。查询Doc-value域有一定的开销因为可能需要查看对每一个域中的每一个文档。
+
+##### index.max_script_fields
+
+&emsp;&emsp;某次查询中允许`script_fields`数量最大值。默认值为`32`。
+
+##### index.max_ngram_diff
+
+&emsp;&emsp;The maximum allowed difference between min_gram and max_gram for NGramTokenizer and NGramTokenFilter。默认值为`1`。
+
+##### index.max_shingle_diff
+
+&emsp;&emsp;[shingle token filter](####Shingle token filter)中max_shingle_size和min_shingle_size之间允许的最大不同。默认值为`3`。
+
+##### index.max_refresh_listeners
+
+&emsp;&emsp;索引中每一个分片上的可用的refresh listeners数量最大值。这些listeners用于实现[refresh=wait_for](####?refresh(api))。
+
+##### index.analyze.max_token_count
+
+&emsp;&emsp;使用\_analyze API允许生成token数量最大值。默认值为`10000`。
+
+##### index.highlight.max_analyzed_offset
+
+&emsp;&emsp;在高亮请求中，允许处理（analyze）的字符数量最大值。这个设置只有在text上请求高亮，并且没有设置offset或者term vectors才会应用。默认值为`1000000`。
+
+##### index.max_terms_count
+
+&emsp;&emsp;Terms Query中可以使用的term数量最大值。默认值为`65536`。
+
+##### index.max_regex_length
+
+&emsp;&emsp;Regexp Query中可以使用的regex的长度最大值。默认值为`1000`。
+
 ##### index.query.default_field
+
+&emsp;&emsp;（string or array of strings）通配模版（Wildcard(`*`) patterns）会匹配到一个或者多个域。下面的请求类型默认查询这些匹配到的域：
+
+- [More like this](####More like this query)
+- [Multi-match](####Multi-match query)
+- [Query string](####Query string query)
+- [Simple query string](####Simple query string query)
+
+&emsp;&emsp;默认值为`*`，意味着匹配所有eligible域用于[term-level queries](###Term-level queries)，除了metadata域。
+
+##### index.routing.allocation.enable
+
+&emsp;&emsp;用于控制索引的分片分配。该参数可以设置为：
+
+- `all`（默认值）- 允许对所有的分片使用shard rebalancing
+- `primaries` - 只允许对主分片使用shard rebalancing
+- `replicas` - 只允许对副本分配（replica）使用shard rebalancing
+- `none` - 不允许对分片使用shard rebalancing
+
+##### index.gc_deletes
+
+&emsp;&emsp;[a deleted document’s version number](####Delete API)仍然可用的时长，它用于[further versioned operations](####Index API)。默认值为`60s`。
 
 ##### index.default_pipeline
 
+&emsp;&emsp;用于索引的默认的[ingest pipeline](##Ingest pipelines)。如果设置了默认的pipeline但pipeline不存在，索引请求则会失败。可以使用`pipeline`参数覆盖默认的pipeline。特定的pipeline名字`none`意味着不允许任何pipeline 。
+
 ##### index.final_pipeline
 
+&emsp;&emsp;索引的final [ingest pipeline]()。如果设置了final pipeline并且该pipeline不存在，索引请求则会失败。 final pipeline总是在请求中指定的pipeline以及默认的pipeline之后运行。特定的pipeline名字`none`意味着不允许任何pipeline 。
+
+> NOTE：你不能使用一个final pipeline修改`_index`域，如果pipeline尝试进行修改，索引请求则会失败。
+
 ##### index.hidden
-（未完成）
+
+&emsp;&emsp;该值描述的是索引是否默认隐藏。隐藏的索引不会在匹配到通配表达式到后返回。使用了`expand_wildcards`参数的请求会受到该参数的控制。可选值为`true`或者`false`。
+
+#### Settings in other index modules
+
+&emsp;&emsp;index module中其他可用的index setting：
+
+- [Analysis](##Text analysis)
+
+&emsp;&emsp;用于定义analyzers, tokenizers, token filters and character filters。
+
+- [Index shard allocation](###Index Shard Allocation)
+
+&emsp;&emsp;控制分片如何，何时分配到哪一个节点。
+
+- [Mapping](##Mapper)
+
+&emsp;&emsp;为索引开启/关闭dynamic mapping。
+
+- [Merging](###Merge)
+
+&emsp;&emsp;控制后台合并处理程序如何对分片进行和并。
+
+- [Similarities](###Similarity module)
+
+&emsp;&emsp;配置自定义的Similarity设置自定义查询结果的打分方式。
+
+- [Slowlog](###Slow Log)
+
+&emsp;&emsp;控制如何通过日志记录slow Query和slow fetch。
+
+- [Store](###Store)
+
+&emsp;&emsp;配置用于访问分片数据的文件系统。
+
+- [Translog](###Translog)
+
+&emsp;&emsp;控制transaction log以及后台flush操作。
+
+- [History retention](###History retention)
+
+&emsp;&emsp;控制索引的历史操作。
+
+- [Indexing pressure](###Indexing pressure)
+
+&emsp;&emsp;Configure indexing back pressure limits
+
+#### X-Pack index settings
+
+- [Index lifecycle management](####Index lifecycle management settings in Elasticsearch)
+
+&emsp;&emsp;为索引指定生命周期策略以及rollover alias。
 
 ### Analysis
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules-analysis.html)
@@ -3628,6 +3749,9 @@ PUT index_4/_settings
 ##### index.merge.scheduler.max_thread_count
 
 &emsp;&emsp;单个分片上可以同时合并的线程数量。默认值为`Math.max(1, Math.min(4 <<node.processors, node.processors>> / 2))`。这个值在固态硬盘（solid-state-disk）上 work well。如果你的索引工作在spinning platter drives，将这个值降为`1`。
+
+### Similarity module
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules-similarity.html)
 
 ### Slow log
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules-translog.html)
@@ -9853,6 +9977,9 @@ PUT custom_lowercase_example
 #### Porter stem token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-porterstem-tokenfilter.html)
 
+#### Shingle token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-shingle-tokenfilter.html)
+
 #### Snowball token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-snowball-tokenfilter.html)
 
@@ -14195,6 +14322,9 @@ GET /_search
 
 ### Specialized queries
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/specialized-queries.html)
+
+#### More like this query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-mlt-query.html)
 
 #### Rank feature query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-rank-feature-query.html)
