@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/03/12）
+# Elasticsearch-8.2文档（2023/03/13）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -1274,6 +1274,10 @@ PUT /_cluster/settings
 &emsp;&emsp;控制在remote recovery处理期间每一个网络请求的超时时间。某个单独的动作（individual action）超时会导致recovery失败。默认值为`60s`。
 
 #### Discovery and cluster formation settings
+
+&emsp;&emsp;
+
+##### discovery.seed_hosts
 
 ##### Expert settings
 
