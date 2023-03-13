@@ -840,7 +840,7 @@ POST _nodes/reload_secure_settings
 &emsp;&emsp;只有`script.painless.regex.enabled`为`limited`时，Elasticsearch才会使用该限制值。
 
 #### Cluster-level shard allocation and routing settings
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-cluster.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-cluster.html)
 
 &emsp;&emsp;Shard allocation说的是分配分片到节点的过程。该过程会在initial recovery、副本（replica）分配、rebalancing或者增加或者移除节点时发生。
 
@@ -947,15 +947,71 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;如果某个节点填满磁盘的速度比Elasticsearch将分片移动到其他地方的速度还要快就会有磁盘被填满的风险。为了防止出现这个问题，万不得已的情况下（ as a last resort），一旦磁盘使用达到`flood-stage` watermark，Elasticsearch会阻塞受到影响的节点上的分片索引的写入。但仍然继续将分片移动到集群中的其他节点。当受到影响的节点上的磁盘使用降到high watermark，Elasticsearch会自动的移除write block。
 
-> TIP：集群中的节点各自使用不相同的磁盘空间是正常的。集群的[balance](#####Shard rebalancing settings)取决与每一个节点上分片的数量以及分片中的索引。基于下面的两个理由，集群的balance既不会考虑分片的大小，也不会考虑每一个节点上磁盘可用的空间：
+> TIP：集群中的节点各自使用容量不相同的磁盘空间是正常的。集群的[balance](#####Shard rebalancing settings)取决与每一个节点上分片的数量以及分片中的索引。基于下面的两个理由，集群的balance既不会考虑分片的大小，也不会考虑每一个节点上磁盘可用的空间：
 > - 磁盘的使用随着时间发生变化。平衡不同节点的磁盘使用将会有很多更多的分片移动，perhaps even wastefully undoing earlier movements。移动一个分片会消耗例如I/O资源以及网络带宽，并且可能从文件系统缓存中换出（evict）数据。这些资源最好用于你的查询和索引。
 > - 集群中每一个节点有相同的磁盘使用在性能上通常没有有不同磁盘使用的性能高，只要所有的磁盘不是太满
+> 
+
+&emsp;&emsp;你可以使用下面的设置控制基于磁盘的分配：
+
+###### cluster.routing.allocation.disk.threshold_enabled
+
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）默认值为`true`。设置为`false`则关闭基于磁盘的分配。
+
+###### cluster.routing.allocation.disk.watermark.low
+
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）控制磁盘使用量的水位下限（low watermark）。默认值为`85%`。意味着Elasticsearch不会将分片分配到磁盘使用超过85%的节点上。该值也可以是一个字节单位的值（例如`500mb`），使得当磁盘空间小于指定的值时就不让Elasticsearch分配分片到这个节点。这个设置不会影响新创建的索引的主分片，但是会组织副本分配的创建。
 
 ###### cluster.routing.allocation.disk.watermark.high
 
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）控制磁盘使用量的水位上限。默认值为`90%`，意味着Elasticsearch将对磁盘使用量超过90%的节点上的分片进行relocate。该值也可以是一个字节单位的值（跟low watermark类似）。使得当磁盘空间小于指定的值时就把该节点上的分片进行relocate。这个设置会影响所有分片的分配，无论之前是否已经分配。
+
+###### cluster.routing.allocation.disk.watermark.enable_for_single_data_node
+
+&emsp;&emsp;（[Static](###### Static（settings） )) 在更早的发布中，当做出分配决策时，对于单个数据节点的集群是不会考虑disk watermark的。在7.14之后被值为deprecated并且在8.0移除。现在这个设置唯一合法的值为`true`。这个设置在未来的发布中移除。
+
 ###### cluster.routing.allocation.disk.watermark.flood_stage
 
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）控制flood stage watermark。只要至少有一个节点超过该值，分配到这个节点的一个或者分片对应的索引会被Elasticsearch强制置为read-only index block（`index.blocks.read_only_allow_delete`）。这个设置是防止节点发生磁盘空间不足最后的手段。当磁盘使用量降到high watermark后会自动释放index block。
 
+> NOTE：你不能在设置中混合使用比例值（percentage）和字节值（byte value）。要么所有的值都是比例值，要么都是字节值。这种强制性的要求使得Elasticsearch可以进行一致性的处理。另外要确保low disk threshold要低于high disk threshold，并且high disk threshold要低于flood stage threshold。
+
+&emsp;&emsp;下面的例子中在索引`my-index-000001`上重新设置read-only index block：
+
+```text
+PUT /my-index-000001/_settings
+{
+  "index.blocks.read_only_allow_delete": null
+}
+```
+
+###### cluster.routing.allocation.disk.watermark.flood_stage.frozen
+
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用于专用的frozen node，控制flood stage watermark，默认值为95%
+
+###### cluster.routing.allocation.disk.watermark.flood_stage.frozen.max_headroom
+
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用于专用的frozen node，控制flood stage watermark的head room。当`cluster.routing.allocation.disk.watermark.flood_stage.frozen`没有显示设置时默认值为20GB。该值限制（cap）了专用的frozen node上磁盘的空闲量。
+
+###### cluster.info.update.interval
+
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）Elasticsearch定时检查集群中每一个节点上磁盘使用情况的时间间隔。默认值为`30s`。
+
+> NOTE：比例值说的是（refer to）已使用的磁盘空间，而字节值说的是剩余磁盘空间。这可能会让人疑惑，因为它弄反了高和低的含义。比如，设置low watermark为10GB，high watermark为5GB是合理的，反过来设置的话就不行
+
+&emsp;&emsp;下面的例子讲low watermark的值设置为至少100gb，high watermark的值设置为至少50gb，flood stage watermark的值为10gb，并且每一分钟进行检查：
+
+```text
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.disk.watermark.low": "100gb",
+    "cluster.routing.allocation.disk.watermark.high": "50gb",
+    "cluster.routing.allocation.disk.watermark.flood_stage": "10gb",
+    "cluster.info.update.interval": "1m"
+  }
+}
+```
 
 ##### Shard allocation awareness
 
@@ -963,7 +1019,7 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;当使用（[Dynamic](######Dynamic（settings）)）的`cluster.routing.allocation.awareness.attributes`的设置开启awareness attribute后，分片只会被分配到设置了awareness attributes的节点上。当你使用多个awareness attribute时，Elasticsearch在分配分片时会单独地（separately）考虑每一个attribute。
 
-> NOTE: attribute values的数量决定了每一个位置上分配副本的分配数量。如果在每一个位置上的节点数量是unbalanced并且有许多的副本，副本分片可能不会被分配
+> NOTE: attribute values的数量决定了每一个位置上副本分配的分配数量。如果在每一个位置上的节点数量是unbalanced并且有许多的副本，副本分片可能不会被分配
 
 ###### Enabling shard allocation awareness
 
@@ -993,9 +1049,9 @@ cluster.routing.allocation.awareness.attributes: rack_id
 
 &emsp;&emsp;基于上述的配置例子，如果你启动了两个节点并且都设置`node.attr.rack_id`为`rack_one`并且为每个index设置5个主分片，每个主分片设置一个副本分片，那么这两个节点都包含所有的主分片以及副本分片。
 
-&emsp;&emsp;如果你增加了两个节点并且都设置`node.attr.rack_id`为`rack_two`，Elasticsearch会把分配移动到新的节点，ensuring（if possible）相同的副本分片不会在相同的机架上。
+&emsp;&emsp;如果你增加了两个节点并且都设置`node.attr.rack_id`为`rack_two`，Elasticsearch会把分片移动到新的节点，ensuring（if possible）相同的副本分片不会在相同的机架上。
 
-&emsp;&emsp;如果`rack_two`失败并关闭了它的两个节点，默认情况下，Elasticsearch会将丢失的碎片副本分配给`rack_one`中的节点。为了防止特定分片的多个副本被分配到相同的位置，可以启用forced awareness。
+&emsp;&emsp;如果`rack_two`失败并关闭了它的两个节点，默认情况下，Elasticsearch会将丢失的副本分片分配给`rack_one`中的节点。为了防止特定分片的多个副本被分配到相同的位置，可以启用forced awareness。
 
 ###### Forced awareness
 
@@ -1091,9 +1147,9 @@ PUT _cluster/settings
 
 &emsp;&emsp;基于集群中的节点数量，集群中分片的数量有一个soft limit。这是为了防止可能无意中破坏集群稳定性的操作。
 
-> IMPORTANT：这个限制作为一个安全网（safety net），不是一个推荐的大小。你集群中可以安全支持的准确的分片数量取决于你的硬件配置跟工作负载，但是在大部分case下，这个limit应该还不错，因为默认的limit是非常大的。
+> IMPORTANT：这个限制作为一个安全网（safety net），不是一个推荐的大小。你集群中可以安全的支持准确的分片数量取决于你的硬件配置跟工作负载，但是在大部分case下，这个limit应该还不错，因为默认的limit是非常大的。
 
-&emsp;&emsp;如果一个操作，比如创建新的索引，恢复索引的snapshot，或者打开一个关闭的索引会导致集群中的分片数量超过限制。这个会失败并且给出shard limit的错误。
+&emsp;&emsp;如果一个操作，比如创建新的索引，恢复snapshot index，或者打开一个关闭的索引会导致集群中的分片数量超过限制。那这个操作会失败并且给出shard limit的错误。
 
 &emsp;&emsp;如果由于node membership的变化或者设置的变更使得集群已经超过了限制，所有创建或者打开索引的操作都会失败直到下文中将介绍的提高limit或者[关闭](####Open index API)[删除](####Delete index API)一些索引使得分片的数量降到了limit以下。
 
@@ -1185,9 +1241,37 @@ PUT /_cluster/settings
 ([Dynamic](######Dynamic（settings）))master node会自动的检查在cluster state发生重大变化（change significantly）后persistent tast是否需要被分配。然而，也会有其他的一些因素，比如说memory usage，这个会影响persistent task能否被分配但这不会引起cluster state的变更。这个设置控制了检查的间隔。默认是30秒。最小允许的时间为10秒。
 
 #### Cross-cluster replication settings
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-settings.html#ccr-recovery-settings)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-settings.html#ccr-recovery-settings)
+
+&emsp;&emsp;可以使用[cluster update settings API](####Cluster update settings API)动态更新集群中的CCR（cross-cluster replication）设置。
 
 ##### Remote recovery settings
+
+&emsp;&emsp;下面的设置可以用于在[remote recoveries](####Initializing followers using remote recovery)中限制数据传输速率：
+
+###### ccr.indices.recovery.max_bytes_per_sec ([Dynamic](######Dynamic（settings）))
+
+&emsp;&emsp;用来限制每一个节点上inbound和outbound remote recovery traffic。由于这个设置是作用到每一个节点上，但是可能存在许多的节点并发的执行remote recoveries，remote recovery占用的流量可能比这个限制高。如果这个值设置的太高，那么会存在这么一种风险，即正在进行中的recoveries会过度消费带宽 ，使得集群变得不稳定。这个设置应该同时被leader和follower clusters使用。例如，如果在leader上设置了`20mb`，leader将只能发送`20mb/s`到follower，即使follower可以达到`60mb/s`。默认值为`40mb`。
+
+##### Advanced remote recovery settings
+
+&emsp;&emsp;下面的专家级设置（expert settings）用于管理remote recoveries时的资源消费。
+
+###### ccr.indices.recovery.max_concurrent_file_chunks ([Dynamic](######Dynamic（settings）))
+
+&emsp;&emsp;控制每个recovery中并发请求文件块（file chunk）的数量。由于多个remote recoveries已经在并发运行，增加这个专家级设置可能只有助于没有达到总的inbound and outbound remote recovery traffic的单个分片的remote recovery，即上文中的`ccr.indices.recovery.max_bytes_per_sec`。`ccr.indices.recovery.max_concurrent_file_chunks`的默认值为`5`。允许最大值为`10`。
+
+###### ccr.indices.recovery.chunk_size ([Dynamic](######Dynamic（settings）))
+
+&emsp;&emsp;控制在文件传输时，follower请求的文件块的大小。默认值为`1mb`。
+
+###### ccr.indices.recovery.recovery_activity_timeout ([Dynamic](######Dynamic（settings）))
+
+&emsp;&emsp;控制recovery的活跃（activity）超时时间。这个超时时间主要是应用在leader集群上。在处理recovery期间，leader cluster必须打开内存资源提供数据给follower。如果leader在周期时间内没有接收到follower的接收请求，leader会关闭资源。默认值为`60s`。
+
+###### ccr.indices.recovery.internal_action_timeout ([Dynamic](######Dynamic（settings）))
+
+&emsp;&emsp;控制在remote recovery处理期间每一个网络请求的超时时间。某个单独的动作（individual action）超时会导致recovery失败。默认值为`60s`。
 
 #### Discovery and cluster formation settings
 
