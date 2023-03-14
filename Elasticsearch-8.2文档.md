@@ -851,7 +851,7 @@ POST _nodes/reload_secure_settings
 - [Cluster-level shard allocation settings](#####Cluster-level-shard-allocation-settings)用来控制分片和平衡操作
 - [Disk-based shard allocation settings](#####Disk-based-shard-allocation-settings)描述了Elasticsearch如何考虑（take into account）磁盘空间等等相关信息
 - [Shard allocation awareness](#####Shard-allocation-awareness) 和[Forced awareness](#####Forced-awareness)用来控制在不同的rack和可见区域上发布分片
-- [Cluster-level shard allocation filteringed](#####Cluster-level-shard-allocation-filteringe)允许一些节点或者组内的节点不会被分配分片，使得这些节点能够被关闭（decommissioned）
+- [Cluster-level shard allocation filteringed](#####Cluster-level shard allocation filtering)允许一些节点或者组内的节点不会被分配分片，使得这些节点能够被关闭（decommissioned）
 
 &emsp;&emsp;除此之外，还有一些其他的配置，见[Miscellaneous cluster settings](#####Miscellaneous-cluster-settings)。
 
@@ -1070,7 +1070,7 @@ cluster.routing.allocation.awareness.force.zone.values: zone1,zone2
 
 &emsp;&emsp;基于上述的配置例子，如果启动了两个节点并且设置`node.attr.zone`的值为`zone1`并且为每个index设置5个分片，每个分片设置一个副本分片，那么Elasticsearch会创建索引并且分配5个主分片但是不会有副本分片。只有某个节点设置`node.attr.zone`的值为`zone2`才会分配副本分片。
 
-##### Cluster level shard allocation filtering
+##### Cluster-level shard allocation filtering
 
 &emsp;&emsp;你可以使用cluster-level shard allocation filters来控制Elasticsearch从任何索引分配分片的位置。结合[per-index allocation filtering](####Index-level shard allocation filtering)和[allocation awareness](#####Shard allocation awareness)来应用集群级别（cluster wide）的filter。
 
@@ -1275,15 +1275,79 @@ PUT /_cluster/settings
 
 #### Discovery and cluster formation settings
 
-&emsp;&emsp;
+&emsp;&emsp;[Discovery and cluster formation](###Discovery and cluster formation)受到下面设置的影响：
 
 ##### discovery.seed_hosts
 
+&emsp;&emsp;（[Static](######Static（settings） ))）提供集群中master-eligible node的地址列表。可以是单个包含地址，用逗号隔开的字符串。每一个地址有`host:port`或者`host`的格式。`host`可以是hostname（可以用DNS解析）、IPv4地址、IPv6地址。IPv6地址必须用{}包裹。如果hostname用DNS解析出多个地址，Elasticsearch会使用所有的地址。DNS基于[JVM DNS caching](####DNS cache settings)进行查找（lookup）。如果没有指定`port`，会有序检查下面的设置来找到`port`：
+
+1. `transport.profiles.default.port`
+2. `transport.port`
+
+&emsp;&emsp;如果没有设置上面的配置，则`port`的默认值为`9300`。`discovery.seed_hosts`的默认值为`["127.0.0.1", "[::1]"]`。见[discovery.seed_hosts](######discovery.seed_hosts)。
+
+###### discovery.seed_providers
+
+&emsp;&emsp;（[Static](######Static（settings） ))）指定[seed hosts provider](#####Seed hosts providers)的类型，用于获取启动发现程序（discovery process）时需要用到的seed nodes地址。默认情况为[settings-based seed hosts provider](######Settings-based seed hosts provider)，它包含了`discovery.seed_hosts`中的seed node 地址。
+
+###### discovery.type
+
+&emsp;&emsp;（[Static](######Static（settings） ))）指定Elasticsearch是否形成一个多节点的（multiple-node）的集群，默认值为`multi-node`，意味着Elasticsearch在形成一个集群时会发现其他节点并且允许其他节点随后加入到这个集群。如果设置为`single-node`，Elasticsearch会形成一个单节点（single-node）集群并且suppresses the timeout set by `cluster.publish.timeout`。当你想要使用这个设置的时候，见[Single-node discovery](####Single-node discovery)了解更多的信息
+
+###### cluster.initial_master_nodes
+
+&emsp;&emsp;（[Static](######Static（settings） ))）在全新的集群中初始化master-eligible node集合。默认情况下是空值，意味着这个节点想要加入到一个引导后（bootstrapped）的集群。集群一旦形成后需要移除这个设置。当重启一个节点或者添加一个新的节点到已有的集群中时不要使用这个设置。见[cluster.initial_master_nodes](######cluster.initial_master_nodes)。
+
 ##### Expert settings
+
+&emsp;&emsp;[Discovery and cluster formation](###Discovery and cluster formation)受到下面专家级设置（expert settings）的影响，当然我们不推荐修改这些设置的默认值。
+
+> WARNING：如果你调整了集群中的这些设置，可能会无法正确的形成一个集群或者可能集群变得不稳定，或者无法处理（intolerant）对于一些故障。
+
+###### discovery.cluster_formation_warning_timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）尝试形成一个集群时，多长时间后仍然没有形成集群，开始记录未形成集群的警告日志的设置。默认值为`10s`。如果在`discovery.cluster_formation_warning_timeout`的时间内没有形成一个集群，那节点会记录一个包含`master not discovered`的warnning message，它描述了当前discovery process当前的状态。
+
+###### discovery.find_peers_interval
+
+&emsp;&emsp;（[Static](######Static（settings） ))）一个节点尝试新一轮discovery的时间间隔。默认值为`1s`。
+
+###### discovery.probe.connect_timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）尝试连接每一个地址的连接等待时间。默认值为`30s`。
+
+###### discovery.probe.handshake_timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）尝试通过handshake识别remote node的等待时间。默认值为`30s`
+
+###### discovery.request_peers_timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）在认为请求失败时，询问其peer后的等待时间。默认值为`3s`。
+
+###### discovery.find_peers_warning_timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）节点尝试discover它的peers并开始记录为什么尝试连接失败的verbose message的时间。默认值为`3m`。
+
+###### discovery.seed_resolver.max_concurrent_resolvers
+
+&emsp;&emsp;（[Static](######Static（settings） ))）DNS并发解析seed node的地址时允许的并发量。默认值为`10`。
+
+###### discovery.seed_resolver.timeout
+
+&emsp;&emsp;（[Static](######Static（settings） ))）DNS解析seed note的地址的超时时间。默认值为`5s`。
 
 ###### cluster.auto_shrink_voting_configuration
 
+&emsp;&emsp;([Dynamic](######Dynamic（settings）))控制[voting configuration](####Voting configurations)是否自动的去除（shed）不能担任voting的节点（departed node），只要它至少还包含3个节点。默认值为`true`。如果设置为`false`。voting configuration不会自动的进行收缩，你必须通过[voting configuration exclusions API](####Voting configuration exclusions API)手动的移除不能担任voting的节点（departed node）。
+
 ###### cluster.election.back_off_time
+
+&emsp;&emsp;（[Static](######Static（settings） ))）
+（未完成）
+
+###### cluster.election.duration
+
+###### cluster.election.initial_timeout
 
 #### Field data cache settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-fielddata.html)
@@ -2309,7 +2373,7 @@ discovery.seed_providers: file
 #### Quorum-based decision making
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-discovery-quorums.html#modules-discovery-quorums)
 
-&emsp;&emsp;选举出master node和变更集群状态是两个基本的任务，需要所有的master-eligible node一起工作执行。重要的是即使一些节点发生了故障也要能这些工作具有鲁棒性。Elasticsearch中达到这个鲁棒性的方式是：考虑每一个从`quorum`中接受到成功的响应。`quorum`即集群中的master-eligible node集合。只需要一部分节点响应的好处在于在一些节点发生故障后也不会影响集群继续工作。quorum是经过谨慎选择的，这样集群中不会出现裂脑（split brain）的场景：集群被划分为两块，每一块会作出与另一块不一样的决策。
+&emsp;&emsp;选举出master node和变更集群状态是两个基本的任务，需要所有的master-eligible node一起工作执行。重要的是即使一些节点发生了故障也要让这些工作具有鲁棒性。Elasticsearch中达到这个鲁棒性的方式是：考虑每一个从`quorum`中接受到成功的响应。`quorum`即集群中的master-eligible node集合。只需要一部分节点响应的好处在于在一些节点发生故障后也不会影响集群继续工作。quorum是经过谨慎选择的，这样集群中不会出现裂脑（split brain）的场景：集群被划分为两块，每一块会作出与另一块不一样的决策。
 
 &emsp;&emsp;Elasticsearch允许你向正在运行中的集群添加或者移除master-eligible node。在很多场景中只要按需简单的启动或者节点即可。见[Adding and removing nodes](###Adding and removing nodes)。
 
@@ -2473,11 +2537,11 @@ bootstrap a cluster: have discovered [{master-b.example.com}{...
 
 &emsp;&emsp;Elasticsearch允许这些检查偶尔的出现失败或者超时的问题并且不采取任何行动。只有在连续多次检查（consecutive check）失败后才会认为这个节点发生了故障。你可以通过[cluster.fault_detection.\* settings](####Discovery and cluster formation settings)来控制故障检测的行为。
 
-&emsp;&emsp;如果master node检测到某个节点失去了连接，这种情况会被视为立即失败（immediate failure）。master会绕过（bypass）超时和重试这些设置，并将这个节点从集群中移除。同样的，如果某个结点检测到master node失去了连接，这种情况也会被视为立即失败。这个节点会绕过（bypass）超时和重试这些设置，尝试discovery阶段来尝试找到/选举一个新的master。
+&emsp;&emsp;如果master node检测到某个节点失去了连接，这种情况会被视为立即失败（immediate failure）。master会绕过（bypass）超时和重试这些设置，并将这个节点从集群中移除。同样的，如果某个节点检测到master node失去了连接，这种情况也会被视为立即失败。这个节点会绕过（bypass）超时和重试这些设置，尝试discovery阶段来尝试找到/选举一个新的master。
 
 &emsp;&emsp;另外，每一个节点会周期性的往data path中写入一个小文件然后删除它来验证data path是否健康。如果节点发现它的data path不健康，随后会从集群中移除直到data path恢复。你可以通过[monitor.fs.health settings](####Discovery and cluster formation settings)来控制这个行为。
 
-&emsp;&emsp;如果某个结点在一个合理的时间内无法应用更新后的集群状态，master node也会将其从集群中移除。超时时间默认是2分钟，这个时间从更新集群状态开始。参考[Publishing the cluster state](####Publishing the cluster state)了解更多信息。
+&emsp;&emsp;如果某个节点在一个合理的时间内无法应用更新后的集群状态，master node也会将其从集群中移除。超时时间默认是2分钟，这个时间从更新集群状态开始。参考[Publishing the cluster state](####Publishing the cluster state)了解更多信息。
 
 ##### Troubleshooting an unstable cluster
 
@@ -2489,9 +2553,9 @@ bootstrap a cluster: have discovered [{master-b.example.com}{...
 - 索引`.security`可能会不可用，阻塞集群的访问
 - master node可能会由于频繁的集群状态更新变的忙碌
 
-&emsp;&emsp;若要解决集群中的问题，首先要保证集群中有一个[stable master](#####Troubleshooting discovery)，优先其他的问题，集中精力关注意外退出的节点。直到集群中有一个稳定的master node以及稳定的节点成员才有可能解决其他的问题。
+&emsp;&emsp;若要解决集群中的问题，首先要保证集群中有一个[stable master](#####Troubleshooting discovery)，优先于其他的问题，集中精力关注意外退出的节点。直到集群中有一个稳定的master node以及稳定的节点成员才有可能解决其他的问题。
 
-&emsp;&emsp;诊断数据（Diagnostics）和统计数据在一个不稳定的集群中通常是没有参考价值的。这些工具只是实时的在某个时间给出集群状态的视图。应该查看一段时间内集群的行为模式（pattern of behavior）。特别要关注master node上的日志，当某个结点离开集群时，master node的日志中会有以下类似的信息（为了可读性添加了换行符）
+&emsp;&emsp;诊断数据（Diagnostics）和统计数据在一个不稳定的集群中通常是没有参考价值的。这些工具只是实时的在某个时间给出集群状态的视图。应该查看一段时间内集群的行为模式（pattern of behavior）。特别要关注master node上的日志，当某个节点离开集群时，master node的日志中会有以下类似的信息（为了可读性添加了换行符）
 
 ```text
 [2022-03-21T11:02:35,513][INFO ][o.e.c.s.MasterService    ]
@@ -2521,7 +2585,7 @@ bootstrap a cluster: have discovered [{master-b.example.com}{...
 
 &emsp;&emsp;节点在开始/结束 follow一个master node时会记录包含`master node changed`的日志，你可以使用这些信息来观察一段时间内的view of the state of the master 。
 
-&emsp;&emsp;节点重启的会先离开集群然后再次加入到集群中。重新加入后，`MasterService`会记录它正在处理`node-join`的任务。你可以从master的日志中得知节点重启的信息，因为`node-join`相关日志描述的是节点的`joining after restart`。在较老的Elasticsearch版本中，你可以通过查看`node-left`和`node-join`中的"ephemeral" ID来判断节点的重启。每次节点的启动，这个 ephemeral ID各不相同。如果某个结点意外的重启，你需要查看这个节点的日志了解它为什么关闭了。
+&emsp;&emsp;节点重启的会先离开集群然后再次加入到集群中。重新加入后，`MasterService`会记录它正在处理`node-join`的任务。你可以从master的日志中得知节点重启的信息，因为`node-join`相关日志描述的是节点的`joining after restart`。在较老的Elasticsearch版本中，你可以通过查看`node-left`和`node-join`中的"ephemeral" ID来判断节点的重启。每次节点的启动，这个 ephemeral ID各不相同。如果某个节点意外的重启，你需要查看这个节点的日志了解它为什么关闭了。
 
 &emsp;&emsp;如果节点没有重启，你应该在`node-left`日志中查看节点离开集群（departure）的原因。有下面三个可能的原因：
 
@@ -3737,7 +3801,7 @@ GET _cluster/health
 
 ##### Removing a node permanently
 
-&emsp;&emsp;如果某个结点不再回到集群，你可能想让Elasticsearch马上分配缺失的分片，只要将timeout的值更新为0：
+&emsp;&emsp;如果某个节点不再回到集群，你可能想让Elasticsearch马上分配缺失的分片，只要将timeout的值更新为0：
 
 ```text
 PUT _all/_settings
@@ -13963,7 +14027,7 @@ GET /my-index-000001/_search?routing=my-routing-value,my-routing-value-2
 
 > TIP：为了防止索引有大量的分片，见[Avoid oversharding](###Avoid oversharding)。
 
-&emsp;&emsp;你可以使用名为`query parameter`的查询参数（query parameter）来控制一个查询请求在一个结点上并发查询的分片数量。 这可以防止某个请求过度消耗（overloading）某个集群。这个查询参数的默认最大值是`5`。
+&emsp;&emsp;你可以使用名为`query parameter`的查询参数（query parameter）来控制一个查询请求在一个节点上并发查询的分片数量。 这可以防止某个请求过度消耗（overloading）某个集群。这个查询参数的默认最大值是`5`。
 
 ```text
 GET /my-index-000001/_search?max_concurrent_shard_requests=3
@@ -22855,7 +22919,7 @@ node.roles: [ data_frozen ]
 node.roles: [ data_content, data_hot, data_warm ]
 ```
 
-&emsp;&emsp;为你集群中的节点分配其他的角色。例如，一个小规模的集群中一个结点可以有多个角色。
+&emsp;&emsp;为你集群中的节点分配其他的角色。例如，一个小规模的集群中一个节点可以有多个角色。
 
 ```text
 node.roles: [ master, ingest, ml, data_hot, transform ]
