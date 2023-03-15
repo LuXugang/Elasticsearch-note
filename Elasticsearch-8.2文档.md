@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/03/13）
+# Elasticsearch-8.2文档（2023/03/15）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -7,7 +7,7 @@
 
 &emsp;&emsp;Elasticsearch是Elastic Stack中核心的分布式搜索和分析引擎。Logstash和Beats帮助收集，聚合以及丰富你的数据并存储在Elasticsearch。Kibana使你能够交互式地探索、可视化和分享对数据的见解，并管理和监视stack。Elasticsearch用于索引，查询以及分析。
 
-&emsp;&emsp;Elasticsearch提供对所有类型的数据的近实时搜索（near real-time）和分析。无论是结构化还是非结构化的文本，数值类型的数据，或者地理位置数据，Elasticsearch都能有效的进行存储并以某种方式进行索引来实现快速查询。你可以不仅仅是简单的数据检索而是可以进一步的对信息进行聚合来发现你数据中的趋势和patterns。随着你的数据和查询体量的增大，Elasticsearch的分布式特性使你的部署能够无缝地（seamless）随之增长。
+&emsp;&emsp;Elasticsearch提供对所有类型的数据的近实时搜索（near real-time）和分析。无论是结构化还是非结构化的文本，数值类型的数据，或者地理位置数据，Elasticsearch都能有效的进行存储并以某种方式进行索引来实现快速查询。你可以不仅仅是简单的数据检索而是可以进一步的对信息进行聚合来发现你数据中的趋势和patterns。随着你的数据和查询体量的增大，Elasticsearch的分布式功能使你的部署能够无缝地（seamless）随之增长。
 
 &emsp;&emsp;虽然不是每一个问题都是一个查询问题，Elasticsearch为在各种用例中处理数据提供了速度（speed）和灵活性（flexibility）。
 
@@ -46,9 +46,49 @@
 &emsp;&emsp;在索引期间作用到full-text field的analysis chain在查询期间同样需要使用。当你查询一个full-text field，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
 
 ### Information out: search and analyze
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-analyze.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-analyze.html)
 
-&emsp;&emsp;
+&emsp;&emsp;当使用Elasticsearch作为一个文档存储（document store），检索文档以及文档的元信息（metadata）时，你能够轻松访问全套搜索能力，其能力来源是因为构建在Apache Lucene 搜索引擎库之上。
+
+&emsp;&emsp;Elasticsearch提供了一套简单的，容易理解的（coherent）的REST API，用于管理集群，索引以及查询数据。出于测试的目的，你可以简单的通过命令行或者Kibana中的Developer Console直接提交一个请求。在你的应用中，你可以选择语言并使用[Elasticsearch client](https://www.elastic.co/guide/en/elasticsearch/client/index.html)：Java, JavaScript, Go, .NET, PHP, Perl, Python 或者 Ruby。
+
+#### Searching your data
+
+&emsp;&emsp;Elasticsearch REST APIs支持结构化查询（structured query），全文检索，以及复杂的查询，比如query的组合。结构化查询类似你在SQL中构造的查询类型。例如，你可以在`employee`索引中查询`gender`和`age`域并且根据`hire_date`域对匹配的结果进行排序。全文检索会找到满足查询条件的所有的文档并且根据相关性（relevance，how good a match they are for your search terms）排序。
+
+&emsp;&emsp;除了查询不同的term，你还可以执行短语查询（phrase search），相似度查询（similarity search），前缀查询（prefix search）以及获得autocomplete suggestions。
+
+&emsp;&emsp;想要查询地理位置或者其他数值类型的数据的话，Elasticsearch将这类非文本的数据索引到一个优化后的数据结构（BKD）使得支持高性能的地址位置和数值查询。
+
+&emsp;&emsp;你可以使用Elasticsearch中JSON风格的查询语言（[Query DSL](##Query DSL)）来访问所有的查询能力。你也可以构造[SQL-style query]()查询/聚合数据，以及使用JDBC和ODBC驱动使得更多的第三方应用通过SQL使用Elasticsearch。
+
+#### Analyzing your data
+
+&emsp;&emsp;Elasticsearch的聚合（aggregation）能让你构建复杂的数据汇总并获得关键指标的洞见（insight），模式（pattern）以及趋势（trend）。聚合能让你回答下面的问题，而不是仅仅如谚语中所说的needle in a haystack：
+
+- haystack中有多少个needle？
+- needle的平均长度
+- 每个生产商（manufacturer）制造的needle的median length
+- 过去的六个月中，每个月添加到haystack的needle的数量
+
+&emsp;&emsp;你可以使用聚合回答更多subtle问题，例如：
+
+- 最受欢迎的needle生产商是哪家？
+- 是否存在不寻常或者异常的（anomalous）needle？
+
+&emsp;&emsp;由于聚合使用了查询中使用的相同的数据结构，所以非常的快，使得可以实时的分析以及可视化你的数据。报表跟dashboard可以随着你的数据的变更而更新，使得你可以基于最新的信息采取措施（take action）。
+
+&emsp;&emsp;聚合是跟查询请求一起执行的。你可以在单个请求中对相同的数据进行查询，过滤，以及分析。因为聚合要在某个查询的上下文中计算，你不仅仅能展示70号needle的数量统计，你还能展示满足你的策略的needle：比如说70号的不沾针（non-stick embroidery needles）。
+
+#### But wait, there’s more
+
+&emsp;&emsp;想要自动分析你的时序数据吗？你可以使用[machine learning](https://www.elastic.co/guide/en/machine-learning/8.2/ml-ad-overview.html)功能创建你的数据中普通行为（normal behavior）的准确基线以及识别出异常模式（anomalous pattern）。使用machine learning，你可以检测下面的信息：
+
+- Anomalies related to temporal deviations in values, counts, or frequencies
+- Statistical rarity
+- Unusual behaviors for a member of a population
+
+&emsp;&emsp;And the best part? 你不需要指定算法，模型或者其他数据科学相关的配置就可以实现上面的功能。
 
 ### Scalability and resilience: clusters, nodes, and shards
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scalability.html#scalability)
@@ -106,7 +146,7 @@
 
 #### Use delicated hosts 使用专用的主机
 
-&emsp;&emsp;在生产上，我们建议你在专用的主机或者主服务器上（primary service）运行Elasticsearch。假定Elasticsearch是主机上或者容器上唯一的资源密集型的应用，那么一些Elasticsearch的特性比如自动化分配JVM堆大小就能实现。比如说，你可能同时运行Metribeat跟Elasticsearch来做集群统计，那么就应该将resource-heavy的Logstash部署在它自己的主机上。
+&emsp;&emsp;在生产上，我们建议你在专用的主机或者主服务器上（primary service）运行Elasticsearch。假定Elasticsearch是主机上或者容器上唯一的资源密集型的应用，那么一些Elasticsearch的功能比如自动化分配JVM堆大小就能实现。比如说，你可能同时运行Metribeat跟Elasticsearch来做集群统计，那么就应该将resource-heavy的Logstash部署在它自己的主机上。
 
 ### Installing Elasticsearch
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/install-elasticsearch.html)
@@ -132,7 +172,7 @@
 
 &emsp;&emsp;在Linux和MacOS平台下，Elasticsearch是作为一个`.tar.gz`的归档文件。
 
-&emsp;&emsp;这个安装包同时包含了免费和订阅的特性，[30天试用](####License-settings)可以使用所有的特性。
+&emsp;&emsp;这个安装包同时包含了免费和订阅的特性，[30天试用](####License-settings)可以使用所有的功能。
 
 &emsp;&emsp;Elasticsearch最新的稳定版本可以从这个页面下载，其他版本可以从过去的发布页面下载。
 
@@ -172,7 +212,7 @@ cd elasticsearch-7.15.2/
 
 ##### Enable automatic creation of system indices
 
-&emsp;&emsp;一些商业特性会自动创建索引。默认情况下，Elasticsearch可以被配置为允许自动创建索引，并且不需要再做额外的步骤。然而，如果你关闭了自动创建索引， 你必须在`elasticsearch.yml`中配置[action.auto_create_index](####Index APi)来允许商业特性创建下面的索引：
+&emsp;&emsp;一些商业功能会自动创建索引。默认情况下，Elasticsearch可以被配置为允许自动创建索引，并且不需要再做额外的步骤。然而，如果你关闭了自动创建索引， 你必须在`elasticsearch.yml`中配置[action.auto_create_index](####Index APi)来允许商业功能创建下面的索引：
 
 ```text
 action.auto_create_index: .monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*
@@ -377,7 +417,7 @@ export HOSTNAME="host1,host2"
 
 &emsp;&emsp;例如，你可以使用一个transient setting覆盖persistent setting或者`elasticsearch.yml`。然而，在`elasticsearch.yml`上的变更不会覆盖定义好的（defined）transient 或者 persistent setting。
 
->TIP：如果你使用Elasticsearch Service，使用[user settings](https://www.elastic.co/guide/en/cloud/current/ec-add-user-settings.html)特性来配置所有的设置。这个方法能让Elasticsearch自动的拒绝（reject）掉任何会破坏你集群的设置。
+>TIP：如果你使用Elasticsearch Service，使用[user settings](https://www.elastic.co/guide/en/cloud/current/ec-add-user-settings.html)功能来配置所有的设置。这个方法能让Elasticsearch自动的拒绝（reject）掉任何会破坏你集群的设置。
 如果你在自己的设备（hardware）上运行Elasticsearch，可以使用cluster update settings API来配置集群动态设置。对于集群或者节点的静态设置只使用elasticsearch.yml来配置。使用API不会要求重启并且保证所有节点都被配置成相同的值。
 
 >WARNING: We no longer recommend using transient cluster settings. Use persistent cluster settings instead. If a cluster becomes unstable, transient settings can clear unexpectedly, resulting in a potentially undesired cluster configuration. See the [Transient settings migration guide](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transient-settings-migration-guide.html).
@@ -1450,12 +1490,12 @@ PUT /_cluster/settings
 > - master
 > - (data_content和data_hot) 或者 data
 >
-> 一些Elastic Stack 特性同样要求指定下面的节点角色：
+> 一些Elastic Stack 功能同样要求指定下面的节点角色：
 >
 > - 跨集群搜索（Cross-cluster search）和跨集群副本（Cross-cluster replication）需要`remote_cluster_client`角色
 > - Stack Monitoring和ingest pipeline需要`ingest`角色
-> - Fleet，Elastic Security应用，和transforms需要`transform`角色。`remote_cluster_client`角色同样需要用于这些特性中的cross-cluster search
-> - Machine learning特性，比如异常检测（anomaly detection）需要`ml`角色
+> - Fleet，Elastic Security应用，和transforms需要`transform`角色。`remote_cluster_client`角色同样需要用于这些功能中的cross-cluster search
+> - Machine learning功能，比如异常检测（anomaly detection）需要`ml`角色
 
 &emsp;&emsp;随着集群的增长，特别是集群中有大规模的machine learning任务、continuous transforms，我们建议从专用的data node、machine learning node、transform node中分离出master-eligible节点。
 
@@ -1464,7 +1504,7 @@ PUT /_cluster/settings
 |             [Data node](#####Data node)             | 拥有`data`角色的节点，data node保留数据并且执行相关操作例如CRUD、查询、聚合。一个拥有`data`角色的节点可以添加任何其他特定的数据节点角色，例如hot 、warm等 |
 |           [Ingest node](#####Ingest node)           | 拥有`ingest`角色的节点，ingest node可以对文档进行[ingest pipeline](##Ingest pipelines)使得可以在索引前transform或者丰富文档。对于繁重的ingest，使用专用的ingest node并且让拥有`master`或者`data`角色的节点不要有`ingest`角色 |
 |  [Remote-eligible node](#####Remote-eligible node)  | 拥有`remote_cluster_client`角色的节点，使得这个节点有资格成为一个remote client |
-| [Machine learning node](#####Machine learning node) | 拥有`ml`角色的节点，如果你想要使用machine learning特性，你的集群中至少要有一个machine learning node。见[Machine learning settings](####Machine learning settings in Elasticsearch)和[Machine learning in the Elastic Stack](https://www.elastic.co/guide/en/machine-learning/8.2/index.html)了解更多信息 |
+| [Machine learning node](#####Machine learning node) | 拥有`ml`角色的节点，如果你想要使用machine learning功能，你的集群中至少要有一个machine learning node。见[Machine learning settings](####Machine learning settings in Elasticsearch)和[Machine learning in the Elastic Stack](https://www.elastic.co/guide/en/machine-learning/8.2/index.html)了解更多信息 |
 |        [Transform node](#####Transform node)        | 拥有`transform`角色的节点。如果想要使用transform，你的集群中至少要有一个transform node。见[Transforms settings](#####Transforms settings in Elasticsearch)和[Transforming data](###Transforming data)了解更多信息 |
 
 > NOTE：Coordinating node
@@ -4147,7 +4187,7 @@ PUT /my-index-000001
 
 &emsp;&emsp;Elasticsearch有时候需要replay在分片上执行的一些操作。例如，如果一个副本分片简单的offline了，相比较从头开始（from scratch）构造这个副本分片，只replay它在offline期间丢失的操作有着更高的效率。同样的，[cross-cluster replication](###Cross-cluster replication)的工作方式为：在leader cluster执行操作，然后在follower cluster上replay这些操作。
 
-&emsp;&emsp;Elasticsearch对索引的写操作在Lucene层来说只有[两个操作](https://www.amazingkoala.com.cn/Lucene/Index/2019/0626/68.html)：索引（添加）一篇文档或者删除现有的文档。更新操作的实现方式是先删除旧的文档然后索引一篇新的文档。索引一篇文档到Lucene的操作包含了所有用于replay的信息，但是对于文档的删除不是这样的。为了解决这个问题， Elasticsearch使用了名为`软删除`[soft deletes](https://www.amazingkoala.com.cn/Lucene/Index/2020/0616/148.html)的特性来保留Lucene索引上最近的删除信息，使得可以用于replay。
+&emsp;&emsp;Elasticsearch对索引的写操作在Lucene层来说只有[两个操作](https://www.amazingkoala.com.cn/Lucene/Index/2019/0626/68.html)：索引（添加）一篇文档或者删除现有的文档。更新操作的实现方式是先删除旧的文档然后索引一篇新的文档。索引一篇文档到Lucene的操作包含了所有用于replay的信息，但是对于文档的删除不是这样的。为了解决这个问题， Elasticsearch使用了名为`软删除`[soft deletes](https://www.amazingkoala.com.cn/Lucene/Index/2020/0616/148.html)的功能来保留Lucene索引上最近的删除信息，使得可以用于replay。
 
 &emsp;&emsp;Elasticsearch只保留索引中一些最近删除的文档，是因为软删除的文档仍然占用一些空间。Elasticsearch最终会完全的丢弃这些软删除的文档来释放空间使得索引不会随着时间一直增长。Elasticsearch不需要replay在分片上执行的每一个操作，因为总是有可能在remote cluster执行完整的分片拷贝。然而，复制整个分片可能比replay一些丢失的操作要花费更多的时间，所以Elasticsearch会保留期望在未来用于replay的所有操作。
 
@@ -4255,7 +4295,7 @@ PUT my-index-000001
   - `_last`：没有用于排序的域的文档排在最后面
   - `_first`：没有用于排序的域的文档排在最前面
 
-> WARNING：Index Sorting只有定义在创建索引时。不能对现有的索引添加或者更新排序。Index Sorting在索引期间有一定的开销，因为文档必须在flush和merge时进行排序。你应该在启动这个特性前测试下对你的应用的影响
+> WARNING：Index Sorting只有定义在创建索引时。不能对现有的索引添加或者更新排序。Index Sorting在索引期间有一定的开销，因为文档必须在flush和merge时进行排序。你应该在启动这个功能前测试下对你的应用的影响
 
 ##### Early termination of search request
 
@@ -4417,7 +4457,7 @@ GET /events/_search
 ### Dynamic mapping
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dynamic-mapping.html)
 
-&emsp;&emsp;Elasticsearch最重要的一个特性就是能够让你快速的去探索数据。索引一篇文档，你不需要首先创建一个索引，然后定义好mapping，接着定义每一个域，你只需要直接对一篇文档进行索引，索引名、类型、域都会自动的配置好。
+&emsp;&emsp;Elasticsearch最重要的一个功能就是能够让你快速的去探索数据。索引一篇文档，你不需要首先创建一个索引，然后定义好mapping，接着定义每一个域，你只需要直接对一篇文档进行索引，索引名、类型、域都会自动的配置好。
 
 ```text
 PUT data/_doc/1 
@@ -7379,7 +7419,7 @@ PUT my-index-000001
 ```
 
 >  WARNING：Think before disabling the \_source field
->  &emsp;&emsp;用户经常不考虑关闭`_source`域的后果然后会后悔这么做。如果`_source`域不可见那么下面的特性就没法支持：
+>  &emsp;&emsp;用户经常不考虑关闭`_source`域的后果然后会后悔这么做。如果`_source`域不可见那么下面的功能就没法支持：
 >
 >  - [update](####Update API)、[update_by_query](####Update By Query API)以及[reindex](####Reindex API)这些API
 >  - [On the fly highlighting](###Highlighting)
@@ -7391,7 +7431,7 @@ PUT my-index-000001
 
 ##### Including / Excluding fields from \_source
 
-&emsp;&emsp;这是expert-only的特性使得在`_source`的内容在索引之后、存储之前进行域的剪枝。
+&emsp;&emsp;这是expert-only的功能使得在`_source`的内容在索引之后、存储之前进行域的剪枝。
 
 > WARNING：从`_source`中移除一些域跟关闭`_source`有着类似的负面问题（downside），特别是你不能从一个Elasticsearch索引重新索引到另一个。可以考虑使用[source filtering](###Retrieve selected fields from a search) 来替代这种方式。
 
@@ -11419,12 +11459,12 @@ DELETE /_data_stream/my-data-stream
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-process.svg">
 
-&emsp;&emsp;你可以使用Kibana的**Ingest Pipelines** 特性或者[ingest APIS](###Ingest APIs)来管理ingest pipeline。Elasticsearch将pipeline存储在[cluster state](####Cluster state API)中。
+&emsp;&emsp;你可以使用Kibana的**Ingest Pipelines** 功能或者[ingest APIS](###Ingest APIs)来管理ingest pipeline。Elasticsearch将pipeline存储在[cluster state](####Cluster state API)中。
 
 #### Prerequisites(ingest pipeline)
 
 - 节点角色（node role）为[Ingest node](#####Ingest node)负责pipeline的处理。若要使用ingest pipeline，你的集群中必须至少有一个节点角色为`ingest`的节点。对于繁重的ingest负载，我们建议你创建一个[dedicated ingest nodes](#####Ingest node)
-- 如果开启了Elasticsearch security feature，你必须有`manage_pipeline`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。若要使用Kibana的**Ingest Pipeline** 特性，你也需要有`cluster:monitor/nodes/info`的cluster privilege。
+- 如果开启了Elasticsearch security feature，你必须有`manage_pipeline`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。若要使用Kibana的**Ingest Pipeline** 功能，你也需要有`cluster:monitor/nodes/info`的cluster privilege。
 
 #### Create and manage pipelines
 
@@ -11644,7 +11684,7 @@ PUT _ingest/pipeline/logs-my_app-default
 ```
 2. 创建一个[index template](##Index templates)，包含在index setting中设置的pipeline的[index.default_pipeline](#####index.default_pipeline)和[index.final_pipeline](#####index.final_pipeline)。保证模板中开启了[data stream](####Create an index template(data stream))。这个模板的index pattern应该匹配`logs-<dataset-name>-*`。
 
-&emsp;&emsp;你可以使用Kibana的[Index Management](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-mgmt.html#manage-index-templates)特性来[create index template API](####Create or update index template API)。
+&emsp;&emsp;你可以使用Kibana的[Index Management](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-mgmt.html#manage-index-templates)功能来[create index template API](####Create or update index template API)。
 
 &emsp;&emsp;例如，下面的请求创建了一个模板来匹配`logs-my_app-*`。这个模板使用了component template，它包含了`index.default_pipeline`这个index setting。
 
@@ -13807,7 +13847,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;例如，8.0的本地集群可以查询7.17和所有8.x的集群。然而，8.0的本地集群不能查询7.16或者6.8的集群。
 
-&emsp;&emsp;所有集群都有的特性才能被支持。在某个remote cluster使用某个不具备的特性会导致undefined behavior。
+&emsp;&emsp;所有集群都有的功能才能被支持。在某个remote cluster使用某个不具备的功能会导致undefined behavior。
 
 &emsp;&emsp;CCS中使用了不支持的配置可能可以正常工作。然而，Elastic没有测试过这种查询，不能保证其行为能正确工作。
 
@@ -14443,7 +14483,7 @@ GET /_search
 &emsp;&emsp;你可以使用`query_string` query创建一个包含通配符，跨多个域以及更多信息的复杂查询。虽然通用（versatile），但这个query很严格，如果query string中包含任何无效语法，则返回错误。
 
 >WARNING：由于任意非法语法都会导致这个query返回错误，我们不建议在搜索框（search boxes）中使用`query_string`中使用这个查询。
->如果你不需要支持query syntax，可以考虑使用[match query](####Match query)。如果你需要query syntax的特性，可以使用[simple_query_string](####Simple query string query)，这种query没有那么严格的语法。
+>如果你不需要支持query syntax，可以考虑使用[match query](####Match query)。如果你需要query syntax的功能，可以使用[simple_query_string](####Simple query string query)，这种query没有那么严格的语法。
 
 ##### Example request
 
@@ -15556,7 +15596,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;在你创建索引时可以手动应用一个生命周期策略。对于时序索引（time series indices），你需要用index template在时序中创建新的索引，并且将生命周期策略关联到index template。当转存（rollover）索引时，手动应用的策略不会自动应用到新索引。
 
-&emsp;&emsp;如果你使用Elasticsearch的安全特性。ILM将以最后更新策略的用户的身份执行操作。ILM only has the [roles](####Defining roles) assigned to the user at the time of the last policy update。
+&emsp;&emsp;如果你使用Elasticsearch的安全功能。ILM将以最后更新策略的用户的身份执行操作。ILM only has the [roles](####Defining roles) assigned to the user at the time of the last policy update。
 
 ##### Phase transitions
 
@@ -17229,7 +17269,7 @@ node.roles: ["data_hot", "data_content"]
 ## Monitor a cluster
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/monitor-elasticsearch-cluster.html)
 
-&emsp;&emsp;Elastic Stack monitoring特性提供了一种可以随时了解（keep a pulse）Elasticsearch集群健康跟性能的方法。
+&emsp;&emsp;Elastic Stack monitoring功能提供了一种可以随时了解（keep a pulse）Elasticsearch集群健康跟性能的方法。
 
 - [Overview](###Monitoring overview)
 - [How it works](###How monitoring works)
@@ -17314,7 +17354,7 @@ PUT _cluster/settings
 }
 ```
 
-&emsp;&emsp;b. 如果监控集群上开启了Elasticsearch Security特性，创建好有权限发送以及查询监控数据的用户。
+&emsp;&emsp;b. 如果监控集群上开启了Elasticsearch Security功能，创建好有权限发送以及查询监控数据的用户。
 
 > NOTE: 如果你计划使用Kibana查看监控数据。在Kibana服务和监控集群上的用户名密码都必须要合法。
 
@@ -17390,7 +17430,7 @@ POST /_security/user/remote_monitor
 
 &emsp;&emsp;保留历史数据用于分析是非常实用的，但由于归档大量的数据带来的财政开销（financial cost）而不会保留。因此保留时间由财政现实（financial realities）决定而不是根据历史数据的用处。
 
-&emsp;&emsp;Elastic Stack的rollup特性提供一个汇总（summarize ）和存储历史数据的方法，使得历史数据仍然可以用于分析，但只有原始数据（raw data）所需的存储开销的一小部分（a fraction of the storage cost）。
+&emsp;&emsp;Elastic Stack的rollup功能提供一个汇总（summarize ）和存储历史数据的方法，使得历史数据仍然可以用于分析，但只有原始数据（raw data）所需的存储开销的一小部分（a fraction of the storage cost）。
 
 - [Overview](####Rollup overview)
 - [Getting started](####Getting started with rollups)
@@ -17418,21 +17458,21 @@ POST /_security/user/remote_monitor
 
 &emsp;&emsp;比如说一个每天生成4300万文档的系统，每一秒的数据对实时分析是很实用的，但是查看超过 10 年数据的历史分析可能只在更大的时间间隔内起作用，例如每小时或每天的趋势。
 
-&emsp;&emsp;如果我们把4300篇文档按小时进行汇总，我们就可以节省大量的空间。Rollup特性会对历史数据进行自动的汇总。
+&emsp;&emsp;如果我们把4300篇文档按小时进行汇总，我们就可以节省大量的空间。Rollup功能会对历史数据进行自动的汇总。
 
 &emsp;&emsp;见[Create Job API](####Create rollup jobs API)详细了解Rollup的设置跟配置。
 
 ##### Rollup uses standard Query DSL
 
-&emsp;&emsp;Rollup特性提供了新的search endpoint（`_rollup_search` vs 标准的`/_search`），这个endpoint知道如何查询rolled-up的数据。重要的是，这个endpoint接受100%普通的（normal）Elasticsearch Query DSL。你的应用不需要学习新的DSL来inspect历史数据，很容易重新使用现有的查询跟dashboard。
+&emsp;&emsp;Rollup功能提供了新的search endpoint（`_rollup_search` vs 标准的`/_search`），这个endpoint知道如何查询rolled-up的数据。重要的是，这个endpoint接受100%普通的（normal）Elasticsearch Query DSL。你的应用不需要学习新的DSL来inspect历史数据，很容易重新使用现有的查询跟dashboard。
 
-&emsp;&emsp;这个功能也是有一些限制。不是所有的查询和聚合都支持的，一些查询特性（高亮）被禁用了并且可以使用的域（available fields）取决于Rollup的配置。更多的限制见[Rollup Search limitations](####Rollup search limitations)。
+&emsp;&emsp;这个功能也是有一些限制。不是所有的查询和聚合都支持的，一些查询功能（高亮）被禁用了并且可以使用的域（available fields）取决于Rollup的配置。更多的限制见[Rollup Search limitations](####Rollup search limitations)。
 
 &emsp;&emsp;But if your queries, aggregations and dashboards only use the available functionality, redirecting them to historical data is trivial。
 
 ##### Rollup merges "live" and "rolled" data
 
-&emsp;&emsp;Rollup的另一个实用的特性是可以在同一个查询中同时查询"live"实时数据和历史的"rollup"数据。
+&emsp;&emsp;Rollup的另一个实用的功能是可以在同一个查询中同时查询"live"实时数据和历史的"rollup"数据。
 
 &emsp;&emsp;比如说你的系统保留了一个月的原始数据（raw data）。一个月后，这些数据被rollup到历史汇总（historical summarizes）数据中并且原始数据会被删除。
 
@@ -17440,7 +17480,7 @@ POST /_security/user/remote_monitor
 
 ##### Rollup is multi-interval aware
 
-&emsp;&emsp;最后，Rollup能够智能地利用可用的最佳间隔。如果你使用过其他产品的汇总特性（summarizing Feature），你会发现其局限性。比如如果配置了按天为间隔的rollup，那么你只能基于按天来进行查询或者出图表。如果你需要每月间隔，则必须显示的（explicit）创建另一个存储每月平均值的汇总。
+&emsp;&emsp;最后，Rollup能够智能地利用可用的最佳间隔。如果你使用过其他产品的汇总功能（summarizing Feature），你会发现其局限性。比如如果配置了按天为间隔的rollup，那么你只能基于按天来进行查询或者出图表。如果你需要每月间隔，则必须显示的（explicit）创建另一个存储每月平均值的汇总。
 
 &emsp;&emsp;Rollup功能可以通过按照最小的可用的间隔进行存储，并且依次来进行处理。如果你rollup了按天的数据，那么可以执行按天或者更长间隔的查询（按周、按月、按年等等）而不用显示的去配置一个新的rollup任务。这有助于缓解（alleviate）汇总系统的主要缺点之一：相对于原始数据的灵活性的降低。
 
@@ -17478,7 +17518,7 @@ POST /_security/user/remote_monitor
 
 > WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
 
-&emsp;&emsp;你需要创建一个或多个"Rollup jobs"来使用rollup特性。这些job会在后台持续不断的运行，将你指定的index或者indices进行rollup操作。那些被rolled的文档会被放到二级索引（secondary index）中。
+&emsp;&emsp;你需要创建一个或多个"Rollup jobs"来使用rollup功能。这些job会在后台持续不断的运行，将你指定的index或者indices进行rollup操作。那些被rolled的文档会被放到二级索引（secondary index）中。
 
 &emsp;&emsp;比如你有一些按天记录传感器数据的索引（daily indices）（比如说`sensor-2017-01-01`, `sensor-2017-01-02`）。示例文档如下所示：
 
@@ -17542,7 +17582,7 @@ PUT _rollup/job/sensor
 > Averages aren’t composable?!
 > 如果你之前使用过rollup，那么使用Average的时候要注意了。如果average用于计算10分钟的间隔，通常来说average就不能用于更大间隔的计算。你不能用简单的10分钟的average * 6 来计算以一个小时为间隔的average。the average of averages is not equal to the total average。
 > 由于这个原因，其他的系统会试图omit计算average的能力或者存储多个不同的时间间隔来支持更多的灵活的查询。
-> 然而在rollup特性中会根据定义的时间间隔来保存对应的`count`和`sum`。使得当时间间隔大于或等于定义的时间间隔后我们可以重新来计算。这就给予了使用最小的存储开销来实现最大化的灵活性。所以你不用担心average的精确度（no average of averages here!）。
+> 然而在rollup功能中会根据定义的时间间隔来保存对应的`count`和`sum`。使得当时间间隔大于或等于定义的时间间隔后我们可以重新来计算。这就给予了使用最小的存储开销来实现最大化的灵活性。所以你不用担心average的精确度（no average of averages here!）。
 
 &emsp;&emsp;见[Create rollup jobs](####Create rollup jobs API)了解更多关于job语法的信息。
 
@@ -17566,7 +17606,7 @@ POST _rollup/job/sensor/_start
 
 ##### Searching the rolled results
 
-&emsp;&emsp;在job运行并处理了一些数据后，我们就可以通过[Rollup search](####Rollup search) endpoint来做一些查询了。Rollup特性被设计为你可以使用你习惯了的Query DSL进行查询，只不过是在rolled up的数据上进行查询。
+&emsp;&emsp;在job运行并处理了一些数据后，我们就可以通过[Rollup search](####Rollup search) endpoint来做一些查询了。Rollup功能被设计为你可以使用你习惯了的Query DSL进行查询，只不过是在rolled up的数据上进行查询。
 
 &emsp;&emsp;例如执行这个查询：
 
@@ -18142,14 +18182,14 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 #### When to use transforms
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-usage.html)
 
-&emsp;&emsp;Elasticsearch的aggregation是一个强有力并且非常灵活的特性，可以让你汇总（summarize）并且检索出你的数据中的complex insight。你可以在一个busy website上汇总每天请求网页的数量这类复杂的事情，并可以按地理位置和浏览器类型细分（break down）。 如果你使用相同的数据集来尝试计算一些东西比如说计算页面访问的会话（visitor web session）的平均时间，然而，这样很快会出现OOM。
+&emsp;&emsp;Elasticsearch的aggregation是一个强有力并且非常灵活的功能，可以让你汇总（summarize）并且检索出你的数据中的complex insight。你可以在一个busy website上汇总每天请求网页的数量这类复杂的事情，并可以按地理位置和浏览器类型细分（break down）。 如果你使用相同的数据集来尝试计算一些东西比如说计算页面访问的会话（visitor web session）的平均时间，然而，这样很快会出现OOM。
 
 &emsp;&emsp;为什么会发生OOM呢？网页会话（web session）的持续时间是behavior attribute的一个例子，它不被记录于任何一条日志中。只有从weblogs中找到每一个session的第一条跟最后一条才能衍生出来。这种衍生（derivation）数据要求复杂的查询表达式以及很多的内存来连接（connect）所有指向的数据。如果你有一个持续处理的后台程序将相关的事件融合（fuse）到entity-centric并汇总到另一个索引，你就可以得到一个更实用、连贯的图（joined-up picture）。这个新索引有时被称为数据帧（data frame）。
 
 &emsp;&emsp;当出现下面的需求时，你应该要使用transforms而不是aggregation：
 
 - 你需要一个复杂的特征索引（feature index）而不是top-N的集合
-  - 在机器学习中，你通常需要一个复杂的behavioral feature的集合而不是top-N。 如果你要预测客户流失（customer churn），你可能需要观察例如上一周网页访问数量、销售量、或者邮件发出的数量（the number of emails sent）。Elastic Stack的机器学习特性（machine learning feature）会创建基于多维特性空间（multi-dimensional feature space）的模型，就可以受益于由transforms创建的全特征索引（full feature index）
+  - 在机器学习中，你通常需要一个复杂的behavioral feature的集合而不是top-N。 如果你要预测客户流失（customer churn），你可能需要观察例如上一周网页访问数量、销售量、或者邮件发出的数量（the number of emails sent）。Elastic Stack的机器学习功能（machine learning feature）会创建基于多维特性空间（multi-dimensional feature space）的模型，就可以受益于由transforms创建的全特征索引（full feature index）
   - 这个场景同样可以应用于跨一个或多个聚合结果进行查询。聚合结果可以被排序或者过滤，但是会受到返回的分桶数量上限的约束（constraint），见[limitations to ordering](####Terms aggregation)和[filtering by bucket selector](####Bucket selector aggregation)。如果你想要查询所有的聚合结果，你需要创建完整的数据帧（data frame）。如果你需要根据多个域对聚合结果进行排序或者过滤，那么transforms就特别的有用。
 - 你需要通过pipeline aggregation对聚合结果进行排序
   - [Pipeline aggregations](###Pipeline aggregations)不能用于排序。技术上来说这是因为pipeline aggregation是在所有的聚合已经完成后的reduce phase期间运行的。如果你创建了一个transforms，你可以有效的对多个数据进行传递。
@@ -18159,9 +18199,9 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 #### Generating alerts for transforms
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-alerts.html)
 
->WARNING：该功能处于beta测试阶段，可能会发生变化。设计跟代码相比较官方的GA（general availability）特性是不成熟的，原样的提供了这个功能但没有任何的保证（warranty）。Beta特性不受官方GA特性的支持SLA的限制。
+>WARNING：该功能处于beta测试阶段，可能会发生变化。设计跟代码相比较官方的GA（general availability）功能是不成熟的，原样的提供了这个功能但没有任何的保证（warranty）。Beta功能不受官方GA功能的支持SLA的限制。
 
-&emsp;&emsp;Kibana的告警特性（alerting feature）中支持transforms的规则，它会基于某些条件来检查连续的transforms的运行状况（the healthy of continuous transforms）。如果满足规则中的条件，会创建一条规则并且触发相关的action。您可以创建一个规则来检查连续的transforms是否已经启动，如果没有启动，则通过电子邮件通知你。参考[Alerting](https://www.elastic.co/guide/en/kibana/8.2/alerting-getting-started.html#alerting-getting-started)了解更多关于Kibana alerting feature的内容。
+&emsp;&emsp;Kibana的告警功能（alerting feature）中支持transforms的规则，它会基于某些条件来检查连续的transforms的运行状况（the healthy of continuous transforms）。如果满足规则中的条件，会创建一条规则并且触发相关的action。您可以创建一个规则来检查连续的transforms是否已经启动，如果没有启动，则通过电子邮件通知你。参考[Alerting](https://www.elastic.co/guide/en/kibana/8.2/alerting-getting-started.html#alerting-getting-started)了解更多关于Kibana alerting feature的内容。
 
 &emsp;&emsp;目前可用的transforms规则如下所示：
 
@@ -18208,7 +18248,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 #### Working with transforms at scale
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-scale.html)
 
-&emsp;&emsp;Transforms将现有的Elasticsearch索引转化到汇总索引中（summarized indices），使得有机会用于new insight和数据分析。transforms中的查询和索引操作都使用了标准的Elasticsearch特性，所以在大规模（at scale）使用transforms时需要考虑的事项跟使用标准的Elasticsearch查询是相似的（similar）。如果你遇到了性能问题（performance issue），可以先从明确好瓶颈区域（bottleneck areas）（查询、索引、运行或者存储），然后再看下本章节中提高的需要考虑的相关事项来提高性能。本章节的内容还有助于理解transforms是如何工作的，因为根据transforms是在连续模式下运行还是在批处理模式下（in continuous mode or in batch）运行，应用了不同的考虑事项。
+&emsp;&emsp;Transforms将现有的Elasticsearch索引转化到汇总索引中（summarized indices），使得有机会用于new insight和数据分析。transforms中的查询和索引操作都使用了标准的Elasticsearch功能，所以在大规模（at scale）使用transforms时需要考虑的事项跟使用标准的Elasticsearch查询是相似的（similar）。如果你遇到了性能问题（performance issue），可以先从明确好瓶颈区域（bottleneck areas）（查询、索引、运行或者存储），然后再看下本章节中提高的需要考虑的相关事项来提高性能。本章节的内容还有助于理解transforms是如何工作的，因为根据transforms是在连续模式下运行还是在批处理模式下（in continuous mode or in batch）运行，应用了不同的考虑事项。
 
 &emsp;&emsp;在这一章节中，你可以学习到：
 
@@ -19272,7 +19312,7 @@ POST _transform/_preview
 
 ##### Getting time features by using aggregations
 
-&emsp;&emsp;下面的这个片段（snippet）用来展示如何在transform中使用Painless提取time的特性。片段中使用的`@timestamp`域被定义为了date类型。
+&emsp;&emsp;下面的这个片段（snippet）用来展示如何在transform中使用Painless提取time的功能。片段中使用的`@timestamp`域被定义为了date类型。
 
 ```java
 "aggregations": {
@@ -19483,7 +19523,7 @@ POST _transform/_preview
 
 ##### Getting web session details by using scripted metric aggregation
 
-&emsp;&emsp;这个例子展示的是如何从一个transform中衍生（derive）出多个特性。让我们先看下原数据：
+&emsp;&emsp;这个例子展示的是如何从一个transform中衍生（derive）出多个功能。让我们先看下原数据：
 
 ```text
 {
@@ -19650,7 +19690,7 @@ POST _transform/_preview
 #### Transform limitations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-limitations.html)
 
-&emsp;&emsp;下文中的局限性和已知问题适用于8.2.3版本的Elastic transform特性。局限性按下面几种进行分类：
+&emsp;&emsp;下文中的局限性和已知问题适用于8.2.3版本的Elastic transform功能。局限性按下面几种进行分类：
 
 - [Configuration limitations](#####Configuration limitations)适用于transform的配置过程
 - [Operational limitations](#####Operational limitations)适用于影响运行中的transform的行为
@@ -19780,7 +19820,7 @@ POST _transform/_preview
 ## Set up a cluster for high availability
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/high-availability.html)
 
-&emsp;&emsp;你的数据对你来说很重要。让数据保持安全以及可见性对Elasticsearch来说很重要。有时候你的集群可能会经历硬件错误或者断电。为了帮助你对付这类事件，Elasticsearch提供了一些特性实现高可用。
+&emsp;&emsp;你的数据对你来说很重要。让数据保持安全以及可见性对Elasticsearch来说很重要。有时候你的集群可能会经历硬件错误或者断电。为了帮助你对付这类事件，Elasticsearch提供了一些功能实现高可用。
 
 - 通过适当的规划，可以对一个集群[design for resilience](###Designing for resilience)以应对许多通常出错的事情，从单个节点或网络连接的丢失到区域范围的中断（outage），比如断电。
 - 你可以使用[cross-cluster replication](###Cross-cluster replication)让远程的follower cluster拥有副本数据（replicate data）。follower cluster可能是一个不同的数据中心或者相对于leader cluster在不同的陆地上（continent）。follower cluster一方面扮演热备（hot standby）的角色，时刻为leader cluster发生灾难事件时做好故障转移（fail over），另一个方面也扮演了geo-replica来为附近的客户服务。
@@ -19835,7 +19875,7 @@ POST _transform/_preview
 ##### Two-node clusters
 
 &emsp;&emsp;如果你有两个节点，我们建议这两个节点都是数据节点。你应该保证在两个节点上都保留着冗余数据，通过在每一个索引上设置[index.number_of_replicas](#####index.number_of_replicas)为`1`，这些索引不是一个[ searchable snapshot index](##Searchable snapshots)，以上都是默认的行为但是可以通过[index template](##Index templates
-)覆盖。[Auto-expand relicas](#####index.auto_expand_replicas)能达到同样的目的，但是不建议在这种规模的集群上使用这个特性。
+)覆盖。[Auto-expand relicas](#####index.auto_expand_replicas)能达到同样的目的，但是不建议在这种规模的集群上使用这个功能。
 
 &emsp;&emsp;我们建议在这两个节点的其中一个节点上设置`node.master: false`使得这个节点不是[master-eligible](##### Master-eligible node)。这样你可以知道哪个节点会被选为集群的master节点。这个集群容忍不是master-eligible的节点的丢失。如果你不在其中一个节点上设置`node.master:false`，两个节点都是master-eligible。这意味着这两个节点要求master的选举。由于如果任一节点不可用，选举将失败，因此你的集群无法可靠地容忍任一节点的丢失。
 
@@ -19896,7 +19936,7 @@ POST _transform/_preview
 
 &emsp;&emsp;没法指定一个健康运行的Elasticsearch所需要的最低网络性能。理论上，即使节点间的往返延迟有上百毫秒的延迟，集群也能正常工作。在实践中，缓慢的网络会导致很差的集群性能。另外缓慢的网络通常是不可靠的并且会发生网络分区导致间断性的不可用。
 
-&emsp;&emsp;如果多个数据中心间相隔很远（further apart）或者连接不好并且还要希望数据可见，可以在每一个数据中心内部署一个额外的集群，使用 [cross-cluster search](###Search across clusters)或者 [cross-cluster replication](###Cross-cluster replication)来连接集群。这些特性使得，相比较集群内，即使集群间有更低的可靠性以及性能也能较好的运行。
+&emsp;&emsp;如果多个数据中心间相隔很远（further apart）或者连接不好并且还要希望数据可见，可以在每一个数据中心内部署一个额外的集群，使用 [cross-cluster search](###Search across clusters)或者 [cross-cluster replication](###Cross-cluster replication)来连接集群。这些功能使得，相比较集群内，即使集群间有更低的可靠性以及性能也能较好的运行。
 
 &emsp;&emsp;在丢失了一个区域内所有的节点后，一个设计合理的集群可能会正常运行（functional），只是大大的降低了capacity（significantly reduced capacity）。当出现这个故障后你需要提供（provision）额外的节点恢复到可接受的性能。
 
@@ -20630,7 +20670,7 @@ Cluster A
 
 #### Prerequisites
 
-- 若要使用Kibana的**Snapshot and Restore**特性，你必须要有以下的权限（permission）：
+- 若要使用Kibana的**Snapshot and Restore**功能，你必须要有以下的权限（permission）：
   - [Cluster  privilege](#####Cluster privileges)：`monitor`, `manage_slm`, `cluster:admin/snapshot` 以及 `cluster:admin/repository`
   - [Index privilege](#####Indices privileges)：`all` on the `monitor` 索引
 - 你只可以在选举为[master](#####Master-eligible node)的节点上对运行中的集群创建快照
@@ -21415,7 +21455,7 @@ GET index/_search
 
 &emsp;&emsp;This is not something that is easy to expose to end users，我们需要找出一个方法来知道用户是想要查找一个精确匹配（exact match），如果不是的话我们就重定向到一个合适的域。还需要考虑的是如果查询中的一部分需要精确匹配而其他部分仍然要stemming？
 
-&emsp;&emsp;幸运的是，`query_string`和`simple_query_string`有一个特性来解决这个exact problem: `quote_field_suffix`。这个参数会告诉Elasticsearch被双引号包起来的词需要重定向到另一个不同的域，如下所示：
+&emsp;&emsp;幸运的是，`query_string`和`simple_query_string`有一个功能来解决这个exact problem: `quote_field_suffix`。这个参数会告诉Elasticsearch被双引号包起来的词需要重定向到另一个不同的域，如下所示：
 
 ```text
 GET index/_search
@@ -21498,7 +21538,7 @@ GET index/_search
 #### Incorporating static relevance signals into the score
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/static-scoring-signals.html)
 
-&emsp;&emsp;有些领域具有static single并且它跟相关性有关。比如说[PageRank](https://en.wikipedia.org/wiki/PageRank)跟url长度都是用于web查询的两个通用的特性来调整对网页的打分，并且独立于查询条件。
+&emsp;&emsp;有些领域具有static single并且它跟相关性有关。比如说[PageRank](https://en.wikipedia.org/wiki/PageRank)跟url长度都是用于web查询的两个通用的功能来调整对网页的打分，并且独立于查询条件。
 
 &emsp;&emsp;目前有两种查询允许对静态分数跟文本相关性进行组合。比如跟BM25一起打分：
 
@@ -22873,7 +22913,7 @@ PUT _cluster/settings
 ### Use Elasticsearch for time series data
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/use-elasticsearch-for-time-series-data.html#search-visualize-your-data)
 
-&emsp;&emsp;Elasticsearch提供的特性能帮助你存储，管理，以及搜索时序数据，例如日志和指标。使用了Elasticsearch后，你可以使用Kibana和其他Elastic Stack来分析以及可视化你的数据。
+&emsp;&emsp;Elasticsearch提供的功能能帮助你存储，管理，以及搜索时序数据，例如日志和指标。使用了Elasticsearch后，你可以使用Kibana和其他Elastic Stack来分析以及可视化你的数据。
 
 #### Set up data tiers
 
@@ -23190,7 +23230,7 @@ POST my-data-stream/_doc
 
 &emsp;&emsp;若要在Kibana中展示并且查询你的数据。打开主菜单然后选择**Discover**。见Kibana的[Discover documentation](https://www.elastic.co/guide/en/kibana/8.2/discover.html)。
 
-&emsp;&emsp;使用Kibana的**Dashboard**特性，在图表、表格、地图中可视化你的数据。见Kibana的[Discover documentation](https://www.elastic.co/guide/en/kibana/8.2/discover.html)。
+&emsp;&emsp;使用Kibana的**Dashboard**功能，在图表、表格、地图中可视化你的数据。见Kibana的[Discover documentation](https://www.elastic.co/guide/en/kibana/8.2/discover.html)。
 
 &emsp;&emsp;你也可以使用[search API](####Search API)查询或者聚合你的数据。使用[runtime fields ](####Define runtime fields in a search request)和[grok patterns ](###Grok basics)自动的在查询阶段从日志消息和其他非结构化数据中提取数据。
 
@@ -23643,7 +23683,7 @@ PUT _template/template_1
 
 ##### Prerequisites
 
-- 如果开启了Elasticsearch security特性，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
