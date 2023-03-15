@@ -14085,6 +14085,102 @@ GET /my-index-000001/_search?max_concurrent_shard_requests=3
 ### Search templates
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template.html)
 
+&emsp;&emsp;search template一种查询模版并且保存在Elasticsearch中-，你可以使用不同的变量覆盖search template中的变量。
+
+&emsp;&emsp;如果你使用Elasticsearch作为查询后端（search backend），你可以把用户在搜索框的输入作为search template的变量。这使得你不需要将Elasticsearch的查询语法暴露给用户而执行查询。
+
+&emsp;&emsp;如果你使用Elasticsearch用于自定义的应用，search template可以让你在不更改你的应用代码的情况下修改你的查询（DSL）。
+
+#### Create a search template
+
+&emsp;&emsp;可以使用[create stored script API](####Create or update stored script API)创建或者更新一个search template。
+
+&emsp;&emsp;请求中的`source`支持[search API](####Search API)的请求body中相同的参数。`source`同样支持[Mustache](https://mustache.github.io/)变量，通常用双括号包裹：`{{my-var}}`。当你允许某个template search，Elasticsearch会使用`params`中的值替换这些变量。
+
+&emsp;&emsp;search template必须使用`mustache`语法。
+
+&emsp;&emsp;下面的请求创建了一个`id`为`my-search-template`的search template。
+
+```text
+PUT _scripts/my-search-template
+{
+  "script": {
+    "lang": "mustache",
+    "source": {
+      "query": {
+        "match": {
+          "message": "{{query_string}}"
+        }
+      },
+      "from": "{{from}}",
+      "size": "{{size}}"
+    },
+    "params": {
+      "query_string": "My query string"
+    }
+  }
+}
+```
+
+&emsp;&emsp;Elasticsearch存储search template作为集群状态中的Mustache [scripts](##Scripting)。Elasticsearch在`template` script context中编译search template。设置中限制或者关闭script同样会影响search template。
+
+#### Validate a search template
+
+&emsp;&emsp;使用[render search template API](####Render search template API)以及不同的`params`测试一个模板。
+
+```text
+POST _render/template
+{
+  "id": "my-search-template",
+  "params": {
+    "query_string": "hello world",
+    "from": 20,
+    "size": 10
+  }
+}
+```
+
+&emsp;&emsp;替换变量后（rendered），template输出一个[search request body](####Search API)。
+
+```text
+{
+  "template_output": {
+    "query": {
+      "match": {
+        "message": "hello world"
+      }
+    },
+    "from": "20",
+    "size": "10"
+  }
+}
+```
+
+&emsp;&emsp;你也可以使用API来测试inline template。
+
+```text
+POST _render/template
+{
+    "source": {
+      "query": {
+        "match": {
+          "message": "{{query_string}}"
+        }
+      },
+      "from": "{{from}}",
+      "size": "{{size}}"
+    },
+  "params": {
+    "query_string": "hello world",
+    "from": 20,
+    "size": 10
+  }
+}
+```
+
+#### Run a templated search
+
+
 ### Sort search results
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-search-results.html)
 
@@ -24065,6 +24161,12 @@ POST /my_source_index/_split/my_target_index
 #### Stop rollup jobs API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-stop-job.html)
 
+### Script APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-apis.html)
+
+#### Create or update stored script API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-stored-script-api.html#create-stored-script-api)
+
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
 
@@ -24225,6 +24327,9 @@ GET /_search
 
 #### Multi search template API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-search-template.html)
+
+#### Render search template API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/render-search-template-api.html)
 
 #### Search shards API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-shards.html)
