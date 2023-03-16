@@ -14083,7 +14083,7 @@ GET /my-index-000001/_search?max_concurrent_shard_requests=3
 &emsp;&emsp;你也可以使用集群设置`action.search.shard_count.limit`来限制查询命中的分片数量，在命中太多分片后就reject这个请求。你可以使用[cluster settings API](####Cluster update settings API)来配置`action.search.shard_count.limit`。
 
 ### Search templates
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template.html)
 
 &emsp;&emsp;search template一种查询模版并且保存在Elasticsearch中-，你可以使用不同的变量覆盖search template中的变量。
 
@@ -14179,6 +14179,438 @@ POST _render/template
 ```
 
 #### Run a templated search
+
+&emsp;&emsp;可以使用[search template API](####Search template API)运行一个search template。你可以在每一次的请求中指定不同的`params`。
+
+```text
+GET my-index/_search/template
+{
+  "id": "my-search-template",
+  "params": {
+    "query_string": "hello world",
+    "from": 0,
+    "size": 10
+  }
+}
+```
+
+&emsp;&emsp;响应中返回的属性跟[search API](####Search API)的响应是一样的。
+
+```text
+{
+  "took": 36,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 0.5753642,
+    "hits": [
+      {
+        "_index": "my-index",
+        "_id": "1",
+        "_score": 0.5753642,
+        "_source": {
+          "message": "hello world"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Run multiple templated searches
+
+&emsp;&emsp;可以使用[multi search template API](####Multi search template API)在单个请求中运行多个template search。相比较多个独立的请求，这种方式的请求的开销更小并且速度更快。
+
+```text
+GET my-index/_msearch/template
+{ }
+{ "id": "my-search-template", "params": { "query_string": "hello world", "from": 0, "size": 10 }}
+{ }
+{ "id": "my-other-search-template", "params": { "query_type": "match_all" }}
+```
+
+#### Get search templates
+
+&emsp;&emsp;可以使用[get stored script API](####Get stored script API)检索search template。
+
+```text
+GET _scripts/my-search-template
+```
+
+&emsp;&emsp;可以使用[cluster state API](####Cluster state API)获取所有的search template列表以及其他存储的脚本。
+
+```text
+GET _cluster/state/metadata?pretty&filter_path=metadata.stored_scripts
+```
+
+#### Delete a search template
+
+&emsp;&emsp;可以使用[delete stored script API](####Delete stored script API)删除一个search template。
+
+```text
+DELETE _scripts/my-search-template
+```
+
+#### Set default values
+
+&emsp;&emsp;使用下面的语法为变量设置一个默认值：
+
+```text
+{{my-var}}{{^my-var}}default value{{/my-var}}
+```
+
+&emsp;&emsp;如果某个template search中没有在`params`中指定一个值，那么查询会使用默认值。例如，下面的template中为`from`和`size`设置了默认值。
+
+```text
+POST _render/template
+{
+  "source": {
+    "query": {
+      "match": {
+        "message": "{{query_string}}"
+      }
+    },
+    "from": "{{from}}{{^from}}0{{/from}}",
+    "size": "{{size}}{{^size}}10{{/size}}"
+  },
+  "params": {
+    "query_string": "hello world"
+  }
+}
+```
+
+#### URL encode strings
+
+&emsp;&emsp;使用`{{#url}}`功能进行URL编码。
+
+```text
+POST _render/template
+{
+  "source": {
+    "query": {
+      "term": {
+        "url.full": "{{#url}}{{host}}/{{page}}{{/url}}"
+      }
+    }
+  },
+  "params": {
+    "host": "http://example.com",
+    "page": "hello-world"
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output": {
+    "query": {
+      "term": {
+        "url.full": "http%3A%2F%2Fexample.com%2Fhello-world"
+      }
+    }
+  }
+}
+```
+
+#### Concatenate values
+
+&emsp;&emsp;使用`{{#join}}`功能对数组里面的值用逗号拼接。例如下面的例子中拼接了两个email地址。
+
+```text
+POST _render/template
+{
+  "source": {
+    "query": {
+      "match": {
+        "user.group.emails": "{{#join}}emails{{/join}}"
+      }
+    }
+  },
+  "params": {
+    "emails": [ "user1@example.com", "user_one@example.com" ]
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output": {
+    "query": {
+      "match": {
+        "user.group.emails": "user1@example.com,user_one@example.com"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;你也可以自定义指定一个分隔符。
+
+```text
+POST _render/template
+{
+  "source": {
+    "query": {
+      "range": {
+        "user.effective.date": {
+          "gte": "{{date.min}}",
+          "lte": "{{date.max}}",
+          "format": "{{#join delimiter='||'}}date.formats{{/join delimiter='||'}}"
+	      }
+      }
+    }
+  },
+  "params": {
+    "date": {
+      "min": "2098",
+      "max": "06/05/2099",
+      "formats": ["dd/MM/yyyy", "yyyy"]
+    }
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output": {
+    "query": {
+      "range": {
+        "user.effective.date": {
+          "gte": "2098",
+          "lte": "06/05/2099",
+          "format": "dd/MM/yyyy||yyyy"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Convert to JSON
+
+&emsp;&emsp;使用`{{#toJson}}`功能将变量值用JSON表示。
+
+&emsp;&emsp;例如，下面的template中使用`{{#toJson}}`传递一个数组。为了保证请求体式一个合法的JSON，`source`的值需要为一个string format。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": { \"terms\": { \"tags\": {{#toJson}}tags{{/toJson}} }}}",
+  "params": {
+    "tags": [
+      "prod",
+      "es01"
+    ]
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output": {
+    "query": {
+      "terms": {
+        "tags": [
+          "prod",
+          "es01"
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;你也可以`{{#toJson}}`传递object。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": {{#toJson}}my_query{{/toJson}} }",
+  "params": {
+    "my_query": {
+      "match_all": { }
+    }
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output" : {
+    "query" : {
+      "match_all" : { }
+    }
+  }
+}
+```
+
+&emsp;&emsp;你也可以传递一个object数组。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": { \"bool\": { \"must\": {{#toJson}}clauses{{/toJson}} }}}",
+  "params": {
+    "clauses": [
+      {
+        "term": {
+          "user.id": "kimchy"
+        }
+      },
+      {
+        "term": {
+          "url.domain": "example.com"
+        }
+      }
+    ]
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output": {
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "user.id": "kimchy"
+            }
+          },
+          {
+            "term": {
+              "url.domain": "example.com"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+#### Use conditions
+
+&emsp;&emsp;使用下面的语法来根据条件进行创建：
+
+```text
+{{#condition}}content{{/condition}}
+```
+
+&emsp;&emsp;如果条件变量为`true`。Elasticsearch会展示内容。例如，如果`year_scope`的值为`true`，下面的template search中会选择过去一年的数据。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": { \"bool\": { \"filter\": [ {{#year_scope}} { \"range\": { \"@timestamp\": { \"gte\": \"now-1y/d\", \"lt\": \"now/d\" } } }, {{/year_scope}} { \"term\": { \"user.id\": \"{{user_id}}\" }}]}}}",
+  "params": {
+    "year_scope": true,
+    "user_id": "kimchy"
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output" : {
+    "query" : {
+      "bool" : {
+        "filter" : [
+          {
+            "range" : {
+              "@timestamp" : {
+                "gte" : "now-1y/d",
+                "lt" : "now/d"
+              }
+            }
+          },
+          {
+            "term" : {
+              "user.id" : "kimchy"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果`year_scope`为`false`。这个template search会查询任何时间段的数据。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": { \"bool\": { \"filter\": [ {{#year_scope}} { \"range\": { \"@timestamp\": { \"gte\": \"now-1y/d\", \"lt\": \"now/d\" } } }, {{/year_scope}} { \"term\": { \"user.id\": \"{{user_id}}\" }}]}}}",
+  "params": {
+    "year_scope": false,
+    "user_id": "kimchy"
+  }
+}
+```
+
+&emsp;&emsp;填充后的值如下：
+
+```text
+{
+  "template_output" : {
+    "query" : {
+      "bool" : {
+        "filter" : [
+          {
+            "term" : {
+              "user.id" : "kimchy"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;可以使用下面的语法创建if-else条件：
+
+```text
+{{#condition}}if content{{/condition}} {{^condition}}else content{{/condition}}
+```
+
+&emsp;&emsp;例如，如果`year_scope`为`true`，则获取过去一年的数据，否则获取过去一天的数据。
+
+```text
+POST _render/template
+{
+  "source": "{ \"query\": { \"bool\": { \"filter\": [ { \"range\": { \"@timestamp\": { \"gte\": {{#year_scope}} \"now-1y/d\" {{/year_scope}} {{^year_scope}} \"now-1d/d\" {{/year_scope}} , \"lt\": \"now/d\" }}}, { \"term\": { \"user.id\": \"{{user_id}}\" }}]}}}",
+  "params": {
+    "year_scope": true,
+    "user_id": "kimchy"
+  }
+}
+```
 
 
 ### Sort search results
@@ -24167,6 +24599,12 @@ POST /my_source_index/_split/my_target_index
 #### Create or update stored script API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-stored-script-api.html#create-stored-script-api)
 
+#### Delete stored script API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-stored-script-api.html)
+
+#### Get stored script API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-stored-script-api.html)
+
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
 
@@ -24324,6 +24762,9 @@ GET /_search
 &emsp;&emsp;例如，如果分片的数量等于2，用户请求了4个分片，那么切片0和切片2被分配给第一个分片，切片1和切片3被分配给第二个分片。
 
 >IMPORTANT：应该对所有片使用相同的时间点ID。如果使用不同的PIT id，则片可能会重叠和遗漏文档。这是因为拆分标准是基于Lucene文档id的，这些文档id在索引更改时变的不稳定。
+
+#### Search template API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template-api.html)
 
 #### Multi search template API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-search-template.html)
