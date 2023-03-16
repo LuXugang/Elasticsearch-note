@@ -14614,8 +14614,531 @@ POST _render/template
 
 
 ### Sort search results
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-search-results.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-search-results.html)
 
+&emsp;&emsp;允许你添加一个或者多个域用于排序。每一个排序即可以正序也可以是倒序。排序规则按域定义，也可以指定一些特殊的域名例如`_score`意味着根据打分排序，`_doc`意味着根据索引顺序排序。
+
+&emsp;&emsp;假设有以下的index mapping：
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "post_date": { "type": "date" },
+      "user": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "age": { "type": "integer" }
+    }
+  }
+}
+```
+
+```text
+GET /my-index-000001/_search
+{
+  "sort" : [
+    { "post_date" : {"order" : "asc", "format": "strict_date_optional_time_nanos"}},
+    "user",
+    { "name" : "desc" },
+    { "age" : "desc" },
+    "_score"
+  ],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+> NOTE：`_doc`不是很实用，但用于排序时，却是效率最高的。所以如果你不关心返回的文档顺序，那你应该使用`_doc`排序。特别有助于[scrolling](###Scroll search results)。
+
+
+#### Sort Values
+
+&emsp;&emsp;查询响应中包含每一个文档的排序值（`sort` value）。可以使用`format`参数为[date](####Date field type)和[date_nanos](####Date nanoseconds field type)域的sort value指定[date format](####format(mapping parameter))。下面的查询返回中，`post_date`域的域值作为排序值，并且使用format格式为：`strict_date_optional_time_nanos`。
+
+```text
+GET /my-index-000001/_search
+{
+  "sort" : [
+    { "post_date" : {"format": "strict_date_optional_time_nanos"}}
+  ],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+#### Sort Order
+
+&emsp;&emsp;`order`选项有两个值可选：
+
+- asc
+  - Sort in ascending order
+- desc
+  - Sort in descending order
+
+&emsp;&emsp;根据`_score`排序时，默认的`order`选项为`desc`，而根据其他字段排序时，`order`选项默认值为`asc`。
+
+#### Sort mode option
+
+&emsp;&emsp;Elasticsearch支持根据数组或者多值域（multi-valued field）排序。`mode`选项控制了选择数组中哪一个值用于作为文档的排序值。`mode`选项有以下的值可选：
+
+- min
+  - 选择最小的值
+- max
+  - 选择最大的值
+- sum
+  - 所有值的和作为排序值。只适用于数值类型的数组
+- avg
+  - 所有值的平均值作为排序值。只适用于数值类型的数组
+- median
+  - 所有值的中位数作为排序值。只适用于数值类型的数组
+
+&emsp;&emsp;sort order为`asc`的默认sort mode为`min`，即选择最小值。sort order为`desc`的默认sort mode为`max`，即选择最大值。
+
+##### Sort mode example usage
+
+&emsp;&emsp;下面的例子中，price域是一个多值域。在这个例子中命中的结果会按照`asc`以及price中所有值的平均值排序。
+
+```text
+PUT /my-index-000001/_doc/1?refresh
+{
+   "product": "chocolate",
+   "price": [20, 4]
+}
+
+POST /_search
+{
+   "query" : {
+      "term" : { "product" : "chocolate" }
+   },
+   "sort" : [
+      {"price" : {"order" : "asc", "mode" : "avg"}}
+   ]
+}
+```
+
+#### Sorting numeric fields
+
+&emsp;&emsp;对于数值类型的域也是可以通过`numeric_typ`选项进行类型转换。该选项可选的值为：`["double", "long", "date", "date_nanos"]`，使得可以跨多个data stream或者索引对不同mapping类型的相同域名进行排序。
+
+&emsp;&emsp;如果有以下两个索引：
+
+```text
+PUT /index_double
+{
+  "mappings": {
+    "properties": {
+      "field": { "type": "double" }
+    }
+  }
+}
+```
+
+```text
+PUT /index_long
+{
+  "mappings": {
+    "properties": {
+      "field": { "type": "long" }
+    }
+  }
+}
+```
+
+&emsp;&emsp;由于`field`这个域在两个索引中分别是`double`和`long`类型，所以默认情况下不能在同时查询这两个索引时根据这个字段进行排序。然而你可以使用`numeric_type`选项强制转化为同一个类型使得可以用于排序：
+
+```text
+POST /index_long,index_double/_search
+{
+   "sort" : [
+      {
+        "field" : {
+            "numeric_type" : "double"
+        }
+      }
+   ]
+}
+```
+
+&emsp;&emsp;在上面的例子中，索引`index_long`中的值转化为一个double使得兼容索引`index_double`中的值。当然也可以将一个floating值转化为long，but note that in this case floating points are replaced by the largest value that is less than or equal (greater than or equal if the value is negative) to the argument and is equal to a mathematical integer。
+
+&emsp;&emsp;同样的也可以用于`date`和`date_nanos`域。如果有以下两个索引：
+
+```text
+PUT /index_double
+{
+  "mappings": {
+    "properties": {
+      "field": { "type": "date" }
+    }
+  }
+}
+```
+
+```text
+PUT /index_long
+{
+  "mappings": {
+    "properties": {
+      "field": { "type": "date_nanos" }
+    }
+  }
+}
+```
+
+&emsp;&emsp;两个索引中`field`的值使用不同的格式（different resolution）存储使得`date`类型的值总是排在`date_nanos`之后（asc）。在使用了`numeric_typ`选项后，就可以将它们设置为单个格式（single resolution）。如果设置为`date`，那么`date_nanos`的值会被转化为millisecond，如果设置为`date_nanos`，那么`date`会被转化为nanoseconds。
+
+```text
+POST /index_long,index_double/_search
+{
+   "sort" : [
+      {
+        "field" : {
+            "numeric_type" : "date_nanos"
+        }
+      }
+   ]
+}
+```
+
+> WARNING：为了防止出现溢出，对于1970年之前和2262年之后的`date_nanos`的转化不能表示为long。
+
+#### Sorting within nested objects.
+
+&emsp;&emsp;Elasticsearch同样支持根据object内部的域或者更深层的域进行排序。根据nested filed排序时使用的`nested`排序选项可以有以下的属性：
+
+- path
+  - 定义了对哪一个object排序（Defines on which nested object to sort）。真正的排序字段必须是这个object中的字段。 When sorting by nested field, this field is mandatory
+- filter
+  - 每一层nested object以及inner nested object都可以指定filter，判断排序字段能否用于排序，如果条件不满足，则视为missing value（见下面的例子）。Common case is to repeat the query / filter inside the nested filter or query. By default no filter is active.
+- max_children
+  - 选择排序值（Sort value）时，object的最大深度（maximum number of children）。默认值为`unlimited`
+- nested
+  - 跟顶层（top-level）的`nested`是一样的，只是在当前的nested object中需要使用其他的nested path（见下面的例子）
+
+> NOTE：如果排序中定义了一个nested field但是没有`nested` 的上下文（见下面的例子），Elasticsearch会抛出错误异常
+
+##### Nested sorting examples
+
+&emsp;&emsp;在下面的例子中，`offer`是一个`nested`类型，需要指定`path`，否则Elasticsearch不知道选择哪一层的nested中的排序值进行排序
+
+```text
+POST /_search
+{
+   "query" : {
+      "term" : { "product" : "chocolate" }
+   },
+   "sort" : [
+       {
+          "offer.price" : {
+             "mode" :  "avg",
+             "order" : "asc",
+             "nested": {
+                "path": "offer",
+                "filter": {
+                   "term" : { "offer.color" : "blue" }
+                }
+             }
+          }
+       }
+    ]
+}
+```
+
+&emsp;&emsp;在下面的例子中，`parent`和`child`是`nested`域。需要在每一层指定`nested.path`，否则Elasticsearch不知道选择哪一层的nested中的排序值进行排序。
+
+```text
+POST /_search
+{
+   "query": {
+      "nested": {
+         "path": "parent",
+         "query": {
+            "bool": {
+                "must": {"range": {"parent.age": {"gte": 21}}},
+                "filter": {
+                    "nested": {
+                        "path": "parent.child",
+                        "query": {"match": {"parent.child.name": "matt"}}
+                    }
+                }
+            }
+         }
+      }
+   },
+   "sort" : [
+      {
+         "parent.child.age" : {
+            "mode" :  "min",
+            "order" : "asc",
+            "nested": {
+               "path": "parent",
+               "filter": {
+                  "range": {"parent.age": {"gte": 21}}
+               },
+               "nested": {
+                  "path": "parent.child",
+                  "filter": {
+                     "match": {"parent.child.name": "matt"}
+                  }
+               }
+            }
+         }
+      }
+   ]
+}
+```
+
+&emsp;&emsp;nested sorting 同样支持根据脚本或者地理位置排序。
+
+#### Missing Values
+
+&emsp;&emsp;`missing`参数指的是如何对哪些缺少排序字段的文档进行排序：`missing`的值可以设置为`_last`、`_first`或者自定义的值（该值会被用于排序）。默认值为`_last`。
+
+&emsp;&emsp;例如：
+
+```text
+GET /_search
+{
+  "sort" : [
+    { "price" : {"missing" : "_last"} }
+  ],
+  "query" : {
+    "term" : { "product" : "chocolate" }
+  }
+}
+```
+
+> NOTE：如果nested inner object没有匹配到`nested.filter`，则视为缺少排序字段，即使用missing value。
+
+#### Ignoring Unmapped Fields
+
+&emsp;&emsp;默认情况下，如果某个域没有对应的mapping，那么根据这个域排序的请求会失败。`unmapped_type`选项允许你忽略没有对应mapping的域，不根据他们进行排序。这个参数的值可以用于determine what sort values to emit。下面是使用这个参数的例子：
+
+```text
+GET /_search
+{
+  "sort" : [
+    { "price" : {"unmapped_type" : "long"} }
+  ],
+  "query" : {
+    "term" : { "product" : "chocolate" }
+  }
+}
+```
+
+&emsp;&emsp;如果所有的索引都没有`price`对应的mapping，Elasticsearch将认为存在`long`类型的mapping（防止报错），并且所有的文档都没有这个域的域值。
+
+#### Geo Distance Sorting
+
+&emsp;&emsp;允许根据`_geo_distance`排序。下面的例子中，假设`pin.location`是`geo_point`类型的域：
+
+```text
+GET /_search
+{
+  "sort" : [
+    {
+      "_geo_distance" : {
+          "pin.location" : [-70, 40],
+          "order" : "asc",
+          "unit" : "km",
+          "mode" : "min",
+          "distance_type" : "arc",
+          "ignore_unmapped": true
+      }
+    }
+  ],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+- distance_type
+
+&emsp;&emsp;如果计算距离。可以是`arc`（默认值）或者`plane`（计算更快，但是长距离以及靠近两极时的计算的结果不精确）
+
+- mode
+
+&emsp;&emsp;如果有多个域值时选择哪一个用于排序。默认情况下，当按照ascending order时会采用最短距离，按照descending order时采用最长距离。支持的可选值有`min`、`max`、`medina`以及`avg`。
+
+- unit
+
+&emsp;&emsp;计算排序时使用的单位。默认值为`m`(米)。
+
+- ignore_unmapped
+
+&emsp;&emsp;unmapped filed是否视为missing value。设置为`true`后跟上文中的Ignoring Unmapped Fields是一样的处理方式，设置为`false`后，unmapped filed会导致查询失败。
+
+> NOTE：geo distance sorting不支持配置missing value：当文档中没有域值用于计算距离时总是被认为距离为`Infinity`
+
+&emsp;&emsp;下面提供的坐标格式都是支持的：
+
+##### Lat Lon as Properties
+
+```text
+GET /_search
+{
+  "sort" : [
+    {
+      "_geo_distance" : {
+        "pin.location" : {
+          "lat" : 40,
+          "lon" : -70
+        },
+        "order" : "asc",
+        "unit" : "km"
+      }
+    }
+  ],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+##### Lat Lon as String
+
+&emsp;&emsp;`lat`、`lon`的格式。
+
+```text
+GET /_search
+{
+  "sort": [
+    {
+      "_geo_distance": {
+        "pin.location": "40,-70",
+        "order": "asc",
+        "unit": "km"
+      }
+    }
+  ],
+  "query": {
+    "term": { "user": "kimchy" }
+  }
+}
+```
+
+##### Geohash
+
+```text
+GET /_search
+{
+  "sort": [
+    {
+      "_geo_distance": {
+        "pin.location": "drm3btev3e86",
+        "order": "asc",
+        "unit": "km"
+      }
+    }
+  ],
+  "query": {
+    "term": { "user": "kimchy" }
+  }
+}
+```
+
+##### Lat Lon as Array
+
+&emsp;&emsp;[`lon`, `lat`]的格式，注意的时这里lon/lat的前后顺序是为了符合[GeoJSON](https://geojson.org)。
+
+```text
+GET /_search
+{
+  "sort": [
+    {
+      "_geo_distance": {
+        "pin.location": [ -70, 40 ],
+        "order": "asc",
+        "unit": "km"
+      }
+    }
+  ],
+  "query": {
+    "term": { "user": "kimchy" }
+  }
+}
+```
+
+##### Multiple reference points
+
+&emsp;&emsp;可以使用数组提供多个geo points，数组元素的格式可以是上文中提到的所有的格式，例如
+
+```text
+GET /_search
+{
+  "sort": [
+    {
+      "_geo_distance": {
+        "pin.location": [ [ -70, 40 ], [ -71, 42 ] ],
+        "order": "asc",
+        "unit": "km"
+      }
+    }
+  ],
+  "query": {
+    "term": { "user": "kimchy" }
+  }
+}
+```
+
+&emsp;&emsp;最终一篇文档的距离是文档中所有点的 min/max/avg(取决于`mode`的值)到排序请求中给出的点的距离。
+
+#### Script Based Sorting
+
+&emsp;&emsp;允许基于自定义的脚本进行排序，见下面的例子：
+
+```text
+GET /_search
+{
+  "query": {
+    "term": { "user": "kimchy" }
+  },
+  "sort": {
+    "_script": {
+      "type": "number",
+      "script": {
+        "lang": "painless",
+        "source": "doc['field_name'].value * params.factor",
+        "params": {
+          "factor": 1.1
+        }
+      },
+      "order": "asc"
+    }
+  }
+}
+```
+
+#### Track Scores
+
+&emsp;&emsp;当根据某个域排序后，就不会对文档打分。设置`track_scores`为true后才会进行打分计算。
+
+```text
+GET /_search
+{
+  "track_scores": true,
+  "sort" : [
+    { "post_date" : {"order" : "desc"} },
+    { "name" : "desc" },
+    { "age" : "desc" }
+  ],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+#### Memory Considerations
+
+&emsp;&emsp;排序时，用于排序的域会加载到内存中。这意味着每一个分片都应该有足够的内存来处理他们。对于用于排序的string类型，它不应该设置为analyzed / tokenized。对于数值类型，如果可以的话，建议显示的（explicit）设置为narrower types（例如`short`、`ingeger`以及`float`）。
 
 ## Query DSL
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl.html)
