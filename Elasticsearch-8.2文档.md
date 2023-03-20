@@ -1449,6 +1449,9 @@ PUT /_cluster/settings
 
 &emsp;&emsp;（[Static](######Static（settings） )）如果`index_buffer_size`指定为百分比，那这个设置用来指定为一个绝对最大值（absolute maximum）。默认是无限制的。
 
+#### License settings
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/license-settings.html)
+
 #### Local gateway settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-gateway.html)
 
@@ -1746,9 +1749,6 @@ path.data:  /var/elasticsearch/data
 
 ##### Binding and publishing
 
-#### Node query cache settings
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-cache.html)
-
 ##### Advanced HTTP settings
 
 ###### http.max_content_length
@@ -1757,8 +1757,30 @@ path.data:  /var/elasticsearch/data
 
 ###### Long-lived idle connections
 
-#### License settings
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/license-settings.html)
+#### Node query cache settings
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-cache.html)
+
+&emsp;&emsp;[filter context](####Filter context)中的查询结果缓存在node query cache中使得可以快速的查询，这属于每个节点上的查询缓存（query cache），由所有的分片共享。缓存使用了LRU eviction policy：当缓存满了以后，最近最少使用的查询结果会被踢出（evict），为新的查询查询让路。你不能查看（inspect）查询缓存的内容。
+
+&emsp;&emsp;Term query以及在filter context使用外的查询没有缓存资格（eligible）。
+
+&emsp;&emsp;默认情况下，缓存保留最多10000个query，以及占用最多10%的总内存。若要判断某个query是否有资格被缓存，Elasticsearch维护了一个query history来track occurrence。
+
+&emsp;&emsp;缓存在每个段上进行，并且段中至少包含10000篇文档并且每个段中的文档数量至少是分片中文档总数的3%。由于是基于段的缓存，因此段的合并会使缓存的查询失效。
+
+&emsp;&emsp;下面的设置是`static`并且必须在集群中每个data node上配置：
+
+##### indices.queries.cache.size
+
+&emsp;&emsp;（[Static](######Static（settings） )）为filter cache控制内存大小。可以是一个百分比的值，比如5%或者一个精确值，例如`512mb`。默认值为`10%`。
+
+##### Query cache index settings
+
+&emsp;&emsp;下面的设置属于index setting，可以在每一个索引上配置。只能在索引创建时或者一个[closed index](####Open index API)上设置。
+
+###### index.queries.cache.enabled
+
+&emsp;&emsp;（[Static](######Static（settings） )）控制是否开启查询缓存。可以是`true`（默认值）或者`false`。
 
 #### Search settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-settings.html)
