@@ -6476,7 +6476,97 @@ GET my-index-000001/_search
 ```
 
 ### Field data types
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-types.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-types.html)
+
+&emsp;&emsp;每个域都有一个`field data type`或者`field type`。这个类型指明（indicate）了这个域中包含的数据种类（kind），比如一个string或者boolean值以及预期用途（intended use）。例如，你可以同时将String索引为`text`和`keyword`域。然而`text`域会被[analyzed](##Text analysis)用于全文检索，同时`keyword`用于过滤和排序。
+
+&emsp;&emsp;域的类型（Field type）根据家族（family）分组。同一个家族的类型有完全一样的查询行为，但是在空间使用（space usage）或者性能属性（performance characteristic）上有差别。
+
+&emsp;&emsp;当前有两个类型家族（type family），`keyword`和`text`。其他的type family只有单个域的类型。例如`boolean`类型家族由一个域的类型: `boolean`组成。
+
+##### Common types
+
+|    类型    |               描述               |
+| :--------: | :------------------------------: |
+| [binary](####Binary field type) | Binary值编码为一个Base64的字符串 |
+| [boolean](####Boolean field type) | `true`以及`false` |
+| [Keywords](####Keyword type family) | keyword家族，包括`kewword`、`constant_keyword`以及`wildcard` |
+| [Numbers](####Numeric field types) | 数值类型，例如`long`和`double`，用来表示为数量 |
+| Dates | 时间类型，包括[date](####Date field type)和[date_nanos](####Date nanoseconds field type) |
+| [alias](####Alias field type) | 为已有的域定义一个别名 |
+
+
+##### Objects and relational types
+
+|     类型      |                     描述                     |
+| :-----------: | :------------------------------------------: |
+|  [object](####Object field type)   |                 一个JSON对象                 |
+| [flattened](####Flattened field type) |           整个JSON对象作为单个域值           |
+|  [nested](####Nested field type)   | 一个JSON对象，保留了子域（subfield）间的关系 |
+|   [join](####Join field type)    |      在同一个索引中定义文档间的父子关系      |
+
+##### Structured data types
+
+|                             类型                             |                             描述                             |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+|                [Range](####Range field types)                | 范围类型，例如`long_range`, `double_range`, `date_range`, and `ip_range` |
+|                   [ip](####IP field type)                    |                        IPv4和IPv6地址                        |
+|              [version](####Version field type)               | 软件版本。支持[[Semantic Versioning precedence rules](https://semver.org) |
+| [murmur3](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/mapper-murmur3.html) |                      计算以及存储哈希值                      |
+
+##### Aggregate data types
+
+|                             类型                             |                 描述                 |
+| :----------------------------------------------------------: | :----------------------------------: |
+| [aggregate_metric_double](####Aggregate metric field type) | 预先聚合（pre-aggregated）的指标数据 |
+|                        [histogram](####Histogram field type)                         |    预先聚合的histogram格式的数值     |
+
+##### Text search tpyes
+
+|          类型          |                             描述                             |
+| :--------------------: | :----------------------------------------------------------: |
+|    [text_fields](####Text type family)     | text家族，包括`text`、`match_only_text`。分词的，无结构的文本 |
+|   [annotated-text](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/mapper-annotated-text.html)   | Text containing special markup. Used for identifying named entities |
+|     [completion](####Suggesters)     |                 用于auto-complete suggestion                 |
+| [search_as_you_type](####Search-as-you-type field type) |         `text`-like type for as-you-type completion          |
+|    [token_count](####Token count field type)     |                      文本中token的统计                       |
+
+
+##### Document ranking types
+
+|                    类型                     |                          描述                          |
+| :-----------------------------------------: | :----------------------------------------------------: |
+| [dense_vector](####Dense vector field type) |         Records dense vectors of float values          |
+| [rank_feature](####Rank feature field type) | Records a numeric feature to boost hits at query time. |
+|            [rank_features](####)            |  Records numeric features to boost hits at query time  |
+
+##### Spatial data types
+
+|     类型      | 描述                                         |
+| :-----------: | :------------------------------------------: |
+| [geo_point](####Geopoint field type) | 经纬度点数据（point）                        |
+| [geo_shape](####Geoshape field type) | 复杂的形状，例如多边形（polygon）            |
+|   [point](####Point field type)   | 笛卡尔坐标（Arbitrary cartesian points）     |
+|   [shape](####Shape field type)   | 笛卡尔几何（Arbitrary cartesian geometries） |
+
+##### Other types
+
+|      类型      | 描述                             |
+| :------------: | -------------------------------- |
+| [percolator](####Percolator field type) | 对[Query DSL](##Query DSL)中的query进行索引 |
+
+##### Arrays
+
+&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](####Arrays)。
+
+##### Multi-fields
+
+&emsp;&emsp;通常来说对同一个域使用不同方式索引时很有用的。例如，一个`string`域可以映射为`text`域用于全文检索，映射为`keyword`用于排序或者聚合。你还可以索引一个text域时，使用[standard analyzer](####Standard analyzer)、[english analyzer](####Standard analyzer)以及[french analyzer](####Standard analyzer)。
+
+&emsp;&emsp;这就是multi-fields的目的。大多数的域类型通过[fields](####fields)参数来支持multi-fields。
+
+#### Aggregate metric field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/aggregate-metric-double.html)
 
 #### Alias field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/field-alias.html)
@@ -6710,6 +6800,10 @@ POST my-index-000001/_search
 #### Date nanoseconds field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date_nanos.html)
 
+#### Dense vector field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dense-vector.html)
+
+
 #### Geopoint field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
 
@@ -6922,6 +7016,9 @@ PUT my-index-000001
 #### Percolator field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/percolator.html)
 
+#### Point field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/point.html)
+
 #### Range field types
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range.html)
 
@@ -6930,6 +7027,12 @@ PUT my-index-000001
 
 #### Rank feature field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rank-feature.html)
+
+#### Search-as-you-type field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-as-you-type.html)
+
+#### Shape field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/shape.html)
 
 #### Text type family
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/text.html)
@@ -7049,6 +7152,12 @@ PUT my-index-000001/_mapping
 &emsp;&emsp;
 
 ##### Match-only text field type
+
+#### Token count field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
+
+#### Version field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/version.html)
 
 ### Metadata fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-fields.html)
