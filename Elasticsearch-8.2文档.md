@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/03/16）
+# Elasticsearch-8.2文档（2023/03/20）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -6538,7 +6538,7 @@ GET my-index-000001/_search
 | :-----------------------------------------: | :----------------------------------------------------: |
 | [dense_vector](####Dense vector field type) |         Records dense vectors of float values          |
 | [rank_feature](####Rank feature field type) | Records a numeric feature to boost hits at query time. |
-|            [rank_features](####)            |  Records numeric features to boost hits at query time  |
+|            [rank_features](####Rank features field type)            |  Records numeric features to boost hits at query time  |
 
 ##### Spatial data types
 
@@ -6645,6 +6645,12 @@ GET /_search
 &emsp;&emsp;目前只有[search](###Search APIs)请求以及像 [field capabilities API](####Field capabilities API)中可以接受alias。像[term vectors](####Term vectors API)就不能使用alias。
 
 &emsp;&emsp;Finally, some queries, such as terms, geo_shape, and more_like_this, allow for fetching query information from an indexed document. Because field aliases aren’t supported when fetching documents, the part of the query that specifies the lookup path cannot refer to a field by its alias。
+
+#### Binary field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/binary.html)
+
+#### Flattened field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
 
 #### Boolean field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/boolean.html)
