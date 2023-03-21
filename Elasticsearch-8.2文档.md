@@ -15623,7 +15623,7 @@ GET /_search
 ### Full text queries
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/full-text-queries.html)
 
-&emsp;&emsp;full text query可以让查询[analyzed text fields](##Text analysis)，例如邮件的内容。查询的内容会跟索引期间的内容一样使用相同的分词器处理。
+&emsp;&emsp;full text query可以查询[analyzed text fields](##Text analysis)，例如邮件的内容。查询的内容会跟索引期间的内容一样使用相同的分词器处理。
 
 &emsp;&emsp;属于full text query的query包括：
 
@@ -15643,6 +15643,96 @@ GET /_search
 
 #### Match query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
+
+&emsp;&emsp;返回匹配了查询条件中的文本、数值、日期或者布尔值的文档。如果查询条件中提供的是文本，那么在匹配前会对该文本进行分词。
+
+&emsp;&emsp;`match` query是一个用于全文检索的标准query，包含了可以用于模糊查询（fuzzy）的选项。
+
+##### Example request
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "this is a test"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for match
+
+###### \<filed>
+
+&emsp;&emsp;(Required, object) 想要查询的域。
+
+##### Parameters for \<field>
+
+###### query
+
+&emsp;&emsp;（Required）你想要从`<field>`中查询的文本、数值、布尔值或者日期。
+
+&emsp;&emsp;`match` query在执行查询前会对`query`中的文本进行[analyze](##Text analysis)，意味着`match` query可以对分词后的token进行[text](####Text type family)域的查询而不是进行精确匹配。
+
+###### analyzer
+
+&emsp;&emsp;（Optional, string）使用[Analyzer](##Text analysis)将`query`中的文本转化为tokens。默认使用在[index-time analyzer](#####How Elasticsearch determines the index analyzer)时`<field>`使用的分词器。如果没有指定分词器，则使用索引默认的分词器。
+
+###### auto_generate_synonyms_phrase_query
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，[match phrase](####Match phrase query) 会自动的创建多个term的同义词。默认值为`true`。
+
+&emsp;&emsp;见[Use synonyms with match query](######Synonyms(match))给出的例子。
+
+###### fuzziness
+
+&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](####Fuzziness)了解更多信息。见[Fuzziness in the match query](######Fuzziness in the match query)给出的例子。
+
+###### max_expansions
+
+&emsp;&emsp;（Optional, integer）query扩展（expand）出的term数量最大值。默认值为`50`。
+
+###### prefix_length
+
+&emsp;&emsp;（Optional, integer）模糊匹配时，不变的（unchange）起始字符的数量。默认值为`0`。
+
+###### fuzzy_transpositions
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+
+###### fuzzy_rewrite
+
+&emsp;&emsp;（Optional, string）用于重写query的方法。见[rewrite parameter](###rewrite parameter)了解更多信息。
+
+&emsp;&emsp;如果`fuzziness`参数为0，`match` query默认使用`top_terms_blended_freqs_${max_expansions}`的`fuzzy_rewrite`方法。
+
+###### lenient
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric]()域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+
+###### operator
+
+&emsp;&emsp;（Optional, string）用于`query`中值之间的布尔关系。该参数的可选值为：
+
+- OR（Default）
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+- AND
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
+
+##### Notes
+
+###### Short request example
+
+###### How the match query works
+
+###### Fuzziness in the match query
+
+###### Zero terms query
+
+###### Synonyms(match)
 
 #### Match boolean prefix query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-bool-prefix-query.html)
@@ -15794,6 +15884,9 @@ GET /_search
 
 ### minimum_should_match parameter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-minimum-should-match.html)
+
+### rewrite parameter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
 
 ## Aggregations
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
