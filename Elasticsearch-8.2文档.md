@@ -15942,7 +15942,75 @@ GET /_search
 &emsp;&emsp;这个查询同样接收`zero_terms_query`参数，见[match query](####Match query)中的介绍。
 
 #### Match phrase prefix query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase-prefix.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase-prefix.html)
+
+&emsp;&emsp;返回的文档中包含查询中提供的文本中的单词，并且要求有相同的单词间的先后顺序。提供的文本中的最后一个term会认为是一个[prefix](####Prefix query)，匹配以这个term开头的其他term。
+
+##### Example request
+
+&emsp;&emsp;下面的查询返回的文档中包含了`message`域中以`quick brown f`开头的短语。
+
+&emsp;&emsp;这个查询将会匹配`message`域的`quick brown fox or two quick brown ferrets`，但是不会匹配`the fox is quick and brown`。
+
+```text
+GET /_search
+{
+  "query": {
+    "match_phrase_prefix": {
+      "message": {
+        "query": "quick brown f"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for match_phrase_prefix
+
+###### \<field>
+
+&emsp;&emsp;（Required, object）待查询的域。
+
+##### Parameters for \<field>
+
+###### query
+
+&emsp;&emsp;（Required, string）你想要在`<field>`中查找的文本。
+
+&emsp;&emsp;`match_phrase_prefix` query在执行查询前会[analyze](##Text analysis) `query`中的文本。最后一个term会作为一个[prefix](####Prefix query)，匹配以这个term开头的其他term。
+
+###### analyzer
+
+&emsp;&emsp;（Optional, string）用于将`query`中的文本转化为token的[Analyzer](##Text analysis)。默认是`<field>`这个域的[index-time analyzer](#####How Elasticsearch determines the index analyzer)。如果在mapping中没有指定analyzer，则使用索引默认的分词器。
+
+###### max_expansions
+
+&emsp;&emsp;（Optional, integer）最后一个term扩展出其他term的数量最大值。默认值为`50`。
+
+###### slop
+
+&emsp;&emsp;匹配到的token之间的最大位置距离。默认为`0`。Transposed terms的slop为`2`。
+
+###### zero_terms_query
+
+&emsp;&emsp;（Optional, string）当`analyzer`解析`query`后移除了所有的token，比如使用了`stop` filter，是否不返回任何文档。可选值为：
+
+- none（Default）
+  - 如果`analyzer`移除了所有的token，不返回任何文档
+- all
+  - 返回所有的文档，相当于[match_all](###Match all query) query
+
+##### Notes
+
+###### Using the match phrase prefix query for search autocompletion
+
+&emsp;&emsp;尽管使用起来很简单，但是将`match_phrase_prefix` query用于查询时的自动提示（search autocompletion）可能会返回一些让人困惑的结果。
+
+&emsp;&emsp;比如说，如果查询关键字是`quick brown f`。这个请求会创建一个`quick`和`brown`的短语查询（文档中`quick`必须存在紧接着它的下一个term必须是`brown`）。然后从[sorted term dictionary](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2019/0401/43.html)中找到50个以`f`开头的term，最后将这些term添加到短语查询中。
+
+&emsp;&emsp;问题在于这前50个term可能没有`fox`这个term，使得没法找到`quick brown fox`这个短语。但这通常又不是一个问题，因为用户会继续输入更多的字母，直到出现他们想要查找的词。
+
+&emsp;&emsp;见[completion suggester](#####Completion Suggester)和[search_as_you_type field type](####Search-as-you-type field type)了解更多`search-as-you-type`更好的解决方案。
 
 #### Combined fields
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
