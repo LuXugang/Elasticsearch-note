@@ -15906,9 +15906,40 @@ GET /_search
 &emsp;&emsp;[fuzziness](######Fuzziness in the match query), `prefix_length`, `max_expansions`, `fuzzy_transpositions`, and `fuzzy_rewrite`这些参数都可以作用到所有term对应的 `term` query中，除了最后一个term。这些参数不会对最后一个term对应的prefix query有任何的作用。
 
 #### Match phrase query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`match_phrase` query解析（analyze）文本后会基于分析后的文本创建一个短语查询（`phrase` query）。
+
+```text
+GET /_search
+{
+  "query": {
+    "match_phrase": {
+      "message": "this is a test"
+    }
+  }
+}
+```
+
+&emsp;&emsp;A phrase query matches terms up to a configurable slop (which defaults to 0) in any order. Transposed terms have a slop of 2。
+
+&emsp;&emsp;`analyzer` 可以用于控制如果对文本进行解析。默认使用该域在mapping中定义的分词器，或者查询中默认使用的分词器：
+
+```text
+GET /_search
+{
+  "query": {
+    "match_phrase": {
+      "message": {
+        "query": "this is a test",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询同样接收`zero_terms_query`参数，见[match query](####Match query)中的介绍。
 
 #### Match phrase prefix query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase-prefix.html)
