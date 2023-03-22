@@ -15642,7 +15642,7 @@ GET /_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-intervals-query.html)
 
 #### Match query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
 
 &emsp;&emsp;返回匹配了查询条件中的文本、数值、日期或者布尔值的文档。如果查询条件中提供的是文本，那么在匹配前会对该文本进行分词。
 
@@ -15667,7 +15667,7 @@ GET /_search
 
 ###### \<filed>
 
-&emsp;&emsp;(Required, object) 想要查询的域。
+&emsp;&emsp;(Required, object) 待查询的域。
 
 ##### Parameters for \<field>
 
@@ -15683,7 +15683,7 @@ GET /_search
 
 ###### auto_generate_synonyms_phrase_query
 
-&emsp;&emsp;（Optional, Boolean）如果为`true`，[match phrase](####Match phrase query) 会自动的创建多个term的同义词。默认值为`true`。
+&emsp;&emsp;（Optional, Boolean）如果为`true`，会为multi-term synonyms自动创建[match phrase](####Match phrase query) 。默认值为`true`。
 
 &emsp;&emsp;见[Use synonyms with match query](######Synonyms(match))给出的例子。
 
@@ -15722,17 +15722,131 @@ GET /_search
 - AND
   - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
 
+###### minimum_should_match
+
+&emsp;&emsp;（Optional, string）返回的文档必须至少匹配到term的数量（`query`分词后的token）。见[minimum_should_match parameter](###minimum_should_match parameter)了解更多信息。
+
+###### zero_terms_query
+
+（Optional, string）如果分词（`analyzer`）之后移除了所有的token（比如使用了`stop`过滤器），是否要返回文档。可选值：
+
+- none（default）
+  - 如果在分词后移除了所有的token不返回任何文档
+
+- all
+  - 返回所有的文档，类似[match_all](###Match all query)
+
+&emsp;&emsp;见[Zero terms query](######Zero terms query)中的例子。
+
 ##### Notes
 
 ###### Short request example
 
+&emsp;&emsp;最简单的match query由`<field>`和`query`参数组成。：
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "message": "this is a test"
+    }
+  }
+}
+```
+
 ###### How the match query works
+
+&emsp;&emsp;`match` query实际是`boolean`类型，意味着`query`中提供的文本会被分词并且构建一个Boolean query。`operator`参数可以设置为`or`或者`and`来控制boolean clause（默认值为`or`）之间的关系。可以设置[minimum_should_match](###minimum_should_match parameter)参数指定至少要匹配多少个`should`关系中的clause。
+
+&emsp;&emsp;下面是`operator`参数：
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "this is a test",
+        "operator": "and"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;设置`analyzer`可以用来控制如何对文本进行分析处理。默认是mapping定义中这个域对应的设置，或者是默认的search analyzer。
+
+&emsp;&emsp;设置`lenient`为`true`可以用来忽略数据类型不一致导致的异常，比如一个数值类型的域，在`query`中提供了一个string。默认为`false`。
 
 ###### Fuzziness in the match query
 
+&emsp;&emsp;`fuzziness`根据待查询的域的类型允许执行 `fuzzy matching`。见[Fuzziness](###Common options)了解相关的设置。
+
+&emsp;&emsp;设置`prefix_length`和`max_expansions`用来控制模糊匹配的处理过程。如果设置了fuzzy选项，那么query会使用`top_terms_blended_freqs_${max_expansions}`作为[rewrite method](###rewrite parameter)，`fuzzy_rewrite`参数允许控制如何对query进行重写（rewrite）。
+
+&emsp;&emsp;默认允许Fuzzy transpositions(`ab` -> `ba`)，可以通过`fuzzy_transpositions`设置为`false`的方式关闭。
+
+> NOTE：Fuzzy matching is not applied to terms with synonyms or in cases where the analysis process produces multiple tokens at the same position. Under the hood these terms are expanded to a special synonym query that blends term frequencies, which does not support fuzzy expansion.
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "this is a testt",
+        "fuzziness": "AUTO"
+      }
+    }
+  }
+}
+```
+
 ###### Zero terms query
 
+&emsp;&emsp;如果使用了`stop` filter后，分词器移除了所有的token，默认的行为是不匹配任何的文档。使用`zero_terms_query`设置为`none`（默认值）或者设置为`all`后，query就相当于`match_all` 。
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "to be or not to be",
+        "operator": "and",
+        "zero_terms_query": "all"
+      }
+    }
+  }
+}
+```
+
 ###### Synonyms(match)
+
+&emsp;&emsp;`match` query支持使用[synonym_graph  token filter](####Synonym graph token filter)实现multi-terms 同义词扩展（synonym ）。使用这个filter后，解析器会对每一个multi-terms synonyms创建一个短语查询。例如，下面的同义词：`"ny, new york"`会产生：`(ny OR ("new york"))`
+
+&emsp;&emsp;同样的也可以匹配多个同义词，这些同义词之间的关系为`AND`，而不是这几个同义词作为短语查询。
+
+```text
+GET /_search
+{
+   "query": {
+       "match" : {
+           "message": {
+               "query" : "ny city",
+               "auto_generate_synonyms_phrase_query" : false
+           }
+       }
+   }
+}
+```
+
+&emsp;&emsp;上面的例子创建出下面的boolean query：
+
+&emsp;&emsp;`(ny OR (new AND york)) city`
+
+&emsp;&emsp;满足条件的文档中要么匹配到`ny`，或者匹配到`new AND york`，或者都匹配到。`auto_generate_synonyms_phrase_query`默认值为`true`。
 
 #### Match boolean prefix query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-bool-prefix-query.html)
