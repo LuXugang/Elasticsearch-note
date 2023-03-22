@@ -15849,10 +15849,66 @@ GET /_search
 &emsp;&emsp;满足条件的文档中要么匹配到`ny`，或者匹配到`new AND york`，或者都匹配到。`auto_generate_synonyms_phrase_query`默认值为`true`。
 
 #### Match boolean prefix query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-bool-prefix-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-bool-prefix-query.html)
+
+&emsp;&emsp;`match_bool_prefix` query对输入进行解析后，会基于生成的term构造一个[bool query](####Boolean query)。除了最后一个term，其他的每一个term构造为一个`term` query，最后一个term构造为`prefix` query。例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "match_bool_prefix" : {
+      "message" : "quick brown f"
+    }
+  }
+}
+```
+
+&emsp;&emsp;对上面的输入进行解析后会生成`quick`、`brown`和`f`这三个term，相当于下面的`bool` query：
+
+```text
+GET /_search
+{
+  "query": {
+    "bool" : {
+      "should": [
+        { "term": { "message": "quick" }},
+        { "term": { "message": "brown" }},
+        { "prefix": { "message": "f"}}
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;[match_phrase_prefix](####Match phrase prefix query) query跟`match_bool_prefix` query一个很重要的不同点是，`match_phrase_prefix` query 将这些term作为一个短语，而`match_bool_prefix` query 则是在文档中的任意位置去分别匹配这些term。上面的例子中，`match_bool_prefix` query 可能会匹配`quick brown fox`，同时也可以匹配`brown fox quick`，甚至还会分别去匹配包含`quick`、`brown`、以`f`开头的term，并且这些term可以在文档的任意位置。
+
+##### Parameters
+
+&emsp;&emsp;默认情况下，`match_bool_prefix` query会对输入使用域在mapping中的分词器（analyzer）。不过可以通过`analyzer` 参数在查询时配置一个分词器。
+
+```text
+GET /_search
+{
+  "query": {
+    "match_bool_prefix": {
+      "message": {
+        "query": "quick brown f",
+        "analyzer": "keyword"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`match_bool_prefix` query支持[match query](######How the match query works)中提到的[minimum_should_match](###minimum_should_match parameter)以及`operator`参数。构造出来的`bool` query中的clause的数量大多数情况下和分词器对输入解析后生成的term的数量一样。
+
+&emsp;&emsp;[fuzziness](######Fuzziness in the match query), `prefix_length`, `max_expansions`, `fuzzy_transpositions`, and `fuzzy_rewrite`这些参数都可以作用到所有term对应的 `term` query中，除了最后一个term。这些参数不会对最后一个term对应的prefix query有任何的作用。
 
 #### Match phrase query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase.html)
+
+&emsp;&emsp;
 
 #### Match phrase prefix query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase-prefix.html)
