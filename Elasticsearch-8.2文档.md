@@ -15711,7 +15711,7 @@ GET /_search
 
 ###### lenient
 
-&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric]()域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric](####Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
 
 ###### operator
 
@@ -16121,7 +16121,7 @@ GET /_search
 
 &emsp;&emsp;这个query使用一个[syntax](#####Query string syntax)进行解析并且基于`AND`或者`NOT`操作符对query string进行切分。然后在返回匹配的文档前，这个query独立的 [analyzer](##Text analysis)每一个切分的文本。
 
-&emsp;&emsp;你可以使用`query_string` query创建一个包含通配符，跨多个域以及更多信息的复杂查询。虽然通用（versatile），但这个query很严格，如果query string中包含任何无效语法，则返回错误。
+&emsp;&emsp;你可以使用`query_string` query创建一个包含通配符，跨多个域以及更多信息的复杂查询。虽然具备很多功能（versatile），但这个query的语法很严格，如果query string中包含任何无效语法，则返回错误。
 
 >WARNING：由于任意非法语法都会导致这个query返回错误，我们不建议在搜索框（search boxes）中使用`query_string`中使用这个查询。
 >如果你不需要支持query syntax，可以考虑使用[match query](####Match query)。如果你需要query syntax的功能，可以使用[simple_query_string](####Simple query string query)，这种query没有那么严格的语法。
@@ -16158,26 +16158,82 @@ GET /_search
 
 &emsp;&emsp;对于定义了大量字段的mapping，在所有符合的（eligible）域上进行搜索的开销是很大的。
 
-&emsp;&emsp;单次查询有域的数量的限制，在[search setting](####Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
+&emsp;&emsp;单次查询有clause数量（域的数量 \* term数量）的限制，在[search setting](####Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
 
 ###### allow_leading_wildcard
 
-&emsp;&emsp;(Optional, Boolean) 如果为`true`，通配符`*`以及`?`允许作为query string的首个字符。默认值是`true`。
+&emsp;&emsp;（Optional, Boolean)）如果为`true`，通配符`*`以及`?`允许作为query string的首个字符。默认值是`true`。
 
 ###### analyze_wildcard
 
-&emsp;&emsp;(Optional, Boolean) 如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
+&emsp;&emsp;（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
 
 ###### analyzer
 
-&emsp;&emsp;(Optional, string) 用来将query string进行分词。默认是`default_field`字段在[index-time analyzer](####Specify an analyzer)时的分词器。如果没有设置analyzer，则使用索引默认的分词器。
+&emsp;&emsp;（Optional, string） [Analyzer](###Text analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](####Specify an analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
 
 ###### auto_generate_synonyms_phrase_query
 
+&emsp;&emsp;（Optional, Boolean）如果为`true`，[match phrase](####Match phrase query)会自动的创建同义词的查询。默认值为`true`。见[Synonyms and the query_string query](######Synonyms and the query_string query)。
+
+###### bootst
+
+&emsp;&emsp;（Optional, float）浮点值，用于提高或者降低query的[relevance scores]()。默认值为`1.0`。
+
+&emsp;&emsp;boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+
+###### default_operator
+
+&emsp;&emsp;（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
+
+- OR（Default）
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+- AND
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
+
+###### enable_position_increments
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，在`query_string`查询中构造的query中，开启position increments。默认值为`true`。
+
+###### fields
+
+&emsp;&emsp;（Optional, array of strings）待查询的域的列表。支持通配符（`*`）。
+
+&emsp;&emsp;你可以使用这个参数跨多个域进行查询。见[Search multiple fields](######Search multiple fields（query string）)。
+
+###### fuzziness
+
+&emsp;&emsp;（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](######Fuzziness（query string）)了解fuzzy语法。
+
+###### fuzzy_max_expansions
+
+&emsp;&emsp;（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
+
+###### fuzzy_prefix_length
+
+&emsp;&emsp;（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
+
+###### fuzzy_transpositions
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+
+###### lenient
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric](####Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+
+###### max_determinized_states
+
+&emsp;&emsp;（Optional, integer）
+
 ##### Note
 
-###### Query string syntax
+###### Fuzziness（query string）
 
+###### Search multiple fields（query string）
+
+
+
+###### Query string syntax
 
 #### Simple query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
