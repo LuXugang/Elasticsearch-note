@@ -19106,7 +19106,37 @@ POST /_security/user/remote_monitor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/configuring-filebeat.html)
 
 ### Configuring indices for monitoring
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/config-monitoring-indices.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/config-monitoring-indices.html)
+
+&emsp;&emsp;[Index templates](####Create or update index template API)用于对索引进行配置来存储从集群中收集的监控数据。
+
+&emsp;&emsp;你可以使用`_template`API查询监控数据的模版：
+
+```text
+GET /_template/.monitoring-*
+```
+
+&emsp;&emsp;默认情况下，只会在模板中为监控索引（monitoring Index）配置一个分片以及一个副本。你可以添加自己的模版信息来覆盖默认配置：
+
+1. 设置template pattern来匹配现有的`.monitoring-{product}-7-*`索引
+2. 将template的`order`设置为`1`，使得默认模版先于你的模版，默认模版的`order`为`0`
+3. 在`settings`区域中设置`number_of_shards` and/or `number_of_replicas`
+
+&emsp;&emsp;下面的例子中，配置了5个分片以及2个副本分片：
+
+```text
+PUT /_template/custom_monitoring
+{
+  "index_patterns": [".monitoring-beats-7-*", ".monitoring-es-7-*", ".monitoring-kibana-7-*", ".monitoring-logstash-7-*"],
+  "order": 1,
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 2
+  }
+}
+```
+
+> IMPORTANT：只设置settings区域中的`number_of_shards` 以及`number_of_replicas`。覆盖其他的监控模版信息会导致你的监控仪表盘停止正常工作。
 
 ### Collecting monitoring data using legacy collectors
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/collecting-monitoring-data.html)
@@ -21731,13 +21761,13 @@ POST _transform/_preview
 - Chained replication
 - Bi-directional replication
 
-- Single disaster recovery datacenter
+1. Single disaster recovery datacenter
 
 &emsp;&emsp;在这个配置中，生产中心（production datacenter）中的数据拷贝到灾难恢复中心（disaster recovery datacenter）或者说灾备中心。由于follower index复制了leader index，所以如果生产中心不可用时候可以使用灾难恢复中心的数据。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ccr-arch-disaster-recovery.png">
 
-- Multiple disaster recovery datacenters
+2. Multiple disaster recovery datacenters
 
 &emsp;&emsp;你可以将一个数据中心的数据复制到多个数据中心。在复制到两个数据中心后，当主数据中心（primary datacenter）发生故障后，这种配置可以提供disaster recovery和高可用。
 
@@ -21745,13 +21775,13 @@ POST _transform/_preview
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ccr-arch-multiple-dcs.png">
 
-- Chained replication
+3. Chained replication
 
 &emsp;&emsp;你可以跨多个数据中心进行数据复制并形成一个复制链（replication chain）。下图中，数据中心A包含了leader index，数据中心B复制了数据中心A的数据，数据中心C复制了数据中心B上的follower index。这些数据中心间的连接形成了一个链式的复制模式（chained replication pattern）。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ccr-arch-chain-dcs.png">
 
-- Bi-directional replication
+4. Bi-directional replication
 
 &emsp;&emsp;在[bi-directional replication](https://www.elastic.co/blog/bi-directional-replication-with-elasticsearch-cross-cluster-replication-ccr)中，所有集群有权（access）访问所有的数据，所有集群拥有用于写入的索引并且不用手动实现故障转移（failover）。应用程序可以写入到每一个数据中心的本地索引中并且可以跨多个索引（across multiple indices）来读取全局的所有的信息（a global view of all information）。
 
