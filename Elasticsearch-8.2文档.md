@@ -891,7 +891,7 @@ POST _nodes/reload_secure_settings
 - [Cluster-level shard allocation settings](#####Cluster-level-shard-allocation-settings)用来控制分片和平衡操作
 - [Disk-based shard allocation settings](#####Disk-based-shard-allocation-settings)描述了Elasticsearch如何考虑（take into account）磁盘空间等等相关信息
 - [Shard allocation awareness](#####Shard-allocation-awareness) 和[Forced awareness](#####Forced-awareness)用来控制在不同的rack和可见区域上发布分片
-- [Cluster-level shard allocation filteringed](#####Cluster-level shard allocation filtering)允许一些节点或者组内的节点不会被分配分片，使得这些节点能够被关闭（decommissioned）
+- [Cluster-level shard allocation filtering](#####Cluster-level shard allocation filtering)允许一些节点或者组内的节点不会被分配分片，使得这些节点能够被关闭（decommissioned）
 
 &emsp;&emsp;除此之外，还有一些其他的配置，见[Miscellaneous cluster settings](#####Miscellaneous-cluster-settings)。
 
@@ -1146,7 +1146,7 @@ PUT _cluster/settings
 &emsp;&emsp;cluster allocation settings支持下面的内建属性：
 
 |    \_name    | 根据node name匹配节点 |
-| :---------: | ---- |
+| :---------: | :--: |
 |  \_host\_ip   | 根据host IP 地址（hostname关联的IP）匹配节点 |
 | \_publish\_ip | 根据发布的IP地址匹配节点 |
 |     \_ip     | 根据\_host\_ip或者\_publish\_ip匹配节点 |
@@ -3778,14 +3778,14 @@ PUT test/_settings
 
 &emsp;&emsp;索引的分配设置支持下列的内置属性：
 
-|    `_name`    |                     根据节点名字进行匹配                     |
+|    \_name    |                     根据节点名字进行匹配                     |
 | :-----------: | :----------------------------------------------------------: |
-|  `_host_ip`   |                     根据host ip进行匹配                      |
-| `_publish_ip` |            根据发布的IP（publish IP）地址进行匹配            |
-|     `_ip`     |           根据`_host_ip`或者`_publish_ip`进行匹配            |
-|    `_host`    |                     根据hostname进行匹配                     |
-|     `_id`     |                      根据节点id进行匹配                      |
-|    `_tier`    | 根据[data tier](###Data tiers)角色匹配，见[data tier allocation filtering](####Index-level data tier allocation filtering)了解更多细节 |
+|  \_host_ip   |                     根据host ip进行匹配                      |
+| \_publish_ip |            根据发布的IP（publish IP）地址进行匹配            |
+|     \_ip     |           根据`_host_ip`或者`_publish_ip`进行匹配            |
+|    \_host    |                     根据hostname进行匹配                     |
+|    \_id    |                      根据节点id进行匹配                      |
+|    \_tier    | 根据[data tier](###Data tiers)角色匹配，见[data tier allocation filtering](####Index-level data tier allocation filtering)了解更多细节 |
 
 &emsp;&emsp;`_tier`这种过滤属性基于[node](####Node)角色，只有部分角色是 [data tier](####Index-level data tier allocation filtering)角色并且一般的（generic）[data role](#####Data node)会匹配到任意的tier filtering。
 
@@ -26082,7 +26082,7 @@ GET /_search
 
 &emsp;&emsp;见[Encrypt internode communication](#####Encrypt internode communications with TLS)。
 
-### Cluster-level shard allocation filtering
+### Cluster-level shard allocation filtering-1
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/allocation-filtering.html)
 
 &emsp;&emsp;见[Cluster-level shard allocation filtering](#####Cluster-level shard allocation settings)。
