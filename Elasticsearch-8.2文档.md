@@ -25104,6 +25104,166 @@ POST my-data-stream/_async_search
 #### cat shards API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-shards.html)
 
+> IMPORTANT：cat APIs只能在命令行或者Kibana控制台中人为使用。不能在应用中使用。
+
+&emsp;&emsp;`shard`命令详细的展示了哪些节点包含了哪些分片，它能告诉你是主分片还是副本分片，文档的数量，磁盘占用的字节数以及分片在哪个节点上。
+
+&emsp;&emsp;对于data stream，API会返回stream中[backing Index](####Backing indices)的信息。
+
+##### Request
+
+`GET /_cat/shards/<target>`
+`GET /_cat/shards`
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。你也必须要有`monitor`或者`manage` [index privilege](#####Indices privileges)用于你需要检索的data stream、Index、或者alias。
+
+##### Path parameters
+
+`<target>`
+
+&emsp;&emsp;（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+
+##### Query parameter
+
+###### bytes
+
+&emsp;&emsp;（Optional，[byte size units](####Byte size units)）展示字节值的单位。
+
+###### format
+
+&emsp;&emsp;（Optional，string）[HTTP accept header]()的short version。可选值包括JSON、YAML等等。
+
+###### h
+
+&emsp;&emsp;（Optional，string）需要展示的列名，使用逗号分隔。
+
+&emsp;&emsp;如果你不指定列名，API会下面列出的默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
+
+&emsp;&emsp;可选的列包括：
+
+- index、i、indx
+  - （default）索引的名字
+- shard、s、sh
+  - （default）分片的名字
+- prirep、p、pr、primaryOrReplica
+  - （default）分片类型，返回值为`primary`或者`replica`
+- state、st
+  - （default）分片状态。返回的值有：
+    - `INITIALIZING`：分片正在从对等节点（peer shard）或者gateway中恢复
+    - `RELOCATING`：分片正在分配中（relocating）
+    - `STARTED`：分片已启用（started）
+    - `UNASSIGNED`：分片还未分配给任何一个节点
+- docs、d、dc
+  - （default）分片中文档的数量，比如`25`
+- store、sto
+  - （default）分片的磁盘使用量，比如`5kb`
+- ip
+  - （default）节点的IP地址，比如`127.0.1.1`
+- id
+  - （default）节点的ID，比如`k0zy`
+- node、n
+  - （default）节点的名字，比如`I8hydUG`
+- completion.size、cs、completionSize
+  - Size of completion, such as 0b.
+- fielddata.memory_size、fm、fielddataMemory
+  - [fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
+- fielddata.evictions、fe、fielddataEvictions
+  - 清除的fielddata cache的内存量，比如`0`
+- flush.total、 ft、flushTotal
+  - [flush](####Flush API)的次数，比如`1`
+- flush.total_time、ftt、flushTotalTime
+  - flush操作花费的时间，比如`1`
+- get.current、gc、getCurrent
+  - 当前GET操作的数量，比如`0`
+- get.time、gti、getTime
+  - GET操作花费的时间，比如`14ms`
+- get.total、gto、getTotal
+  - GET操作的数量，比如`2`
+- get.exists_time、 geti、getExistsTime
+  - GET操作成功花费的时间，比如`14ms`
+- get.exists_total、geto、getExistsTotal
+  - GET操作成功的数量，比如`2`
+- get.missing_time、gmti、getMissingTime
+  - GET操作失败花费的时间，比如`0s`
+- get.missing_total、gmto、getMissingTotal
+  - GET操作失败的数量，比如`1`
+- indexing.delete_current、idc、indexingDeleteCurrent
+  - 当前DELETE操作的数量，比如`0`
+- indexing.delete_time、idti、indexingDeleteTime
+  - DELETE操作花费的时间，比如`2ms`
+- indexing.delete_total、idto、indexingDeleteTotal
+  - DELETE操作的数量，比如`2`
+- indexing.index_current、iic、indexingIndexCurrent
+  - 当前索引（indexing）操作的数量，比如`0`
+- indexing.index_time、iiti、indexingIndexTime
+  - 索引操作花费的时间，比如`134ms`
+- indexing.index_total、iito、indexingIndexTotal
+  - 索引操作的数量，比如`1`
+- indexing.index_failed、iif、indexingIndexFailed
+  - 索引操作失败的数量，比如`0`
+- merges.current、mc、mergesCurrent
+  - 当前merge操作的数量，比如`0`
+- merges.current_docs、mcd、mergesCurrentDocs
+  - 当前merge操作中文档的数量，比如`0`
+- merges.current_size、mcs、mergesCurrentSize
+  - 当前merge的大小，比如`0b`
+- merges.total、mt、mergesTotal
+  - 完成merge操作的数量，比如`0`
+- merges.total_docs、mtd、mergesTotalDocs
+  - 完成合并的文档数量，比如`0`
+- merges.total_size、mts、mergesTotalSize
+  - Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
+- merges.total_time、mtt、mergesTotalTime
+  - 合并文档花费的时间，比如`0s`
+- query_cache.memory_size、qcm、queryCacheMemory
+  - 查询缓存（query cache）占用的内存量，比如`0b`
+- query_cache.evictions、qce、queryCacheEvictions
+  - 清除掉的查询缓存的内存量，比如`0`
+- recoverysource.type、rs
+  - Type of recovery source
+- refresh.total、rto、refreshTotal
+  - [refresh](####Refresh API)的数量，比如`16`
+- refresh.time、rti、refreshTime
+  - refresh花费的时间，比如`91ms`
+- search.fetch_current、sfc、searchFetchCurrent
+  - 当前fetch阶段操作，比如`0`
+- search.fetch_time、sfti、searchFetchTime
+  - fetch阶段花费的时间，比如`37ms`
+- search.fetch_total、sfto、searchFetchTotal
+  - fetch操作的数量，比如`7`
+- search.open_contexts、so、searchOpenContexts
+  - 已打开的search context的数量，比如`0`
+- search.query_current、sqc、searchQueryCurrent
+  - 当前query阶段的操作，比如`0`
+- search.query_time, sqti, searchQueryTime
+  - query阶段花费的时间，比如`43ms`
+- search.query_total, sqto, searchQueryTotal
+  - query操作的数量，比如`9`
+- search.scroll_current, scc, searchScrollCurrent
+  - 已打开的scroll context的数量，比如`2`
+- search.scroll_time, scti, searchScrollTime
+  - 保持已打开的scroll context的时间，比如`2m`
+- search.scroll_total, scto, searchScrollTotal
+  - 已完成的scroll context的数量，比如`1`
+- segments.count, sc, segmentsCount
+- segments.memory, sm, segmentsMemory
+- segments.index_writer_memory, siwm, segmentsIndexWriterMemory
+- segments.version_map_memory, svmm, segmentsVersionMapMemory
+- segments.fixed_bitset_memory, sfbm, fixedBitsetMemory
+- seq_no.global_checkpoint, sqg, globalCheckpoint
+- seq_no.local_checkpoint, sql, localCheckpoint
+- seq_no.max, sqm, maxSeqNo
+- suggest.current, suc, suggestCurrent
+- suggest.time, suti, suggestTime
+- suggest.total, suto, suggestTotal
+- sync_id
+- unassigned.at, ua
+- unassigned.details, ud
+- unassigned.for, uf
+- unassigned.reason, ur
+
 #### cat thread pool API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-thread-pool.html)
 
