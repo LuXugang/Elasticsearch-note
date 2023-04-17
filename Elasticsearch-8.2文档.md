@@ -25104,9 +25104,9 @@ POST my-data-stream/_async_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-recovery.html)
 
 #### cat shards API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-shards.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-shards.html)
 
-> IMPORTANT：cat APIs只能在命令行或者Kibana控制台中人为使用。不能在应用中使用。
+> IMPORTANT：cat APIs只能在命令行或者Kibana控制台中人为使用。不应该在应用中使用。
 
 &emsp;&emsp;`shard`命令详细的展示了哪些节点包含了哪些分片，它能告诉你是主分片还是副本分片，文档的数量，磁盘占用的字节数以及分片在哪个节点上。
 
@@ -25141,7 +25141,7 @@ POST my-data-stream/_async_search
 
 &emsp;&emsp;（Optional，string）需要展示的列名，使用逗号分隔。
 
-&emsp;&emsp;如果你不指定列名，API会下面列出的默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
+&emsp;&emsp;如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
 
 &emsp;&emsp;可选的列包括：
 
@@ -25172,7 +25172,7 @@ POST my-data-stream/_async_search
 - fielddata.memory_size、fm、fielddataMemory
 &emsp;&emsp;[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
 - fielddata.evictions、fe、fielddataEvictions
-&emsp;&emsp;清除的fielddata cache的内存量，比如`0`
+&emsp;&emsp;清除掉的fielddata cache的内存量，比如`0`
 - flush.total、 ft、flushTotal
 &emsp;&emsp;[flush](####Flush API)的次数，比如`1`
 - flush.total_time、ftt、flushTotalTime
@@ -25246,7 +25246,7 @@ POST my-data-stream/_async_search
 - search.scroll_current, scc, searchScrollCurrent
 &emsp;&emsp;已打开的scroll context的数量，比如`2`
 - search.scroll_time, scti, searchScrollTime
-&emsp;&emsp;保持已打开的scroll context的时间，比如`2m`
+&emsp;&emsp;已打开的scroll context的保留时间，比如`2m`
 - search.scroll_total, scto, searchScrollTotal
 &emsp;&emsp;已完成的scroll context的数量，比如`1`
 - segments.count, sc, segmentsCount
@@ -25274,7 +25274,7 @@ POST my-data-stream/_async_search
 - sync_id
 &emsp;&emsp;分片的Sync ID 
 - unassigned.at, ua
-&emsp;&emsp;分片成为未分配分片的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
+&emsp;&emsp;成为未分配分片的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
 - unassigned.details, ud
   某个分片成为未分配分片的详细原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) 
 - unassigned.for, uf
@@ -25284,21 +25284,117 @@ POST my-data-stream/_async_search
 
   - ALLOCATION_FAILED：分片分配操作发生故障导致未分配
   - CLUSTER_RECOVERED：[full cluster recovery](###Full cluster restart upgrade)导致未分配
-  - DANGLING_INDEX_IMPORTED：d 
-  - EXISTING_INDEX_RESTORED：
-  - FORCED_EMPTY_PRIMARY：
-  - INDEX_CLOSED：
-  - INDEX_CREATED：
-  - INDEX_REOPENED：
-  - MANUAL_ALLOCATION：
-  - NEW_INDEX_RESTORED：
-  - NODE_LEFT：
-  - NODE_RESTARTING：
-  - PRIMARY_FAILED：
-  - REALLOCATED_REPLICA：
-  - REINITIALIZED：
-  - REPLICA_ADDED：
-  - REROUTE_CANCELLED：
+  - DANGLING_INDEX_IMPORTED：正在导入[dangling index](#####Dangling indices)导致未分配
+  - EXISTING_INDEX_RESTORED：正在恢复成一个closed index导致未分配
+  - FORCED_EMPTY_PRIMARY：The shard’s allocation was last modified by forcing an empty primary using the [Cluster reroute API](####Cluster reroute API)
+  - INDEX_CLOSED：index被关闭了导致未分配
+  - INDEX_CREATED：Unassigned as a result of an API creation of an index
+  - INDEX_REOPENED：正在打开一个关闭的索引导致未分配
+  - MANUAL_ALLOCATION：分片的分配因为上一次通过[Cluster reroute API](####Cluster reroute API)进行了变更
+  - NEW_INDEX_RESTORED：正在恢复成一个新的索引导致未分配
+  - NODE_LEFT：节点正在离开集群导致未分配
+  - NODE_RESTARTING：类似NODE_LEFT，只是节点通过[Node shutdown API](###Node lifecycle APIs)进行重启以及注册到集群
+  - PRIMARY_FAILED：分片正在初始化为一个副本分片（replica），但是在初始化完成之前主分片发生了故障
+  - REALLOCATED_REPLICA：识别到了一个更好的副本分片位置使得现有的副本分片被取消了
+  - REINITIALIZED：When a shard moves from started back to initializing
+  - REPLICA_ADDED：显示的（explicit）增加了一个副本分片导致未分配
+  - REROUTE_CANCELLED：显示的取消reroute命令导致未分配
+
+###### help
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`。响应中包含帮助信息。默认值为`false`。
+
+###### master_timeout
+
+&emsp;&emsp;（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
+
+###### s
+
+&emsp;&emsp;（Optional, string）用逗号隔开的列名或者列的别名对响应进行排序
+
+###### time
+
+&emsp;&emsp;（Optional, [time units](####Time units)）展示时间使用的时间单位。
+
+###### v
+
+（Optional, Boolean）如果为`true`，响应中会包含列名。默认为`false`。
+
+##### Examples
+
+###### Example with a single data stream or index
+
+```text
+GET _cat/shards
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+my-index-000001 0 p STARTED 3014 31.1mb 192.168.56.10 H5dfFeA
+```
+
+###### Example with a wildcard pattern
+
+&emsp;&emsp;如果你的集群中有很多的分片，你可以在`<target>`中使用wildcard pattern来限制API的请求。
+
+&emsp;&emsp;下面的请求返回索引名以`my-index-`开头的所有的data stream或者index。
+
+```text
+GET _cat/shards/my-index-*
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+my-index-000001 0 p STARTED 3014 31.1mb 192.168.56.10 H5dfFeA
+```
+
+###### Example with a relocating shard
+
+```text
+GET _cat/shards
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+my-index-000001 0 p RELOCATING 3014 31.1mb 192.168.56.10 H5dfFeA -> -> 192.168.56.30 bGG90GE
+```
+
+&emsp;&emsp;在`state`列中的值`RELOCATING`说明索引分片正在重新分配中。
+
+###### Example with a shard states
+
+&emsp;&emsp;某个分片在可以使用之前，它会经历`INITIALIZING`状态。你可以使用cat shards API来查看哪些分片正在初始化。
+
+```text
+GET _cat/shards
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+my-index-000001 0 p STARTED      3014 31.1mb 192.168.56.10 H5dfFeA
+my-index-000001 0 r INITIALIZING    0 14.3mb 192.168.56.30 bGG90GE
+```
+
+###### Example with reasons for unassigned shards
+
+&emsp;&emsp;下面的请求会返回`unassigned.reason`这一列，来查看某个分片为什么未分配。
+
+```text
+GET _cat/shards?h=index,shard,prirep,state,unassigned.reason
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+my-index-000001 0 p STARTED    3014 31.1mb 192.168.56.10 H5dfFeA
+my-index-000001 0 r STARTED    3014 31.1mb 192.168.56.30 bGG90GE
+my-index-000001 0 r STARTED    3014 31.1mb 192.168.56.20 I8hydUG
+my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
+```
 
 
 #### cat thread pool API
@@ -25981,8 +26077,12 @@ POST /my_source_index/_split/my_target_index
 #### Set upgrade mode API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ml-set-upgrade-mode.html)
 
+### Node lifecycle APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/node-lifecycle-api.html)
+
 ### Rollup APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-apis.html)
+
 
 #### Create rollup jobs API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-put-job.html)
