@@ -1246,7 +1246,7 @@ PUT /_cluster/settings
 
 &emsp;&emsp;如果 Elasticsearch 遇到当前集群状态中不存在的索引数据，则这些索引被认为是dangling。 例如，如果你在 Elasticsearch 节点离线时删除超过 `cluster.indices.tombstones.size` 的索引，就会发生这种情况。
 
-&emsp;&emsp;你可以使用[Dangling indices API](####Dangling indices:)来进行管理。
+&emsp;&emsp;你可以使用[Dangling indices API](#####Dangling indices:)来进行管理。
 
 ##### Logger
 
@@ -1456,6 +1456,8 @@ PUT /_cluster/settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-gateway.html)
 
 ##### Dangling indices
+
+&emsp;&emsp;当一个节点加入到集群，如果它发现本地数据目录中存在一些分片，这些分片在集群中的其他节点上不存在，那么就认为这些分片属于"dangling" index。你可以使用[Dangling indices API](####Dangling indices:)列出，导入或者删除dangling index。
 
 #### Logging
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/logging.html)
@@ -25144,125 +25146,160 @@ POST my-data-stream/_async_search
 &emsp;&emsp;可选的列包括：
 
 - index、i、indx
-  - （default）索引的名字
+&emsp;&emsp;（default）索引的名字
 - shard、s、sh
-  - （default）分片的名字
+&emsp;&emsp;（default）分片的名字
 - prirep、p、pr、primaryOrReplica
-  - （default）分片类型，返回值为`primary`或者`replica`
+&emsp;&emsp;（default）分片类型，返回值为`primary`或者`replica`
 - state、st
-  - （default）分片状态。返回的值有：
+  &emsp;&emsp;（default）分片状态。返回的值有：
     - `INITIALIZING`：分片正在从对等节点（peer shard）或者gateway中恢复
     - `RELOCATING`：分片正在分配中（relocating）
     - `STARTED`：分片已启用（started）
     - `UNASSIGNED`：分片还未分配给任何一个节点
 - docs、d、dc
-  - （default）分片中文档的数量，比如`25`
+&emsp;&emsp;（default）分片中文档的数量，比如`25`
 - store、sto
-  - （default）分片的磁盘使用量，比如`5kb`
+&emsp;&emsp;（default）分片的磁盘使用量，比如`5kb`
 - ip
-  - （default）节点的IP地址，比如`127.0.1.1`
+&emsp;&emsp;（default）节点的IP地址，比如`127.0.1.1`
 - id
-  - （default）节点的ID，比如`k0zy`
+&emsp;&emsp;（default）节点的ID，比如`k0zy`
 - node、n
-  - （default）节点的名字，比如`I8hydUG`
+&emsp;&emsp;（default）节点的名字，比如`I8hydUG`
 - completion.size、cs、completionSize
-  - Size of completion, such as 0b.
+&emsp;&emsp;Size of completion, such as 0b.
 - fielddata.memory_size、fm、fielddataMemory
-  - [fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
+&emsp;&emsp;[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
 - fielddata.evictions、fe、fielddataEvictions
-  - 清除的fielddata cache的内存量，比如`0`
+&emsp;&emsp;清除的fielddata cache的内存量，比如`0`
 - flush.total、 ft、flushTotal
-  - [flush](####Flush API)的次数，比如`1`
+&emsp;&emsp;[flush](####Flush API)的次数，比如`1`
 - flush.total_time、ftt、flushTotalTime
-  - flush操作花费的时间，比如`1`
+&emsp;&emsp;flush操作花费的时间，比如`1`
 - get.current、gc、getCurrent
-  - 当前GET操作的数量，比如`0`
+&emsp;&emsp;当前GET操作的数量，比如`0`
 - get.time、gti、getTime
-  - GET操作花费的时间，比如`14ms`
+&emsp;&emsp;GET操作花费的时间，比如`14ms`
 - get.total、gto、getTotal
-  - GET操作的数量，比如`2`
+&emsp;&emsp;GET操作的数量，比如`2`
 - get.exists_time、 geti、getExistsTime
-  - GET操作成功花费的时间，比如`14ms`
+&emsp;&emsp;GET操作成功花费的时间，比如`14ms`
 - get.exists_total、geto、getExistsTotal
-  - GET操作成功的数量，比如`2`
+&emsp;&emsp;GET操作成功的数量，比如`2`
 - get.missing_time、gmti、getMissingTime
-  - GET操作失败花费的时间，比如`0s`
+&emsp;&emsp;GET操作失败花费的时间，比如`0s`
 - get.missing_total、gmto、getMissingTotal
-  - GET操作失败的数量，比如`1`
+&emsp;&emsp;GET操作失败的数量，比如`1`
 - indexing.delete_current、idc、indexingDeleteCurrent
-  - 当前DELETE操作的数量，比如`0`
+&emsp;&emsp;当前DELETE操作的数量，比如`0`
 - indexing.delete_time、idti、indexingDeleteTime
-  - DELETE操作花费的时间，比如`2ms`
+&emsp;&emsp;DELETE操作花费的时间，比如`2ms`
 - indexing.delete_total、idto、indexingDeleteTotal
-  - DELETE操作的数量，比如`2`
+&emsp;&emsp;DELETE操作的数量，比如`2`
 - indexing.index_current、iic、indexingIndexCurrent
-  - 当前索引（indexing）操作的数量，比如`0`
+&emsp;&emsp;当前索引（indexing）操作的数量，比如`0`
 - indexing.index_time、iiti、indexingIndexTime
-  - 索引操作花费的时间，比如`134ms`
+&emsp;&emsp;索引操作花费的时间，比如`134ms`
 - indexing.index_total、iito、indexingIndexTotal
-  - 索引操作的数量，比如`1`
+&emsp;&emsp;索引操作的数量，比如`1`
 - indexing.index_failed、iif、indexingIndexFailed
-  - 索引操作失败的数量，比如`0`
+&emsp;&emsp;索引操作失败的数量，比如`0`
 - merges.current、mc、mergesCurrent
-  - 当前merge操作的数量，比如`0`
+&emsp;&emsp;当前merge操作的数量，比如`0`
 - merges.current_docs、mcd、mergesCurrentDocs
-  - 当前merge操作中文档的数量，比如`0`
+&emsp;&emsp;当前merge操作中文档的数量，比如`0`
 - merges.current_size、mcs、mergesCurrentSize
-  - 当前merge的大小，比如`0b`
+&emsp;&emsp;当前merge的大小，比如`0b`
 - merges.total、mt、mergesTotal
-  - 完成merge操作的数量，比如`0`
+&emsp;&emsp;完成merge操作的数量，比如`0`
 - merges.total_docs、mtd、mergesTotalDocs
-  - 完成合并的文档数量，比如`0`
+&emsp;&emsp;完成合并的文档数量，比如`0`
 - merges.total_size、mts、mergesTotalSize
-  - Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
+&emsp;&emsp;Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
 - merges.total_time、mtt、mergesTotalTime
-  - 合并文档花费的时间，比如`0s`
+&emsp;&emsp;合并文档花费的时间，比如`0s`
 - query_cache.memory_size、qcm、queryCacheMemory
-  - 查询缓存（query cache）占用的内存量，比如`0b`
+&emsp;&emsp;查询缓存（query cache）占用的内存量，比如`0b`
 - query_cache.evictions、qce、queryCacheEvictions
-  - 清除掉的查询缓存的内存量，比如`0`
+&emsp;&emsp;清除掉的查询缓存的内存量，比如`0`
 - recoverysource.type、rs
-  - Type of recovery source
+&emsp;&emsp;Type of recovery source
 - refresh.total、rto、refreshTotal
-  - [refresh](####Refresh API)的数量，比如`16`
+&emsp;&emsp;[refresh](####Refresh API)的数量，比如`16`
 - refresh.time、rti、refreshTime
-  - refresh花费的时间，比如`91ms`
+&emsp;&emsp;refresh花费的时间，比如`91ms`
 - search.fetch_current、sfc、searchFetchCurrent
-  - 当前fetch阶段操作，比如`0`
+&emsp;&emsp;当前fetch阶段操作，比如`0`
 - search.fetch_time、sfti、searchFetchTime
-  - fetch阶段花费的时间，比如`37ms`
+&emsp;&emsp;fetch阶段花费的时间，比如`37ms`
 - search.fetch_total、sfto、searchFetchTotal
-  - fetch操作的数量，比如`7`
+&emsp;&emsp;fetch操作的数量，比如`7`
 - search.open_contexts、so、searchOpenContexts
-  - 已打开的search context的数量，比如`0`
+&emsp;&emsp;已打开的search context的数量，比如`0`
 - search.query_current、sqc、searchQueryCurrent
-  - 当前query阶段的操作，比如`0`
+&emsp;&emsp;当前query阶段的操作，比如`0`
 - search.query_time, sqti, searchQueryTime
-  - query阶段花费的时间，比如`43ms`
+&emsp;&emsp;query阶段花费的时间，比如`43ms`
 - search.query_total, sqto, searchQueryTotal
-  - query操作的数量，比如`9`
+&emsp;&emsp;query操作的数量，比如`9`
 - search.scroll_current, scc, searchScrollCurrent
-  - 已打开的scroll context的数量，比如`2`
+&emsp;&emsp;已打开的scroll context的数量，比如`2`
 - search.scroll_time, scti, searchScrollTime
-  - 保持已打开的scroll context的时间，比如`2m`
+&emsp;&emsp;保持已打开的scroll context的时间，比如`2m`
 - search.scroll_total, scto, searchScrollTotal
-  - 已完成的scroll context的数量，比如`1`
+&emsp;&emsp;已完成的scroll context的数量，比如`1`
 - segments.count, sc, segmentsCount
+&emsp;&emsp;段的数量，例如`4`
 - segments.memory, sm, segmentsMemory
+&emsp;&emsp;段的内存使用量，例如`4`
 - segments.index_writer_memory, siwm, segmentsIndexWriterMemory
+&emsp;&emsp;index writer的内存使用量，例如`1.4kb`
 - segments.version_map_memory, svmm, segmentsVersionMapMemory
+&emsp;&emsp;版本映射（version map）的内存使用量，例如`1.0kb`
 - segments.fixed_bitset_memory, sfbm, fixedBitsetMemory
+&emsp;&emsp;[nested object](####Nested field type)类型的域和[join](####Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
 - seq_no.global_checkpoint, sqg, globalCheckpoint
+&emsp;&emsp;全局检查点（global checkpoint）
 - seq_no.local_checkpoint, sql, localCheckpoint
+&emsp;&emsp;本地检查点（local checkpoint）
 - seq_no.max, sqm, maxSeqNo
+&emsp;&emsp;sequence数值最大值
 - suggest.current, suc, suggestCurrent
+&emsp;&emsp;当前suggest操作的数量，比如`0`
 - suggest.time, suti, suggestTime
+&emsp;&emsp;suggest花费的时间，例如`0`
 - suggest.total, suto, suggestTotal
+&emsp;&emsp;suggest操作的数量，比如`0`
 - sync_id
+&emsp;&emsp;分片的Sync ID 
 - unassigned.at, ua
+&emsp;&emsp;分片成为未分配分片的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
 - unassigned.details, ud
+  某个分片成为未分配分片的详细原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) 
 - unassigned.for, uf
+&emsp;&emsp;分片被要求成为未分配的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
 - unassigned.reason, ur
+  &emsp;&emsp;未分配分片的状态上一次发生变更的原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) ，返回的值包括：
+
+  - ALLOCATION_FAILED：分片分配操作发生故障导致未分配
+  - CLUSTER_RECOVERED：[full cluster recovery](###Full cluster restart upgrade)导致未分配
+  - DANGLING_INDEX_IMPORTED：d 
+  - EXISTING_INDEX_RESTORED：
+  - FORCED_EMPTY_PRIMARY：
+  - INDEX_CLOSED：
+  - INDEX_CREATED：
+  - INDEX_REOPENED：
+  - MANUAL_ALLOCATION：
+  - NEW_INDEX_RESTORED：
+  - NODE_LEFT：
+  - NODE_RESTARTING：
+  - PRIMARY_FAILED：
+  - REALLOCATED_REPLICA：
+  - REINITIALIZED：
+  - REPLICA_ADDED：
+  - REROUTE_CANCELLED：
+
 
 #### cat thread pool API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-thread-pool.html)
@@ -25508,6 +25545,12 @@ POST my-data-stream/_async_search
 ### Index APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices.html)
 
+##### Dangling indices:
+
+- [List dangling indices](####List dangling indices API)
+- [Import dangling index](####Import dangling index API)
+- [Delete dangling index](####Delete dangling index API)
+
 #### Aliases API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
 
@@ -25616,6 +25659,9 @@ PUT _template/template_1
 
 ###### aliases(1)
 
+#### Delete dangling index API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
+
 #### Delete index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
 
@@ -25636,6 +25682,9 @@ PUT _template/template_1
 
 #### Get mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
+
+#### Import dangling index API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-import.html)
 
 #### Index segments API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-segments.html)
@@ -25860,6 +25909,10 @@ POST /my_source_index/_split/my_target_index
 ###### settings
 
 &emsp;&emsp;(Optional, [index setting object](##Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](##Index Modules)。
+
+#### List dangling indices API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-indices-list.html#dangling-indices-list-api-example)
+
 
 #### Open index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-open-close.html)
