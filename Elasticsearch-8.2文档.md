@@ -25986,6 +25986,11 @@ GET _cluster/allocation/explain
 #### Cluster health API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-health.html)
 
+#### Cluster reroute API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-reroute.html)
+
+&emsp;&emsp;
+
 #### Cluster state API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-state.html)
 
