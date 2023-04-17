@@ -25692,7 +25692,293 @@ my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html)
 
 #### Cluster allocation explain API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-allocation-explain.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-allocation-explain.html)
+
+&emsp;&emsp;提供某个分片当前的分配信息
+
+```text
+GET _cluster/allocation/explain
+{
+  "index": "my-index-000001",
+  "shard": 0,
+  "primary": false,
+  "current_node": "my-node"
+}
+```
+
+##### Request
+
+`GET _cluster/allocation/explain`
+`POST _cluster/allocation/explain`
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;该API 的目的是提供集群中分片分配的信息。对于未分配的分片，这个API会提供未分配的原因。对于已分配的分片，这个API会提供为什么这个分片仍然在当前节点并且还未移动或者Rebalance到其他的节点的原因。当尝试诊断某个分片为什么还未分配或者分片不像你期望那样仍然在当前节点时使用这个API就非常的有用。
+
+##### Query parameters
+
+###### include_disk_info
+
+&emsp;&emsp;（Optional，Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
+
+###### include_yes_decisions
+
+&emsp;&emsp;（Optional，Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
+
+##### Request body
+
+###### current_node
+
+&emsp;&emsp;（Optional，string）指定节点的ID或者名字，只返回在指定节点上的分片的分配信息。
+
+###### index
+
+&emsp;&emsp;（Optional，string）指定你想要了解的索引的名字。
+
+###### primary
+
+&emsp;&emsp;（Optional，Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
+
+###### shard
+
+&emsp;&emsp;（Optional，integer）指定你要了解的分片ID。
+
+##### Example
+
+###### Unassigned primary shard
+
+&emsp;&emsp;下面的请求为一个未分配的主分片返回分配信息。
+
+```text
+GET _cluster/allocation/explain
+{
+  "index": "my-index-000001",
+  "shard": 0,
+n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: '  "primaryn "primary"'g: 'nztrhuoe
+}
+```
+
+&emsp;&emsp;API响应中指出这个分片只能被分配到一个不存在的（nonexistent）节点上。
+
+```text
+{
+  "index" : "my-index-000001",
+  "shard" : 0,
+  "primary" : true,
+  "current_state" : "unassigned",                 
+  "unassigned_info" : {
+    "reason" : "INDEX_CREATED",                   
+    "at" : "2017-01-04T18:08:16.600Z",
+    "last_allocation_status" : "no"
+  },
+  "can_allocate" : "no",                          
+  "allocate_explanation" : "Elasticsearch isn't allowed to allocate this shard to any of the nodes in the cluster. Choose a node to which you expect this shard to be allocated, find this node in the node-by-node explanation, and address the reasons which prevent Elasticsearch from allocating this shard there.",
+  "node_allocation_decisions" : [
+    {
+      "node_id" : "8qt2rY-pT6KNZB3-hGfLnw",
+      "node_name" : "node-0",
+      "transport_address" : "127.0.0.1:9401",
+      "node_attributes" : {},
+      "node_decision" : "no",                     
+      "weight_ranking" : 1,
+      "deciders" : [
+        {
+          "decider" : "filter",                   
+          "decision" : "NO",
+          "explanation" : "node does not match index setting [index.routing.allocation.include] filters [_name:\"nonexistent_node\"]"  
+        }
+      ]
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第5行，当前分片的状态
+
+&emsp;&emsp;第7行，分片最开始未分配的原因
+
+&emsp;&emsp;第11行，能否能分配这个分片
+
+&emsp;&emsp;第19行，是否能将这个分片分配到指定的节点
+
+&emsp;&emsp;第23行，desider为这个节点指向了`no` decision
+
+&emsp;&emsp;第25行，解释了为什么desider返回了一个`no` decision，并且给出了有用的信息：配置导致指向这个`no` decision
+
+&emsp;&emsp;下面的响应中为一个未分配的主分片提供了一个分配信息，这个分片之前已经被分配了。
+
+```text
+{
+  "index" : "my-index-000001",
+  "shard" : 0,
+  "primary" : true,
+  "current_state" : "unassigned",
+  "unassigned_info" : {
+    "reason" : "NODE_LEFT",
+    "at" : "2017-01-04T18:03:28.464Z",
+    "details" : "node_left[OIWe8UhhThCK0V5XfmdrmQ]",
+    "last_allocation_status" : "no_valid_shard_copy"
+  },
+  "can_allocate" : "no_valid_shard_copy",
+  "allocate_explanation" : "Elasticsearch can't allocate this shard because there are no copies of its data in the cluster. Elasticsearch will allocate this shard when a node holding a good copy of its data joins the cluster. If no such node is available, restore this index from a recent snapshot."
+}
+```
+
+###### Unassigned replica shard
+
+&emsp;&emsp;下面的响应中为副本分片提供了一个分配信息，是因为[delayed allocation](####Delaying allocation when a node leaves)导致的。
+
+```text
+{
+  "index" : "my-index-000001",
+  "shard" : 0,
+  "primary" : false,
+  "current_state" : "unassigned",
+  "unassigned_info" : {
+    "reason" : "NODE_LEFT",
+    "at" : "2017-01-04T18:53:59.498Z",
+    "details" : "node_left[G92ZwuuaRY-9n8_tc-IzEg]",
+    "last_allocation_status" : "no_attempt"
+  },
+  "can_allocate" : "allocation_delayed",
+  "allocate_explanation" : "The node containing this shard copy recently left the cluster. Elasticsearch is waiting for it to return. If the node does not return within [%s] then Elasticsearch will allocate this shard to another node. Please wait.",
+  "configured_delay" : "1m",                      
+  "configured_delay_in_millis" : 60000,
+  "remaining_delay" : "59.8s",                    
+  "remaining_delay_in_millis" : 59824,
+  "node_allocation_decisions" : [
+    {
+      "node_id" : "pmnHu_ooQWCPEFobZGbpWw",
+      "node_name" : "node_t2",
+      "transport_address" : "127.0.0.1:9402",
+      "node_decision" : "yes"
+    },
+    {
+      "node_id" : "3sULLVJrRneSg0EfBB-2Ew",
+      "node_name" : "node_t0",
+      "transport_address" : "127.0.0.1:9400",
+      "node_decision" : "no",
+      "store" : {                                 
+        "matching_size" : "4.2kb",
+        "matching_size_in_bytes" : 4325
+      },
+      "deciders" : [
+        {
+          "decider" : "same_shard",
+          "decision" : "NO",
+          "explanation" : "a copy of this shard is already allocated to this node [[my-index-000001][0], node[3sULLVJrRneSg0EfBB-2Ew], [P], s[STARTED], a[id=eV9P8BN1QPqRc3B4PLx6cg]]"
+        }
+      ]
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第14行，由于刚刚离开集群的节点拥有这个分片，并且配置了`1m`的延迟（如果在超时前那个节点重新回到集群，就不用生成新的副本分片）
+
+&emsp;&emsp;第16行，即将分配副本分片的剩余时间
+
+&emsp;&emsp;第30行，节点上分片数据的信息
+
+###### Assigned shard
+
+&emsp;&emsp;下面的响应中为一个已分配的分片提供了分配信息。这个响应指出该分片不允许继续呆在当前节点上，必须重新分配。
+
+```text
+{
+  "index" : "my-index-000001",
+  "shard" : 0,
+  "primary" : true,
+  "current_state" : "started",
+  "current_node" : {
+    "id" : "8lWJeJ7tSoui0bxrwuNhTA",
+    "name" : "node_t1",
+    "transport_address" : "127.0.0.1:9401"
+  },
+  "can_remain_on_current_node" : "no",            
+  "can_remain_decisions" : [                      
+    {
+      "decider" : "filter",
+      "decision" : "NO",
+      "explanation" : "node does not match index setting [index.routing.allocation.include] filters [_name:\"nonexistent_node\"]"
+    }
+  ],
+  "can_move_to_other_node" : "no",                
+  "move_explanation" : "This shard may not remain on its current node, but Elasticsearch isn't allowed to move it to another node. Choose a node to which you expect this shard to be allocated, find this node in the node-by-node explanation, and address the reasons which prevent Elasticsearch from allocating this shard there.",
+  "node_allocation_decisions" : [
+    {
+      "node_id" : "_P8olZS8Twax9u6ioN-GGA",
+      "node_name" : "node_t0",
+      "transport_address" : "127.0.0.1:9400",
+      "node_decision" : "no",
+      "weight_ranking" : 1,
+      "deciders" : [
+        {
+          "decider" : "filter",
+          "decision" : "NO",
+          "explanation" : "node does not match index setting [index.routing.allocation.include] filters [_name:\"nonexistent_node\"]"
+        }
+      ]
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第11行，分片是否允许一直待在当前节点上
+
+&emsp;&emsp;第12行，decider指出为什么分片不允许待在当前节点上
+
+&emsp;&emsp;第19行，分片是否允许移动到其他节点上
+
+&emsp;&emsp;下面的响应中为一个必须仍然待在当前节点的分片提供了分配信息。移动到其他节点不会提高集群的平衡。
+
+```text
+{
+  "index" : "my-index-000001",
+  "shard" : 0,
+  "primary" : true,
+  "current_state" : "started",
+  "current_node" : {
+    "id" : "wLzJm4N4RymDkBYxwWoJsg",
+    "name" : "node_t0",
+    "transport_address" : "127.0.0.1:9400",
+    "weight_ranking" : 1
+  },
+  "can_remain_on_current_node" : "yes",
+  "can_rebalance_cluster" : "yes",                
+  "can_rebalance_to_other_node" : "no",           
+  "rebalance_explanation" : "Elasticsearch cannot rebalance this shard to another node since there is no node to which allocation is permitted which would improve the cluster balance. If you expect this shard to be rebalanced to another node, find this node in the node-by-node explanation and address the reasons which prevent Elasticsearch from rebalancing this shard there.",
+  "node_allocation_decisions" : [
+    {
+      "node_id" : "oE3EGFc8QN-Tdi5FFEprIA",
+      "node_name" : "node_t1",
+      "transport_address" : "127.0.0.1:9401",
+      "node_decision" : "worse_balance",          
+      "weight_ranking" : 1
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第13行，集群是否允许Rebalance
+
+&emsp;&emsp;第14行，分片是否能Rebalance到其他节点
+
+&emsp;&emsp;第21行，分片不能Rebalance到其他节点的原因，指出相比较待在当前节点并不能通过移动到其他节点来获得更好的平衡
+
+###### No arguments
+
+&emsp;&emsp;如果你不带参数调用这个API，Elasticsearch会随意的找出一个未分配的主分片或者副本分片并提供分配信息。
+
+```text
+GET _cluster/allocation/explain
+```
+
+&emsp;&emsp;如果集群中没有未分配的分片，API则返回`400`的错误。
 
 #### Cluster get settings API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-get-settings.html)
