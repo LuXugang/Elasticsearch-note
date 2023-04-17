@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/03/20）
+# Elasticsearch-8.2文档（2023/04/17）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -1246,7 +1246,7 @@ PUT /_cluster/settings
 
 &emsp;&emsp;如果 Elasticsearch 遇到当前集群状态中不存在的索引数据，则这些索引被认为是dangling。 例如，如果你在 Elasticsearch 节点离线时删除超过 `cluster.indices.tombstones.size` 的索引，就会发生这种情况。
 
-&emsp;&emsp;你可以使用[Dangling indices API](#####Dangling indices:)来进行管理。
+&emsp;&emsp;你可以使用[Dangling indices API](#####Dangling indices API)来进行管理。
 
 ##### Logger
 
@@ -1457,7 +1457,7 @@ PUT /_cluster/settings
 
 ##### Dangling indices
 
-&emsp;&emsp;当一个节点加入到集群，如果它发现本地数据目录中存在一些分片，这些分片在集群中的其他节点上不存在，那么就认为这些分片属于"dangling" index。你可以使用[Dangling indices API](####Dangling indices:)列出，导入或者删除dangling index。
+&emsp;&emsp;当一个节点加入到集群，如果它发现本地数据目录中存在一些分片，这些分片在集群中的其他节点上不存在，那么就认为这些分片属于"dangling" index。你可以使用[Dangling indices API](####Dangling indices API)列出，导入或者删除dangling index。
 
 #### Logging
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/logging.html)
@@ -25712,6 +25712,9 @@ my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
 #### Nodes hot threads API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-hot-threads.html)
 
+#### Nodes info API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-info.html)
+
 #### Nodes stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
@@ -25929,7 +25932,7 @@ my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
 ### Index APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices.html)
 
-##### Dangling indices:
+##### Dangling indices API
 
 - [List dangling indices](####List dangling indices API)
 - [Import dangling index](####Import dangling index API)
