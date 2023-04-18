@@ -26589,7 +26589,44 @@ POST /my_source_index/_split/my_target_index
 &emsp;&emsp;(Optional, [index setting object](##Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](##Index Modules)。
 
 #### List dangling indices API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-indices-list.html#dangling-indices-list-api-example)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-indices-list.html#dangling-indices-list-api-example)
+
+&emsp;&emsp;该API用于列出dangling index。
+
+##### Request
+
+```text
+GET /_dangling
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security feature，你必须有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;如果Elasticsearch遇到的索引数据不在当前集群状态中，那么这些索引会被认为是dangling Index。例如，当Elasticsearch节点下线时你删除了超过`cluster.indices.tombstones.size`数量的索引就有可能发生。
+
+&emsp;&emsp;可以使用这个API列出dangling Index，你也可以[import](####Import dangling index API)或者[delete](####Delete dangling index API)这些索引。
+
+##### Example
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+{
+  "dangling_indices": [
+   {
+    "index_name": "my-index-000001",
+    "index_uuid": "zmM4e0JtBkeUjiHD-MihPQ",
+    "creation_date_millis": 1589414451372,
+    "node_ids": [
+      "pL47UN3dAb2d5RCWP6lQ3e"
+    ]
+   }
+  ]
+}
+```
 
 
 #### Open index API
