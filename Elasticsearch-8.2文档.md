@@ -26338,7 +26338,45 @@ PUT _template/template_1
 ###### aliases(1)
 
 #### Delete dangling index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
+
+&emsp;&emsp;删除一个dangling Index。
+
+##### Request
+
+```text
+DELETE /_dangling/<index-uuid>?accept_data_loss=true
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;如果Elasticsearch遇到的索引数据不在当前集群状态中，那么这些索引会被认为是dangling Index。例如，当Elasticsearch节点下线时你删除了超过`cluster.indices.tombstones.size`数量的索引就有可能发生。
+
+&emsp;&emsp;通过索引的UUID来删除一个dangling Index。可以使用[List dangling indices API](####List dangling indices API)获取索引的UUID。
+
+##### Path parameters
+
+`<index-uuid>`
+
+&emsp;&emsp;（Required，string）待删除的索引的UUID。可以使用[List dangling indices API](####List dangling indices API)获取索引的UUID。
+
+##### Query parameters
+
+###### accept_data_loss
+
+&emsp;&emsp;（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
+
+###### master_timeout
+
+&emsp;&emsp;（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+###### timeout
+
+&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
@@ -26384,7 +26422,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-`<target>`
+`<index-uuid>`
 
 &emsp;&emsp;（Required，string）待导入的索引的UUID，你可以使用[List dangling indices API](####List dangling indices API)获取索引的UUID。
 
