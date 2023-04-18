@@ -26362,7 +26362,61 @@ PUT _template/template_1
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
 
 #### Import dangling index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-import.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-import.html)
+
+&emsp;&emsp;导入dangling Index。
+
+##### Request
+
+```text
+POST /_dangling/<index-uuid>?accept_data_loss=true
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;如果Elasticsearch遇到的索引数据不在当前集群状态中，那么这些索引会被认为是dangling Index。例如，当Elasticsearch节点下线时你删除了超过`cluster.indices.tombstones.size`数量的索引就有可能发生。
+
+&emsp;&emsp;通过索引的UUID将这个索引导入到集群中。可以使用[List dangling indices API](####List dangling indices API)获取索引的UUID。
+
+##### Path parameters
+
+`<target>`
+
+&emsp;&emsp;（Required，string）待导入的索引的UUID，你可以使用[List dangling indices API](####List dangling indices API)获取索引的UUID。
+
+##### Query Parameters
+
+###### accept_data_loss
+
+&emsp;&emsp;（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
+
+###### master_timeout
+
+&emsp;&emsp;（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+###### timeout
+
+&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+&emsp;&emsp;下面的例子描述了如何导入一个dangling Index：
+
+```text
+OST /_dangling/zmM4e0JtBkeUjiHD-MihPQ?accept_data_loss=true
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Index segments API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-segments.html)
