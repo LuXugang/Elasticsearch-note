@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/04/17）
+# Elasticsearch-8.2文档（2023/04/19）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -25981,7 +25981,45 @@ GET _cluster/allocation/explain
 &emsp;&emsp;如果集群中没有未分配的分片，API则返回`400`的错误。
 
 #### Cluster get settings API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-get-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-get-settings.html)
+
+&emsp;&emsp;返回集群层面的设置：
+
+```text
+GET /_cluster/settings
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Request
+
+```text
+GET /_cluster/settings
+```
+
+##### Description
+
+&emsp;&emsp;默认情况下，这个API只返回显示定义的设置，但也可以通过使用`include_defaults`参数返回一些默认设置。
+
+##### Query parameters
+
+###### flat_settings
+
+&emsp;&emsp;（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+
+###### include_defaults
+
+&emsp;&emsp;（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+
+###### master_timeout
+
+&emsp;&emsp;(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+###### timeout
+
+&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Cluster health API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-health.html)
