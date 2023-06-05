@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/04/19）
+# Elasticsearch-8.2文档（2023/06/05）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -361,7 +361,7 @@ path:
     logs: /var/log/elasticsearch
 ```
 
-&emsp;&emsp;配置也可以平整化（flattened）
+&emsp;&emsp;配置也可以进行平铺（flattened）
 
 ```text
 path.data: /var/lib/elasticsearch
@@ -428,9 +428,8 @@ export HOSTNAME="host1,host2"
 
 &emsp;&emsp;静态配置必须在集群中相关的所有节点上一一配置。
 
-
 #### Important Elasticsearch configuration
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/7,15/important-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/7,15/important-settings.html)
 
 &emsp;&emsp;Elasticsearch只需要很少的配置就能启动。但是在生产中使用你的集群时必须要考虑这些条目：
 
@@ -450,7 +449,7 @@ export HOSTNAME="host1,host2"
 
 ##### Path settings
 
-&emsp;&emsp;Elasticsearch把你的索引数据和数据流都写到`data`目录中。
+&emsp;&emsp;Elasticsearch把你的索引数据和数据流（data streams）都写到`data`目录中。
 
 &emsp;&emsp;Elasticsearch本身也会生产应用日志，包含集群健康信息以及集群操作信息，并且写入到`logs`目录中。
 
@@ -477,7 +476,7 @@ path:
   logs: "C:\\Elastic\\Elasticsearch\\logs"
 ```
 
->WARNING：不要更改data目录中的任何内容（content），也不要允许可能会影响data目录内容的程序。如果除了Elasticsearch以外更改了data目录的内容，那么Elasticsearch可能会失败，报告损坏或者其他数据不一致性（data inconsistencies）的问题，也可能工作正常但是丢失了一些你的数据。
+>WARNING：不要更改data目录中的任何内容（content），也不要运行可能会影响data目录内容的程序。如果Elasticsearch以外的程序更改了data目录的内容，那么Elasticsearch可能会失败，报告损坏或者其他数据不一致性（data inconsistencies）的问题，也可能工作正常但是丢失了一些你的数据。
 
 ##### Multiple data paths
 
@@ -510,7 +509,45 @@ path:
 
 ##### Migrate from multiple data paths
 
-&emsp;&emsp;（未完成）
+&emsp;&emsp;在7.13版本中弃用了多个数据路径的支持，将会在未来的版本中移除。
+
+&emsp;&emsp;作为多个数据路径的替代方案，你可以通过使用硬件虚拟化层（如RAID）或软件虚拟化层（如Linux上的逻辑卷管理器（LVM）或Windows上的存储空间）来创建跨多个磁盘的文件系统。如果你希望在单台机器上使用多个数据路径，则必须为每个数据路径运行一个节点。
+
+&emsp;&emsp;如果你正在一个[highly available cluster](###Designing for resilience)中使用多个数据路径，你可以无需停机，使用类似[rolling restart](####Rolling restart)的方式对一个节点使用单个数据路径来实现迁移：轮流关闭每一个节点，并用一个或多个配置为使用单个数据路径的节点替换它。跟进一步的说，对于每一个当前有多个数据路径的节点来说，你应该按照下面的步骤进行迁移。原则上你可以在升级到8.0版本时执行这类迁移，但是我们建议在升级版本前先完成单个数据路径的迁移工作。
+
+1. 执行快照防止你的数据出现灾难性的问题
+2. （可选）使用[allocation filter](#####Cluster-level shard allocation filtering)将目标节点的数据进行迁移
+
+```text
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.exclude._name": "target-node-name"
+  }
+}
+```
+你可以使用[cat allocation API](#####cat allocation API)来跟踪数据迁移的进度。如果某些分片没有迁移，那么[cluster allocation explain API](####Cluster allocation explain API)会帮助你查明原因。
+
+3. 按照[rolling restart process](####Rolling restart)中的步骤执行，包括关闭目前节点。
+4. 确保你的集群是`yellow`或者`green`，使得你的集群中至少有一个节点有每一个分片的拷贝。
+5. 如果执行了上面的第二步，现在需要移除allocation filter。
+```text
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.exclude._name": null
+  }
+}
+```
+6. 通过删除数据路径的方式来丢弃被停掉的节点拥有的数据。
+7. 重新配置你的存储。使用LVM或者Storage Spaces将你的磁盘合并到单个文件系统中。确保你重新配置的存储有足够的空间存储数据
+8. 通过设置`elasticsearch.yml`文件中的`path.data`来重新配置你的节点。如果有需要的话，安装更多的节点，并使用他们自己各自的`path.data`。
+9. 启动新的节点并按照[rolling restart process](####Rolling restart)中的其他步骤执行
+10. 确保你的集群健康是`green`，使得所有的分片都已经分配结束
+
+&emsp;&emsp;你也可以在你的集群中增加一些单数据路径的节点，使用[allocation filters](#####Cluster-level shard allocation filtering)将你的数据迁移到新的节点中，然后将这些旧的节点从集群中移除。这个方法会临时增大集群中的体积，所以只有你的集群有这个膨胀能力才能使用这个方法。
+
+&emsp;&emsp;如果你目前使用多个数据路径，但你的集群并不具备高可用性，则可以通过拍摄快照、创建具有所需配置的新集群并将快照还原到其中来迁移到非废弃配置。
 
 ##### Cluster name setting
 
