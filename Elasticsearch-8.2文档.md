@@ -26047,6 +26047,25 @@ GET /_cluster/settings
 #### Nodes stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
+#### Pending cluster tasks API
+
+&emsp;&emsp;返回集群层（cluster-level）还未执行结束的变更。
+
+##### Request
+
+`GET /_cluster/pending_tasks`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;该接口返回所有的集群层未完成的变更（比如创建索引，更新mapping，分片分配或者分配失败）。
+
+> NOTE：
+
+
 #### Remote cluster info API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-remote-info.html)
 
@@ -26055,7 +26074,6 @@ GET /_cluster/settings
 
 #### Voting configuration exclusions API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
-
 
 ### Cross-cluster replication APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
