@@ -6856,9 +6856,101 @@ POST my-index-000001/_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-shape.html)
 
 #### Histogram field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/histogram.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/histogram.html)
 
+&emsp;&emsp;用来存放预先聚合、数值类型的数据来代表一个直方图的域。使用下面的成对的两个数组：
 
+- 一个[double](####Numeric field types)类型的**值数组**(value array)，代表直方图的分桶。这些值在数组中必须有序并且是升序。
+- 一个[interger](####Numeric field types)类型的**统计数组**(count array)，代表每个分桶中有多少个值。这些值必须是正数或者零。
+
+&emsp;&emsp;因为value array中的元素对应在count array中相同数组下标的元素，所以这两个数组的长度必须要相同。
+
+> IMPORTANT：每一篇文档中，一个`histogram`域只能存储单个`values`和`count`的数组对。不支持nested arrays。
+> `histogram`域不支持排序。
+
+##### Parameters
+
+###### time_series_metric（预览功能）
+
+&emsp;&emsp;将域作为一个Time series metric。这个值是指标类型（metric type）。默认是`null`（不是一个时间序列指标）。
+
+&emsp;&emsp;对于`histogram`域，这个参数接收`histogram`。你不能对现有的域更新这个参数
+
+##### Uses
+
+&emsp;&emsp;使用`histogram`域的主要目的是聚合。为了使其更容易被聚合访问，直方图字段数据被存储为二进制文档值并且不被索引。其以字节为单位的大小最多为 13 * numValues，其中 numValues 是提供的数组的长度。
+
+&emsp;&emsp;因为没有索引数据，你可以在下面的聚合和查询中使用`histogram`域：
+
+- [min](####Min aggregation) aggregation
+- [max](####Max aggregation) aggregation
+- [sum](####Sum aggregation) aggregation
+- [value_count](####Value count aggregation) aggregation
+- [avg](####Avg aggregation) aggregation
+- [percentiles](####Percentiles aggregation) aggregation
+- [percentile ranks](####Percentile ranks aggregation) aggregation
+- [boxplot](####Boxplot aggregation) aggregation
+- [histogram](####Histogram aggregation) aggregation
+- [range](####Range aggregation) aggregation
+- [exists](####Exists query) query
+
+##### Building a histogram
+
+&emsp;&emsp;当使用histogram作为聚合的一部分时，聚合结果的准确性取决于如何构建的。[percentiles aggregation](####Percentiles aggregation) mode中需要重点关注：
+
+- For the [T-Digest](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-rank-aggregation.html#_hdr_histogram) mode, the values array represents the mean centroid positions and the counts array represents the number of values that are attributed to each centroid. If the algorithm has already started to approximate the percentiles, this inaccuracy is carried over in the histogram.
+- For the [High Dynamic Range](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-rank-aggregation.html#_hdr_histogram) (HDR) histogram mode, the values array represents fixed upper limits of each bucket interval, and the counts array represents the number of values that are attributed to each interval. This implementation maintains a fixed worse-case percentage error (specified as a number of significant digits), therefore the value used when generating the histogram would be the maximum accuracy you can achieve at aggregation time.
+
+&emsp;&emsp;The histogram field is "algorithm agnostic" and does not store data specific to either T-Digest or HDRHistogram. While this means the field can technically be aggregated with either algorithm, in practice the user should chose one algorithm and index data in that manner (e.g. centroids for T-Digest or intervals for HDRHistogram) to ensure best accuracy.
+
+##### Examples
+
+&emsp;&emsp;下面的[create index](####Create index API) API请求创建了一个新的索引，mapping中有两个域：
+
+- `my_histogram`是`histogram`域用于存储百分值
+- `my_text`是`keyword`域用于存储直方图的标题
+
+```text
+PUT my-index-000001
+{
+  "mappings" : {
+    "properties" : {
+      "my_histogram" : {
+        "type" : "histogram"
+      },
+      "my_text" : {
+        "type" : "keyword"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面的[index]() API请求为两个直方图：`histogram_1`和`histogram_2`存储预先聚合的数据。
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "my_text" : "histogram_1",
+  "my_histogram" : {
+      "values" : [0.1, 0.2, 0.3, 0.4, 0.5], 
+      "counts" : [3, 7, 23, 12, 6] 
+   }
+}
+
+PUT my-index-000001/_doc/2
+{
+  "my_text" : "histogram_2",
+  "my_histogram" : {
+      "values" : [0.1, 0.25, 0.35, 0.4, 0.45, 0.5], 
+      "counts" : [8, 17, 8, 7, 6, 2] 
+   }
+}
+```
+
+&emsp;&emsp;第5、14行：Values for each bucket. Values in the array are treated as doubles and must be given in increasing order. For [T-Digest](####Percentiles aggregation) histograms this value represents the mean value. In case of HDR histograms this represents the value iterated to.
+
+&emsp;&emsp;第6、15行：Count for each bucket. Values in the arrays are treated as integers and must be positive or zero. Negative values will be rejected. The relation between a bucket and a count is given by the position in the array.
 
 #### IP field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ip.html)
@@ -16677,11 +16769,23 @@ GET my-index-000001/_search?size=0
 #### Avg aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
 
+#### Boxplot aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-boxplot-aggregation.html)
+
 #### Cardinality aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-cardinality-aggregation.html)
 
 #### Max aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
+
+#### Min aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-min-aggregation.html#search-aggregations-metrics-min-aggregation-histogram-fields)
+
+#### Percentile ranks aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-rank-aggregation.html)
+
+#### Percentiles aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-aggregation.html)
 
 #### Scripted metric aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-scripted-metric-aggregation.html)
@@ -16696,6 +16800,9 @@ GET my-index-000001/_search?size=0
 
 #### Top metrics aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-top-metrics.html)
+
+#### Value count aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-valuecount-aggregation.html#search-aggregations-metrics-valuecount-aggregation-histogram-fields)
 
 ### Pipeline aggregations
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline.html)
