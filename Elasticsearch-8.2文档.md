@@ -16767,7 +16767,138 @@ GET my-index-000001/_search?size=0
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-stats-aggregation.html)
 
 #### Avg aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
+
+&emsp;&emsp;单值的指标聚合（Single-value metric aggregation）计算是从被聚合的文档中提取出数值的平均值。可以指定文档中数值类型的域（numeric filed）或者[histogram域](####Histogram field type)用于avg aggregation。
+
+&emsp;&emsp;假设下面的文档描述的是学生的考试成绩（0~100分），我们可以使用下面的请求计算考试成绩平均值：
+
+```text
+POST /exams/_search?size=0
+{
+  "aggs": {
+    "avg_grade": { "avg": { "field": "grade" } }
+  }
+}
+```
+
+&emsp;&emsp;上面的聚合会计算所有文档下的平均成绩。聚合的类型是`avg`并且`field`定义为一个数值类型的域，计算这个域的平均值。上述请求会返回下面的内容：
+
+```text
+{
+  ...
+  "aggregations": {
+    "avg_grade": {
+      "value": 75.0
+    }
+  }
+}
+```
+
+&emsp;&emsp;聚合的名字avg_grade作为一个key，我们可以从返回的响应中读取这个字段的值获取聚合结果。
+
+##### Script
+
+&emsp;&emsp;如果说这次的考试难度非常大，你需要做一个成绩修正（grade correction）。在[runtime field](###Runtime fields)中进行"平均化"处理来得到一个修正后的平均值：
+
+```text
+POST /exams/_search?size=0
+{
+  "runtime_mappings": {
+    "grade.corrected": {
+      "type": "double",
+      "script": {
+        "source": "emit(Math.min(100, doc['grade'].value * params.correction))",
+        "params": {
+          "correction": 1.2
+        }
+      }
+    }
+  },
+  "aggs": {
+    "avg_corrected_grade": {
+      "avg": {
+        "field": "grade.corrected"
+      }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /exams/_search?size=0
+{
+  "aggs": {
+    "grade_avg": {
+      "avg": {
+        "field": "grade",
+        "missing": 10     
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+
+##### Histogram fields
+
+&emsp;&emsp;如果对[histogram]()域进行聚合计算，聚合的结果会结合`value`数组中的值以及对应在`count`数组中的数量进行计算。
+
+&emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
+
+```text
+PUT metrics_index/_doc/1
+{
+  "network.name" : "net-1",
+  "latency_histo" : {
+      "values" : [0.1, 0.2, 0.3, 0.4, 0.5], 
+      "counts" : [3, 7, 23, 12, 6] 
+   }
+}
+
+PUT metrics_index/_doc/2
+{
+  "network.name" : "net-2",
+  "latency_histo" : {
+      "values" :  [0.1, 0.2, 0.3, 0.4, 0.5], 
+      "counts" : [8, 17, 8, 7, 6] 
+   }
+}
+
+POST /metrics_index/_search?size=0
+{
+  "aggs": {
+    "avg_latency":
+      { "avg": { "field": "latency_histo" }
+    }
+  }
+}
+```
+
+&emsp;&emsp;在每一个histogram field中，avg aggregation会累加`value`数组以及对应`count`数组中的乘积值。最终计算所有histogram field的平均值，如下所示：
+
+```text
+{
+  ...
+  "aggregations": {
+    "avg_latency": {
+      "value": 0.29690721649
+    }
+  }
+}
+```
+
+&emsp;&emsp;计算过程：
+
+- 累加文档1中histogram field字段的值：(0.1 * 3) + (0.2 * 7) + (0.3 * 23) + (0.4 * 12) + (0.5 * 6) = 12.4，并且总数为3 + 7 + 23 + 12 + 6 = 46。
+- 同理文档2中计算出的值跟数量分别为
+  - (0.1 * 8) + (0.2 * 17) + (0.3 * 8) + (0.4 * 7) + (0.5 * 6) = 16.4和8 + 17 + 8 + 7 + 6 = 51
+- 计算平均值：(12.4  + 16.4) / (46 + 51) = 0.29690721649
 
 #### Boxplot aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-boxplot-aggregation.html)
