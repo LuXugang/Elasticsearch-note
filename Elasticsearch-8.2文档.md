@@ -1,4 +1,4 @@
-# Elasticsearch-8.2文档（2023/06/05）
+# Elasticsearch-8.2文档（2023/08/30）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -16847,7 +16847,7 @@ POST /exams/_search?size=0
 
 ##### Histogram fields
 
-&emsp;&emsp;如果对[histogram]()域进行聚合计算，聚合的结果会结合`value`数组中的值以及对应在`count`数组中的数量进行计算。
+&emsp;&emsp;如果对[histogram](####Histogram field type)域进行聚合计算，聚合的结果会结合`value`数组中的值以及对应在`count`数组中的数量进行计算。
 
 &emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
 
@@ -16901,7 +16901,144 @@ POST /metrics_index/_search?size=0
 - 计算平均值：(12.4  + 16.4) / (46 + 51) = 0.29690721649
 
 #### Boxplot aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-boxplot-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-boxplot-aggregation.html)
+
+&emsp;&emsp;箱线图指标聚合（boxplot metric aggregation）计算的是从被聚合的文档中提取出的数值的箱线图数据。可以指定文档中数值类型的域（numeric filed）或者[histogram域](####Histogram field type)用于boxplot aggregation。
+
+&emsp;&emsp;boxplot aggregation返回必要的信息用于成为一个箱线图：最小值（minimum）、最大值（maximum）、中位数（median、Q2）、下四分位数/第一四分位数（first quartile，25th percentile、Q1）、上四分位数/第三四分位数（third quartile，75th percentile、Q3）。
+
+##### Syntax
+
+&emsp;&emsp;单独的boxplot aggregation如下所示：
+
+```text
+{
+  "boxplot": {
+    "field": "load_time"
+  }
+}
+```
+
+&emsp;&emsp;用于表示加载时间（load time）的boxplot aggregation如下所示：
+
+```text
+GET latency/_search
+{
+  "size": 0,
+  "aggs": {
+    "load_time_boxplot": {
+      "boxplot": {
+        "field": "load_time" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，`load time`字段必须是数值类型的域。
+
+&emsp;&emsp;响应如下所示：
+
+```text
+{
+  ...
+
+ "aggregations": {
+    "load_time_boxplot": {
+      "min": 0.0,
+      "max": 990.0,
+      "q1": 165.0,
+      "q2": 445.0,
+      "q3": 725.0,
+      "lower": 0.0,
+      "upper": 990.0
+    }
+  }
+}
+```
+
+&emsp;&emsp;在这个例子中，下触须/下边缘（lower whisker）和上触须/上边缘（upper whisker）分别等同于最小值（min）和最大值（max）。一般情况下，这两个字段的值取值范围为：1.5\* IQR，IQR = Q3 - Q1，也就是分别最接近`Q1 - (1.5 * IQR)`和`Q3 + (1.5 * IQR)`的值。这是一个近似值（approximation value），所给出的数值可能并非实际从数据中观察到的值，但它们应该与实际值的误差范围相符。虽然箱线图聚合不直接返回异常值点（outlier point），但你可以通过检查lower whisker是否大于最小值或upper whisker是否小于最大值来判断是否存在任何一侧的异常值，然后直接查询它们。
+
+##### Script
+
+&emsp;&emsp;如果你需要将没有准确索引（indexed exactly）的数据用于创建箱线图，那你可以创建一个[runtime field](###Runtime fields)来调整这些数据。例如，如果你的加载时间（load time）的单位是毫秒，但是你想要使用秒作为单位来创建箱线图，那么可以使用runtime field来进行调整：
+
+```text
+GET latency/_search
+{
+  "size": 0,
+  "runtime_mappings": {
+    "load_time.seconds": {
+      "type": "long",
+      "script": {
+        "source": "emit(doc['load_time'].value / params.timeUnit)",
+        "params": {
+          "timeUnit": 1000
+        }
+      }
+    }
+  },
+  "aggs": {
+    "load_time_boxplot": {
+      "boxplot": { "field": "load_time.seconds" }
+    }
+  }
+}
+```
+
+##### Boxplot values are (usually) approximate
+
+&emsp;&emsp;箱线图指标使用的算法称为TDigest（见[Computing Accurate Quantiles using T-Digests](https://github.com/tdunning/t-digest/blob/main/docs/t-digest-paper/histo.pdf)）
+
+> WARNNING：boxplot跟其他的percentile aggregation一样都是非确定性的（[non-deterministic](https://en.wikipedia.org/wiki/Nondeterministic_algorithm)）的，所以使用相同的数据得到的结果会有轻微的不同
+> 
+
+##### Compression
+
+&emsp;&emsp;近似算法（approximate algorithm）必须平衡内存使用和估算准确性（estimate accurate），可以使用`compression`参数控制：
+
+```text
+GET latency/_search
+{
+  "size": 0,
+  "aggs": {
+    "load_time_boxplot": {
+      "boxplot": {
+        "field": "load_time",
+        "compression": 200    
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，compression参数控制内存使用和近似错误（approximate error，与实际值的差异）。
+
+&emsp;&emsp;TDigest算法使用许多“节点”来近似百分位数 —— 可用的节点越多，准确性越高（并且与数据量成比例地增加内存占用）。compression参数将节点的最大数量限制为20 \* compression。
+
+&emsp;&emsp;因此，通过增加compression的值，你可以在牺牲更多内存的代价下提高百分位数的准确性。更大的compression还会使算法变慢，因为底层的树状数据结构在大小上增长，导致操作成本更高。默认的compression为100。
+
+&emsp;&emsp;一个“节点”大致使用32字节的内存，所以在最坏的情况下（大量的数据按顺序排序并按顺序到达），默认设置将产生一个大约64KB大小的TDigest。在实际应用中，数据往往更为随机，TDigest将使用更少的内存。
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /exams/_search?size=0
+{
+  "aggs": {
+    "grade_avg": {
+      "avg": {
+        "field": "grade",
+        "missing": 10     
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
 
 #### Cardinality aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-cardinality-aggregation.html)
