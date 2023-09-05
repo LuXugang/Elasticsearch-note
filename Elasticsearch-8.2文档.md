@@ -17043,6 +17043,9 @@ POST /exams/_search?size=0
 #### Cardinality aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-cardinality-aggregation.html)
 
+#### Extended stats aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-extendedstats-aggregation.html)
+
 #### Max aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
 
@@ -17061,7 +17064,86 @@ POST /exams/_search?size=0
 ##### Scope of scripts
 
 #### Stats aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
+
+&emsp;&emsp;stats aggregation属于多值的指标聚合（multi-value metric aggregation），计算的是从被聚合的文档中提取出的数值的统计数据。
+
+&emsp;&emsp;统计数据包括`min`、`max`、`sum`、`count`和`avg`。
+
+&emsp;&emsp;假设数据由代表学生考试成绩（0到100分）的文档组成：
+
+```text
+POST /exams/_search?size=0
+{
+  "aggs": {
+    "grades_stats": { "stats": { "field": "grade" } }
+  }
+}
+```
+
+&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`stats`并且`field`定义了文档中的数值类型的域并计算该域的统计数据。上面中请求的响应如下所示：
+
+```text
+{
+  ...
+
+  "aggregations": {
+    "grades_stats": {
+      "count": 2,
+      "min": 50.0,
+      "max": 100.0,
+      "avg": 75.0,
+      "sum": 150.0
+    }
+  }
+}
+```
+
+##### Script
+
+&emsp;&emsp;如果你需要获取相比较单个域、更复杂的统计数据，你可以在对一个[runtime field](###Runtime fields)进行聚合计算。
+
+```text
+POST /exams/_search
+{
+  "size": 0,
+  "runtime_mappings": {
+    "grade.weighted": {
+      "type": "double",
+      "script": """
+        emit(doc['grade'].value * doc['weight'].value)
+      """
+    }
+  },
+  "aggs": {
+    "grades_stats": {
+      "stats": {
+        "field": "grade.weighted"
+      }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /exams/_search?size=0
+{
+  "aggs": {
+    "grades_stats": {
+      "stats": {
+        "field": "grade",
+        "missing": 0      
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
 
 #### Sum aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-sum-aggregation.html)
