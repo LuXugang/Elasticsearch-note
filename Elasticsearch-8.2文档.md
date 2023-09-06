@@ -17044,7 +17044,136 @@ POST /exams/_search?size=0
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-cardinality-aggregation.html)
 
 #### Extended stats aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-extendedstats-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-extendedstats-aggregation.html)
+
+&emsp;&emsp;extended stats aggregation属于多值的指标聚合（multi-value metric aggregation），计算的是从被聚合的文档中提取出的数值的统计数据。
+
+&emsp;&emsp;`extened_stats` aggregation 是 [stats aggregation](####Stats aggregation)的扩展版本，添加了例如`sum_of_squares`、`variance`、`std_deviation`、`std_deviation_bounds`这些额外的指标。
+
+&emsp;&emsp;假设数据由代表学生考试成绩（0到100分）的文档组成：
+
+```text
+GET /exams/_search
+{
+  "size": 0,
+  "aggs": {
+    "grades_stats": { "extended_stats": { "field": "grade" } }
+  }
+}
+```
+
+&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`exteneed_stats`并且`field`定义了文档中的数值类型的域并计算该域的统计数据。上面中请求的响应如下所示：
+
+&emsp;&emsp;`std_deviation`和`variance`是基于总体指标（population metric）计算的，所以他们的值分别跟`std_deviation_population`和`variance_population`相同。
+
+```text
+{
+  ...
+
+  "aggregations": {
+    "grades_stats": {
+      "count": 2,
+      "min": 50.0,
+      "max": 100.0,
+      "avg": 75.0,
+      "sum": 150.0,
+      "sum_of_squares": 12500.0,
+      "variance": 625.0,
+      "variance_population": 625.0,
+      "variance_sampling": 1250.0,
+      "std_deviation": 25.0,
+      "std_deviation_population": 25.0,
+      "std_deviation_sampling": 35.35533905932738,
+      "std_deviation_bounds": {
+        "upper": 125.0,
+        "lower": 25.0,
+        "upper_population": 125.0,
+        "lower_population": 25.0,
+        "upper_sampling": 145.71067811865476,
+        "lower_sampling": 4.289321881345245
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;聚合的名字（上文中的`grades_stats`）可以作为key，使得返回的响应中作为key来检索聚合结果。
+
+##### Standard Deviation Bounds
+
+&emsp;&emsp;默认情况下，`extened_stats`指标会返回一个名为`std_deviation_bounds`的对象，它提供了一个区间，该区间是平均值加减两个标准偏差。使得可视化数据的变化。如果你想要一个不同的边界，例如三个标准偏差，你可以在请求中设置`sigma`的值:
+
+```text
+GET /exams/_search
+{
+  "size": 0,
+  "aggs": {
+    "grades_stats": {
+      "extended_stats": {
+        "field": "grade",
+        "sigma": 3          
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行的，`sigma` 控制应显示均值的正负多少个标准偏差。
+
+&emsp;&emsp;`sigma`可以是任何非负双精度值，这意味着你可以请求非整数值，如1.5。 0也是一个有效的值，但它将只返回平均值作为上下限（`uppper`和`lower`边界）。
+
+&emsp;&emsp;上下限（`uppper`和`lower`边界）基于总体指标计算得来，所以他们的值分别跟`upper_population`和`lower_population`相同。
+
+> NOTE：计算标准偏差和界限（bounds）需要数据服从正态分布
+> 标准偏差及其边界默认会被显示，但它们并不总是适用于所有数据集。你的数据必须呈正态分布，这样这些指标才有意义。标准偏差背后的统计学假设数据是正态分布的，因此如果你的数据严重向左或向右偏斜，返回的值将是误导性的。
+
+##### Script
+
+&emsp;&emsp;如果你想要聚合的数据没有索引，可以使用[runtime field](###Runtime fields)假设我们发现我们一直在处理的这些成绩是来自一场超出学生水平的考试，我们想要对它进行纠正：
+
+```text
+GET /exams/_search
+{
+  "size": 0,
+  "runtime_mappings": {
+    "grade.corrected": {
+      "type": "double",
+      "script": {
+        "source": "emit(Math.min(100, doc['grade'].value * params.correction))",
+        "params": {
+          "correction": 1.2
+        }
+      }
+    }
+  },
+  "aggs": {
+    "grades_stats": {
+      "extended_stats": { "field": "grade.corrected" }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+GET /exams/_search
+{
+  "size": 0,
+  "aggs": {
+    "grades_stats": {
+      "extended_stats": {
+        "field": "grade",
+        "missing": 0        
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
 
 #### Max aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
