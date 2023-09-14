@@ -17176,7 +17176,139 @@ GET /exams/_search
 &emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
 
 #### Max aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
+
+&emsp;&emsp;单值的指标聚合（Single-value metric aggregation）计算是从被聚合的文档中提取出数值的最大值。
+
+> NOTE：`min`和`max` aggregation是对用`double`表示的数据进行计算。因此，当计算long类型的数值并且绝对值大于等于2^53时，结果是一个近似值
+
+&emsp;&emsp;基于所有的文档计算price的最大值：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "max_price": { "max": { "field": "price" } }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+      "max_price": {
+          "value": 200.0
+      }
+  }
+}
+```
+&emsp;&emsp;由此可见，上文中聚合的名字`max_price`可以作为一个key，用于在返回的响应中检索聚合结果。
+
+##### Script
+
+&emsp;&emsp;相比较在一个域上计算`max`，你可以通过[runtime field](###Runtime fields)执行更复杂的聚合。
+
+```text
+POST /sales/_search
+{
+  "size": 0,
+  "runtime_mappings": {
+    "price.adjusted": {
+      "type": "double",
+      "script": """
+        double price = doc['price'].value;
+        if (doc['promoted'].value) {
+          price *= 0.8;
+        }
+        emit(price);
+      """
+    }
+  },
+  "aggs": {
+    "max_price": {
+      "max": { "field": "price.adjusted" }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /sales/_search
+{
+  "aggs" : {
+      "grade_max" : {
+          "max" : {
+              "field" : "grade",
+              "missing": 10       
+          }
+      }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+
+##### Histogram fields
+
+&emsp;&emsp;如果对[histogram](####Histogram field type)域进行聚合计算，聚合的结果是`value`数组中所有元素的最大值。注意的是，这个直方图的`count`数组会被忽略。
+
+&emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
+
+```text
+PUT metrics_index
+{
+  "mappings": {
+    "properties": {
+      "latency_histo": { "type": "histogram" }
+    }
+  }
+}
+
+PUT metrics_index/_doc/1?refresh
+{
+  "network.name" : "net-1",
+  "latency_histo" : {
+      "values" : [0.1, 0.2, 0.3, 0.4, 0.5],
+      "counts" : [3, 7, 23, 12, 6]
+   }
+}
+
+PUT metrics_index/_doc/2?refresh
+{
+  "network.name" : "net-2",
+  "latency_histo" : {
+      "values" :  [0.1, 0.2, 0.3, 0.4, 0.5],
+      "counts" : [8, 17, 8, 7, 6]
+   }
+}
+
+POST /metrics_index/_search?size=0&filter_path=aggregations
+{
+  "aggs" : {
+    "max_latency" : { "max" : { "field" : "latency_histo" } }
+  }
+}
+```
+
+&emsp;&emsp;`max` aggregation返回所有histogram域中的最大值 ：
+
+```text
+{
+  "aggregations": {
+    "max_latency": {
+      "value": 0.5
+    }
+  }
+}
+```
+
 
 #### Min aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-min-aggregation.html#search-aggregations-metrics-min-aggregation-histogram-fields)
