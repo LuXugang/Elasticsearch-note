@@ -16146,7 +16146,7 @@ GET /_search
 #### Combined fields
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
 
-&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种term为中的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
+&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种term为中心的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
 
 ```text
 GET /_search
