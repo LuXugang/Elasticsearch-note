@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/09/28）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/11/21）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -1373,7 +1373,7 @@ PUT /_cluster/settings
 
 ###### cluster.initial_master_nodes
 
-&emsp;&emsp;（[Static](######Static（settings） ))）在全新的集群中初始化master-eligible node集合。默认情况下是空值，意味着这个节点想要加入到一个引导后（bootstrapped）的集群。集群一旦形成后需要移除这个设置。当重启一个节点或者添加一个新的节点到已有的集群中时不要使用这个设置。见[cluster.initial_master_nodes](######cluster.initial_master_nodes)。
+&emsp;&emsp;（[Static](######Static（settings） ))）在全新的集群中初始化master-eligible node集合。默认情况下是空值，意味着这个节点想要加入到一个引导后（bootstrapped）的集群。集群一旦形成后需要移除这个设置。当重启一个节点或者添加一个新的节点到现有的集群中时不要使用这个设置。见[cluster.initial_master_nodes](######cluster.initial_master_nodes)。
 
 ##### Expert settings
 
@@ -6532,7 +6532,7 @@ GET my-index-000001/_search
 | [Keywords](####Keyword type family) | keyword家族，包括`kewword`、`constant_keyword`以及`wildcard` |
 | [Numbers](####Numeric field types) | 数值类型，例如`long`和`double`，用来表示为数量 |
 | Dates | 时间类型，包括[date](####Date field type)和[date_nanos](####Date nanoseconds field type) |
-| [alias](####Alias field type) | 为已有的域定义一个别名 |
+| [alias](####Alias field type) | 为现有的域定义一个别名 |
 
 
 ##### Objects and relational types
@@ -6605,7 +6605,191 @@ GET my-index-000001/_search
 &emsp;&emsp;这就是multi-fields的目的。大多数的域类型通过[fields](####fields)参数来支持multi-fields。
 
 #### Aggregate metric field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/aggregate-metric-double.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/aggregate-metric-double.html)
+
+&emsp;&emsp;为[metric aggregations](###Metrics aggregations)存储预先聚合（pre-aggregated）的数值类型的值。`aggregate_metric_double`类型的域包含了一个或多个这些指标子域（metric sub-field）：`min`、`max`、`sum`、`value_count`。
+
+&emsp;&emsp;当你在`aggregate_metric_double`域上运行指标聚合时，会使用到对应的指标域值。例如，在`aggregate_metric_double`域执行[min aggregation](####Min aggregation)时会返回所有`aggregate_metric_double`的子域`min`中的最小值。
+
+> IMPORTANT：`aggregate_metric_double`域中为每一个指标子域使用[doc value](####doc_values)存储一个数值类型的域值。不支持Array。`min`、`max`、`sum`的值是`doulbe`类型。`value_count`是`long`类型的正数。
+
+
+
+```text
+PUT my-index
+{
+  "mappings": {
+    "properties": {
+      "my-agg-metric-field": {
+        "type": "aggregate_metric_double",
+        "metrics": [ "min", "max", "sum", "value_count" ],
+        "default_metric": "max"
+      }
+    }
+  }
+}
+```
+
+##### Parameters for aggregate_metric_double fields
+
+###### metrics
+
+&emsp;&emsp;（Required, array of strings）存储指标子域的数组。每一个数组元素都对应于[metric aggregation](###Metrics aggregations)。合法的数组元素是[min](####Min aggregation)，[max](####Max aggregation)，[sum](####Sum aggregation)以及[value_count](####Value count aggregation)。你必须至少指定一个值。
+
+###### default_metric
+
+&emsp;&emsp;（Required, string）默认用于query，script以及聚合的指标子域，该域必须是`metrics`数组中的某个元素。
+
+###### time_series_metric（预览功能）
+
+&emsp;&emsp;该字段只用于Elastic内部使用。将域作为一个Time series metric。这个值是指标类型（metric type）。默认是`null`（不是一个时间序列指标）。
+
+&emsp;&emsp;对于`aggregate_metric_double`域，这个参数只可以是`counter`、`gauge`以及`summary`。不能对现有的域更新这个参数。
+
+##### Uses
+
+&emsp;&emsp;设计`aggregate_metric_double`域是为了用于下面的聚合：
+
+- [min aggregation](####Min aggregation) 返回所有`min`子域中的最小值
+- [max aggregation](####Max aggregation) 返回所有`max`子域中的最大值
+- [sum aggregation](####Sum aggregation) 返回所有`sum`子域中的和
+- [value_count aggregation](####Value count  aggregation) 返回所有`Value count`子域中的和
+- [avg aggregation](####Avg aggregation)。`aggregate_metric_double`域中并没有指标子域`avg`；`avg` aggregation是通过`sum`和`value_count`两个指标子域计算得来的，因此`metric`数组中必须同时包含`sum`和`value_count`两个指标子域。
+
+&emsp;&emsp;如果将`aggregate_metric_double`域用于其他的聚合操作，那么将会使用`default_metric`，相当于一个`doulbe`类型的域。`default_metric`同样可以用于Script以及下面的query中：
+
+- [existes](####Exists query)
+- [range](####Range query)
+- [term](####Term query)
+- [terms](####Terms query)
+
+##### Example
+
+&emsp;&emsp;下面的[create index](####Create index API)API创建了一个名为`agg_metric`的`aggregate_metric_double`域。并且`max`作为`default_metric`。：
+
+```text
+PUT stats-index
+{
+  "mappings": {
+    "properties": {
+      "agg_metric": {
+        "type": "aggregate_metric_double",
+        "metrics": [ "min", "max", "sum", "value_count" ],
+        "default_metric": "max"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面的[index](####Index API) API请求在`agg_metric`域中添加了预先聚合的数据。
+
+```text
+PUT stats-index/_doc/1
+{
+  "agg_metric": {
+    "min": -302.50,
+    "max": 702.30,
+    "sum": 200.0,
+    "value_count": 25
+  }
+}
+
+PUT stats-index/_doc/2
+{
+  "agg_metric": {
+    "min": -93.00,
+    "max": 1702.30,
+    "sum": 300.00,
+    "value_count": 25
+  }
+}
+```
+
+&emsp;&emsp;你可以在`agg_metric`域上运行`min`、`max`、`sum`、`value_count`以及`avg`聚合。
+
+```text
+POST stats-index/_search?size=0
+{
+  "aggs": {
+    "metric_min": { "min": { "field": "agg_metric" } },
+    "metric_max": { "max": { "field": "agg_metric" } },
+    "metric_value_count": { "value_count": { "field": "agg_metric" } },
+    "metric_sum": { "sum": { "field": "agg_metric" } },
+    "metric_avg": { "avg": { "field": "agg_metric" } }
+  }
+}
+```
+
+&emsp;&emsp;聚合结果基于对应的指标子域的域值：
+
+```text
+{
+...
+  "aggregations": {
+    "metric_min": {
+      "value": -302.5
+    },
+    "metric_max": {
+      "value": 1702.3
+    },
+    "metric_value_count": {
+      "value": 50
+    },
+    "metric_sum": {
+      "value": 500.0
+    },
+    "metric_avg": {
+      "value": 10.0
+    }
+  }
+}
+```
+
+&emsp;&emsp;在`aggregate_metric_double`查询会默认使用`default_metric`中定义的域。
+
+```text
+GET stats-index/_search
+{
+  "query": {
+    "term": {
+      "agg_metric": {
+        "value": 702.30
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上述查询返回下列的命中结果。`default_metric`域的域值匹配请求中的值（702.30）。
+
+```text
+{
+  ...
+    "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 1.0,
+    "hits": [
+      {
+        "_index": "stats-index",
+        "_id": "1",
+        "_score": 1.0,
+        "_source": {
+          "agg_metric": {
+            "min": -302.5,
+            "max": 702.3,
+            "sum": 200.0,
+            "value_count": 25
+          }
+        }
+      }
+    ]
+  }
+}
+```
 
 #### Alias field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/field-alias.html)
@@ -11359,7 +11543,7 @@ PUT /my-data-stream/_mapping?write_index_only=true
 
 #### Change an existing field mapping in a data stream
 
-&emsp;&emsp;每一个[mapping parameter](###Mapping parameters)的文档中都会告知是否可以使用[update mapping API](####Update mapping API)更新现有的域。若要为已有的域更新这些参数，按照下面的步骤执行：
+&emsp;&emsp;每一个[mapping parameter](###Mapping parameters)的文档中都会告知是否可以使用[update mapping API](####Update mapping API)更新现有的域。若要为现有的域更新这些参数，按照下面的步骤执行：
 
 1. 更新data steam使用的index template。保证新的field mapping添加到这个stream以后创建的backing index中。
 
@@ -11507,13 +11691,13 @@ PUT /_index_template/my-data-stream-template
 
 &emsp;&emsp;第9行，增加index setting `sort.order`
 
-&emsp;&emsp;如果需要的话，你可以[roll over the data stream](###Use a data stream)来马上将设置应用到data stream的write index上。应用到在rollover之后新添加到stream的数据上。然而不会影响data stream中现有的索引和已有的数据上。
+&emsp;&emsp;如果需要的话，你可以[roll over the data stream](###Use a data stream)来马上将设置应用到data stream的write index上。应用到在rollover之后新添加到stream的数据上。然而不会影响data stream中现有的索引和现有的数据上。
 
 &emsp;&emsp;若要应用static settings changes到现有的backing index上，你必须创建一个新的data stream然后reindex。见[Use reindex to change mappings or settings](####Use reindex to change mappings or settings)。
 
 #### Use reindex to change mappings or settings
 
-&emsp;&emsp;你可以使用reindex修改data stream的mapping或settings。这么做通常是因为要对已有域的类型做变更或者要为backing index更新static index settings。
+&emsp;&emsp;你可以使用reindex修改data stream的mapping或settings。这么做通常是因为要对现有的域的类型做变更或者要为backing index更新static index settings。
 
 &emsp;&emsp;若要reindex某个data stream。首先创建或者更新index template，这样才能包含你想要的修改后的mapping或settings。你随后就可以将现有的数据reindex到一个新的匹配到模板的data stream中。模板中变更的mapping和setting都会应用到添加到新的data stream中的每一篇文档和backing index。
 
@@ -11583,7 +11767,7 @@ PUT /_index_template/new-data-stream-template
 
 3. 使用[create data stream API ](####Create data stream API)手动创建新的data stream。data stream的名字必须匹配定义在index template中的`index_patterns`属性。
 
-&emsp;&emsp;我们不建议[indexing new data to create this data stream](####Create data stream API)。因为随后你将从已有的data stream中的旧数据reindex到这个data stream中。这会导致一个或者多个backing index会同时包含新旧数据。
+&emsp;&emsp;我们不建议[indexing new data to create this data stream](####Create data stream API)。因为随后你将从现有的data stream中的旧数据reindex到这个data stream中。这会导致一个或者多个backing index会同时包含新旧数据。
 
 > IMPORTANT：Mixing new and old data in a data stream
 > 尽管新旧数据的混合是安全，但它会影响data retention。如果你要删除旧的索引，你可能会意外的删除一个同时包含新旧数据的索引。为了防止过早的（premature）数据丢失，你需要保留这样的backing index直到里面最新的数据可以被删除。
