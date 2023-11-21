@@ -6596,7 +6596,7 @@ GET my-index-000001/_search
 
 ##### Arrays
 
-&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](####Arrays)。
+&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](####Arrays（field Type）)。
 
 ##### Multi-fields
 
@@ -6869,14 +6869,196 @@ GET /_search
 
 &emsp;&emsp;Finally, some queries, such as terms, geo_shape, and more_like_this, allow for fetching query information from an indexed document. Because field aliases aren’t supported when fetching documents, the part of the query that specifies the lookup path cannot refer to a field by its alias。
 
-#### Binary field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/binary.html)
+#### Arrays（field Type）
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/array.html)
 
-#### Flattened field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
+&emsp;&emsp;Elasticsearch中没有专门的`array data type`。默认情况下任意一个域可以包含零个或者多个值 。然而，在数组中的域值必须是相同的数据类型。例如：
+
+- string数组：["one", "two"]
+- integer数组：[1, 2]
+- 数组的数组：[1, [2, ,3]]，这种相当于[1, ,2 ,3]
+- object数组：[{ "name": "Mary", "age": 12 }, { "name": "John", "age": 10 }]
+
+> NOTE：Arrays of objects对象数组
+> 对象数组可能无法按照你的期望工作：不能独立于数组中的其他对象来查询每个对象。如果你需要能够这样做，那么应该使用嵌套（[nested](####Nested field type)）数据类型，而不是对象（[object](####Object field type)）数据类型
+
+&emsp;&emsp;当动态的添加一个域时，数组中的第一个值决定了数组元素的类型。随后所有的值都必须是相同的数据类型或者可以强转（[coerce](####coerce)）为相同的数据类型。
+
+&emsp;&emsp;数组中有不同的数据类型是不支持的: [ 10, "some string" ]。
+
+&emsp;&emsp;数组中可以包含`null`，可以被[null_value](####null_value)(如果配置的话)替换或者跳过。空的数组`[]`被认为是缺失域（missing field）-某个域没有域值。
+
+&emsp;&emsp;不需要在文档中有任何预先配置就可以使用数组，这个开箱支持的功能：
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "message": "some arrays in this document...",
+  "tags":  [ "elasticsearch", "wow" ], 
+  "lists": [ 
+    {
+      "name": "prog_list",
+      "description": "programming list"
+    },
+    {
+      "name": "cool_list",
+      "description": "cool stuff list"
+    }
+  ]
+}
+
+PUT my-index-000001/_doc/2 
+{
+  "message": "no arrays in this document...",
+  "tags":  "elasticsearch",
+  "lists": {
+    "name": "prog_list",
+    "description": "programming list"
+  }
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "match": {
+      "tags": "elasticsearch" 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第4行，`tags`域自动添加为`string`域。
+
+&emsp;&emsp;第5行，`lists`域自动添加为`object`域。
+
+&emsp;&emsp;第17行，第二篇文档没有包含数组，但是会被索引成相同的域。
+
+&emsp;&emsp;第31行，这个query在`tags`域中查找`elasticsearch`，并且匹配到这两篇文档。
+
+#### Binary field type
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/binary.html)
+
+&emsp;&emsp;`binary`类型用于存储使用[Base64](https://en.wikipedia.org/wiki/Base64)编码的二进制值，默认情况下，这个域不会存储并且无法用于搜索：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "text"
+      },
+      "blob": {
+        "type": "binary"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "name": "Some binary blob",
+  "blob": "U29tZSBiaW5hcnkgYmxvYg==" 
+}
+```
+
+&emsp;&emsp;第18行，二进制值中不能有换行符`\n`
+
+##### Parameters for binary fields
+
+&emsp;&emsp;`binary`域可以有以下参数：
+
+- [doc_values](####doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
 
 #### Boolean field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/boolean.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/boolean.html)
+
+&emsp;&emsp;`boolean`域的值可以是JSON种的`true`和`false`，也可以是可以被解释为`true`或者`false`的字符串。
+
+- False values：`false`，`"false"`, ""（空的字符串）
+- True values：`true`，`"true"`
+
+&emsp;&emsp;例如
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "is_published": {
+        "type": "boolean"
+      }
+    }
+  }
+}
+
+POST my-index-000001/_doc/1?refresh
+{
+  "is_published": "true" 
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "term": {
+      "is_published": true 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第14行，索引了一篇文档，is_published域的域值是一个字符串的true，它会被解释为`true`
+
+&emsp;&emsp;第21行，使用JSON种的`true`查询文档
+
+&emsp;&emsp;[terms aggregation](####Terms aggregation)中使用`1`和`0`用于`key`的值，并且`"true"`和`"false"`用于`key_as_string`的值。在Script中使用Boolean域时，会返回`true`和
+`false`：
+
+```text
+POST my-index-000001/_doc/1?refresh
+{
+  "is_published": true
+}
+
+POST my-index-000001/_doc/2?refresh
+{
+  "is_published": false
+}
+
+GET my-index-000001/_search
+{
+  "aggs": {
+    "publish_state": {
+      "terms": {
+        "field": "is_published"
+      }
+    }
+  },
+  "sort": [ "is_published" ],
+  "fields": [
+    {"field": "weight"}
+  ],
+  "runtime_mappings": {
+    "weight": {
+      "type": "long",
+      "script": "emit(doc['is_published'].value ? 10 : 0)"
+    }
+  }
+}
+```
+
+##### Parameters for boolean fields
+
+&emsp;&emsp;`boolean`域有以下参数：
+
+- [doc_values](####doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [index](####index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [null_value](####null_value)：参数值可以是上文中列出的各种true或者false的值（JSON，字符串）。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](####\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个域的域值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](####Map a runtime field)中有相同的format。
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [meta](####meta(mapping parameter))：域的元数据信息
 
 #### Date field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date.html)
@@ -7027,11 +7209,88 @@ POST my-index-000001/_search
 ```
 
 #### Date nanoseconds field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date_nanos.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date_nanos.html)
+
+&emsp;&emsp;这个时间类型是`date`数据类型的补充。然而他们之间有一个很重要的不同。现有的`date`数据类型存储毫秒级分辨率的时间，而`date_nanos`则是纳秒级分辨率，严格限制了从1970到2262这个时间范围，因为日期仍然以代表自纪元（epoch）以来纳秒数的long类型存储。
+
+&emsp;&emsp;内部处理纳秒时会将其转化为long类型的数值，聚合和存储的结果会被转回成一个字符串，字符串的值区间于Date format。
+
+&emsp;&emsp;可以自定义Date format，如果不指定则会使用默认的format：
+
+```text
+"strict_date_optional_time_nanos||epoch_millis"
+```
+
+&emsp;&emsp;例如：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "date": {
+        "type": "date_nanos" 
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_bulk?refresh
+{ "index" : { "_id" : "1" } }
+{ "date": "2015-01-01" } 
+{ "index" : { "_id" : "2" } }
+{ "date": "2015-01-01T12:10:30.123456789Z" } 
+{ "index" : { "_id" : "3" } }
+{ "date": 1420070400000 } 
+
+GET my-index-000001/_search
+{
+  "sort": { "date": "asc"}, 
+  "runtime_mappings": {
+    "date_has_nanos": {
+      "type": "boolean",
+      "script": "emit(doc['date'].value.nano != 0)" 
+    }
+  },
+  "fields": [
+    {
+      "field": "date",
+      "format": "strict_date_optional_time_nanos" 
+    },
+    {
+      "field": "date_has_nanos"
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第6行，`date`域使用默认的date format
+
+&emsp;&emsp;第14行，这篇文档使用一个plain Date
+
+&emsp;&emsp;第16行，这篇文档包含一个时间
+
+&emsp;&emsp;第18行，这个文档使用了milliseconds-since-the-epoch
+
+&emsp;&emsp;第22行，注意的是`sort`的值在返回的结果中使用milliseconds-since-the-epoch
+
+&emsp;&emsp;第26行，在脚本中使用了`.nano`返回纳米级别的时间
+
+&emsp;&emsp;第32行，在获取数据时，你可以使用[fields parameter](####The fields option)来指定Date format。如果不使用[strict_date_optional_time_nanos](######strict_date_optional_time_nanos) 你会获取一个四舍五入的结果。
+
+&emsp;&emsp;你也可以通过`||`指定多个Date format。Date nanoseconds field type可以跟Date field type有相同的可用的参数。
+
+> WARNING：Date nanoseconds可以是一个类似`{"date": 1618249875.123456}`的带有小数点的数字。在某些情况下（[#70085](https://github.com/elastic/elasticsearch/issues/70085)），我们会丢失这些日期的精度，因此应该避免使用这种格式
+
+##### Limitations
+
+&emsp;&emsp;即使使用了`date_nanos`域，也只能在毫秒级分辨率上聚合。这个局限性同样影响[transforms](###Transforming data)。
 
 #### Dense vector field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dense-vector.html)
 
+#### Flattened field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
 
 #### Geopoint field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
@@ -7993,7 +8252,7 @@ GET logs/_search
 
 
 #### coerce
-（8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/coerce.html#coerce)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/coerce.html#coerce)
 
 &emsp;&emsp;Data is not always clean，在JSON中，5这个数字可以用字符串"5"表示，也可以用数值表示，或者应该是整数5，但是在JSON中是一个浮点数，比如5.0，甚至是字符串"5.0"。
 
