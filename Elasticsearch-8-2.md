@@ -4502,7 +4502,7 @@ GET /events/_search
 
 - 哪些string域应该作为full text field
 - 哪些域包含数值，日期或者地理位置
-- 日期的[format](####format)
+- 日期的[format](####format(mapping parameter))
 - 为[dynamically added fields](###Dynamic mapping)自定义规则来控制mapping
 
 &emsp;&emsp;在不需要reindex的前提下，使用[runtime fields](####Map a runtime field)作出策略变更。runtime field和indexed field配合使用来平衡资源使用和性能。索引文件体积会更小，但是会降低查询性能。
@@ -4580,7 +4580,7 @@ PUT my-index-000001/_doc/1
 GET my-index-000001/_mapping 
 ```
 
-&emsp;&emsp;第6行，`create_date`域以`"yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"`这种[format](####format)作为[date](####Date field type)被添加。
+&emsp;&emsp;第6行，`create_date`域以`"yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"`这种[format](####format(mapping parameter))作为[date](####Date field type)被添加。
 
 ##### Disabling date detection
 
@@ -4604,7 +4604,7 @@ PUT my-index-000001/_doc/1
 
 ##### Customizing detected date formats
 
-&emsp;&emsp;另外，`dynamic_date_formats`也能定制为你自己的[formats](####format))：
+&emsp;&emsp;另外，`dynamic_date_formats`也能定制为你自己的[formats](####format(mapping parameter)))：
 
 ```text
 PUT my-index-000001
@@ -4692,7 +4692,7 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;或者你可以使用默认的动态mapping规则，然后创建dynamic模版将指定的域映射为runtime field。你可以在索引mapping中设置`"dynamic":"true"`然后创建一个dynamic template将某些类型的新域映射为runtime field。
 
-&emsp;&emsp;比如说你的数据中的每一个域的域名都是以`ip_`开始的。基于[dynamic mapping rules](#####match_mapping_type)，Elasticsearch将通过了`numeric`检测的域映射为`float`或者`long`，然而你可以创建一个dynamic template将string类型的值映射为runtime filed并且域的类型为`ip`>
+&emsp;&emsp;比如说你的数据中的每一个域的域名都是以`ip_`开始的。基于[dynamic mapping rules](#####match_mapping_type)，Elasticsearch将通过了`numeric`检测的域映射为`float`或者`long`，然而你可以创建一个dynamic template将string类型的值映射为runtime filed并且域的类型为`ip`。
 
 &emsp;&emsp;下面的请求中定义了一个名为`strings_as_ip`的dynamic template。当Elasticsearch检测到新的域值为`string`域匹配到了`ip*`这个pattern，它就会将这些域映射为runtime field并且域的类型为[ip](####ip)。因为`ip`域没有动态映射，你可以使用带`"dynamic":"true"`或者`"dynamic":"runtime"`的模版。
 
@@ -4733,7 +4733,7 @@ PUT my-index-000001/
 | long | long | long |
 | object | object | 不增加域 |
 | array | 取决于数组中第一个不是null的值 | 取决于数组中第一个不是null的值 |
-| string（通过了[date detection](#####Date detection)的解析） | float或者long | double或者long |
+| string（通过了[Numeric detection](#####Numeric detection)的解析） | float或者long | double或者long |
 | string（通过了[date detection](#####Date detection)的解析） | date | date |
 | string没有通过date或者numeric的解析 | text以及.keyword的子域 | keyword |
 
@@ -6717,7 +6717,7 @@ GET /_search
 "strict_date_optional_time||epoch_millis"
 ```
 
-&emsp;&emsp;上述默认值意味着接受的可选时间戳有milliseconds-since-the-epoch或者[strict_date_optional_time](####format)支持的格式。
+&emsp;&emsp;上述默认值意味着接受的可选时间戳有milliseconds-since-the-epoch或者[strict_date_optional_time](####format(mapping parameter))支持的格式。
 
 &emsp;&emsp;例如
 
@@ -6784,11 +6784,11 @@ PUT my-index-000001
 
 |       [doc_values](####doc_values)       | 是否以列式存储在磁盘上，使得可以用于排序、聚合、脚本处理，该值可以是true（默认值）或者false |
 | :--------------------------------------: | ------------------------------------------------------------ |
-|          [format](####format )           | 用于对日期进行解析，默认值`strict_date_optional_time||epoch_millis` |
+|          [format](####format(mapping parameter) )           | 用于对日期进行解析，默认值`strict_date_optional_time||epoch_millis` |
 |                  locale                  | 解析日期时使用的区域设置，因为在所有语言中，月份没有相同的名称和/或缩写。默认是 [ROOT locale](https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html#ROOT) |
 | [ignore_malformed](####ignore_malformed) | 如果是true，格式错误的数字会被忽略。如果是false，格式错误的数字会抛出异常并且整个文档会被丢弃。注意的是如果使用了参数`script`，当前参数不会被设置。 |
 |            [index](####index)            | 是否需要被快速的搜索到？该值可以是true（默认值）或者false。日期域date field只有开启[doc_values](####doc_values)才能进行查询，尽管查询速度较慢 |
-|       [null_value](####null_value)       | 可以设置一个满足[format](####format )的值，用来替代空值。默认值是null，意味这是一个缺失值。注意的是如果使用了参数`script`，当前参数不会被设置。 |
+|       [null_value](####null_value)       | 可以设置一个满足[format](####format(mapping parameter) )的值，用来替代空值。默认值是null，意味这是一个缺失值。注意的是如果使用了参数`script`，当前参数不会被设置。 |
 |             on_script_error              | 该值描述了通过参数`script`定义的脚本在索引期间发生错误后的行为。可以设置为false（默认值），那么整个文档会被reject。或者设置为`continue`，会通过[ignored field](#####\_ignored field)来进行索引并继续进行索引。这个参数只有参数`script`被设置后才能被设置 |
 |                  script                  | 如果设置了该值，将会索引这个脚本生成的值，而不是直接读取source（输入文档中这个域的域值）。如果输入的文档中已经设置了这个域的值，那么这个脚本会被reject并报错。脚本的格式跟[runtime equivalent](####Map a runtime field)一致，并且应该输出long类型的时间戳。 |
 |            [store](####store)            | 是否要额外存储域值并且可以被检索，不仅仅存储在[_source](####\_source field) 域中，该值可以是true或者false（默认值） |
