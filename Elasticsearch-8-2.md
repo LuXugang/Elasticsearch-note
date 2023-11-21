@@ -1593,7 +1593,7 @@ node.roles: [ data, master, voting_only ]
 
 &emsp;&emsp;高可用（HA：high availability）的集群要求至少有三个master-eligible node，他们中的至少两个节点不是voting-only node。这样的集群才能够在其中一个节点发生故障后选出一个master节点。
 
-&emsp;&emsp;由于voting-only node不会被选举为master节点，所以相比较真正的master node，它们需要较少的堆以及较低性能的CPU。然而所有的master-eligible node，包括voting-only node，相比较集群中的其他节点，它们需要相当快速的持久存储以及一个可靠的低延迟的网络连接，因为它们处于[publishing cluster state updates](####Publishing the cluster state)的关键路径（critical path）上。
+&emsp;&emsp;由于voting-only node不会被选举为master节点，所以相较于真正的master node，它们需要较少的堆以及较低性能的CPU。然而所有的master-eligible node，包括voting-only node，相较于集群中的其他节点，它们需要相当快速的持久存储以及一个可靠的低延迟的网络连接，因为它们处于[publishing cluster state updates](####Publishing the cluster state)的关键路径（critical path）上。
 
 &emsp;&emsp;Voting-only master-eligible node在集群中可能被分配其他的角色。比如说一个节点同时是data node或者Voting-only master-eligible node。一个专用的voting-only master-eligible node 在集群中是不会有其他的角色的。通过下面的方式来创建一个专用的voting-only master-eligible nodes：
 
@@ -1657,7 +1657,7 @@ node.roles: [ data_warm ]
 
 &emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](######Fully mounted index)的[searchable snapshots](###Searchable snapshots)。跟普通索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
 
-&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相比较warm tier不会降低磁盘空间。
+&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
 
 &emsp;&emsp;通过下面的方式创建一个专用的cold node:
 
@@ -2866,7 +2866,7 @@ POST _ml/set_upgrade_mode?enabled=true
 
 - 当你关闭了upgrade mode，会使用上一次自动保存的模型状态（model state）来恢复任务。这个选项可以避免在关机期间管理活跃的任务（active job）的开销，并且快于显示的停止datafeeds和关闭任务jobs。
 
-- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，你重新打开jobs时，他们能使用完全相同的模型。然而相比较使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
+- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，你重新打开jobs时，他们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
 
 &emsp;&emsp;2.2 **Shut down all nodes**
 
@@ -2979,7 +2979,7 @@ POST _ml/set_upgrade_mode?enabled=true
 
 - 当你关闭了upgrade mode，会使用上一次自动保存的模型状态（model state）来恢复任务。这个选项可以避免在关机期间管理活跃的任务（active job）的开销，并且快于显示的停止datafeeds和关闭任务jobs。
 
-- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，在你重新打开jobs时，他们能使用完全相同的模型。然而相比较使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
+- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，在你重新打开jobs时，他们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
 
 - 如果你执行了一个rolling restart，你也可以让machining learning jobs继续运行。当你关闭一个machine leaning node时，它的jobs会自动的移动到其他节点并恢复模型状态（model state）。这个选项可以让你的jobs继续运行但是会增加集群中的负载。
 
@@ -3952,7 +3952,7 @@ PUT index_4
 
 - 首先恢复`index_3`，因为它有最高的`index.priority`
 - 接着恢复`index_4`，因为它有第二高的`index.priority`
-- 然后恢复`index_2`，因为相比较`index_1`它是最近创建的
+- 然后恢复`index_2`，因为相较于`index_1`它是最近创建的
 - 最后恢复`index_1`
 
 &emsp;&emsp;这个设置可以是一个整数，可以通过[update indices settings](####Update index settings API)更新。
@@ -4246,7 +4246,7 @@ PUT /my-index-000001
 ### History retention
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules-history-retention.html)
 
-&emsp;&emsp;Elasticsearch有时候需要replay在分片上执行的一些操作。例如，如果一个副本分片简单的offline了，相比较从头开始（from scratch）构造这个副本分片，只replay它在offline期间丢失的操作有着更高的效率。同样的，[cross-cluster replication](###Cross-cluster replication)的工作方式为：在leader cluster执行操作，然后在follower cluster上replay这些操作。
+&emsp;&emsp;Elasticsearch有时候需要replay在分片上执行的一些操作。例如，如果一个副本分片简单的offline了，相较于从头开始（from scratch）构造这个副本分片，只replay它在offline期间丢失的操作有着更高的效率。同样的，[cross-cluster replication](###Cross-cluster replication)的工作方式为：在leader cluster执行操作，然后在follower cluster上replay这些操作。
 
 &emsp;&emsp;Elasticsearch对索引的写操作在Lucene层来说只有[两个操作](https://www.amazingkoala.com.cn/Lucene/Index/2019/0626/文档的增删改（上）)：索引（添加）一篇文档或者删除现有的文档。更新操作的实现方式是先删除旧的文档然后索引一篇新的文档。索引一篇文档到Lucene的操作包含了所有用于replay的信息，但是对于文档的删除不是这样的。为了解决这个问题， Elasticsearch使用了名为`软删除`[soft deletes](https://www.amazingkoala.com.cn/Lucene/Index/2020/0616/软删除softDeletes（一）)的功能来保留Lucene索引上最近的删除信息，使得可以用于replay。
 
@@ -5103,7 +5103,7 @@ PUT my-index-000001
 ### Explicit mapping
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/explicit-mapping.html)
 
-&emsp;&emsp;相比较Elasticsearch猜测你的数据类型，如果你更了解数据类型，你可能想要指定自己的显示的mapping（explicit mapping）。
+&emsp;&emsp;相较于Elasticsearch猜测你的数据类型，如果你更了解数据类型，你可能想要指定自己的显示的mapping（explicit mapping）。
 
 &emsp;&emsp;你可以在[create an index ](####Create an index with an explicit mapping)或者[add fields to an existing index](####Add a field to an existing mapping)时创建域的mapping（field mapping）。
 
@@ -5349,7 +5349,7 @@ PUT my-index-000001/
 
 &emsp;&emsp;当没有提供脚本时，在查询期间，Elasticsearch会从`_source`中查找到跟runtime fields域名一样的域，如果存在的话就返回该域值。如果不存在，那么在response中不会包含runtime fields的任何值。
 
-&emsp;&emsp;在大多数情况下，会优先从[doc_values](####doc_values)中读取。由于在Lucene中不同的存储方式，相比较从`_source`中检索，通过[doc_values](####doc_values)的方式读取速度更快。
+&emsp;&emsp;在大多数情况下，会优先从[doc_values](####doc_values)中读取。由于在Lucene中不同的存储方式，相较于从`_source`中检索，通过[doc_values](####doc_values)的方式读取速度更快。
 
 &emsp;&emsp;但是有些场景下需要从`_source`中检索域的信息。比如说由于`text`类型默认情况下不会有`doc_values`，所以不得不从`_source`中读取，在其他情况下，可以选择禁用特定域上的doc_values。
 
@@ -5941,7 +5941,7 @@ POST logs/_search
 
 >IMPORTANT：当你把runtime field写入到索引中，你不能更新其包含的脚本。如果你需要更新脚本，那么使用这个更新后的脚本并且创建一个新的域。
 
-&emsp;&emsp;比如你的公司想要替换一些旧的压力值。已经连接的传感器只能报告真实读数的一小部分。相比较使用新的传感器来得到新的压力值，你决定基于现有的读数进行计算。基于现有的报告值，你可以为在索引`my-index-000001`中定义下列的mapping：
+&emsp;&emsp;比如你的公司想要替换一些旧的压力值。已经连接的传感器只能报告真实读数的一小部分。相较于使用新的传感器来得到新的压力值，你决定基于现有的读数进行计算。基于现有的报告值，你可以为在索引`my-index-000001`中定义下列的mapping：
 
 ```text
 PUT my-index-000001/
@@ -6429,7 +6429,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;如果你不需要正则表达式的强大功能，你也可以使用[dissect patterns](####Dissect processor)而不是grok patterns。Dissect patterns匹配固定的分隔符，但通常来说比grok快。
 
-&emsp;&emsp;你可以使用dissect解析Apache log并且达到跟grok pattern一样的结果。相比较log pattern，它会包含你想要丢弃的string。特别的注意下你想要丢弃的string，能帮助你成功构建dissect patterns。
+&emsp;&emsp;你可以使用dissect解析Apache log并且达到跟grok pattern一样的结果。相较于log pattern，它会包含你想要丢弃的string。特别的注意下你想要丢弃的string，能帮助你成功构建dissect patterns。
 
 ```text
 PUT my-index-000001/_mappings
@@ -8790,7 +8790,243 @@ PUT my-index-000001/_doc/session_1
 &emsp;&emsp;成功添加了文档，并且`session_data`域的域值不是JSON类型。
 
 #### format(mapping parameter)
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-date-format.html#strict-date-time)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-date-format.html#strict-date-time)
+
+&emsp;&emsp;在JSON类型的文档中，日期用字符串表示。Elasticsearch使用预先配置好的一些format集合来识别并且将这些字符串解析为long类型的milliseconds-since-the-epoch UTC。
+
+&emsp;&emsp;除了[build-in formats](#####Built In Formats)，你可以指定[custom formats](#####Custom date formats)，例如使用熟悉的`yyyy/MM/dd`：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "date": {
+        "type":   "date",
+        "format": "yyyy-MM-dd"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;许多API支持date value，也支持[date math expression](####Date Math)，例如`now-1m/d`，即当前时间减去一个月，四舍五入到最近的那天。
+
+##### Custom date formats
+
+&emsp;&emsp;支持自定义的date format。参考[DateTimeFormatter docs](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)。
+
+##### Built In Formats
+
+&emsp;&emsp;大多数下面提到的格式都有一个严格对应的格式，这意味着年、月和日的部分必须分别严格使用4位、2位和2位数字，可能需要前面补零。例如，像 5/11/1 这样的日期将被视为无效，需要重写为 2005/11/01 才能被日期解析器（Date format）接受。
+
+&emsp;&emsp;要使用它们，您需要在日期格式的名称前加上 strict\_ ，例如使用 strict_date_optional_time 而不是 date_optional_time。
+
+&emsp;&emsp;这些严格的日期格式在动态映射日期（[date fields are dynamically mapped](#####Date detection)）字段时特别有用，以确保不会意外地将无关的字符串映射为日期。
+
+&emsp;&emsp;下表列出了所有支持的默认 ISO 格式（国际标准化组织（International Organization for Standardization, ISO）制定的标准格式）：
+
+###### epoch_millis
+
+&emsp;&emsp;一个用于自epoch以来毫秒数的format。请注意，这个时间戳受限于 Java 的 Long.MIN_VALUE 和 Long.MAX_VALUE。
+
+###### epoch_second
+
+&emsp;&emsp;一个用于自epoch以来毫秒数的format。请注意，这个时间戳受限于 Java 的 Long.MIN_VALUE 和 Long.MAX_VALUE。epoch_millis除以1000即epoch_second。
+
+###### date_optional_time or strict_date_optional_time
+
+&emsp;&emsp;一个通用的 ISO 日期时间format，其中日期至少必须包括年份，而时间（由 T 分隔）是可选的。示例：`yyyy-MM-dd'T'HH:mm:ss.SSSZ` 或`yyyy-MM-dd`。`.sss`表示毫秒，`Z`表示时区，它等同于`+0000`。
+
+###### strict_date_optional_time_nanos
+
+&emsp;&emsp;一个通用的 ISO 日期时间format，其中日期至少必须包括年份，而时间（由 T 分隔）是可选的。秒的小数部分具有纳秒级的分辨率。示例：`yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ` 或`yyyy-MM-dd`。
+
+###### basic_date
+
+&emsp;&emsp;一个基本的完整的日期format：4位数的年，2位数的月以及2位数的天。示例：`yyyyMMdd`。
+
+###### basic_date_time
+
+&emsp;&emsp;一个基本的format由日期和时间组成，用`T`分隔：`yyyyMMdd'T'HHmmssZ`。
+
+###### basic_date_time_no_millis
+
+&emsp;&emsp;一个基本的format由日期和时间组成，用`T`分隔，没有毫秒：`yyyyMMdd'T'HHmmssZ`。
+
+###### basic_ordinal_date
+
+&emsp;&emsp;完整的序数日期（ordinal date）的format，使用4位数的年以及3位数的天：`yyyyDDD`。比如2023年的1月1日表示为 2023001，而12月31日表示为 2023365（或在闰年中为 2023366）。。
+
+###### basic_ordinal_date_time
+
+&emsp;&emsp;一个用于完整序数日期和时间的格式化器，使用4位数年份和3位数一年中的天数：`yyyyDDD'T'HHmmss.SSSZ`。比如`2023301'T'153045.678+0100`
+
+- 2023 代表年份。
+- 301 表示一年中的第301天，这通常对应于10月28日。
+- 'T' 是日期和时间之间的分隔符。
+- 153045.678 表示时间为15点30分45秒和678毫秒。
+- +0100 表示时区偏移量为UTC+1小时。
+
+###### basic_ordinal_date_time_no_millis
+
+&emsp;&emsp;一个用于完整序数日期和不带毫秒的时间的格式化器，使用4位数年份和3位数一年中的天数：`yyyyDDD'T'HHmmssZ`。
+
+###### basic_time
+
+&emsp;&emsp;一个基本的format，使用2位数的小时，2位数的分钟，2位数的秒，3位数的毫秒以及时区偏移：`HHmmss.SSSZ`。这里的Z表示UTC时区，例如`153045.678Z`表示0时区，而`153045.678+0800`表示东八区，同样的`153045.678Z`跟`153045.678+0000`是一样的。
+
+###### basic_time_no_millis
+
+&emsp;&emsp;一个基本的format，使用2位数的小时，2位数的分钟，2位数的秒以及时区偏移：`HHmmssZ`。
+
+###### basic_t_time
+
+&emsp;&emsp;一个基本的format，使用2位数的小时，2位数的分钟，2位数的秒，3位数的毫秒以及时区偏移，`T`作为前缀：`'T'HHmmss.SSSZ`。
+
+###### basic_t_time_no_millis
+
+&emsp;&emsp;一个基本的format，使用2位数的小时，2位数的分钟，2位数的秒以及时区偏移，`T`作为前缀：`'T'HHmmssZ`。
+
+###### basic_week_date or strict_basic_week_date
+
+&emsp;&emsp;一个基本完整日期，使用4位数的年，2位数的周以及1位数的天：`xxxx'W'wwe`。例如2023年的第一周的周三可以表示为 `2023W013`
+
+- xxxx 表示周年（weekyear），即包含该周的年份，通常是四位数字。
+- 'W' 是一个字面字符，用作周数前的标识符。
+- ww 表示周年中的周数（01 到 53）。
+- e 表示周中的天数（1 到 7），其中 1 代表周一，7 代表周日。
+
+###### basic_week_date_time or strict_basic_week_date_time
+
+&emsp;&emsp;相较于basic_week_date or strict_basic_week_date，额外增加了时间，用`T`分隔：`xxxx'W'wwe'T'HHmmss.SSSZ`。
+
+###### basic_week_date_time_no_millis or strict_basic_week_date_time_no_millis
+
+&emsp;&emsp;相较于basic_week_date_time or strict_basic_week_date_time，少了毫秒：`xxxx'W'wwe'T'HHmmssZ`。
+
+###### date or strict_date
+
+&emsp;&emsp;一个完整的日期，使用4位数的年，2位数的月，2位数的天：`yyyy-MM-dd`。
+
+###### date_hour or strict_date_hour
+
+&emsp;&emsp;相较于date or strict_date，额外增加了时间，用`T`分隔：`yyyy-MM-dd'T'HH`。
+
+###### date_hour_minute or strict_date_hour_minute
+
+&emsp;&emsp;相较于date_hour or strict_date_hour，额外增加了分钟：`yyyy-MM-dd'T'HH:mm`。
+
+###### date_hour_minute_second or strict_date_hour_minute_second
+
+&emsp;&emsp;相较于date_hour_minute or strict_date_hour_minute，额外增加了秒：`yyyy-MM-dd'T'HH:mm:ss`。
+
+###### date_hour_minute_second_fraction or strict_date_hour_minute_second_fraction
+
+&emsp;&emsp;相较于date_hour_minute_second or strict_date_hour_minute_second，额外增加了秒的小数部分（也即就是毫秒），描述000~999范围：`yyyy-MM-dd'T'HH:mm:ss.SSS`。
+
+###### date_hour_minute_second_millis or strict_date_hour_minute_second_millis
+
+&emsp;&emsp;相较于date_hour_minute_second or strict_date_hour_minute_second，额外增加了毫秒，描述000~999范围：`yyyy-MM-dd'T'HH:mm:ss.SSS`。
+
+&emsp;&emsp;date_hour_minute_second_fraction or strict_date_hour_minute_second_fraction跟date_hour_minute_second_millis or strict_date_hour_minute_second_millis是相同的。
+
+###### date_time or strict_date_time
+
+&emsp;&emsp;一种基本的完整的日期跟时间的format，用`T`分隔日期跟时间：`yyyy-MM-dd'T'HH:mm:ss.SSSZ`。
+
+###### date_time_no_millis or strict_date_time_no_millis
+
+&emsp;&emsp;相较于date_time or strict_date_time，没有毫秒：`yyyy-MM-dd'T'HH:mm:ssZ`。
+
+###### hour or strict_hour
+
+&emsp;&emsp;2位数的小时：`HH`。
+
+###### hour_minute or strict_hour_minute
+
+&emsp;&emsp;相较于hour or strict_hour，额外增加了分钟：`HH:mm`。
+
+###### hour_minute_second or strict_hour_minute_second
+
+&emsp;&emsp;相较于hour_minute or strict_hour_minute，额外增加了秒：`HH:mm:ss`。
+
+###### hour_minute_second_fraction or strict_hour_minute_second_fraction
+
+&emsp;&emsp;相较于hour_minute_second or strict_hour_minute_second，额外增加了秒的小数（也就是毫秒）：`HH:mm:ss.SSS`。
+
+###### hour_minute_second_millis or strict_hour_minute_second_millis
+
+&emsp;&emsp;相较于hour_minute_second or strict_hour_minute_second，额外增加了毫秒：`HH:mm:ss.SSS`。
+
+###### ordinal_date or strict_ordinal_date
+
+&emsp;&emsp;一个完整的序数日期，使用4位数的年和3位数的天：`yyyy-DDD`。例如，2023-001 表示 2023 年的第一天，即 1 月 1 日。而 2023-365 表示 2023 年的最后一天，假设它不是闰年。
+
+###### ordinal_date_time or strict_ordinal_date_time
+
+&emsp;&emsp;相比较ordinal_date or strict_ordinal_date，额外增加了时间：`yyyy-DDD'T'HH:mm:ss.SSSZ`。
+
+###### ordinal_date_time_no_millis or strict_ordinal_date_time_no_millis
+
+&emsp;&emsp;相比较ordinal_date_time or strict_ordinal_date_time，没有毫秒：`yyyy-DDD'T'HH:mm:ssZ`。
+
+###### time or strict_time
+
+&emsp;&emsp;一个使用2位数的小时，2位数的分钟，2位数的秒以及3位数的秒的小数（也即是毫秒）和时区偏移：`HH:mm:ss.SSSZ`。
+
+###### time_no_millis or strict_time_no_millis
+
+&emsp;&emsp;相比较 time or strict_time，没有毫秒：`HH:mm:ssZ`。
+
+###### t_time or strict_t_time
+
+&emsp;&emsp;相比较 time or strict_time，额外使用了`T`作为前缀：`'T'HH:mm:ss.SSSZ`。
+
+###### t_time_no_millis or strict_t_time_no_millis
+
+&emsp;&emsp;相比较t_time or strict_t_time，没有毫秒：`'T'HH:mm:ssZ`。
+
+###### week_date or strict_week_date
+
+&emsp;&emsp;一个完整的日期，使用4位数的年，2位数的周以及1位数的天：`xxxx-'W'ww-e`。 例如2023年的第一周的周三可以表示为 2023-W01-3。
+
+- xxxx 表示周年（weekyear），即包含该周的年份，通常是四位数字。
+- 'W' 是一个字面字符，表示周数的前缀。
+- ww 表示周年中的周数，是两位数字（01 到 53）。
+- e 表示周中的天数，是一位数字（1 到 7），其中 1 代表周一，7 代表周日。
+
+###### week_date_time or strict_week_date_time
+
+&emsp;&emsp;相较于week_date or strict_week_date，额外增加了时间，使用`T`分隔：`xxxx-'W'ww-e'T'HH:mm:ss.SSSZ`。
+
+###### week_date_time_no_millis or strict_week_date_time_no_millis
+
+&emsp;&emsp;相较于week_date_time or strict_week_date_time，没有毫秒：`xxxx-'W'ww-e'T'HH:mm:ssZ`。
+
+###### weekyear or strict_weekyear
+
+&emsp;&emsp;一个使用4位数的年的format：`xxxx`。
+
+###### weekyear_week or strict_weekyear_week
+
+&emsp;&emsp;相较于weekyear or strict_weekyear，额外增加了2位数的周：`xxxx-'W'ww`。
+
+###### weekyear_week_day or strict_weekyear_week_day
+
+&emsp;&emsp;相较于weekyear_week or strict_weekyear_week，额外增加了1位数的天：`xxxx-'W'ww-e`。
+
+###### year or strict_year
+
+&emsp;&emsp;一个使用4位数的年的format：`yyyy`。
+
+###### year_month or strict_year_month
+
+&emsp;&emsp;相较于year or strict_year，额外增加了2位数的月：`yyyy-MM`。
+
+###### year_month_day or strict_year_month_day
+
+&emsp;&emsp;相较于year_month or strict_year_month，额外增加了2位数的天：`yyyy-MM-dd`。
 
 #### ignore_above
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ignore-above.html)
@@ -13469,7 +13705,7 @@ POST _aliases
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/lucene-in-memory-buffer.png">
 
-&emsp;&emsp;Lucene允许新的段用于写入或者打开，使得这些段包含的段对搜索可见，并且不需要完整的提交（full commit）。相比较提交到磁盘这是一种轻量的操作，可以在不降低性能的情况下频繁的执行这些操作。
+&emsp;&emsp;Lucene允许新的段用于写入或者打开，使得这些段包含的段对搜索可见，并且不需要完整的提交（full commit）。相较于提交到磁盘这是一种轻量的操作，可以在不降低性能的情况下频繁的执行这些操作。
 
 > Figure 2. 缓存的内容写入到了一个段中，并且这个段对搜索可见，但是这个段还没有提交
 
@@ -13798,7 +14034,7 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 
 #### The fields option
 
-&emsp;&emsp;若要在查询响应中检索指定的域，则使用`fields`参数。相比较引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
+&emsp;&emsp;若要在查询响应中检索指定的域，则使用`fields`参数。相较于引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
 
 - 以一种标准化的方式返回每一个匹配mapping类型的值
 - accepts [multi-fields ](####fields)和[field aliases](####Alias field type)
@@ -15020,7 +15256,7 @@ GET my-index/_search/template
 
 #### Run multiple templated searches
 
-&emsp;&emsp;可以使用[multi search template API](####Multi search template API)在单个请求中运行多个template search。相比较多个独立的请求，这种方式的请求的开销更小并且速度更快。
+&emsp;&emsp;可以使用[multi search template API](####Multi search template API)在单个请求中运行多个template search。相较于多个独立的请求，这种方式的请求的开销更小并且速度更快。
 
 ```text
 GET my-index/_msearch/template
@@ -17771,7 +18007,7 @@ POST /sales/_search?size=0
 
 ##### Script
 
-&emsp;&emsp;相比较在一个域上计算`max`，你可以通过[runtime field](###Runtime fields)执行更复杂的聚合。
+&emsp;&emsp;相较于在一个域上计算`max`，你可以通过[runtime field](###Runtime fields)执行更复杂的聚合。
 
 ```text
 POST /sales/_search
@@ -17924,7 +18160,7 @@ POST /exams/_search?size=0
 
 ##### Script
 
-&emsp;&emsp;如果你需要获取相比较单个域、更复杂的统计数据，你可以在对一个[runtime field](###Runtime fields)进行聚合计算。
+&emsp;&emsp;如果你需要获取相较于单个域、更复杂的统计数据，你可以在对一个[runtime field](###Runtime fields)进行聚合计算。
 
 ```text
 POST /exams/_search
@@ -20211,7 +20447,7 @@ PUT _cluster/settings
 - [Content tier](####Content tier)节点处理例如产品目录内容的索引和查询负载
 - [Hot tier](####Hot tier)节点处理例如logs或者metrics这些时序（time series）数据的索引负载，并且保存（hold）你最近最常访问的数据
 - [Warm tier](####Warm tier)节点保存最近less-frequently的访问并且很少（rarely）需要更新的时序数据
-- [Cold tier](####Cold tier)节点保留infrequent的访问并且一般不更新的时序数据。为了节省空间，你可以在cold tier上保留[fully mounted indices](######Fully mounted index)的[searchable snapshots](###Searchable snapshots)。这些fully mounted indices会消除（eliminate）对副本分片的需求，相比较普通索引（regular index）能降低50%的磁盘空间
+- [Cold tier](####Cold tier)节点保留infrequent的访问并且一般不更新的时序数据。为了节省空间，你可以在cold tier上保留[fully mounted indices](######Fully mounted index)的[searchable snapshots](###Searchable snapshots)。这些fully mounted indices会消除（eliminate）对副本分片的需求，相较于普通索引（regular index）能降低50%的磁盘空间
 - [Frozen tier](####Frozen tier)节点保留很少（rarely）访问并且从不更新的时序数据。 Fronze tier只存储 [partially mounted indices](######Partially mounted index)的[searchable snapshots](###Searchable snapshots)。This extends the storage capacity even further — by up to 20 times compared to the warm tier.
 
 &emsp;&emsp;当你直接往指定索引中写入文档，这些文档将无期限（indefinitely）的一直保留（remain on）在content ties节点上。
@@ -20240,7 +20476,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](######Fully mounted index)的[searchable snapshots](###Searchable snapshots)。跟普通索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
 
-&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相比较warm tier不会降低磁盘空间。
+&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
 
 #### Frozen tier
 
@@ -20503,7 +20739,7 @@ PUT /_template/custom_monitoring
 
 ##### Rollup stores historical data at reduced granularity
 
-&emsp;&emsp;That’s where Rollup comes into play。Rollup 功能将旧的高粒度（high-granularity）汇总为降低粒度的格式，以便长期存储。通过将数据roll up到单个summary document中，相比较原始数据（raw data），历史数据可以更好的被压缩。
+&emsp;&emsp;That’s where Rollup comes into play。Rollup 功能将旧的高粒度（high-granularity）汇总为降低粒度的格式，以便长期存储。通过将数据roll up到单个summary document中，相较于原始数据（raw data），历史数据可以更好的被压缩。
 
 &emsp;&emsp;比如说一个每天生成4300万文档的系统，每一秒的数据对实时分析是很实用的，但是查看超过 10 年数据的历史分析可能只在更大的时间间隔内起作用，例如每小时或每天的趋势。
 
@@ -20821,7 +21057,7 @@ GET /sensor_rollup/_rollup_search
 
 &emsp;&emsp;当然管理员可以在按小时的间隔的基础上对`[hour, host]`这么一对来配置rollup，但是随着分组字段数量的增加，其需要更多的配置。另外`[hour, host]`的配置只能在按小时的间隔上才有用，按天、按周、按月的rollup都需要新的配置。
 
-&emsp;&emsp;相比较要求管理员提前为rollup做好决策，Elasticsearch中的Rollup job的配置则是基于哪些groups可能会在将来被用于查询。例如下面的这个配置：
+&emsp;&emsp;相较于要求管理员提前为rollup做好决策，Elasticsearch中的Rollup job的配置则是基于哪些groups可能会在将来被用于查询。例如下面的这个配置：
 
 ```text
 "groups" : {
@@ -21144,7 +21380,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 &emsp;&emsp;你可以使用下面两个方法中的一种来transform你的数据：[pivot](#####Pivot transforms)或者[latest](#####Latest transforms)。
 
 > IMPORTANT：transforms不会破坏你的源索引（leave your  source index intact）。transformed data会创建一个新的专用的索引。
-> 相比较Kibana中的可用参数，Transforms可以通过APIs来提供更多的配置选项。参考[API documentation](###Transform APIs)了解transform所有的配置选项。
+> 相较于Kibana中的可用参数，Transforms可以通过APIs来提供更多的配置选项。参考[API documentation](###Transform APIs)了解transform所有的配置选项。
 
 &emsp;&emsp;Transforms是持久性（persistent）的任务，存储在cluster state使得节点发生故障也具有弹性（resilient）。参考[How checkpoints work](####How transform checkpoints work)和[Error handling](#####Error handling)了解更多关于transforms背后的机制（machinery）。
 
@@ -21248,7 +21484,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 #### Generating alerts for transforms
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-alerts.html)
 
->WARNING：该功能处于beta测试阶段，可能会发生变化。设计跟代码相比较官方的GA（general availability）功能是不成熟的，原样的提供了这个功能但没有任何的保证（warranty）。Beta功能不受官方GA功能的支持SLA的限制。
+>WARNING：该功能处于beta测试阶段，可能会发生变化。设计跟代码相较于官方的GA（general availability）功能是不成熟的，原样的提供了这个功能但没有任何的保证（warranty）。Beta功能不受官方GA功能的支持SLA的限制。
 
 &emsp;&emsp;Kibana的告警功能（alerting feature）中支持transforms的规则，它会基于某些条件来检查连续的transforms的运行状况（the healthy of continuous transforms）。如果满足规则中的条件，会创建一条规则并且触发相关的action。您可以创建一个规则来检查连续的transforms是否已经启动，如果没有启动，则通过电子邮件通知你。参考[Alerting](https://www.elastic.co/guide/en/kibana/8.2/alerting-getting-started.html#alerting-getting-started)了解更多关于Kibana alerting feature的内容。
 
@@ -21571,7 +21807,7 @@ PUT _transform/ecommerce-customer-transform
 
    - 如果destination index不存在，会在transform启动时候创建。pivot transform会根据source index和transform aggregation为destination index推测出mapping。如果destination index中的一些域是从脚本中衍生出来的（比如说你使用了[scripted_metrics](####Scripted metric aggregation)或者[bucket_scripts](####Bucket script aggregation)），它们是通过[dynamic mappings](###Dynamic mapping)创建的。你可以使用preview transform API预览下destination index中的mapping。在Kibana中，如果你拷贝了API请求，粘贴到控制台，然后参考下API响应中的`generated_dest_index`。
 
->NOTE：相比较Kibana中可用的选项，通过APIs能够为transform提供更多的用于配置的选项。例如你可以通过调用[Create transform](####Create transform API)来为`dest`设置一个ingest pipeline。参考[documentation](###Transform APIs)了解更多关于transform配置信息 。
+>NOTE：相较于Kibana中可用的选项，通过APIs能够为transform提供更多的用于配置的选项。例如你可以通过调用[Create transform](####Create transform API)来为`dest`设置一个ingest pipeline。参考[documentation](###Transform APIs)了解更多关于transform配置信息 。
 
 &emsp;&emsp;API example:
 
@@ -22985,7 +23221,7 @@ POST _transform/_preview
 
 &emsp;&emsp;没法指定一个健康运行的Elasticsearch所需要的最低网络性能。理论上，即使节点间的往返延迟有上百毫秒的延迟，集群也能正常工作。在实践中，缓慢的网络会导致很差的集群性能。另外缓慢的网络通常是不可靠的并且会发生网络分区导致间断性的不可用。
 
-&emsp;&emsp;如果多个数据中心间相隔很远（further apart）或者连接不好并且还要希望数据可见，可以在每一个数据中心内部署一个额外的集群，使用 [cross-cluster search](###Search across clusters)或者 [cross-cluster replication](###Cross-cluster replication)来连接集群。这些功能使得，相比较集群内，即使集群间有更低的可靠性以及性能也能较好的运行。
+&emsp;&emsp;如果多个数据中心间相隔很远（further apart）或者连接不好并且还要希望数据可见，可以在每一个数据中心内部署一个额外的集群，使用 [cross-cluster search](###Search across clusters)或者 [cross-cluster replication](###Cross-cluster replication)来连接集群。这些功能使得，相较于集群内，即使集群间有更低的可靠性以及性能也能较好的运行。
 
 &emsp;&emsp;在丢失了一个区域内所有的节点后，一个设计合理的集群可能会正常运行（functional），只是大大的降低了capacity（significantly reduced capacity）。当出现这个故障后你需要提供（provision）额外的节点恢复到可接受的性能。
 
@@ -23005,7 +23241,7 @@ POST _transform/_preview
 
 &emsp;&emsp;你应该使用[shard allocation awareness](#####Shard allocation awareness) 来保证每个区域中的每一个分片都有一份拷贝。这意味着任意一个区域发生故障后所有的数据仍然是可见的。
 
-&emsp;&emsp;所有的master-eligible node，包括voting-only node，相比较集群中的其他节点，它们需要相当快速的持久存储以及一个可靠的低延迟的网络连接，因为它们处于[publishing cluster state updates](####Publishing the cluster state)的关键路径（critical path）上。
+&emsp;&emsp;所有的master-eligible node，包括voting-only node，相较于集群中的其他节点，它们需要相当快速的持久存储以及一个可靠的低延迟的网络连接，因为它们处于[publishing cluster state updates](####Publishing the cluster state)的关键路径（critical path）上。
 
 ##### Clusters with three or more zones
 
@@ -24131,7 +24367,7 @@ PUT _slm/policy/monthly-snapshots
 
 &emsp;&emsp;我们建议在创建一个快照前，索引的每个分片都[force-merge](####Force merge API)到单个段中，这样快照将会被mount成一个searchable snapshot index。从快照仓库中的每一次读取都耗时耗钱，段的数量越少，恢复快照或者查询的响应时的读取次数越少。
 
-> TIP：Searchable snapshot用来管理大型归档历史数据室是最理想的的办法。历史信息相比较最新的数据通常很少被查询，因此不需要副本分片来提高性能。
+> TIP：Searchable snapshot用来管理大型归档历史数据室是最理想的的办法。历史信息相较于最新的数据通常很少被查询，因此不需要副本分片来提高性能。
 > 对于更多复杂或者耗时的查询，你可以在Searchable snapshots中使用[Async Searchable](####Async search)。
 
 &emsp;&emsp;使用下面任意一个仓库类型来进行searchable snapshots：
@@ -27286,7 +27522,7 @@ n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: 
 
 &emsp;&emsp;第14行，分片是否能Rebalance到其他节点
 
-&emsp;&emsp;第21行，分片不能Rebalance到其他节点的原因，指出相比较待在当前节点并不能通过移动到其他节点来获得更好的平衡
+&emsp;&emsp;第21行，分片不能Rebalance到其他节点的原因，指出相较于待在当前节点并不能通过移动到其他节点来获得更好的平衡
 
 ###### No arguments
 
@@ -27523,7 +27759,7 @@ GET /_cluster/settings
 
 ###### Two copies by default
 
-&emsp;&emsp;主备模型可以在在仅仅维护两个副本的情况下实现容错，而相比较quorum-based的系统中用于容错的最小的副本数量需要3个。
+&emsp;&emsp;主备模型可以在在仅仅维护两个副本的情况下实现容错，而相较于quorum-based的系统中用于容错的最小的副本数量需要3个。
 
 ##### Failures
 
