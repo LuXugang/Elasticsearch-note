@@ -8205,50 +8205,131 @@ GET logs/_search
 
 &emsp;&emsp;下面的mapping参数对于某些或者所有的域的数据类型是通用的：
 
-- [`analyzer`](####analyzer(mapping parameter))
-- [`coerce`](####coerce)
-- [`copy_to`](####copy_to)
-- [`doc_values`](####doc_values)
-- [`dynamic`](####dynamic(mapping parameter))
-- [`eager_global_ordinals`](####eager_global_ordinals)
-- [`enabled`](####enabled(mapping parameter))
-- [`fielddata`](###fielddata mapping parameter(1))
-- [`fields`](####fields)
-- [`format`](####format(mapping parameter))
-- [`ignore_above`](####ignore_above)
-- [`ignore_malformed`](####ignore_malformed)
-- [`index_options`](####index_options)
-- [`index_phrases`](####index_phrases)
-- [`index_prefixes`](####index_prefixes)
-- [`index`](####index(mapping parameter))
-- [`meta`](####meta(mapping parameter))
-- [`normalizer`](####normalizer(mapping parameter))
-- [`norms`](####norms(mapping parameter))
-- [`null_value`](####null_value)
-- [`position_increment_gap`](####position_increment_gap)
-- [`properties`](####properties)
-- [`search_analyzer`](####search_analyzer)
-- [`similarity`](####similarity)
-- [`store`](####store(mapping parameter))
-- [`term_vector`](####term_vector)
+- [analyzer](####analyzer(mapping parameter))
+- [coerce](####coerce)
+- [copy_to](####copy_to)
+- [doc_values](####doc_values)
+- [dynamic`](####dynamic(mapping parameter))
+- [eager_global_ordinals](####eager_global_ordinals)
+- [enabled](####enabled(mapping parameter))
+- [fielddata](###fielddata mapping parameter(1))
+- [fields](####fields)
+- [format](####format(mapping parameter))
+- [ignore_above](####ignore_above)
+- [ignore_malformed](####ignore_malformed)
+- [index_options](####index_options)
+- [index_phrases](####index_phrases)
+- [index_prefixes](####index_prefixes)
+- [index](####index(mapping parameter))
+- [meta](####meta(mapping parameter))
+- [normalizer](####normalizer(mapping parameter))
+- [norms](####norms(mapping parameter))
+- [null_value](####null_value)
+- [position_increment_gap](####position_increment_gap)
+- [properties](####properties)
+- [search_analyzer](####search_analyzer)
+- [similarity](####similarity)
+- [store](####store(mapping parameter))
+- [term_vector](####term_vector)
 
 #### analyzer(mapping parameter)
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analyzer.html#analyzer)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analyzer.html#analyzer)
 
-&emsp;&emsp;只有[text](####Text type family)类型支持`analyzer`参数。
+> IMPORTANT：只有[text](####Text type family)类型支持`analyzer`参数。
 
 &emsp;&emsp;`analyzer`参数用来指定分词器[analyzer](####Anatomy of an analyzer) 并且用于在索引和查询[text](####Text type family)域时进行文本分词[text analysis](##Text analysis)。
 
 &emsp;&emsp;除非用mapping参数[search_analyzer](####search_analyzer)进行覆盖，分词器将同时用于[index and search analysis](####Index and search analysis)，见[Specify an analyzer](####Specify an analyzer)
 
-&emsp;&emsp;**TIPS: **建议在生产中使用前先试用下分词器，见[Test an analyzer](####Test an analyzer)。
+> TIP：建议在生产中使用前先试用下分词器，见[Test an analyzer](####Test an analyzer)。
 
-&emsp;&emsp;**TIPS: **`analyzer`参数不能通过[update mapping API](####Update mapping API)对已存在的域进行变更。
+> TIP：`analyzer`参数不能通过[update mapping API](####Update mapping API)对已存在的域进行变更。
 
 ##### search_quote_analyzer
 
-&emsp;&emsp;（未完成）
+&emsp;&emsp;`search_quote_analyzer`允许你指定一个分词器用于match_phrase和query_string这类phrase query，处理这类query并且不使用停用词时特别有用。
 
+&emsp;&emsp;若要为phrase query不启动停用词可以利用三个分词器：
+
+1. 使用设置`analyzer`用于索引所有的term，包括停用词
+2. 使用设置`search_analyzer`用于non-phrase query，它将移除停用词
+3. 使用设置`search_quote_analyzer`用于phrase query，它将不会移除停用词
+
+```text
+PUT my-index-000001
+{
+   "settings":{
+      "analysis":{
+         "analyzer":{
+            "my_analyzer":{ 
+               "type":"custom",
+               "tokenizer":"standard",
+               "filter":[
+                  "lowercase"
+               ]
+            },
+            "my_stop_analyzer":{ 
+               "type":"custom",
+               "tokenizer":"standard",
+               "filter":[
+                  "lowercase",
+                  "english_stop"
+               ]
+            }
+         },
+         "filter":{
+            "english_stop":{
+               "type":"stop",
+               "stopwords":"_english_"
+            }
+         }
+      }
+   },
+   "mappings":{
+       "properties":{
+          "title": {
+             "type":"text",
+             "analyzer":"my_analyzer", 
+             "search_analyzer":"my_stop_analyzer", 
+             "search_quote_analyzer":"my_analyzer" 
+         }
+      }
+   }
+}
+
+PUT my-index-000001/_doc/1
+{
+   "title":"The Quick Brown Fox"
+}
+
+PUT my-index-000001/_doc/2
+{
+   "title":"A Quick Brown Fox"
+}
+
+GET my-index-000001/_search
+{
+   "query":{
+      "query_string":{
+         "query":"\"the quick brown fox\"" 
+      }
+   }
+}
+```
+
+> TIP：可以通过[update mapping API](####Update mapping API)对现有的域更新`search_quote_analyzer`设置。
+
+&emsp;&emsp;第1行，`my_analyzer`对所有的字符串进行分词，包括停用词
+
+&emsp;&emsp;第2行，`my_stop_analyzer`会移除停用词
+
+&emsp;&emsp;第3行，`analyzer`会在索引期间使用`my_analyzer`这个分词器
+
+&emsp;&emsp;第4行，`search_analyzer`会为non-phrase query使用`my_stop_analyzer`这个分词器并且移除停用词
+
+&emsp;&emsp;第5行，`search_quote_analyzer`会使用`my_analyzer`分词器并且确保使用phrase query时停用词不会被移除
+
+&emsp;&emsp;第6行，由于query语句作为一个phrase query使用引号包裹，因此触发`search_quote_analyzer`并且保证停用词不会从这个query中移除。`my_analyzer`分词器会返回下面的token： [the, quick, brown, fox] 用来匹配文档。同时term query会使用`my_stop_analyzer`分词器并且过滤掉停用词。因此查询语句`quick brown fox`或者`A quick brown fox`都会返回两篇文档(the是停用词)，因为这两篇文档都包含下面的token： [quick, brown, fox]。没有`search_quote_analyzer`的话，就无法为phrase query执行精确匹配（exactly match），是因为停用词会被移除，使得两篇文档都会被匹配。
 
 
 #### coerce
@@ -8256,7 +8337,7 @@ GET logs/_search
 
 &emsp;&emsp;Data is not always clean，在JSON中，5这个数字可以用字符串"5"表示，也可以用数值表示，或者应该是整数5，但是在JSON中是一个浮点数，比如5.0，甚至是字符串"5.0"。
 
-&emsp;&emsp;`coerce`会尝试将dirty value转化为域的数据类型。比如：
+&emsp;&emsp;`coerce`会尝试将dirty value转化为某个合适的域的数据类型。比如：
 
 - 字符串会被强制转化为数值
 - 浮点型会被截断为整数
