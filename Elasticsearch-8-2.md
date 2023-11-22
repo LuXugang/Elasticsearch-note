@@ -7289,8 +7289,219 @@ GET my-index-000001/_search
 #### Dense vector field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dense-vector.html)
 
+&emsp;&emsp;
+
 #### Flattened field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
+
+&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名字无法提前知晓，那么他们会被自动映射（[mapped dynamically](###Dynamic mapping)）。
+
+&emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将他们作为keyword索引到一个域中。对象的内容随后可以通过query和aggregation查询。
+
+&emsp;&emsp;对于很大的或者有未知数量键的对象，使用`flattened`就很有用。只要创建一个域的类型来处理整个JSON对象，有助于防止因太多不同的域的类型导致[mappings explosion](####Settings to prevent mapping explosion)。
+
+&emsp;&emsp;另外，`flattened`在搜索功能存在一种折衷。只允许一些基本的查询，不支持数值类型的范围查询以及高亮。更多的一些局限性见[Supported operations](#####Supported operations)。
+
+> NOTE：`flattened`不应该用于索引整个文档的内容，因为它会将所有的值作为keyword，不能提供全文检索功能。默认每一个子域在mapping中有自己的entry，大多数的用例中工作都正常。
+
+&emsp;&emsp;`flattened`域可以通过下面的方式创建：
+
+```text
+PUT bug_reports
+{
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text"
+      },
+      "labels": {
+        "type": "flattened"
+      }
+    }
+  }
+}
+
+POST bug_reports/_doc/1
+{
+  "title": "Results are not sorted correctly.",
+  "labels": {
+    "priority": "urgent",
+    "release": ["v1.2.5", "v1.3.0"],
+    "timestamp": {
+      "created": 1541458026,
+      "closed": 1541457010
+    }
+  }
+}
+```
+
+&emsp;&emsp;在索引期间，JSON对象中的每一个leaf value都会创建token。索引为keywords类型，不会分词，也不会为数值或者日期进行特别的处理。
+
+&emsp;&emsp;查询最顶层`flattened`域（mapping中定义的那个域）会搜索所有的leaf values：
+
+```text
+POST bug_reports/_search
+{
+  "query": {
+    "term": {"labels": "urgent"}
+  }
+}
+```
+
+&emsp;&emsp;若要查询flattened object中某个key，则通过点路径：
+
+```text
+POST bug_reports/_search
+{
+  "query": {
+    "term": {"labels.release": "v1.3.0"}
+  }
+}
+```
+
+##### Supported operations
+
+&emsp;&emsp;由于索引的方式很类似，所以`flattened`域跟[keyword](####Keyword type family)域一样有许多相同的mapping和查询功能。
+
+&emsp;&emsp;目前，`flattened`域可以用于下面的query类型：
+
+- `term`, `terms`, and `terms_set`
+- `prefix`
+- `range`
+- `match` and `multi_match`
+- `query_string` and `simple_query_strin`g
+- `exists`
+
+&emsp;&emsp;查询时，不能使用wildcards，比如：`{ "term": {"labels.time*": 1541457010}}`。注意的事，所有的查询，包括`range`，都是将值当成string类型。`flattened`域不支持高亮。
+
+&emsp;&emsp;可以将`flattened`域用于排序，就是类似`terms`中执行简单keyword风格的聚合。与查询一样，这里没有对数字的特殊支持——JSON 对象中的所有值都被视为keyword。在排序时，这意味着值会按字典顺序进行比较。
+
+&emsp;&emsp;目前不能存储`flattened`域。不能在mapping中指定[store](####store(mapping parameter))。
+
+##### Retrieving flattened fields
+
+&emsp;&emsp;域值以及固定子域可以通过[fields parameter](####The fields option).content检索。由于`flattened`将整个对象（以及对象中的子域）映射为一个域，响应中的`_source`包含了未更改的结构。
+
+&emsp;&emsp;获取单个子域可以在请求中显示的指定。只能对有固定路径的生效，但不能使用wildcards：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "flattened_field": {
+        "type": "flattened"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1?refresh=true
+{
+  "flattened_field" : {
+    "subfield" : "value"
+  }
+}
+
+POST my-index-000001/_search
+{
+  "fields": ["flattened_field.subfield"],
+  "_source": false
+}
+```
+
+```text
+{
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 1.0,
+    "hits": [{
+      "_index": "my-index-000001",
+      "_id": "1",
+      "_score": 1.0,
+      "fields": {
+        "flattened_field.subfield" : [ "value" ]
+      }
+    }]
+  }
+}
+```
+
+&emsp;&emsp;你可以使用[Painless script](###Painless scripting language)读取flattened域的子域的域值。相比较`doc['<field_name>'].value`。在你的Script中，使用`doc['<field_name>.<sub-field_name>'].value`。例如如果你有一个名为`label`的flattened域以及一个`release`的子域。你的Painless Script中应该是`doc['labels.release'].value`。
+
+&emsp;&emsp;例如，比如说你的mapping中包含两个域，其中一个是`flattened`类型：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text"
+      },
+      "labels": {
+        "type": "flattened"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;索引一些包含你mapping中的域的文档。`labels`域有三个子域：
+
+```text
+POST /my-index-000001/_bulk?refresh
+{"index":{}}
+{"title":"Something really urgent","labels":{"priority":"urgent","release":["v1.2.5","v1.3.0"],"timestamp":{"created":1541458026,"closed":1541457010}}}
+{"index":{}}
+{"title":"Somewhat less urgent","labels":{"priority":"high","release":["v1.3.0"],"timestamp":{"created":1541458026,"closed":1541457010}}}
+{"index":{}}
+{"title":"Not urgent","labels":{"priority":"low","release":["v1.2.0"],"timestamp":{"created":1541458026,"closed":1541457010}}}
+```
+
+&emsp;&emsp;因为`labels`是一个`flattened`域，所以整个对象映射到一个域中。若要在一个Painless Script中检索子域，那么使用`doc['<field_name>.<sub-field_name>'].value`。
+
+```text
+"script": {
+  "source": """
+    if (doc['labels.release'].value.equals('v1.3.0'))
+    {emit(doc['labels.release'].value)}
+    else{emit('Version mismatch')}
+  """
+```
+
+##### Parameters for flattened object fields
+
+&emsp;&emsp;可以使用下面的参数：
+
+- depth_limit：flattened域允许嵌套的最大深度（nested Inner object）。如果超过限制，则会抛出错误。默认值为`20`。注意的是可以通过[update mapping](####Update mapping API)更新`depth_limit`。
+- [doc_values](####doc_values)
+  - 该域值是否在磁盘上使用列式存储，使得可以用来进行聚合、排序或者脚本。可选值`true`或者`false`
+- [eager_global_ordinals](####eager_global_ordinals) 
+  - 是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
+- [ignore_above](####ignore_above)
+  - leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只作用与flattened的leaf values，而不是整个域的长度
+- [index](####index)
+  - 是否该域需要被快速的搜索到？可选值`true`或者`false`。
+- [index_options](####index_options)
+  - 在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
+- [null_value](####null_value)
+  - flattened域中`null`值会被替换为一个string value。默认是`null`。意味着null值被认为是缺失值
+- [similarity](####similarity)
+  - 使用哪一个打分算法。默认值为`BM25`。
+- split_queries_on_whitespace
+  - 在flattened域上执行[full text queries](###Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
 
 #### Geopoint field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
