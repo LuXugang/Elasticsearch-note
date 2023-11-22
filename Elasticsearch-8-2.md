@@ -8256,9 +8256,36 @@ GET logs/_search
 &emsp;&emsp;第37行，我们仍然可以通过这个域进行检索，尽管它没有被存储
 
 #### \_tier field
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-tier-field.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-tier-field.html)
 
-&emsp;&emsp;
+&emsp;&emsp;在多个索引上执行查询时，有时候希望在包含指定数据层（data tie）（`data_hot`, `data_warm`, `data_cold` or `data_frozen`）的索引上查询。`_tier`域用于匹配索引设置`tier_preference`：
+
+```text
+PUT index_1/_doc/1
+{
+  "text": "Document in index 1"
+}
+
+PUT index_2/_doc/2?refresh=true
+{
+  "text": "Document in index 2"
+}
+
+GET index_1,index_2/_search
+{
+  "query": {
+    "terms": {
+      "_tier": ["data_hot", "data_warm"] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第15行，根据`_tier`的值查询
+
+&emsp;&emsp;通常，查询会使用 terms 查询来列出感兴趣的层级，但你可以在任何被重写为 term 查询的查询中使用`_tier` 字段，比如 `match`、`query_string`、`term`、`terms` 或 `simple_query_string` 查询，以及 `prefix` 和 `wildcard` 查询。然而，它不支持 `regexp` 和 `fuzzy`查询。
+
+&emsp;&emsp;索引的 tier_preference 设置是一个逗号分隔的层级名称列表，按优先顺序排列，即首选托管索引的层级排在最前，其后可能有许多备选选项。查询匹配只考虑第一优先级（列表的第一个值）。
 
 ### Mapping parameters
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-params.html)
