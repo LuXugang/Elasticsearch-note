@@ -7959,7 +7959,67 @@ GET my-index-000001/_search
 >\_id字段的值的大小被限制为512个字节并且larger values会被reject。
 
 #### \_index field
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-routing-field.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-routing-field.html)
+
+&emsp;&emsp;当在多个索引上执行查询时，有时候希望增加一个关联相关索引的子query（query clause）。`_index`域允许你只在相关的索引上匹配文档。`_index`的值可以用于某些查询、聚合或者排序、Script：
+
+```text
+PUT index_1/_doc/1
+{
+  "text": "Document in index 1"
+}
+
+PUT index_2/_doc/2?refresh=true
+{
+  "text": "Document in index 2"
+}
+
+GET index_1,index_2/_search
+{
+  "query": {
+    "terms": {
+      "_index": ["index_1", "index_2"] 
+    }
+  },
+  "aggs": {
+    "indices": {
+      "terms": {
+        "field": "_index", 
+        "size": 10
+      }
+    }
+  },
+  "sort": [
+    {
+      "_index": { 
+        "order": "asc"
+      }
+    }
+  ],
+  "script_fields": {
+    "index_name": {
+      "script": {
+        "lang": "painless",
+        "source": "doc['_index']" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第15行，根据`_index`的域值查询
+
+&emsp;&emsp;第21行，在`_index`上执行聚合
+
+&emsp;&emsp;第28行，基于`_index`域排序
+
+&emsp;&emsp;第37行，在脚本中访问`_index`的值
+
+&emsp;&emsp;`_index` field exposed virtually，它不会作为一个真实的域添加到Lucene的索引中。这意味着你可以在`term`或 `terms`查询中使用` _index` 字段（或任何被重写为 `term` 查询的查询，如 `match`、`query_string` 或 `simple_query_string` 查询），以及 `prefix` 和 `wildcard` 查询。但是，它不支持`regexp` 和 `fuzzy` 查询。
+
+&emsp;&emsp;对` _index` 字段的查询除了接受具体的索引名称外，还接受索引别名。
+
+> NOTE：在指定远程索引名称（如 `cluster_1:index_3`）时，查询必须包含分隔符 :。例如，对 `cluster_*:index_3` 的 `wildcard` 查询将匹配远程索引中的文档。然而，对 `cluster*index_1` 的查询只会匹配本地索引，因为没有分隔符。这种行为与远程索引名称的通常解析规则一致。
 
 #### \_meta field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-meta-field.html)
@@ -8197,6 +8257,8 @@ GET logs/_search
 
 #### \_tier field
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-tier-field.html)
+
+&emsp;&emsp;
 
 ### Mapping parameters
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-params.html)
