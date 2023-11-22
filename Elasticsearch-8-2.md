@@ -8209,7 +8209,7 @@ GET logs/_search
 - [coerce](####coerce)
 - [copy_to](####copy_to)
 - [doc_values](####doc_values)
-- [dynamic`](####dynamic(mapping parameter))
+- [dynamic](####dynamic(mapping parameter))
 - [eager_global_ordinals](####eager_global_ordinals)
 - [enabled](####enabled(mapping parameter))
 - [fielddata](###fielddata mapping parameter(1))
@@ -9759,7 +9759,99 @@ GET my-index-000001/_search
 &emsp;&emsp;在es中定义了"names": [ "John Abraham", "Lincoln Smith"]，如果position_increment_gap的值为0，那么相当于定义了"names": "John Abraham Lincoln Smith"。在Lucene层，es的arrays类型会将每一个数组元素作为Lucene中同一篇文档的相同域名的多个域信息。以name为例，在Lucene中，会生成两个域名为name，域值分别为John Abraham和Lincoln Smith的域。由于这两个域有相同的域名，那么在[倒排索引](https://amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）/)中，Abraham和Lincoln的位置是相邻的，当然前提是position_increment_gap的值为0。
 
 #### properties
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/properties.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/properties.html)
+
+&emsp;&emsp;类型映射，[object fields](####Object field type)和包含子域（sub-field）[nested fiedlds](####Nested field type)都称为`properties`。这些properties可能是任意的数据类型（[date type](###Field data types)），包括`object`和`nested`。可以通过下面的方式添加`properties`：
+
+- 在[creating an index](####Create index API)时显示的定义
+- 通过[update mapping API](####Update mapping API)显示的增加或更新mapping时显示的定义
+- 对包含新的域的文档[动态](###Dynamic mapping)的添加
+
+&emsp;&emsp;下面是一个添加`properties`的例子，添加了一个`object`和`nested`域：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": { 
+      "manager": {
+        "properties": { 
+          "age":  { "type": "integer" },
+          "name": { "type": "text"  }
+        }
+      },
+      "employees": {
+        "type": "nested",
+        "properties": { 
+          "age":  { "type": "integer" },
+          "name": { "type": "text"  }
+        }
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1 
+{
+  "region": "US",
+  "manager": {
+    "name": "Alice White",
+    "age": 30
+  },
+  "employees": [
+    {
+      "name": "John Smith",
+      "age": 34
+    },
+    {
+      "name": "Peter Brown",
+      "age": 26
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第4行，在顶层mapping中定义
+
+&emsp;&emsp;第6行，在`manager`下定义
+
+&emsp;&emsp;第13行，在`employees`下定义
+
+&emsp;&emsp;第22行，索引一篇对应上面定义的mapping的文档
+
+> TIP：`properties`这个配置运行在同一个索引中对同一个域名有不同的设置。可以通过[update mapping API](####Update mapping API)添加或者更新现有域的properties。
+
+##### Dot notation
+
+&emsp;&emsp;Inner field可以通过dot notation获取并在query、aggregation中使用：
+
+```text
+GET my-index-000001/_search
+{
+  "query": {
+    "match": {
+      "manager.name": "Alice White"
+    }
+  },
+  "aggs": {
+    "Employees": {
+      "nested": {
+        "path": "employees"
+      },
+      "aggs": {
+        "Employee Ages": {
+          "histogram": {
+            "field": "employees.age",
+            "interval": 5
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+> IMPORTANT：必须要指定Inner field的完整路径
 
 #### search_analyzer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-analyzer.html)
