@@ -7153,7 +7153,7 @@ PUT my-index-000001
 |          [format](####format(mapping parameter) )           | 用于对日期进行解析，默认值`strict_date_optional_time||epoch_millis` |
 |                  locale                  | 解析日期时使用的区域设置，因为在所有语言中，月份没有相同的名称和/或缩写。默认是 [ROOT locale](https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html#ROOT) |
 | [ignore_malformed](####ignore_malformed) | 如果是true，格式错误的数字会被忽略。如果是false，格式错误的数字会抛出异常并且整个文档会被丢弃。注意的是如果使用了参数`script`，当前参数不会被设置。 |
-|            [index](####index)            | 是否需要被快速的搜索到？该值可以是true（默认值）或者false。日期域date field只有开启[doc_values](####doc_values)才能进行查询，尽管查询速度较慢 |
+|            [index](####index(mapping parameter))            | 是否需要被快速的搜索到？该值可以是true（默认值）或者false。日期域date field只有开启[doc_values](####doc_values)才能进行查询，尽管查询速度较慢 |
 |       [null_value](####null_value)       | 可以设置一个满足[format](####format(mapping parameter) )的值，用来替代空值。默认值是null，意味这是一个缺失值。注意的是如果使用了参数`script`，当前参数不会被设置。 |
 |             on_script_error              | 该值描述了通过参数`script`定义的脚本在索引期间发生错误后的行为。可以设置为false（默认值），那么整个文档会被reject。或者设置为`continue`，会通过[ignored field](#####\_ignored field)来进行索引并继续进行索引。这个参数只有参数`script`被设置后才能被设置 |
 |                  script                  | 如果设置了该值，将会索引这个脚本生成的值，而不是直接读取source（输入文档中这个域的域值）。如果输入的文档中已经设置了这个域的值，那么这个脚本会被reject并报错。脚本的格式跟[runtime equivalent](####Map a runtime field)一致，并且应该输出long类型的时间戳。 |
@@ -7492,7 +7492,7 @@ POST /my-index-000001/_bulk?refresh
   - 是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
 - [ignore_above](####ignore_above)
   - leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只作用与flattened的leaf values，而不是整个域的长度
-- [index](####index)
+- [index](####index(mapping parameter))
   - 是否该域需要被快速的搜索到？可选值`true`或者`false`。
 - [index_options](####index_options)
   - 在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
@@ -7504,7 +7504,138 @@ POST /my-index-000001/_bulk?refresh
   - 在flattened域上执行[full text queries](###Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
 
 #### Geopoint field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
+
+&emsp;&emsp;`geo_point`域可以接受经度纬度对，可以用于：
+
+- 在一个[bounding box](####Geo-bounding box query)中，相对于中心点某个距离([distance](####Geo-distance query))找到一个地理点（geopoints），或者从一个[polygon](####Geo-polygon query)中、或者一个[geo_shape query](####Geoshape query)中找到一个地理点。
+- 根据地理位置（[geographically ](####Geohash grid aggregation)）或者离中心点的距离([distance](####Geo-distance aggregation))对文档进行聚合
+- 将距离信息集成到文档的相关性打分[relevance score](####Function score query)中
+- 根据距离对文档排序([sort](####Geo Distance Sorting))
+
+&emsp;&emsp;有五种方式来指定地理点，如下所示：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "location": {
+        "type": "geo_point"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "text": "Geopoint as an object",
+  "location": { 
+    "lat": 41.12,
+    "lon": -71.34
+  }
+}
+
+PUT my-index-000001/_doc/2
+{
+  "text": "Geopoint as a string",
+  "location": "41.12,-71.34" 
+}
+
+PUT my-index-000001/_doc/3
+{
+  "text": "Geopoint as a geohash",
+  "location": "drm3btev3e86" 
+}
+
+PUT my-index-000001/_doc/4
+{
+  "text": "Geopoint as an array",
+  "location": [ -71.34, 41.12 ] 
+}
+
+PUT my-index-000001/_doc/5
+{
+  "text": "Geopoint as a WKT POINT primitive",
+  "location" : "POINT (-71.34 41.12)" 
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "geo_bounding_box": { 
+      "location": {
+        "top_left": {
+          "lat": 42,
+          "lon": -72
+        },
+        "bottom_right": {
+          "lat": 40,
+          "lon": -74
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第15行，地理点用一个对象表示，对象中有`lat`跟`lon`两个key
+
+&emsp;&emsp;第24行，地理点用一个字符串类型的format表示：`lat,lon`
+
+&emsp;&emsp;第30行，地理点用GeoHash表示
+
+&emsp;&emsp;第36行，地理点用数组类型的format表示：[`lon`, `lat`]
+
+&emsp;&emsp;第42行，地理点用 [Well-Known Text POINT](https://docs.opengeospatial.org/is/12-063r5/12-063r5.html)的format表示：`"POINT(lon lat)"`
+
+&emsp;&emsp;第48行，一个geo-bounding_box query，用来找到在地理位置范围内所有的地理点。
+
+> IMPORTANT：Geopoints expressed as an array or string
+> 注意的使string类型的地理点的经纬度先后顺序为 `lat` `lon`，然而数组类型的地理点的经纬度先后顺序为`lon``lat`。
+> 
+> 原先这两种类型的地理点都是`lat` `lon`的先后顺序，但是数组类型的地理点为了符合GeoJSON的格式做出了更改
+
+> NOTE：一个point可以用[geohash](https://en.wikipedia.org/wiki/Geohash)表示，是将纬度和经度的比特交错后，用 [base32](https://en.wikipedia.org/wiki/Base32) 编码成字符串。geohash的每一个字符增加额外的 5 个比特精度。因此，哈希越长，其精度就越高。为了索引目的，geohash被转换成纬度-经度对。在这个过程中，只使用前 12 个字符，所以在geohash指定超过 12 个字符并不会增加精度。这 12 个字符提供了 60 个比特，应该能将可能的误差减少到不到 2 厘米。
+
+##### Parameters for geo_point fields
+
+`geo_point`域可以有下面的参数：
+
+- [ignore_malformed](####ignore_malformed)
+  - 如果为`true`，格式错误的地理点会被忽略。如果为`false`（default），格式错误的地理点会抛出一个异常并且reject整个文档。如果其纬度超出了 -90 至 90 的范围，或者其经度超出了 -180 至 180 的范围，则认为地理点是格式错误的。注意的使如果使用了script参数，则无法设置这个参数。
+
+- ignore_z_value
+  - 如果为`true`(default)，可以索引三维的point（点数据），但是只有经纬度的值会被索引；第三个维度的值被忽略。如果为`false`地理点的维度如果超过了经纬度这两个维度就会抛出异常并且reject文档。注意的使如果使用了script参数，则无法设置这个参数。
+
+- [index](####index(mapping parameter))
+  - 是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](####doc_values)参数的域仍然可以被查询，尽管慢一些（albeit slower）
+
+- [null_value](####null_value)
+  - 可是是一个地理点用来替换所有显示为`null`的值。默认是`null`，意味着当前域被认为是一个缺失值。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
+
+- on_script_error
+  - 定义了当使用参数`script`并且在索引期间脚本抛出异常后的行为。默认值为`false`会导致整个文档会被reject，然后被注册到文档的 [\_ignored](####\_ignored field)这个[metadata field](###Metadata fields)中并且继续索引。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
+
+- script
+  - 如果设置了这个参数，域值会使用脚本生成的值而不是文档中的原始数据。如果使用输入文档（input document）中的数据作为域值，那么这篇文档会被reject并且返回错误。Script跟[runtime ](####Map a runtime field)的格式是一样的。并且应该抛出double类型的经纬度对值。
+
+##### Using geopoints in scripts
+
+&emsp;&emsp;在script中访问地理点时，地理点是一个`GeoPoint`对象，可以分别访问`lat`跟`lon`的值。
+
+```text
+def geopoint = doc['location'].value;
+def lat      = geopoint.lat;
+def lon      = geopoint.lon;
+```
+
+&emsp;&emsp;出于性能考虑，最好直接访问经纬度值：
+
+```text
+def lat      = doc['location'].lat;
+def lon      = doc['location'].lon;
+```
 
 #### Geoshape field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-shape.html)
@@ -7650,7 +7781,7 @@ GET my-index-000001/_search
 - [ignore_malformed](####ignore_malformed)
   - 如果设置为`true`，数据格式错误的IP地址被忽略。如果设置为`false`（默认值），数据格式错误的IP地址会导致抛出异常并reject整个文档。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
 
-- [index](####index)
+- [index](####index(mapping parameter))
   - 是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](####doc_values)参数的域仍然可以使用term or range-based的查询，尽管慢一些（albeit slower）
 
 - [null_value](####null_value)
@@ -7870,7 +8001,7 @@ PUT my-index-000001
 | [fielddata](####fielddata mapping parameter) | 这个域是否用于排序、聚合、或在script中使用？默认是`false` |
 | [fielddata_frequency_filter](#####fielddata_frequency_filter mapping parameter) | （Expert Setting）在开启`fielddata`后，将哪些值载入到内存中，默认值是`false` |
 | [fields](####fields) | Multi-fields允许同一个将string value基于不同的目的索引用多种方式进行索引。比如用于查询或者用于排序聚合，或者使用不同的分词器对string value进行分词 |
-| [index](####index) | 这个域是否可以被搜索？默认是`true` |
+| [index](####index(mapping parameter)) | 这个域是否可以被搜索？默认是`true` |
 | [index_options](####index_options) | 哪些信息需要被存储到索引中用于查询和高亮，默认是`positions` |
 | [index_prefixes](####index_prefixes) | 开启这个参数后，term的2到5个前缀字符会被索引到额外的域（separate filed）。这使得前缀搜索更高效，代价就是索引大小会增加 |
 | [index_phrases](####index_phrases) | 开启这个参数后，2个term组成的域值会被索引到额外的域（separate filed）中。这使得exact phrase（no slop） 查询可以更高效，代价就是索引大小会增加。注意的是只有移除了停用词后才能达到最佳性能，因为包含了停用词的短语将不会使用subsidiary field并且会回滚到标准的短语查询。默认是`false` |
