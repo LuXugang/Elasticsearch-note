@@ -9604,7 +9604,29 @@ GET index/_search
 ```
 
 #### norms(mapping parameter)
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/norms.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/norms.html)
+
+&emsp;&emsp;`norms`存储各种标准化因子（normalization），随后在查询期间用于文档的打分 。
+
+&emsp;&emsp;`norms`对于打分是很有用的，但是它同时需要很多的磁盘空间（通常在每个文档每个字段上约占一个字节，即使是索引中没有这个特定字段的文档也是如此）。因此，如果你不需要在某个特定字段上进行得分计算，你应该禁用该字段上的规范。特别是对于那些仅用于过滤或聚合的字段。
+
+> TIP：可以通过[update mapping API](####Update mapping API)对关闭现有的域的`norm`。
+ 
+&emsp;&emsp;Norms可以通过[update mapping API](####Update mapping API)按照下面的方式关闭：
+
+```text
+PUT my-index-000001/_mapping
+{
+  "properties": {
+    "title": {
+      "type": "text",
+      "norms": false
+    }
+  }
+}
+```
+
+> NOTE：Norms不会马上被移除，而是在你继续索引新的文档后，并且在旧的段合并到新段后才会移除。被移除了norm的域将返回不一致的结果，因为有些文档不在有norm，而其他的文档仍然有norm。
 
 #### null_value
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/null-value.html)
