@@ -9611,7 +9611,7 @@ GET index/_search
 &emsp;&emsp;`norms`对于打分是很有用的，但是它同时需要很多的磁盘空间（通常在每个文档每个字段上约占一个字节，即使是索引中没有这个特定字段的文档也是如此）。因此，如果你不需要在某个特定字段上进行得分计算，你应该禁用该字段上的规范。特别是对于那些仅用于过滤或聚合的字段。
 
 > TIP：可以通过[update mapping API](####Update mapping API)对关闭现有的域的`norm`。
- 
+
 &emsp;&emsp;Norms可以通过[update mapping API](####Update mapping API)按照下面的方式关闭：
 
 ```text
@@ -9679,8 +9679,84 @@ GET my-index-000001/_search
 >NOTE：`null_value`只会影响数据的索引和查询，它不会修改_source中文档的数据
 
 #### position_increment_gap
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/position-increment-gap.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/position-increment-gap.html)
 
+&emsp;&emsp;为了能支持[proximity or phrase queries](####Match phrase query)，text类型的域被分词（[Analyzed](####index(mapping parameter))）后会统计term的[positions](####index_options)信息。当索引多值（[Arrays](####Arrays)）的text域时，Elasticsearch会在这些值之间添加一个假的距离，来阻止phrase query能跨相邻两个值进行查询。这个假的距离使用`position_increment_gap`配置并且默认值是100。
+
+&emsp;&emsp;例如
+```text
+PUT my-index-000001/_doc/1
+{
+  "names": [ "John Abraham", "Lincoln Smith"]
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "match_phrase": {
+      "names": {
+        "query": "Abraham Lincoln" 
+      }
+    }
+  }
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "match_phrase": {
+      "names": {
+        "query": "Abraham Lincoln",
+        "slop": 101 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第11行，这个phrase query 不会匹配到文档，与我们的期望不符。
+
+&emsp;&emsp;第23行，这个phrase query会匹配到文档，因为`slop`大于`position_increment_gap`，尽管`Abraham`和`Lincoln`是两个数组元素的值。
+
+&emsp;&emsp;`position_increment_gap`可以通过下面的方式在mapping中指定：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "names": {
+        "type": "text",
+        "position_increment_gap": 0 
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "names": [ "John Abraham", "Lincoln Smith"]
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "match_phrase": {
+      "names": "Abraham Lincoln" 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，若`position_increment_gap`设置为0，那么数组中相邻的两个term的距离为0
+
+- 例如[ "John Abraham", "Lincoln Smith"]，Abraham跟Lincoln之间的距离为0。
+
+&emsp;&emsp;第22行，这个phrase query会匹配到文档看起来是有点奇怪的，但原因是我们在mapping要求这么做的。
+
+##### 小知识
+
+&emsp;&emsp;在es中定义了"names": [ "John Abraham", "Lincoln Smith"]，如果position_increment_gap的值为0，那么相当于定义了"names": "John Abraham Lincoln Smith"。在Lucene层，es的arrays类型会将每一个数组元素作为Lucene中同一篇文档的相同域名的多个域信息。以name为例，在Lucene中，会生成两个域名为name，域值分别为John Abraham和Lincoln Smith的域。由于这两个域有相同的域名，那么在[倒排索引](https://amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）/)中，Abraham和Lincoln的位置是相邻的，当然前提是position_increment_gap的值为0。
 
 #### properties
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/properties.html)
