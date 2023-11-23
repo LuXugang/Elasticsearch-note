@@ -7957,7 +7957,7 @@ PUT my-index-000001
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/shape.html)
 
 #### Text type family
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/text.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/text.html)
 
 &emsp;&emsp;text family包含的域类型（field type）如下所示：
 
@@ -8071,9 +8071,61 @@ PUT my-index-000001/_mapping
 
 &emsp;&emsp;FieldData filtering可以用于减少载入到内存的term的数量，因此能降低内存使用量。可以通过frequency来过滤term：
 
-&emsp;&emsp;
+&emsp;&emsp;frequency filter能让你只将frequency在`min`和`max`之间的term载入到内存，`min`和`max`可以是一个确切的数值（absolute number， 数值大于1）或者是一个百分值（比如`0.01`就是`1%`并且`1.0`就是`100%`）。frequency在每个段中进行计算。百分值基于一个段中拥有这个域的文档数量相对于所有文档的数量。
+
+&emsp;&emsp;可以通过指定`min_segment_size`，即段中包含的文档数量最小值来排除一些小段：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "tag": {
+        "type": "text",
+        "fielddata": true,
+        "fielddata_frequency_filter": {
+          "min": 0.001,
+          "max": 0.1,
+          "min_segment_size": 500
+        }
+      }
+    }
+  }
+}
+```
 
 ##### Match-only text field type
+
+&emsp;&emsp;[text](#####Text field type)类型的一个变体是`match_only_text`。它是打分和与位置相关的query的一种折中类型。这个类型的域跟只索引文档号（index_options: docs）的`text`域有相同存储数据效率并且关闭了norms（norms: false）。在这个域上执行term query跟在`text`类型的域上更快，至少也是相等。然而如果在`match_only_text`上执行需要位置信息的query，例如[match_phrase](####Match phrase query)，那性能会降低，因为需要从`_source`中验证短语是否匹配。所有的query返回固定的打分值：1.0。
+
+&emsp;&emsp;不能配置分词器：文本总是用默认的[分词器分词](#####Specify the default analyzer for an index)（默认是[standard](####Standard analyzer)）。
+
+&emsp;&emsp;[span queries](###Span queries)无法在这个类型的域上使用，可以使用[interval queries](####Intervals query)，或者你真的需要使用span queries，那么使用[text](#####Text field type)类型。
+
+&emsp;&emsp;除此之外，`match_only_text`支持与文本（`text`）相同的查询。就像`text`一样，它不支持排序，并且对聚合的支持有限。
+
+```text
+PUT logs
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "message": {
+        "type": "match_only_text"
+      }
+    }
+  }
+}
+```
+
+##### Parameters for match-only text fields
+
+&emsp;&emsp;`match_only_text`接受下面的参数：
+
+- [fields](####fields)： Multi-fields允许同一个将string value基于不同的目的索引用多种方式进行索引。比如用于查询或者用于排序聚合，或者使用不同的分词器对string value进行分词
+- [meta](####meta(mapping parameter))：域的元数据信息
 
 #### Token count field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
