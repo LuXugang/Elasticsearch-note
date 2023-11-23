@@ -8044,8 +8044,13 @@ PUT my-index-000001
 }
 ```
 
-> NOTE：
+> NOTE：`double`, `float` 和 `half_float`类型中`-0.0`和`+0.0`是不一样的值。因此，`term` query `-0.0`不会匹配到`+0.0`，反之亦然。对于range query也是一样的：如果上界是`-0.0`那么`+0.0`不会匹配，同样的，如果下界是`+0.0`那么`-0.0`不会匹配到。
 
+##### Which type should I use?
+
+&emsp;&emsp;对于整数类型（`byte`, `short`, `integer` 以及`long`），对于你的用例，你应该选择最小类型（smallest Type）。这将让索引和搜索更加高效。注意的是尽管存储时会基于真实的值进行优化，因此选择一种类型而不是另一种类型对存储需求没有影响。 
+
+&emsp;&emsp;对于floating-point类型，通常使用`scaling factor`将浮点数据存储为整数会更有效率，这正是`scaled_float`类型在底层所做的。例如，一个price字段可以使用`scaling factor`为100的`scaled_float`来存储。
 
 #### Object field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/object.html)
