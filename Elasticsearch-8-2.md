@@ -8076,9 +8076,62 @@ PUT my-index-000001/_mapping
 ##### Match-only text field type
 
 #### Token count field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
 
+&emsp;&emsp;`token_count`域是一个[integer](####Numeric field types)类型的域，它用来接收字符串的值，然后分词最后记录字符串中token的数量。
 
+&emsp;&emsp;例如：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "name": { 
+        "type": "text",
+        "fields": {
+          "length": { 
+            "type":     "token_count",
+            "analyzer": "standard"
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{ "name": "John Smith" }
+
+PUT my-index-000001/_doc/2
+{ "name": "Rachel Alice Williams" }
+
+GET my-index-000001/_search
+{
+  "query": {
+    "term": {
+      "name.length": 3 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第5行，名为`name`的域是一个[text](####Text type family)域，使用了默认的`standard`分词器。
+
+&emsp;&emsp;第7行，`name.length`域是一个[multi-field](####fields)的`token_count`域，它会记录`name`域中token的数量，
+
+&emsp;&emsp;第28行，这个query只会匹配包含`Rachel Alice Williams`的文档，因为它会被分为三个token。
+
+##### Parameters for token_count fields
+
+&emsp;&emsp;`token_count`域接收下列的参数：
+- [analyzer](####analyzer(mapping parameter))：[analyzer](##Text analysis)用来对字符串的值分词，必须要指定。处于性能考虑，使用不带token filter的分词器。
+- enable_position_increments：是否要统计position increments。如果你不想要统计被分词器过滤掉（比如[stop](####Stop token filter)）的token的position increments，那么设置为`false`。默认为`true`。
+- [index](####index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [doc_values](####doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [index](####index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [null_value](####null_value)：参数值是具有相同类型的数值用来替换为`null`的域值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
 
 #### Unsigned long field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/unsigned-long.html)
