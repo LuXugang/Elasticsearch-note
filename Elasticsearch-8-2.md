@@ -8078,6 +8078,147 @@ PUT my-index-000001/_mapping
 #### Token count field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
 
+
+
+#### Unsigned long field type
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/unsigned-long.html)
+
+&emsp;&emsp;Unsigned long是一个数值类型的域，代表一个无符号的64bit的整数，最小值为0并且最大值为`2^64 - 1`（[0, 18446744073709551615]）
+
+```text
+PUT my_index
+{
+  "mappings": {
+    "properties": {
+      "my_counter": {
+        "type": "unsigned_long"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;unsigned long可以用数值或者字符串的格式进行索引，代表了[0, 18446744073709551615]范围的整数。不能有小数部分。
+
+```text
+POST /my_index/_bulk?refresh
+{"index":{"_id":1}}
+{"my_counter": 0}
+{"index":{"_id":2}}
+{"my_counter": 9223372036854775808}
+{"index":{"_id":3}}
+{"my_counter": 18446744073709551614}
+{"index":{"_id":4}}
+{"my_counter": 18446744073709551615}
+```
+
+&emsp;&emsp;Term query可以使用数值或者字符串格式。
+
+```text
+GET /my_index/_search
+{
+    "query": {
+        "term" : {
+            "my_counter" : 18446744073709551615
+        }
+    }
+}
+```
+
+&emsp;&emsp;range query可以包含带有小数的值。在这种情况下，Elasticsearch会将它们转化成整数：`gte`和`gt`会转化成最近的向上的整数（inclusive）；`lt`和`lte`会转化成最近的向下的整数（inclusive）。
+
+&emsp;&emsp;建议使用字符串格式的值，就不会再解析时丢失精度。
+
+```text
+GET /my_index/_search
+{
+    "query": {
+        "range" : {
+            "my_counter" : {
+                "gte" : "9223372036854775808",
+                "lte" : "18446744073709551615"
+            }
+        }
+    }
+}
+```
+
+#### Sort values
+
+&emsp;&emsp;对于使用`unsigned_long`域排序的query，对于某个文档，如果域值在long的范围内，则返回`long`类型的排序值，如果域值超过了这个范围，则返回`BigInteger`。
+
+> NOTE：客户端需要能够正确的处理JSON种的big integer
+
+```text
+GET /my_index/_search
+{
+    "query": {
+        "match_all" : {}
+    },
+    "sort" : {"my_counter" : "desc"}
+}
+```
+
+##### Stored fields
+
+&emsp;&emsp;如果`unsigned_long`被设置为`stored`，那么会以字符串存储，并且返回的结果也是字符串。
+
+##### Aggregation
+
+&emsp;&emsp;对于term aggregattion，跟sort values一样，会使用`Long`或者`BigInteger`。对于其他聚合，会被转化成`double`类型。
+
+##### Script values
+
+&emsp;&emsp;默认情况下，脚本中`unsigned_long`域返回了一个signed long，意味着大于`Long.MAX_VALUE`的值会显示为负数。你可以使用`Long.compareUnsigned(long, long)`, `Long.divideUnsigned(long, long)` 以及 `Long.remainderUnsigned(long, long)`来正确的处理这些值。
+
+&emsp;&emsp;比如说，下面的脚本返回一个counter/10的值：
+
+```text
+GET /my_index/_search
+{
+    "query": {
+        "match_all" : {}
+    },
+    "script_fields": {
+        "count10" : {
+          "script": {
+            "source": "Long.divideUnsigned(doc['my_counter'].value, 10)"
+          }
+        }
+    }
+}
+```
+
+&emsp;&emsp;或者在脚本中你可以使用field API将unsigned long类型视为`BigInteger`。下面的脚本中将`my_counter`视为`BigInteger`，并且默认值为`BigInteger.ZERO`。
+
+```text
+"script": {
+    "source": "field('my_counter').asBigInteger(BigInteger.ZERO)"
+}
+```
+
+&emsp;&emsp;如果脚本中需要返回float或者double类型，你可以进一步将`BigInteger`转化为一个double或者float：
+
+```text
+GET /my_index/_search
+{
+    "query": {
+        "script_score": {
+          "query": {"match_all": {}},
+          "script": {
+            "source": "field('my_counter').asBigInteger(BigInteger.ZERO).floatValue()"
+          }
+        }
+    }
+}
+```
+
+##### Queries with mixed numeric types
+
+&emsp;&emsp;支持包含`unsigned_long`在内的混合数值类型的搜索查询，但排序查询除外。因此，在两个索引中进行排序查询时，如果相同的字段名在一个索引中是`unsigned_long`类型，在另一个索引中是`long`类型，这将无法产生正确的结果，应该避免这种情况。如果确实需要这种排序，可以使用基于脚本的排序。
+
+&emsp;&emsp;支持包含`unsigned_long`在内的多种数值类型的聚合操作。在这种情况下，值会被转换为`double`类型。
+
 #### Version field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/version.html)
 
