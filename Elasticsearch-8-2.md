@@ -8079,7 +8079,32 @@ PUT my-index-000001/_mapping
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
 
 #### Version field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/version.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/version.html)
+
+&emsp;&emsp;`version`域是`keyword`域的特例类型，用于处理软件版本号以及支持特殊的优先级规则（specialized precedence rule）。优先级遵循[Semantic Versioning](https://semver.org)。例如按照主要（major）、次要（minor）、补丁（patch）的数值排序（比如 "2.1.0" < 2.4.1"" < "2.11.2"）。预发布版本排在正式版之前（比如"1.0.0-alpha" < 1.0.0""）。
+
+&emsp;&emsp;你可以按照下面的内容索引一个`version`域：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_version": {
+        "type": "version"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;该域提供了跟常规的`keyword`域相同的搜索能力。比如可以使用`match`或者`term` query来精确匹配并且支持前缀（prefix）和通配符（wildcard）查询。最主要的好处就是`range` query遵循Semver排序，所以"1.0.0"到"1.5.0"的`range`查询会包含"1.2.3"，但是不会包含"1.11.2"。注意的是如果使用keyword存储版本号则排序是不同的，因为排序规则是字典序。
+
+&emsp;&emsp;软件版本号应该遵循[Semantic Versioning rules]的策略和优先级规则，不过有一个显著的例外就是允许主要的版本标识多于或少于三个（例如"1.2"或"1.2.3.4"是有效的（valid）版本号，但没有严格遵循Semver的规则）不满足Semver规则的版本号（例如，“1.2.alpha.4”）仍然会被索引并且可以精确匹配。但是这些版本号会按照字典序排序，并且排在有效版本号之后。空的`version`域值被认为是无效的，并且排在所有有效版本号之后，其他无效版本号之前。
+
+##### Parameters for version fields
+
+- [meta](####meta(mapping parameter))：域的元数据信息
 
 ### Metadata fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-fields.html)
