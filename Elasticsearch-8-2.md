@@ -7836,7 +7836,170 @@ GET my-index-000001/_search
 ##### Wildcard field type
 
 #### Nested field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/nested.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/nested.html)
+
+&emsp;&emsp;`nested`类型是[object](####Object field type)类型的特殊版本，它允许将对象数组以一种可以独立查询每个对象的方式进行索引。
+
+> TIP：当你需要处理包含大量任意键的键值对时，你可能会考虑将每一对键值作为一个独立的嵌套文档进行建模，其中每个文档包含两个字段：一个用于键（key），另一个用于值（value）。
+> - 例如产品A:color: red size: medium  产品B: color: blueweight: 1kg。希望通过color: red size: medium这两个条件才会找到产品A。
+> 若考虑使用[flattened](####Flattened field type)数据类型，则将整个对象作为一个域的域值，允许对整个对象的内容做简单的搜索。Nested document和query通常开销昂贵，所以在这种例子中使用`flattened`数据类型是个不错的选择。
+
+##### How arrays of objects are flattened
+
+&emsp;&emsp;Elasticsearch没有inner object的概念。因此，它是将其平铺为的域名域值列表。例如索引以下的文档：
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "group" : "fans",
+  "user" : [ 
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第4行，`user`域会动态的添加为`object`类型。
+
+&emsp;&emsp;上面的文档在内部被转化为以下的内容：
+
+```text
+{
+  "group" :        "fans",
+  "user.first" : [ "alice", "john" ],
+  "user.last" :  [ "smith", "white" ]
+}
+```
+
+&emsp;&emsp;`user.first`和`user.last`平铺为多值的域，同时`alice`和`white`的关联信息也丢失了（关联信息指的是：他们两个属于同一个对象）。下面`alice AND smith`的这种查询会错误的匹配到这篇文档：
+
+```text
+GET my-index-000001/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "user.first": "Alice" }},
+        { "match": { "user.last":  "Smith" }}
+      ]
+    }
+  }
+}
+```
+
+##### Using nested fields for arrays of objects
+
+&emsp;&emsp;如果你需要索引对象数组并且还要维护数组中每一个对象相对独立，那么使用`nested`数据类型而不是[object](####Object field type)数据类型。
+
+&emsp;&emsp;在内部，nested object会将数组中每一个对象分别索引到一个hidden document，意思是每一给nested object可以使用[nested query](####Nested query)独立于其他对象进行查询“
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "user": {
+        "type": "nested" 
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "Smith" }} 
+          ]
+        }
+      }
+    }
+  }
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "White" }} 
+          ]
+        }
+      },
+      "inner_hits": { 
+        "highlight": {
+          "fields": {
+            "user.first": {}
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第6行，`user`域使用`nested`而不是`object`。
+
+&emsp;&emsp;第36行，因为`Alice`和`Smith`不是同一个nested object，所以这个query不会匹配到文档
+
+&emsp;&emsp;第53行，因为`Alice`和`White`是同一个nested object，所以这个query会匹配到文档
+
+&emsp;&emsp;第57行，`inner_hits`允许我们高亮匹配到的文档。
+
+##### Interacting with nested documents
+
+&emsp;&emsp;使用[nested](####Nested query) query查询
+
+&emsp;&emsp;用[nested](####Nested aggregation)聚合以及[reverse_nested](####Reverse nested aggregation) aggregations.
+
+&emsp;&emsp;用[nested sorting](####Nested sorting examples)排序
+
+&emsp;&emsp;用[nested inner hits](####Nested inner hits)检索以及高亮
+
+> IMPORTANT：因为nested documents索引为单独的文档（在lucene中是单独的文档，是parent document的一部分，也就是真实文档的一部分。）。因此他们只能通过`nested` query， `nested/reverse_nested` aggregation，或者[nested inner hits](####Nested inner hits)访问。
+> 
+> 例如，如果nested document内的字符串字段的[index_options](####index_options)设置为`offsets`以便在高亮显示时使用倒排信息，那么在主要高亮（main highlighting）显示阶段这些偏移量将不可用。相反，需要通过[nested inner hits](####Nested inner hits)来执行高亮显示。在通过[docvalue_fields](#####Doc value fields)或[stored_fields](####Stored fields)进行搜索时加载字段时，同样的考虑也适用。
+
+##### Parameters for nested fields
+
+&emsp;&emsp;可以有下面的参数：
+
+- [dynamic](####dynamic(mapping parameter))：（Optional, string）是否将新的`properties`写入到已存在的nested object中，可选值为`true` (default)， `runtime`， `false` and `strict`
+
+- [properties](####properties)：nested object中的所有域（这些域被称为properties），这些域可以是任何数据类型[data type](###Field data types)，新的域可能被添加现在有的nested object域中
+
+- include_in_parent：(Optional, Boolean) 如果为`true`，nested object中的所有域同样添加到parent document 作为标准（flat）域。默认是`false`。
+- include_in_root：（Optional, Boolean）如果为`true`，nested object中的所有域同样添加到root document 作为标准（flat）域。默认是`false`。
 
 #### Numeric field types
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/number.html)
@@ -14569,6 +14732,8 @@ POST _aliases
 
 ### Highlighting
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/highlighting.html)
+
+
 
 ### Long-running searches
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search-intro.html)
