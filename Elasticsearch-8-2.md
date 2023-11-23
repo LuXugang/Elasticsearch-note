@@ -7602,23 +7602,12 @@ GET my-index-000001/_search
 
 `geo_point`域可以有下面的参数：
 
-- [ignore_malformed](####ignore_malformed)
-  - 如果为`true`，格式错误的地理点会被忽略。如果为`false`（default），格式错误的地理点会抛出一个异常并且reject整个文档。如果其纬度超出了 -90 至 90 的范围，或者其经度超出了 -180 至 180 的范围，则认为地理点是格式错误的。注意的使如果使用了script参数，则无法设置这个参数。
-
-- ignore_z_value
-  - 如果为`true`(default)，可以索引三维的point（点数据），但是只有经纬度的值会被索引；第三个维度的值被忽略。如果为`false`地理点的维度如果超过了经纬度这两个维度就会抛出异常并且reject文档。注意的使如果使用了script参数，则无法设置这个参数。
-
-- [index](####index(mapping parameter))
-  - 是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](####doc_values)参数的域仍然可以被查询，尽管慢一些（albeit slower）
-
-- [null_value](####null_value)
-  - 可是是一个地理点用来替换所有显示为`null`的值。默认是`null`，意味着当前域被认为是一个缺失值。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
-
-- on_script_error
-  - 定义了当使用参数`script`并且在索引期间脚本抛出异常后的行为。默认值为`false`会导致整个文档会被reject，然后被注册到文档的 [\_ignored](####\_ignored field)这个[metadata field](###Metadata fields)中并且继续索引。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
-
-- script
-  - 如果设置了这个参数，域值会使用脚本生成的值而不是文档中的原始数据。如果使用输入文档（input document）中的数据作为域值，那么这篇文档会被reject并且返回错误。Script跟[runtime ](####Map a runtime field)的格式是一样的。并且应该抛出double类型的经纬度对值。
+- [ignore_malformed](####ignore_malformed)：如果为`true`，格式错误的地理点会被忽略。如果为`false`（default），格式错误的地理点会抛出一个异常并且reject整个文档。如果其纬度超出了 -90 至 90 的范围，或者其经度超出了 -180 至 180 的范围，则认为地理点是格式错误的。注意的使如果使用了script参数，则无法设置这个参数。
+- ignore_z_value：如果为`true`(default)，可以索引三维的point（点数据），但是只有经纬度的值会被索引；第三个维度的值被忽略。如果为`false`地理点的维度如果超过了经纬度这两个维度就会抛出异常并且reject文档。注意的使如果使用了script参数，则无法设置这个参数。
+- [index](####index(mapping parameter))：是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](####doc_values)参数的域仍然可以被查询，尽管慢一些（albeit slower）
+- [null_value](####null_value)：可是是一个地理点用来替换所有显示为`null`的值。默认是`null`，意味着当前域被认为是一个缺失值。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
+- on_script_error：定义了当使用参数`script`并且在索引期间脚本抛出异常后的行为。默认值为`false`会导致整个文档会被reject，然后被注册到文档的 [\_ignored](####\_ignored field)这个[metadata field](###Metadata fields)中并且继续索引。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
+- script：如果设置了这个参数，域值会使用脚本生成的值而不是文档中的原始数据。如果使用输入文档（input document）中的数据作为域值，那么这篇文档会被reject并且返回错误。Script跟[runtime ](####Map a runtime field)的格式是一样的。并且应该抛出double类型的经纬度对值。
 
 ##### Using geopoints in scripts
 
@@ -7953,8 +7942,12 @@ PUT my-index-000001
 #### Search-as-you-type field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-as-you-type.html)
 
+&emsp;&emsp;
+
 #### Shape field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/shape.html)
+
+&emsp;&emsp;
 
 #### Text type family
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/text.html)
