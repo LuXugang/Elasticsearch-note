@@ -7830,6 +7830,9 @@ GET my-index-000001/_search
 }
 ```
 
+#### Join field type
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
+
 #### Keyword type family
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
 
@@ -7842,7 +7845,7 @@ GET my-index-000001/_search
 
 > TIP：当你需要处理包含大量任意键的键值对时，你可能会考虑将每一对键值作为一个独立的嵌套文档进行建模，其中每个文档包含两个字段：一个用于键（key），另一个用于值（value）。
 > - 例如产品A:color: red size: medium  产品B: color: blueweight: 1kg。希望通过color: red size: medium这两个条件才会找到产品A。
-> 若考虑使用[flattened](####Flattened field type)数据类型，则将整个对象作为一个域的域值，允许对整个对象的内容做简单的搜索。Nested document和query通常开销昂贵，所以在这种例子中使用`flattened`数据类型是个不错的选择。
+> - 若考虑使用[flattened](####Flattened field type)数据类型，则将整个对象作为一个域的域值，允许对整个对象的内容做简单的搜索。Nested document和query通常开销昂贵，所以在这种例子中使用`flattened`数据类型是个不错的选择。
 
 ##### How arrays of objects are flattened
 
@@ -7897,7 +7900,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;如果你需要索引对象数组并且还要维护数组中每一个对象相对独立，那么使用`nested`数据类型而不是[object](####Object field type)数据类型。
 
-&emsp;&emsp;在内部，nested object会将数组中每一个对象分别索引到一个hidden document，意思是每一给nested object可以使用[nested query](####Nested query)独立于其他对象进行查询“
+&emsp;&emsp;在内部，nested object会将数组中每一个对象分别索引到一个hidden document（即在Lucene层每一个对象对应一个文档），意思是每一个nested object可以使用[nested query](####Nested query)独立于其他对象进行查询“
 
 ```text
 PUT my-index-000001
@@ -7986,7 +7989,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;用[nested inner hits](####Nested inner hits)检索以及高亮
 
-> IMPORTANT：因为nested documents索引为单独的文档（在lucene中是单独的文档，是parent document的一部分，也就是真实文档的一部分。）。因此他们只能通过`nested` query， `nested/reverse_nested` aggregation，或者[nested inner hits](####Nested inner hits)访问。
+> IMPORTANT：因为nested documents索引为单独的文档（在lucene中是单独的文档，数组中的每一个对象都是lucene中的一篇文档，并且包含父文档的父文档ID，以及在主文档中的位置信息）。因此他们只能通过`nested` query， `nested/reverse_nested` aggregation，或者[nested inner hits](####Nested inner hits)访问。
 > 
 > 例如，如果nested document内的字符串字段的[index_options](####index_options)设置为`offsets`以便在高亮显示时使用倒排信息，那么在主要高亮（main highlighting）显示阶段这些偏移量将不可用。相反，需要通过[nested inner hits](####Nested inner hits)来执行高亮显示。在通过[docvalue_fields](#####Doc value fields)或[stored_fields](####Stored fields)进行搜索时加载字段时，同样的考虑也适用。
 
@@ -7999,13 +8002,50 @@ GET my-index-000001/_search
 - [properties](####properties)：nested object中的所有域（这些域被称为properties），这些域可以是任何数据类型[data type](###Field data types)，新的域可能被添加现在有的nested object域中
 
 - include_in_parent：(Optional, Boolean) 如果为`true`，nested object中的所有域同样添加到parent document 作为标准（flat）域。默认是`false`。
+  - 如果有多层嵌套，那么上一层就是parent。就可以使用普通的query，比如`match`根据上一层父级的字段进行搜索
 - include_in_root：（Optional, Boolean）如果为`true`，nested object中的所有域同样添加到root document 作为标准（flat）域。默认是`false`。
+
+&emsp;&emsp;这两个参数为true的好处相同点就是可以通过普通query就可以进行查询，而不需要专用的[nested query](####Nested query)。
 
 #### Numeric field types
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/number.html)
 
-#### Join field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
+&emsp;&emsp;支持下列的数值类型：
+
+- long：有符号的64位整数，最小值`2^63`，最大值`2^63 -1`
+- integer：有符号32位整数，最小值`2^31`，最大值`2^31 -1`
+- short：有符号的16位整数，最小值`-32,768`，最大值`32,767`
+- byte：有符号的8位整数，最小值`-128`，最大值`127`
+- double：一个双精度的64位IEEE 754浮点数，限制为有限值（不包括infinity和NaN，Not a Number）
+- float：一个单精度的32位IEEE 754浮点数，限制为有限值
+- half_float：一个半精度的16位IEEE 754浮点数，限制为有限值。
+- scaled_float：一个由长整数（long）支持，通过固定双精度缩放因子缩放的浮点数
+- unsigned_long：无符号的64位整数，最小值为0，最大值为`2^64-1`。
+
+&emsp;&emsp;下面是在mapping中配置数值域的例子：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "number_of_bytes": {
+        "type": "integer"
+      },
+      "time_in_seconds": {
+        "type": "float"
+      },
+      "price": {
+        "type": "scaled_float",
+        "scaling_factor": 100
+      }
+    }
+  }
+}
+```
+
+> NOTE：
+
 
 #### Object field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/object.html)
