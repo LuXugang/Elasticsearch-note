@@ -7486,22 +7486,14 @@ POST /my-index-000001/_bulk?refresh
 &emsp;&emsp;可以使用下面的参数：
 
 - depth_limit：flattened域允许嵌套的最大深度（nested Inner object）。如果超过限制，则会抛出错误。默认值为`20`。注意的是可以通过[update mapping](####Update mapping API)更新`depth_limit`。
-- [doc_values](####doc_values)
-  - 该域值是否在磁盘上使用列式存储，使得可以用来进行聚合、排序或者脚本。可选值`true`或者`false`
-- [eager_global_ordinals](####eager_global_ordinals) 
-  - 是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
-- [ignore_above](####ignore_above)
-  - leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只作用与flattened的leaf values，而不是整个域的长度
-- [index](####index(mapping parameter))
-  - 是否该域需要被快速的搜索到？可选值`true`或者`false`。
-- [index_options](####index_options)
-  - 在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
-- [null_value](####null_value)
-  - flattened域中`null`值会被替换为一个string value。默认是`null`。意味着null值被认为是缺失值
-- [similarity](####similarity)
-  - 使用哪一个打分算法。默认值为`BM25`。
-- split_queries_on_whitespace
-  - 在flattened域上执行[full text queries](###Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
+- [doc_values](####doc_values)：- 该域值是否在磁盘上使用列式存储，使得可以用来进行聚合、排序或者脚本。可选值`true`或者`false`
+- [eager_global_ordinals](####eager_global_ordinals) ：是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
+- [ignore_above](####ignore_above)：leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只作用与flattened的leaf values，而不是整个域的长度
+- [index](####index(mapping parameter))：是否该域需要被快速的搜索到？可选值`true`或者`false`。
+- [index_options](####index_options)：在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
+- [null_value](####null_value)：flattened域中`null`值会被替换为一个string value。默认是`null`。意味着null值被认为是缺失值
+- [similarity](####similarity)：使用哪一个打分算法。默认值为`BM25`。
+- split_queries_on_whitespace：在flattened域上执行[full text queries](###Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
 
 #### Geopoint field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-point.html)
@@ -7834,9 +7826,195 @@ GET my-index-000001/_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
 
 #### Keyword type family
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
+
+&emsp;&emsp;keyword家族包含下面的域类型：
+
+- [keyword](#####Keyword field type)：用于ID，邮件地址，hostname，状态码，zip code，或者标签
+- [constant_keyword](#####Constant keyword field type)：keyword类型，并且所有文档中该域的域值都是相同的
+- [wildcard](#####Wildcard field type)：用于非结构化的机器自动生成的内容。`wildcard`类型对于large value或者high cardinality的域值进行了优化
+
+&emsp;&emsp;keyword域常用于[sorting](###Sort search results)，[aggregation](##Aggregations)以及[term-level queries](###Term-level queries)，例如[term](####Term query)。
+
+> TIP：若要全文检索，请不要使用keyword。而是使用[text](####Text type family)类型。
+
+##### Keyword field type
+
+&emsp;&emsp;下面是`keyword`域的mapping：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "tags": {
+        "type":  "keyword"
+      }
+    }
+  }
+}
+```
+
+> TIP：**Mapping numeric identifiers**
+> 不是所有的数值类型的数据都应该映射为一个[numeric](####Numeric field types)数据类型。Elasticsearch会为数值类型的域，比如`integer`、`long`针对[range](####Range query)查询优化。然而，[keyword](####Keyword type family)域更适合于[term](####Term query)以及其他[term-level](###Term-level queries) Query。
+> 比如一些标识符，ISBN或者产品ID，很少用于`range` query，但是常用于term-level query。
+> 如果有以下的场景，可以考虑将数值类型的标识符映射为`keyword`：
+>
+> - 你不打算将标识符类型的数据用于[range](####Range query) query
+> - 快速的检索对你来说很重要的话，那么相较于数值类型的域，在`keyword`域上进行`term` query通常更快。
+>
+> 如果你不确定该使用哪种类型，那么可以通过[multi-field](####fields)来同时使用`keyword`跟数值类型的域。
+
+##### Parameters for basic keyword fields
+
+&emsp;&emsp;`keyword`域可以使用以下的参数：
+
+- [doc_values](####doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [eager_global_ordinals](####eager_global_ordinals) ：是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
+- [fields](####fields)： Multi-fields允许同一个将string value基于不同的目的用多种方式进行索引。比如用于查询或者用于排序聚合
+- [ignore_above](####ignore_above)：不会索引长于该参数的值。默认是`2147483647`。然而注意的是默认的动态映射创建的子域`keyword`会覆盖这个默认的值，并且将`ignore_above`设置为`256`
+- [index](####index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [index_options](####index_options)：在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
+- [meta](####meta(mapping parameter))：域的元数据信息
+- [norms](####norms(mapping parameter))：打分时是否考虑域值的长度。默认false，可以设置为`true`
+- [null_value](####null_value)：参数值可以是一个该域的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](####\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个域的域值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](####Map a runtime field)中有相同的format。
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [similarity](####similarity)：使用哪一个打分算法。默认值为`BM25`。
+- [normalizer](####normalizer(mapping parameter))：如何在索引之前预先处理keyword的值，默认为`false`，即使用keyword原有的域值。
+- split_queries_on_whitespace：执行[full text queries](###Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
+- time_series_dimension
+  - 预览功能， 可能会被更改或者移除，目前只在Elasticsearch代码内部使用，暂不介绍。
+
+##### Constant keyword field type
+
+&emsp;&emsp;Constant keyword是`keyword`的一种特例用于所有的文档中会索引相同的值。
+
+```text
+PUT logs-debug
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "message": {
+        "type": "text"
+      },
+      "level": {
+        "type": "constant_keyword",
+        "value": "debug"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`constant_keyword`支持跟`keyword`有相同的查询跟聚合，但是会利用所有文档拥有相同的值这个特点来提高查询效率。
+
+&emsp;&emsp;同时还允许文档中不包含这个域或者这个域的域值跟mapping中的值相同。下面两个索引请求是等价的：
+
+```text
+POST logs-debug/_doc
+{
+  "date": "2019-12-12",
+  "message": "Starting up Elasticsearch",
+  "level": "debug"
+}
+
+POST logs-debug/_doc
+{
+  "date": "2019-12-12",
+  "message": "Starting up Elasticsearch"
+}
+```
+
+&emsp;&emsp;然而如果文档中该域的域值跟mapping中的不一致是不允许。
+
+&emsp;&emsp;如果mapping中没有配置`value`，那么该域会基于第一篇文档中该域的值自动的配置。注意的是这意味着如果第一篇文档的值是有问题的，会导致其他的合法的文档被reject。
+
+&emsp;&emsp;在提供`value`之前（通过mapping或者第一篇文档），任何对该域的查询都不会匹配任何文档。包括[exists](####Exists query) query。
+
+&emsp;&emsp;该域的`value`在设置后就不能变更。
+
+##### Parameters for constant keyword fields
+
+&emsp;&emsp;该类型可以有以下的参数：
+
+- [meta](####meta(mapping parameter))：域的元数据信息
+- value：索引中所有文档的constant keyword fields的域值。如果没有设置该参数，则是基于第一篇被索引的文档中该域的域值
 
 ##### Wildcard field type
+
+&emsp;&emsp;`wildcard`域是一种特殊的keyword类型，用于无结构的机器自动生成的内容，并且你计划使用[wildcard](####Wildcard query)跟[regexp](####Regexp query)这类Query进行查询。`wildcard`类型对于large value和high cardinality有专门的优化。
+
+> **Mapping unstructured content**
+> &emsp;&emsp;你可以将一个无结构的内容使用`text`或者keyword家族域。使用哪一种取决于内容的特点以及你如何查询这个域
+> 如果有以下的场景，则使用`text`域：
+>
+> - 内容是可读的（human-readable），比如邮件正文或者产品描述
+> - 你想要使用独立的单词或者短语进行查询，例如`the brown fox jumped`，使用[full text queries](###Full text queries)，Elasticsearch会对`text`域进行[分词](##Text analysis)并且返回相关性最高的结果。
+>
+> 如果有以下的场景，则使用keyword家族域：
+> - 内容是机器自动生成的，比如日志消息或者HTTP请求信息
+> - 你想要使用精确完整的值进行查询，比如`org.foo.bar`，或者使用部分字符序列，比如使用[term-level queires](###Term-level queries)查询`org.foo.*`。
+>
+> **Choosing a keyword family field type**
+> 如果你选择了一个keyword家族域，使用`keyword`还是`wildcard`取决于域值的长度和域值的种类（cardinality）。如果你经常使用[wildcard](####Wildcard query)或者[regexp](####Regexp query)查询并且满足下面类别的一种，则使用`wildcard`：
+> - 域值种类包含超过one million个并且经常使用通配符在关键字开头的查询，例如`*foo`和`*baz`。
+> - 域值大小超过32KB并且经常使用wildcard pattern查询
+>
+> 否则就使用`keyword`类型，这样查询速度更快，索引更快并且占用更少的存储开销。对于深入的比较以及讨论，见related blog post。
+>
+> **Switching from a text field to a keyword field**
+> 如果你之前使用`text`域处理无结构的机器自动生成的内容。你可以[reindex to update the mapping](https://www.elastic.co/cn/blog/find-strings-within-strings-faster-with-the-new-elasticsearch-wildcard-field)到`keyword`或者`wildcard`域中。我们还建议，将你们应用或者工作流中在这个域上的[full text queries](###Full text queries)替换为等价的[term-level queries](###Term-level queries)。
+
+
+&emsp;&emsp;在内部，通配符字段使用 ngram 对整个字段值进行索引，并存储完整字符串。这个索引被用作rough filter，以减少随后通过检索和检查完整值来检查的值数量。这个字段特别适合用于在日志行上运行类似 grep 的查询。存储成本通常低于`keyword`字段，但对完整词项的精确匹配的搜索速度较慢。如果字段值共享许多前缀，如同一个网站的 URL，`wildcard`字段的存储成本可能高于等效的`keyword`字段。
+
+&emsp;&emsp;你可以通过下面的方式索引以及查询一个`wildcard`域：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_wildcard": {
+        "type": "wildcard"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "my_wildcard" : "This string can be quite lengthy"
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "wildcard": {
+      "my_wildcard": {
+        "value": "*quite*lengthy"
+      }
+    }
+  }
+}
+```
+
+##### Parameters for wildcard fields
+
+&emsp;&emsp;`wildcard`可以使用下面的参数：
+
+- [null_value](####null_value)：参数值可以是一个字符串。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- [ignore_above](####ignore_above)：不会索引长于该参数的值。默认是`2147483647`。
+
+##### Limitations
+
+- `wildcard`域跟keyword一样不会被分词。因此不支持依赖位置的查询，比如短语查询
+- 在执行通配符查询时，任何设置的重写参数将被忽略。返回的文档打分总是一个常数值。
 
 #### Nested field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/nested.html)
