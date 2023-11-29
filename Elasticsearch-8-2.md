@@ -8670,7 +8670,7 @@ GET /my_index/_search
 }
 ```
 
-#### Sort values
+##### Sort values
 
 &emsp;&emsp;对于使用`unsigned_long`域排序的query，对于某个文档，如果域值在long的范围内，则返回`long`类型的排序值，如果域值超过了这个范围，则返回`BigInteger`。
 
