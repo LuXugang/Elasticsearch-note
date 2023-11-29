@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/11/22）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/11/29）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -8008,7 +8008,7 @@ GET my-index-000001/_search
 &emsp;&emsp;这两个参数为true的好处相同点就是可以通过普通query就可以进行查询，而不需要专用的[nested query](####Nested query)。
 
 #### Numeric field types
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/number.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/number.html)
 
 &emsp;&emsp;支持下列的数值类型：
 
@@ -8050,7 +8050,50 @@ PUT my-index-000001
 
 &emsp;&emsp;对于整数类型（`byte`, `short`, `integer` 以及`long`），对于你的用例，你应该选择最小类型（smallest Type）。这将让索引和搜索更加高效。注意的是尽管存储时会基于真实的值进行优化，因此选择一种类型而不是另一种类型对存储需求没有影响。 
 
-&emsp;&emsp;对于floating-point类型，通常使用`scaling factor`将浮点数据存储为整数会更有效率，这正是`scaled_float`类型在底层所做的。例如，一个price字段可以使用`scaling factor`为100的`scaled_float`来存储。
+&emsp;&emsp;对于浮点型，通常使用`scaling factor`将浮点数据存储为整数会更有效率，这正是`scaled_float`类型在底层所做的。例如，一个price字段可以使用`scaling factor`为100的`scaled_float`来存储。API中像是将域值作为一个double存储，但在Elasticsearch内部以"分"为单位存储，`price*100`，就可以将double变成一个整数。相较于浮点数，整数更易于压缩来节省磁盘开销。`scaled_float`属于精度跟磁盘开销之间的折中方式。例如，假设你在跟踪 CPU利用率，这是一个介于 0 和 1 之间的数字。CPU 利用率是 12.7% 还是 13% 通常并不重要，所以你可以使用一个 scaling_factor 为 100 的 scaled_float，以将 CPU 利用率四舍五入到最接近的百分比，以节省空间。（如果域值是固定小数位，用scaled_float是个不错的选择）
+
+&emsp;&emsp;如果`scaled_float`不适合你的使用场景，你应该在浮点型之间选择一个够用且最小的类型：`double`、`float`、`half_float`。这里提供了一个类型之间差异的表，帮助你选择适当的浮点型类型。
+
+| Type         | Minimum value | Maximum value    | Significant bits / digits | Example precision loss                    |
+| ------------ | ------------- | ---------------- | ------------------------- | ----------------------------------------- |
+| `double`     | `2^-1074`      | `(2-2^-52)·2^1023` | `53` / `15.95`            | `1.2345678912345678`→ `1.234567891234568` |
+| `float`      | `2^-149`       | `(2-2^-23)·2^127`  | `24` / `7.22`             | `1.23456789`→ `1.2345679`                 |
+| `half_float` | `2^-24`        | `65504`          | `11` / `3.31`             | `1.2345`→ `1.234375`                      |
+
+
+> TIP：Mapping numeric identifiers
+> 不是所有的数值类型的数据都应该映射为一个[numeric](####Numeric field types)数据类型。Elasticsearch会为数值类型的域，比如`integer`、`long`针对[range](####Range query)查询优化。然而，[keyword](####Keyword type family)域更适合于[term](####Term query)以及其他[term-level](###Term-level queries) Query。
+> 比如一些标识符，ISBN或者产品ID，很少用于`range` query，但是常用于term-level query。
+> 如果有以下的场景，可以考虑将数值类型的标识符映射为`keyword`：
+> - 你不打算将标识符类型的数据用于[range](####Range query) query
+> - 快速的检索对你来说很重要的话，那么相较于数值类型的域，在`keyword`域上进行`term` query通常更快。
+>
+> 如果你不确定该使用哪种类型，那么可以通过[multi-field](####fields)来同时使用`keyword`跟数值类型的域。
+
+##### Parameters for numeric fields
+
+&emsp;&emsp;数值类型的域可以使用以下的参数：
+
+- [doc_values](####doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [ignore_malformed](####ignore_malformed)：如果为`true`，忽略格式错误的数值。如果为`false`（default），遇到格式错误的数值会抛出一个异常并且reject整个文档。注意的是如果使用了`script`参数，则不能设置这个参数
+- [index](####index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [meta](####meta(mapping parameter))：域的元数据信息
+- [null_value](####null_value)：参数值可以是一个该域的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](####\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个域的域值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](####Map a runtime field)中有相同的format。
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+
+- [store](####store)：该域是否独立于[\_source](####_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- time_series_dimension
+  - 预览功能， 可能会被更改或者移除，目前只在Elasticsearch代码内部使用，暂不介绍。
+- time_series_metric
+  - 预览功能。。该字段只用于Elastic内部使用。将域作为一个Time series metric。这个值是指标类型（metric type）。默认是`null`（不是一个时间序列指标）
+
+##### Parameters for scaled_float
+
+&emsp;&emsp;`scaled_float`可以使用下面额外的参数
+
+- scaling_factor：该参数用来对数值进行编码。在索引期间会将数值于这个参数进行乘积运算，然后四舍五入到最近的一个long值。比如说`scaled_float`的值为`10`，那么在Elasticsearch内部会将`2.34`存储为`23`并且查询期间的操作（query、aggregation、sorting）会将这篇文档的该值视为`2.3`。`scaled_float`值越高代表更高的精度但增加磁盘使用。必须设置这个参数。
 
 #### Object field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/object.html)
