@@ -29090,13 +29090,88 @@ POST /_cluster/reroute
 ```
 
 #### Cluster state API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-state.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-state.html)
+
+&emsp;&emsp;返回集群状态（cluster state）的内部表示（internal representation）用于调试或者诊断目的。
+
+##### Request
+
+`GET /_cluster/state/<metrics>/<target>`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;`cluster state`是内部的数据结构，它记录了每个节点所需的各种信息，包括：
+
+- 集群中其他节点的身份和属性。
+- 集群范围（cluster-wide）的设置。
+- 索引元数据（Index metadata），包括每个索引的mapping和设置。
+- 集群中每个分片副本的位置和状态。
+
+&emsp;&emsp;被选为master的节点能保证集群中每个节点有相同的集群状态的副本。cluster state API能让你检索集群状态的内部表示用于调试或者诊断目的。你可能需要查看Elasticsearch的源码来明确响应中确切含义（precise meaning）。
+
+&emsp;&emsp;默认情况下，cluster state API将请求路由到被选为master的节点，因为它是集群状态的权威源头。你也可以在API请求添加请求参数`?local=true`获取本地节点上的集群状态。
+
+&emsp;&emsp;在较大的集群中，Elasticsearch可能需要花费大量的努力来计算对这个API的响应，而且响应可能包含非常大量的数据。如果你重复使用这个API，集群可能会变得不稳定。
+
+> WARNING：响应是对内部数据结构的表示。它的格式不受与其他更稳定API相同的兼容性保证，可能会随版本而变化。**不要使用外部监控工具查询此API**。相反，请使用其他更稳定的[cluster APIs](###Cluster APIs)来获取您需要的信息。
+
+##### Path parameters
+
+&emsp;&emsp;集群状态有时候会很大，Elasticsearch计算这个API响应时可能会花费大量资源。若要降低响应的大小，你可以只请求你感兴趣的部分集群状态：
+
+- `<metric>`：(Optional, string)有以下的指标可选，多个指标之间用逗号隔开
+  - `_all`：显示所有的指标
+  - `blocks`：显示响应的`blocks`部分的内容
+  - `master_node`：显示响应的`master_node`部分的内容
+  - `metadata`：显示响应的`metadata`部分的内容。如果你提供了用逗号隔开的索引列表，返回的结果中只包含这些索引的元数据
+  - `nodes`：显示响应的`nodes`部分的内容
+  - `routing_nodes`：显示响应的`routing_nodes`部分的内容
+  - `routing_table`：显示响应的`routing_table`部分的内容。果你提供了用逗号隔开的索引列表，返回的结果中只包含这些索引的routing_table（索引的分片路由信息。它包含了该索引所有分片的分配和位置信息，诸如哪些分片是主分片、哪些是副本分片，以及这些分片分布在集群中的哪些节点上）
+  - `version`：显示集群状态版本
+- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+
+##### Query parameters
+- allow_no_indices：（Optional, Boolean）如果为`true`。如果通配符索引表达式没有解析为任何具体的索引，这种情况将被忽略（不会报错）。这包括使用`\_all` 字符串或没有指定任何索引的情况。默认值为`true`
+- expand_wildcards：（Optional, string）通配符索引表达式解析为具体的索引可以是open、closed或者全部。可选项为：`open`、`closed`、`none`、`all`
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- wait_for_metadata_version：（Optional, integer）等待元数据的版本号大于等于指定的版本号
+- wait_for_timeout：（Optional，[time units](####Time units)）指定wait_for_metadata_version中等待超时时间。
+
+##### Examples
+
+&emsp;&emsp;下面的例子中只返回`metadata`以及名为`foo`跟`bar`的索引或者Data streams的`routing_talbe`：
+
+```text
+GET /_cluster/state/metadata,routing_table/foo,bar
+```
+
+&emsp;&emsp;下一个例子返回`foo`跟`bar`所有可用的元数据：
+
+```text
+GET /_cluster/state/_all/foo,bar
+```
+
+&emsp;&emsp;下面的例子只返回`blocks`：
+
+```text
+GET /_cluster/state/blocks
+```
+
+#### Cluster stats API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-stats.html)
 
 #### Cluster update settings API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-update-settings.html)
 
-#### Nodes reload secure settings API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-reload-secure-settings.html)
+#### Nodes feature usage API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-usage.html)
 
 #### Nodes hot threads API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-hot-threads.html)
@@ -29104,10 +29179,14 @@ POST /_cluster/reroute
 #### Nodes info API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-info.html)
 
+#### Nodes reload secure settings API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-reload-secure-settings.html)
+
 #### Nodes stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
 #### Pending cluster tasks API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-pending.html)
 
 &emsp;&emsp;返回集群层（cluster-level）还未执行结束的变更。
 
@@ -29134,6 +29213,15 @@ POST /_cluster/reroute
 
 #### Voting configuration exclusions API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
+
+#### Create or update desired nodes API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-desired-nodes.html)
+
+#### Get desired nodes API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
+
+#### Delete desired nodes API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-desired-nodes.html)
 
 ### Cross-cluster replication APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
