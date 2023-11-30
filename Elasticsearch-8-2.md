@@ -7825,6 +7825,8 @@ GET my-index-000001/_search
 #### Join field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
 
+&emsp;&emsp;
+
 #### Keyword type family
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
 
@@ -28281,9 +28283,7 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Path parameters
 
-`<target>`
-
-&emsp;&emsp;（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameter
 
@@ -28559,7 +28559,55 @@ my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cat-thread-pool.html)
 
 ### Cluster APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html)
+
+##### Node specification
+
+&emsp;&emsp;可以通过指定`node filters`，让一些cluster-level API只在一个节点子集合上操作。例如[Task Management](####Task management API)、[Nodes Stats](####Nodes stats API)、[Nodes Info](####Nodes info API)这些API只报告（report）筛选出的一个节点集合，而不是所有节点的结果。
+
+&emsp;&emsp;`node filters`是一组独立的过滤项（individual filter）并且用逗号隔开。每一个过滤项会从已选择的节点结合中增加或者移除节点。每一个过滤项可以是下列之一：
+
+- `_all`，所有的节点添加到子集中（sbuset）
+- `_local`，本地节点（local node）添加到子集中
+- `_master`，当前被选为master的节点添加到子集中
+- node id或者节点名字添加到子集中
+- IP地址或者hostname，匹配到的所有节点添加到子集中
+- 使用`*`通配符，满足pattern的节点名字，hostname或者地址的节点添加到子集中
+- `master:true`，`data:true`，`ingest:true`，`voting_only:true`，`ml:true`，`coordinating_only:true`这些过滤项分别将 master-eligible、所有的数据节点（data node），所有的ingest node，所有的voting-only node、所有的machine learning node和所有的coordinating-only node 添加到子集中
+- `master:false`，`data:false`，`ingest:false`，`voting_only:false`，`ml:false`，或者`coordinating_only:false`这些过滤项分别从节点集合中移除master-eligible、所有的数据节点（data node），所有的ingest node，所有的voting-only node、所有的machine learning node和所有的coordinating-only node 
+- a pair of patterns，使用`*`通配符或者`attrname:attrvalue`这种格式。将自定义的节点属性满足这种pattern的节点添加到子集中。自定义的节点属性是在配置文件中按照`node.attr.attrname: attrvalue`这种格式设置
+
+> NOTE：`node filter`按照给定的顺序有序执行，这个规则对于从节点集合中移除节点是很重要的。比如说过滤项为`_all, master:false`时的意思是 除了master-eligible之外的所有节点，而`master:false, _all`则是跟`_all`是同一个意思，因为`_all`在`master:false`之后运行，也就是`_all`会把所有的节点都添加到集合中。
+
+> NOTE：如果没有给定过滤项，默认就是选择所有的节点。然而如果给定了任意的过滤项，那么则是从一个空的节点子集开始处理。意味着比如`master:false`这种过滤项，只有放在其他过滤项之后使用才能发挥作用。如果只指定了`master:false`，那么不会添加任何的节点到子集中。
+
+&emsp;&emsp;下列是一些使用`node filter`的[Nodes Info](####Nodes info API) API的例子：
+
+```text
+# If no filters are given, the default is to select all nodes
+GET /_nodes
+# Explicitly select all nodes
+GET /_nodes/_all
+# Select just the local node
+GET /_nodes/_local
+# Select the elected master node
+GET /_nodes/_master
+# Select nodes by name, which can include wildcards
+GET /_nodes/node_name_goes_here
+GET /_nodes/node_name_goes_*
+# Select nodes by address, which can include wildcards
+GET /_nodes/10.0.0.3,10.0.0.4
+GET /_nodes/10.0.0.*
+# Select nodes by role
+GET /_nodes/_all,master:false
+GET /_nodes/data:true,ingest:true
+GET /_nodes/coordinating_only:true
+GET /_nodes/master:true,voting_only:false
+# Select nodes by custom attribute (e.g. with something like `node.attr.rack: 2` in the configuration file)
+GET /_nodes/rack:2
+GET /_nodes/ra*:2
+GET /_nodes/ra*:2*
+```
 
 #### Cluster allocation explain API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-allocation-explain.html)
@@ -28591,31 +28639,15 @@ GET _cluster/allocation/explain
 
 ##### Query parameters
 
-###### include_disk_info
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
-
-###### include_yes_decisions
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
+- include_disk_info：（Optional，Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
+- include_yes_decisions：（Optional，Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
 
 ##### Request body
 
-###### current_node
-
-&emsp;&emsp;（Optional，string）指定节点的ID或者名字，只返回在指定节点上的分片的分配信息。
-
-###### index
-
-&emsp;&emsp;（Optional，string）指定你想要了解的索引的名字。
-
-###### primary
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
-
-###### shard
-
-&emsp;&emsp;（Optional，integer）指定你要了解的分片ID。
+- current_node：（Optional，string）指定节点的ID或者名字，只返回在指定节点上的分片的分配信息。
+- index：（Optional，string）指定你想要了解的索引的名字。
+- primary：（Optional，Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
+- shard：（Optional，integer）指定你要了解的分片ID。
 
 ##### Example
 
@@ -28875,29 +28907,156 @@ GET /_cluster/settings
 
 ##### Query parameters
 
-###### flat_settings
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-
-###### include_defaults
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-
-###### master_timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-
-###### timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Cluster health API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-health.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-health.html)
+
+&emsp;&emsp;返回集群的健康状态。
+
+##### Request
+
+&emsp;&emsp;`GET /_cluster/health/<target>`
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;cluster health API返回一个集群较简明的状态。你可以通过这个api只获取指定的data stream和index。对于data stream，该API会检索（retrieve）流中backing index的健康状态。
+
+&emsp;&emsp;集群健康状态是`green`，`yellow`，或者`red`。在分片层，`red`说明分片没有被分配到集群中，`yellow`说明主分片（primary）已经被分配了，但是副本分片（replica）没有分配。`green`说明所有的分片（主分片和副本分片）都已经被分配。index level的状态由最差的分片状态决定。cluster level的状态由最差的index level的状态决定。
+
+&emsp;&emsp;这个API最重要的好处能够等待集群达到某个特定的（a certain high water-mark）健康状态。例如，下面的请求会等等待集群变成`yellow`状态，最多等待50秒（如果在50秒之前就达到了`green`或者`yellow`，那么就马上返回）。
+
+
+##### Path parameters
+
+- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+
+##### Query parameters
+- level：（Optional, string）可以是`cluster`、`indices`或者`shards`。用来控制健康信息的详细层级。默认值：`cluster`
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string）用来控制等待多个active shard（正在初始化、恢复、关闭属于不活跃的分片），如果是`all`则是等待集群中所有的分片为active，或者是`0`则不等待。默认是`0`
+- wait_for_events：（Optional, string）可以是`immediate`、`urgent`、`high`、`normal`、`low`、`languid`。该参数选择事件优先级，等待集群中这些优先级的事件完成后才返回（能让返回的健康状态信息更加准确和实时）
+- wait_for_no_initializing_shards：（Optional, Boolean）是否等待集群中没有正在初始化的分片（比如正在启动的分片）后再放回。默认值为`false`，意味着不会等分配初始化结束就返回。
+- wait_for_no_relocating_shards：（Optional, Boolean）是否等待集群中没有正在迁移（比如集群再平衡、硬件故障修复、手动迁移）的分片再返回。默认值为`false`，意味着不会等relocation结束就返回。
+- wait_for_nodes：（Optional, string）等待直到可用的节点数量为指定的参数值。参数值可以是`>=N`、`<=N`、`>N`以及`<N`。或者可以使用`ge(N)`、`le(N)`、`gt(N)`以及`lt(N)`
+- wait_for_status：（Optional, string）可以是`green`、`red`或者`yellow`。等待直到集群状态达到或者高于指定的状态类型再返回。默认情况下不会等待。
+
+##### Response body
+
+- cluster_name：(string) 集群名字
+- status：(string) 集群状态。基于主分片跟副本分片的状态，有以下的几个状态：
+  - green：所有的分片都已经分配
+  - yellow：所有的主分片已经分配，但是一个或者多个副本分片没有分配。如果集群中的某个节点发生故障，一些数据可能不可见直到节点恢复
+  - 一个或多个主分片没有分配，因此一些数据是不可见的。经常发生在集群启动时主分片正在被分配
+- timed_out：（Boolean）如果为`false`，说明请求在超时前就返回了，超时时间通过上文中的`timeout`指定（默认`30s`）
+- number_of_nodes：（integer）集群中节点的数量
+- number_of_data_nodes：（integer）专用的数据节点（data node）的数量
+- active_primary_shards：（integer）活跃的主分片数量
+- active_shards：（integer）活跃的主分片跟副本分片的数量
+- relocating_shards：（integer）正在重新分配的分片数量
+- initializing_shards：（integer）正在初始化的分片数量
+- unassigned_shards：（integer）未分配的分片数量
+- delayed_unassigned_shards：（integer）延迟重分配（防止在节点短暂离线时引起不必要的分片重分配）的分片数量
+- number_of_pending_tasks：（integer）未完成的cluster-level的变更的数量
+- number_of_in_flight_fetch：（integer）未完成的分片fetch（通常发生在集群重新分配分片时，比如在一个节点失败后，或者在进行集群平衡时，从集群的其他节点获取分片的副本的操作就是shard fetch）的数量
+- task_max_waiting_in_queue_millis：（integer）队列中等待时间最长的任务已经消耗的时间（单位：毫秒）
+- active_shards_percent_as_number（float）集群中活跃的分片的比例
+
+##### Example
+
+```text
+GET _cluster/health
+```
+
+&emsp;&emsp;API的响应中是一个单机群的、单索引、单个主分片/副本的例子：
+
+```text
+{
+  "cluster_name" : "testcluster",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 1,
+  "active_shards" : 1,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 1,
+  "delayed_unassigned_shards": 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch": 0,
+  "task_max_waiting_in_queue_millis": 0,
+  "active_shards_percent_as_number": 50.0
+}
+```
+
+&emsp;&emsp;下面是获取分片层（shard-level）集群状态的请求：
+
+```text
+GET /_cluster/health/my-index-000001?level=shards
+```
 
 #### Cluster reroute API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-reroute.html)
 
-&emsp;&emsp;
+&emsp;&emsp;更改集群中分片的分配。
+
+##### Request
+
+&emsp;&emsp;`POST /_cluster/reroute`
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;reroute命令允许你手动改变集群中的单个分片的分配。例如你可以显示的将一个分片从一个节点移动到另一个节点，可以取消某次分配并且没有被分配的分片可以显示的分配到指定的节点上。
+
+&emsp;&emsp;很重要的一个注意点是在reroute命令执行后，Elasticsearch会执行rebalancing（遵循`cluster.routing.rebalance.enable`这个配置）来维持集群平衡的状态。例如，如果将一个分片从`node1`移动到`node2`，那随后可能会导致一个分片从`node2`移动到`node1`来平衡进出（even things out）。
+
+&emsp;&emsp;可以设置`cluster.routing.allocation.enable`关闭集群中的allocation。一旦关闭后，那么分配动作只会在使用`reroute`命令或者realancing时发生。
+
+&emsp;&emsp;通过在URL的请求参数中添加`?dry_run`或者在请求体中传递`dry_run:true`可以让`reroute`命令在"dry run"模式中运行。它会计算对当前集群状态应用这次reroute命令后会产生的结果，并返回这个结果，但不会真正的执行这些请求变更。
+
+&emsp;&emsp;如果在URI请求参数中添加`?explain`，那么在响应中会有一个详细的介绍来说明为什么可以或者不可以执行这个命令。
+
+&emsp;&emsp;集群会最多`index.allocation.max_retries`次来尝试（默认值为5）分配一个节点，否则就不再分配并且这个分片成为未分配的分片。这种情况可能由一些结构性的问题（structural problem）导致，比如分词器需要引用停用词文件，但不是所有的节点上都有这个文件。
+
+&emsp;&emsp;一旦问题解决了，就可以手动的通过`reroute`API并且使用请求参数`?retry_failed`进行重试。这将对这些分片尝试一轮单独的重试。
+
+##### Query parameters
+
+- dry_run：（Optional, Boolean）如果为`true`，请求只是模拟操作并返回产生的状态
+- explain：（Optional, Boolean）如果为`true`，响应中会包含某个命令为什么可以或者不可以执行的详细说明
+- metric：（Optional, string）限制响应中返回的指标信息。默认返回所有的指标，如下所示：
+  - \_all：显示所有的指标
+  - blocks：显示响应中`blocks`部分的内容
+  - master_node：显示响应中`metadata`部分的内容。如果你提供了用逗号隔开的索引列表，那返回的结果中只包含这些索引的元数据
+  - nodes：显示响应中`nodes`部分的内容
+  - routing_table：显示响应中`routing_tabel`部分的内容
+  - version：显示集群状态版本
+- retry_failed：（Optional, Boolean）如果为`true`，会重试那些因为之前多次分配失败而被阻塞的分片的分配。（这是一种有用的手段来快速恢复集群正常状态，尤其是在紧急修复了阻止分片分配的问题之后）
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- commands：(Required, array of objects) 定义了执行的命令，支持以下的命令：
+  - move：将一个Started Shard（对应还有Initializing Shards、Unassigned Shards、Relocating Shards）从一个节点移动到另一个节点。使用`index`跟`shard`描述索引名字跟分配编号，以及`from_node`跟`to_node`描述节点移动前后的两个节点。
+  - cancel：
+  - allocate_replica：
+  - allocate_stale_primary：
+  - allocate_empty_primary：
 
 #### Cluster state API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-state.html)
@@ -29239,21 +29398,13 @@ PUT _template/template_1
 &emsp;&emsp;见[Get index template (legacy)](####Get index template API)。
 
 ##### Path parameters
-`<index-template>`
-（必选，字符串）用于创建index template的名字。
+- `<index-template>`：（必选，字符串）用于创建index template的名字。
 
 ##### Query parameters
 
-###### create
-&emsp;&emsp;（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
-
-###### order
-&emsp;&emsp;（可选项，整数）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。
-
-&emsp;&emsp;首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
-
-###### master_timeout
-&emsp;&emsp;（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- order：（可选项，整数）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 &emsp;&emsp;（未完成）
 
@@ -29292,17 +29443,9 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Query parameters
 
-###### accept_data_loss
-
-&emsp;&emsp;（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
-
-###### master_timeout
-
-&emsp;&emsp;（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-
-###### timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- accept_data_loss：（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
@@ -29354,17 +29497,9 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Query Parameters
 
-###### accept_data_loss
-
-&emsp;&emsp;（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
-
-###### master_timeout
-
-&emsp;&emsp;（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-
-###### timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- accept_data_loss：（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Example
 
@@ -29571,17 +29706,9 @@ POST /my_source_index/_split/my_target_index
 
 ##### Query parameters
 
-###### wait_for_active_shards
-
-&emsp;&emsp;(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
-
-###### master_timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-
-###### timeout
-
-&emsp;&emsp;(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
