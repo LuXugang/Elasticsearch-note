@@ -29006,7 +29006,7 @@ GET /_cluster/health/my-index-000001?level=shards
 ```
 
 #### Cluster reroute API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-reroute.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-reroute.html)
 
 &emsp;&emsp;更改集群中分片的分配。
 
@@ -29020,7 +29020,7 @@ GET /_cluster/health/my-index-000001?level=shards
 
 ##### Description
 
-&emsp;&emsp;reroute命令允许你手动改变集群中的单个分片的分配。例如你可以显示的将一个分片从一个节点移动到另一个节点，可以取消某次分配并且没有被分配的分片可以显示的分配到指定的节点上。
+&emsp;&emsp;reroute命令允许你手动改变集群中的单个分片的分配。例如你可以显示的将一个分片从一个节点移动到另一个节点，可以取消分片的分配并且没有被分配的分片可以显示的分配到指定的节点上。
 
 &emsp;&emsp;很重要的一个注意点是在reroute命令执行后，Elasticsearch会执行rebalancing（遵循`cluster.routing.rebalance.enable`这个配置）来维持集群平衡的状态。例如，如果将一个分片从`node1`移动到`node2`，那随后可能会导致一个分片从`node2`移动到`node1`来平衡进出（even things out）。
 
@@ -29053,10 +29053,41 @@ GET /_cluster/health/my-index-000001?level=shards
 
 - commands：(Required, array of objects) 定义了执行的命令，支持以下的命令：
   - move：将一个Started Shard（对应还有Initializing Shards、Unassigned Shards、Relocating Shards）从一个节点移动到另一个节点。使用`index`跟`shard`描述索引名字跟分配编号，以及`from_node`跟`to_node`描述节点移动前后的两个节点。
-  - cancel：
-  - allocate_replica：
-  - allocate_stale_primary：
-  - allocate_empty_primary：
+  - cancel：取消某个分片的分配（或者恢复）。使用`index`跟`shard`描述索引名字跟分配编号。以及`node`描述被取消的分片所在的节点。通过取消副本分片的分配来强制从主分片的重新同步并通过标准的恢复处理来重新初始化副本分片。默认情况下只能取消副本分片的分配。如果需要取消主分片的分配，那么需要在请求中通过`allow_primary`指定
+  - allocate_replica：将未分配的副本分片分配到一个节点。使用`index`跟`shard`描述索引名字跟分配编号。以及`node`描述待分配的目标节点。遵循[allocation deciders](####Cluster-level shard allocation and routing settings)。
+
+另外两个命令可以允许将一个主分片分配给节点。然而，这些命令应该非常小心地使用，因为主分片的分配通常完全由Elasticsearch自动处理。主分片不能自动分配的原因包括以下几点：
+- 新创建了一个索引，但没有节点满足allocation deciders的要求。
+- 无法在集群当前的数据节点上找到数据的最新副本。为了防止数据丢失，系统不会自动将陈旧的副本提升为主分片。
+
+下面两个命令是危险的，可能导致数据丢失。原始数据无法恢复并且集群管理员允许数据丢失的前提下可以使用。如果你遇到了一个可以修复的临时问题，见上文中的`retry_failed`。这里需要强调的是：如果执行了这些命令，然后一个持有受影响分片副本的节点加入集群，那么新加入节点上的副本将会被删除或覆盖。
+
+  - allocate_stale_primary：将一个主分片分配给持有陈旧副本的节点。使用`index`跟`shard`描述索引名字跟分配编号，以及要分配分片的`node`。使用这个命令可能会导致所提供的分片ID的数据丢失。如果一个拥有良好数据副本的节点后来重新加入集群，那么该数据将被删除或用这个命令强制分配的陈旧副本的数据覆盖。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
+  - allocate_empty_primary：将一个空的主分片分配给节点。使用`index`跟`shard`描述索引名字跟分配编号，以及要分配分片的`node`。使用这个命令会导致此分片中索引的所有数据的完全丢失，如果它之前已经启动。如果一个拥有数据副本的节点后来重新加入集群，那么该数据将被删除。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
+
+##### Examples
+
+&emsp;&emsp;以下是一个简短的reroute API调用的例子：
+
+```text
+POST /_cluster/reroute
+{
+  "commands": [
+    {
+      "move": {
+        "index": "test", "shard": 0,
+        "from_node": "node1", "to_node": "node2"
+      }
+    },
+    {
+      "allocate_replica": {
+        "index": "test", "shard": 1,
+        "node": "node3"
+      }
+    }
+  ]
+}
+```
 
 #### Cluster state API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-state.html)
