@@ -29182,7 +29182,7 @@ GET /_cluster/state/blocks
 
 - 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
 
-#### Description
+##### Description
 
 &emsp;&emsp;你可以使用cluster update settings API对允许中的集群配置以及更新动态设置（dynamic settings）。你对未启动的或者关闭的节点上使用`elasticsearch.yml`配置本地的动态设置。
 
@@ -29280,7 +29280,79 @@ PUT /_cluster/settings
 ```
 
 #### Nodes feature usage API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-usage.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-usage.html)
+
+&emsp;&emsp;返回功能的使用情况（usage of feature）的信息。
+
+##### Request
+
+`GET /_nodes/usage`
+`GET /_nodes/<node_id>/usage`
+`GET /_nodes/usage/<metric>`
+`GET /_nodes/<node_id>/usage/<metric>`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;这个API允许你查看每个节点上的功能使用情况的信息。所有节点上的可选项见[Node specification](#####Node specification)。
+
+##### Path parameters
+
+- `<metric>`：（Optional, string）限制指定的指标返回的信息
+  - `_all`：返回所有的统计
+  - `rest_actions`：返回REST actions（接口操作）的类名以及一个统计值，即这个节点上的调用次数
+- `<node_id>`：（Optional, string）逗号分隔的node id或者名字来限制返回的信息
+
+##### Query parameters
+
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+&emsp;&emsp;Rest action example：
+
+```text
+GET _nodes/usage
+```
+
+&emsp;&emsp;返回的响应：
+
+```text
+{
+  "_nodes": {
+    "total": 1,
+    "successful": 1,
+    "failed": 0
+  },
+  "cluster_name": "my_cluster",
+  "nodes": {
+    "pQHNt5rXTTWNvUgOrdynKg": {
+      "timestamp": 1492553961812, 
+      "since": 1492553906606, 
+      "rest_actions": {
+        "nodes_usage_action": 1,
+        "create_index_action": 1,
+        "document_get_action": 1,
+        "search_action": 19, 
+        "nodes_info_action": 36
+      },
+      "aggregations": {
+        ...
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第10行，这个节点执行nodes usage请求的时间
+
+&emsp;&emsp;第11行，开始记录节点使用信息的时间，这个值跟节点启动时间是一致的
+
+&emsp;&emsp;第16行，这个节点执行了19次的查询操作
 
 #### Nodes hot threads API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-hot-threads.html)
