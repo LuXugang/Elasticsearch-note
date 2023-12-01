@@ -29355,7 +29355,43 @@ GET _nodes/usage
 &emsp;&emsp;第16行，这个节点执行了19次的查询操作
 
 #### Nodes hot threads API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-hot-threads.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-hot-threads.html)
+
+&emsp;&emsp;返回集群中选定节点上的hot thread。
+
+##### Request
+
+`GET /_nodes/hot_threads`
+`GET /_nodes/<node_id>/hot_threads`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;这个 API 提供了集群中每个选定节点的hot thread的详细分解（breakdown）。输出是纯文本格式，包含了每个节点顶级hot thread的详细分解。
+
+##### Path parameters
+
+- `<node_id>`：（Optional, string）逗号分隔的node id或者名字来限制返回的信息
+
+##### Query parameters
+
+- ignore_idle_threads：（Optional, Boolean）如果为 true，则过滤掉已知的（known idle）空闲线程（例如，在 socket select 中等待或从空队列获取任务）。默认为 `true`。
+- interval：(Optional, [time units](###API conventions)) 采样线程的时间间隔，默认为 `500ms`。
+- snapshots：（Optional, integer）线程堆栈跟踪（thread stacktrace）的样本数量，默认为 10。
+- threads：（Optional, integer）提供信息的热线程数量，默认为 `3`。用于故障排除时，可以将此参数设置为较大数值（如 9999）以获取系统中所有线程的信息。
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- type：（Optional, string）采样的类型，可选项包括 `block`、`cpu` 和 `wait`。默认为 cpu
+
+##### Example
+
+```text
+GET /_nodes/hot_threads
+GET /_nodes/nodeId1,nodeId2/hot_threads
+```
 
 #### Nodes info API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-info.html)
