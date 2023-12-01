@@ -29167,8 +29167,117 @@ GET /_cluster/state/blocks
 #### Cluster stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-stats.html)
 
+&emsp;&emsp;
+
 #### Cluster update settings API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-update-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-update-settings.html)
+
+&emsp;&emsp;用来配置[dynamic cluster settings](######Dynamic（settings）)。
+
+##### Request
+
+`PUT /_cluster/settings`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+#### Description
+
+&emsp;&emsp;你可以使用cluster update settings API对允许中的集群配置以及更新动态设置（dynamic settings）。你对未启动的或者关闭的节点上使用`elasticsearch.yml`配置本地的动态设置。
+
+&emsp;&emsp;使用cluster update settings API的更新方法是可持久的（对于persistent settings），即使集群重启也继续生效；也可以是临时的（transient settings），即有些配置在集群重启后重置。你也可以使用这个API通过赋予`null`值重置持久/临时的设置。
+
+&emsp;&emsp;如果你用多种方式配置了一样的设置，那么Elasticsearch会根据下面的优先顺序（order of precedence）来应用设置（apply settings）。
+
+1. Transient Setting
+2. Persistent Setting
+3. `elasticsearch.yml`  setting
+4. Default setting value
+
+&emsp;&emsp;例如，你可以使用一个transient setting覆盖persistent setting或者`elasticsearch.yml`。然而，在`elasticsearch.yml`上的变更不会覆盖定义好的（defined）transient 或者 persistent setting。
+
+>TIP：如果你使用Elasticsearch Service，使用[user settings](https://www.elastic.co/guide/en/cloud/current/ec-add-user-settings.html)功能来配置所有的设置。这个方法能让Elasticsearch自动的拒绝（reject）掉任何会破坏你集群的设置。
+如果你在自己的设备（hardware）上运行Elasticsearch，可以使用cluster update settings API来配置集群动态设置。对于集群或者节点的静态设置只使用elasticsearch.yml来配置。使用API不会要求重启并且保证所有节点都被配置成相同的值。
+
+>WARNING: 我们不再推荐使用临时集群设置。请改用持久集群设置。如果集群变得不稳定，临时设置可能会意外清除，导致可能不希望的集群配置。请参阅 [Transient settings migration guide](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transient-settings-migration-guide.html)。
+
+##### Query parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+&emsp;&emsp;以下是更新持久类型（persistent）设置的例子：
+
+```text
+PUT /_cluster/settings
+{
+  "persistent" : {
+    "indices.recovery.max_bytes_per_sec" : "50mb"
+  }
+}
+```
+
+&emsp;&emsp;以下是更新临时类型（transient）设置的例子：
+
+>WARNING: 我们不再推荐使用临时集群设置。请改用持久集群设置。如果集群变得不稳定，临时设置可能会意外清除，导致可能不希望的集群配置。请参阅 [Transient settings migration guide](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transient-settings-migration-guide.html)。
+
+```text
+PUT /_cluster/settings?flat_settings=true
+{
+  "transient" : {
+    "indices.recovery.max_bytes_per_sec" : "20mb"
+  }
+}
+```
+
+&emsp;&emsp;响应中返回更改后的设置，对于临时类型设置的更新也是如此：
+
+```text
+{
+  ...
+  "persistent" : { },
+  "transient" : {
+    "indices.recovery.max_bytes_per_sec" : "20mb"
+  }
+}
+```
+
+&emsp;&emsp;下面的例子重置了一个设置：
+
+```text
+PUT /_cluster/settings
+{
+  "transient" : {
+    "indices.recovery.max_bytes_per_sec" : null
+  }
+}
+```
+
+&emsp;&emsp;响应中不包含被重置的设置：
+
+```text
+{
+  ...
+  "persistent" : {},
+  "transient" : {}
+}
+```
+
+&emsp;&emsp;你也可以使用通配符重置设置。例如，重置所有`indices.recovery`设置：
+
+```text
+PUT /_cluster/settings
+{
+  "transient" : {
+    "indices.recovery.*" : null
+  }
+}
+```
 
 #### Nodes feature usage API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-usage.html)
