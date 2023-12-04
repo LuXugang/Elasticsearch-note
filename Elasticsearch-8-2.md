@@ -29795,7 +29795,75 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
 
 #### Create or update desired nodes API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-desired-nodes.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-desired-nodes.html)
+
+> NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service](https://www.elastic.co/cn/cloud/elasticsearch-service/signup?page=docs&placement=docs-body)、[Elastic Cloud Enterprise](https://www.elastic.co/guide/en/cloud-enterprise/current/index.html)和[Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html)使用。不支持直接使用。
+
+&emsp;&emsp;创建或者更新所需节点。
+
+##### Request
+
+```text
+PUT /_internal/desired_nodes/<history_id>/<version>
+{
+    "nodes" : [
+        {
+            "settings" : {
+                 "node.name" : "instance-000187",
+                 "node.external_id": "instance-000187",
+                 "node.roles" : ["data_hot", "master"],
+                 "node.attr.data" : "hot",
+                 "node.attr.logical_availability_zone" : "zone-0"
+            },
+            "processors" : 8,
+            "memory" : "58gb",
+            "storage" : "1700gb",
+            "node_version" : "{version}"
+        }
+    ]
+}
+```
+
+##### Query parameters
+
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Description
+
+&emsp;&emsp;这个接口创建或者更新所需节点。外部编排器（external orchestrator）可以使用此API来让Elasticsearch了解集群拓扑，包括未来的变化，如添加或移除节点。利用这些信息，系统能够做出更好的决策。
+
+##### Examples
+
+&emsp;&emsp;In this example, a new version for the desired nodes with history Ywkh3INLQcuPT49f6kcppA is created. This API only accepts monotonically increasing versions.
+
+```text
+PUT /_internal/desired_nodes/Ywkh3INLQcuPT49f6kcppA/100
+{
+    "nodes" : [
+        {
+            "settings" : {
+                 "node.name" : "instance-000187",
+                 "node.external_id": "instance-000187",
+                 "node.roles" : ["data_hot", "master"],
+                 "node.attr.data" : "hot",
+                 "node.attr.logical_availability_zone" : "zone-0"
+            },
+            "processors" : 8,
+            "memory" : "58gb",
+            "storage" : "1700gb",
+            "node_version" : "{version}"
+        }
+    ]
+}
+```
+
+&emsp;&emsp;这个API返回下面的结果：
+
+```text
+{
+  "replaced_existing_history_id": false
+}
+```
 
 #### Get desired nodes API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
