@@ -29394,10 +29394,297 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 ```
 
 #### Nodes info API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-info.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-info.html)
+
+&emsp;&emsp;返回集群节点信息。
+
+##### Request
+
+`GET /_nodes`
+`GET /_nodes/<node_id>`
+`GET /_nodes/<metric>`
+`GET /_nodes/<node_id>/<metric>`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;该接口能让你获取集群中一个或者多个（全部）的节点信息。所有节点可选项见[这里](####Node specification)。
+
+&emsp;&emsp;默认情况下对于每一个节点，会返回其所有的属性和核心设置。
+
+##### Path Parameters
+
+- `<metric>`：（Optional, string）指定指标来限制返回的信息。通过逗号分隔多个指标，例如`http`、`ingest`
+  - aggregation：
+  - http：这个节点的HTTP接口信息
+  - indices：节点级别（node level）的跟indexing相关的配置
+    - total_indexing_buffer：该节点上indexing buffer的最大值
+  - ingest：ingest pipeline和其processor的信息
+  - jvm：JVM信息，包括名字、版本、以及它的配置
+  - os：操作系统信息，包括名字和版本
+  - plugins：每一个节点中已安装的插件和模块的详细信息，如下所示：
+    - name：插件名字
+    - version：插件适用的Elasticsearch版本
+    - description：插件的使用目的的简要描述
+    - classname：插件入口点的完全限定类名（fully-qualified）
+    - has_native_controller：表示该插件是否包含原生控制器进程（原生控制器进程通常是指运行于Elasticsearch之外的独立进程，这种进程可以与Elasticsearch节点进行交互，为特定插件提供额外的功能或服务）
+  - process：进程信息。包括进程ID
+  - settings：列出在`Elasticsearch.yml`文件中节点的设置
+  - thread_pool：每一个线程池的配置
+  - transport：节点的transport接口信息
+
+&emsp;&emsp;如果你使用`GET /_nodes/<node_id>/<metric>`并且指定了所有的指标，那么你也可以使用指标名`_all`来获取所有的指标，或者你可以使用指标名`_none`来抑制（suppress）所有的指标并且只获取节点的身份信息。
+
+- `<node_id>`：（Optional, string）用逗号隔开的node id或者node name来限制返回的信息
+
+##### Response body
+
+- build_hash：这次发布的git commit的short hash值
+- host：节点的host name
+- ip：节点的IP地址
+- name：节点的名字
+- total_indexing_buffer：最近索引的文档被写入到磁盘前，允许的内存使用量。这个值是节点上所有分片共享的，通过[Indexing Buffer settings](####Indexing buffer settings)控制
+- total_indexing_buffer_in_bytes：同`total_indexing_buffer`，只是用字节表示
+- transport_address：transport HTTP连接要求的host跟port
+- version：节点上运行的Elasticsearch的版本
+
+&emsp;&emsp;`os`系列的配置用来获取操作系统的信息：
+
+- os.refresh_interval_in_millis：刷新统计OS信息的间隔时间
+- os.name：操作系统的名字（ex：Linux，WIndows，Mac OS X）
+- os.arch：JVM架构的名字（ex：adm64，x86）
+- os.version：操作系统的版本
+- os.available_processors：JVM中可用处理器的数量
+- os.allocated_processors：处理器的数量，可以用来计算线程池大小。该值可以通过节点的设置[node.processors](#####Allocated processors setting)配置，默认值操作系统提供的处理器数量。
+
+&emsp;&emsp;`process`系列的配置用来获取当前运行中的进程信息：
+
+- process.refresh_interval_in_millis：刷新统计进程信息的间隔时间
+- process.id：进程标识（PID）
+- process.mlockall：是否已经成功地将进程的地址空间锁定在内存中（Elasticsearch会尝试锁定其运行时的内存，以防止其被操作系统交换到磁盘（swap）。这样做的主要目的是为了防止因内存交换导致的性能问题）。
+
+##### Query Parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+```text
+# return just process
+GET /_nodes/process
+
+# same as above
+GET /_nodes/_all/process
+
+# return just jvm and process of only nodeId1 and nodeId2
+GET /_nodes/nodeId1,nodeId2/jvm,process
+
+# same as above
+GET /_nodes/nodeId1,nodeId2/info/jvm,process
+
+# return all the information of only nodeId1 and nodeId2
+GET /_nodes/nodeId1,nodeId2/_all
+```
+
+&emsp;&emsp;设置`_all`用来返回所有的信息。
+
+###### Example for plugins metric
+
+&emsp;&emsp;如果指定了`plugins`，接口返回已安装的插件跟模块的详细信息：
+
+```text
+GET /_nodes/plugins
+```
+
+&emsp;&emsp;返回以下的内容：
+
+```text
+{
+  "_nodes": ...
+  "cluster_name": "elasticsearch",
+  "nodes": {
+    "USpTGYaBSIKbgSUJR2Z9lg": {
+      "name": "node-0",
+      "transport_address": "192.168.17:9300",
+      "host": "node-0.elastic.co",
+      "ip": "192.168.17",
+      "version": "{version}",
+      "build_flavor": "{build_flavor}",
+      "build_type": "{build_type}",
+      "build_hash": "587409e",
+      "roles": [
+        "master",
+        "data",
+        "ingest"
+      ],
+      "attributes": {},
+      "plugins": [
+        {
+          "name": "analysis-icu",
+          "version": "{version}",
+          "description": "The ICU Analysis plugin integrates Lucene ICU module into elasticsearch, adding ICU relates analysis components.",
+          "classname": "org.elasticsearch.plugin.analysis.icu.AnalysisICUPlugin",
+          "has_native_controller": false
+        }
+      ],
+      "modules": [
+        {
+          "name": "lang-painless",
+          "version": "{version}",
+          "description": "An easy, safe and fast scripting language for Elasticsearch",
+          "classname": "org.elasticsearch.painless.PainlessPlugin",
+          "has_native_controller": false
+        }
+      ]
+    }
+  }
+}
+```
+
+###### Example for ingest metric
+
+&emsp;&emsp;如果指定了`ingest`，接口返回每一个节点的processors信息。
+
+```text
+GET /_nodes/ingest
+```
+
+&emsp;&emsp;API返回以下的内容：
+
+```text
+{
+  "_nodes": ...
+  "cluster_name": "elasticsearch",
+  "nodes": {
+    "USpTGYaBSIKbgSUJR2Z9lg": {
+      "name": "node-0",
+      "transport_address": "192.168.17:9300",
+      "host": "node-0.elastic.co",
+      "ip": "192.168.17",
+      "version": "{version}",
+      "build_flavor": "{build_flavor}",
+      "build_type": "{build_type}",
+      "build_hash": "587409e",
+      "roles": [],
+      "attributes": {},
+      "ingest": {
+        "processors": [
+          {
+            "type": "date"
+          },
+          {
+            "type": "uppercase"
+          },
+          {
+            "type": "set"
+          },
+          {
+            "type": "lowercase"
+          },
+          {
+            "type": "gsub"
+          },
+          {
+            "type": "convert"
+          },
+          {
+            "type": "remove"
+          },
+          {
+            "type": "fail"
+          },
+          {
+            "type": "foreach"
+          },
+          {
+            "type": "split"
+          },
+          {
+            "type": "trim"
+          },
+          {
+            "type": "rename"
+          },
+          {
+            "type": "join"
+          },
+          {
+            "type": "append"
+          }
+        ]
+      }
+    }
+  }
+}
+```
 
 #### Nodes reload secure settings API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-reload-secure-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-reload-secure-settings.html)
+
+&emsp;&emsp;重新加载集群中节点上的keystore。
+
+##### Request
+
+`POST /_nodes/reload_secure_settings`
+`POST /_nodes/<node_id>/reload_secure_settings`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;[Secure settings](####Secure settings)存储在on-disk keystore中。这些设置都是[reloadable](#####Reloadable secure settings)。也就是说你可以在磁盘上对齐更改并且不需要重启集群中的任何节点就可以重新加载。当你更新了keystore中reloadable的安全设置后，你就可以使用这个API在每一个节点上重新加载这些设置。
+
+&emsp;&emsp;如果Elasticsearch keystore使用密码保护而不仅仅是被混淆时（simply obfuscated） ，那当你重载安全设置时需要提供密码。为整个集群重载安全设置的前提是所有节点的keystores使用相同的密码保护，这个方法仅在[inter-node communications are encrypted](####Encrypt internode communication-1)时可用。或者你可以通过本地访问每一个节点，使用节点对应的Elasticsearch keystore密码来重载安全设置。
+
+##### Path Parameters
+
+- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的可选项，见[Node specification]()。
+
+> NOTE：Elasticsearch要求集群节点的安全设置一致性，但是这个一致性不是强制的。因此，重新加载指定节点不是标准做法。通常用于重载操作失败后使用这种方法比较合理
+
+##### Request body
+
+- `secure_settings_password`：（Optional, string）Elasticsearch keystore的密码。
+
+##### Example
+
+&emsp;&emsp;下面的例子假设集群的每一个节点有相同的Elasticsearch keystore的密码：
+
+```text
+POST _nodes/reload_secure_settings
+{
+  "secure_settings_password":"keystore-password"
+}
+POST _nodes/nodeId1,nodeId2/reload_secure_settings
+{
+  "secure_settings_password":"keystore-password"
+}
+```
+
+&emsp;&emsp;响应中包含了`nodes`对象，key就是node id。每一个value中有`name`以及一个可选的`reload_exception`字段。在重新加载的过程中抛出异常时就会序列化这个`reload_exception`字段：
+
+```text
+{
+  "_nodes": {
+    "total": 1,
+    "successful": 1,
+    "failed": 0
+  },
+  "cluster_name": "my_cluster",
+  "nodes": {
+    "pQHNt5rXTTWNvUgOrdynKg": {
+      "name": "node-0"
+    }
+  }
+}
+```
 
 #### Nodes stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
