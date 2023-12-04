@@ -1697,7 +1697,7 @@ node.roles: [ ]
 
 ##### Remote-eligible node
 
-&emsp;&emsp;一个remote-eligible node扮演一个cross-cluster client的角色以及连接[remote clusters](###Remote clusters)。一旦连接后，你可以使用[cross-cluster search](###Search across clusters)搜索远端的集群。你可以使用[cross-cluster replication](###Cross-cluster replication)在集群间同步数据。
+&emsp;&emsp;一个remote-eligible node扮演一个cross-cluster client的角色以及连接[remote clusters](###Remote clusters)。一旦连接后，你可以使用[cross-cluster search](###Search across clusters)搜索远程的集群。你可以使用[cross-cluster replication](###Cross-cluster replication)在集群间同步数据。
 
 ```test
 node.roles: [ remote_cluster_client ]
@@ -3249,7 +3249,7 @@ PUT _cluster/settings
 
 > NOTE：对于每一个节点，使用[cluster update settings API](####Cluster update settings API)指定的cluster settings优先在`elasticsearch.yml`中的设置
 
-&emsp;&emsp;在下面的例子中，`cluster_one`, `cluster_two`, 和`cluster_three`是随意的（arbitrary）取的名字（aliases）用来代表连接的集群。这些名字随后用于区分本地和远端的索引。
+&emsp;&emsp;在下面的例子中，`cluster_one`, `cluster_two`, 和`cluster_three`是随意的（arbitrary）取的名字（aliases）用来代表连接的集群。这些名字随后用于区分本地和远程的索引。
 
 ```text
 cluster:
@@ -3275,9 +3275,9 @@ cluster:
 #### Configure roles and users for remote clusters
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/remote-clusters-privileges.html#remote-clusters-privileges-ccs)
 
-&emsp;&emsp;在[connecting remote clusters](####Connect to remote clusters)之后，你需要同时在本地和远端集群中创建一个用户角色（user role）并且赋予必要的privilege。这些角色要求可以使用CCR（cross-cluster replication）和CCS（cross-cluster search）。
+&emsp;&emsp;在[connecting remote clusters](####Connect to remote clusters)之后，你需要同时在本地和远程集群中创建一个用户角色（user role）并且赋予必要的privilege。这些角色要求可以使用CCR（cross-cluster replication）和CCS（cross-cluster search）。
 
-> IMPORTANT：你必须在本地和远端集群使用相同的角色。例如，下面用于CCR的配置在本地和远端集群上使用了`remote-replication`角色名。然而，你可以在每一个集群上指定不同的角色定义。
+> IMPORTANT：你必须在本地和远程集群使用相同的角色。例如，下面用于CCR的配置在本地和远程集群上使用了`remote-replication`角色名。然而，你可以在每一个集群上指定不同的角色定义。
 
 &emsp;&emsp;你可以用Kibana的Stack Management，从侧边导航栏中选择**Security > Roles**来管理用户和角色。你也可以使用[role management APIs](####Role mappings)动态的添加，更新，移除并且检索角色。当你使用APIs在`native` realm中管理角色时，角色存储在内部的Elasticsearch index中。
 
@@ -15983,7 +15983,7 @@ GET /cluster_one:my-index-000001/_search
 &emsp;&emsp;下面的[search](###Search APIs) API请求在三个集群上查询索引`my-index-000001`：
 
 - 你的本地集群（local cluster）
-- 两个远端集群（remote cluster），`cluster_one`和`cluster_two`
+- 两个远程集群（remote cluster），`cluster_one`和`cluster_two`
 
 ```text
 GET /my-index-000001,cluster_one:my-index-000001,cluster_two:my-index-000001/_search
@@ -16189,7 +16189,7 @@ PUT _cluster/settings
 |            8.2            |             ×              |    ×     |  ×   |  ×   | √    | √    |
 
 
-> IMPORTANT：对于[EQL search API](####EQL search API)，本地和远端集群必须使用相同的Elasticsearch版本。
+> IMPORTANT：对于[EQL search API](####EQL search API)，本地和远程集群必须使用相同的Elasticsearch版本。
 
 &emsp;&emsp;例如，8.0的本地集群可以查询7.17和所有8.x的集群。然而，8.0的本地集群不能查询7.16或者6.8的集群。
 
@@ -24307,7 +24307,7 @@ POST _transform/_preview
 
 ###### Transforms support cross-cluster search if the remote cluster is configured properly
 
-&emsp;&emsp;如果你使用[cross-cluster search](###Search across clusters)，远端的集群（remote cluster）必须支持你transform中的查询和聚合。Transform会验证他们的配置。如果你使用了cross-cluster search并且验证失败，确保远端的集群支持你使用的查询和聚合。
+&emsp;&emsp;如果你使用[cross-cluster search](###Search across clusters)，远程的集群（remote cluster）必须支持你transform中的查询和聚合。Transform会验证他们的配置。如果你使用了cross-cluster search并且验证失败，确保远程的集群支持你使用的查询和聚合。
 
 ###### Using scripts in transforms
 
@@ -24596,7 +24596,7 @@ POST _transform/_preview
 - 在uni-directional配置中，一个集群只包含leader index，其他集群只包含follower index
 - 在bi-directional配置中，每一个集群同时包含leader index和follower index
 
-&emsp;&emsp;在uni-directional中，包含follower index的集群中的Elasticsearch版本必须跟远端集群的Elasticsearch版本相同或者更新。如果版本更新，那么参考下面表格中的兼容性。
+&emsp;&emsp;在uni-directional中，包含follower index的集群中的Elasticsearch版本必须跟远程集群的Elasticsearch版本相同或者更新。如果版本更新，那么参考下面表格中的兼容性。
 
 &emsp;&emsp;版本兼容性：
 
@@ -26281,7 +26281,7 @@ GET _search
 
 &emsp;&emsp;如果查询受 I/O 限制（I/O-bound），考虑增加文件系统缓存的大小（见上文）或使用更快的存储。每一个查询涉及到在多个文件上进行随机和顺序的读取，并且可能在每一个分片上并发的进行查询。因此SSD驱动器的性能往往比旋转磁盘（spinning disk）好。
 
-&emsp;&emsp;Directly-attached类型的存储（local storage）通常比远端储存（remote storage）有更好的性能因为它配置更方便并且避免了communications overheads。通过精心的调整，远端储存也可以达到可接受的性能要求。使用真实的工作负载进行基准测试来检测你用于调整的参数。如果达不到你期望的性能要求，跟存储的供应商一起找出问题所在。
+&emsp;&emsp;Directly-attached类型的存储（local storage）通常比远程储存（remote storage）有更好的性能因为它配置更方便并且避免了communications overheads。通过精心的调整，远程储存也可以达到可接受的性能要求。使用真实的工作负载进行基准测试来检测你用于调整的参数。如果达不到你期望的性能要求，跟存储的供应商一起找出问题所在。
 
 &emsp;&emsp;如果查询受CPU限制，考虑使用更多更快的cpu。
 
@@ -29759,7 +29759,34 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 ```
 
 #### Remote cluster info API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-remote-info.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-remote-info.html)
+
+&emsp;&emsp;返回远程集群（remote cluster）的配置信息：的
+
+##### Request
+
+`GET /_remote/info`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;该接口能让你获取远程集群的配置信息。返回的信息中用远端集群的别名作为key,包含连接和endpoint信息。
+
+##### Response body
+
+- mode：远程集群的连接模式。返回`sniff`或`proxy`
+- connected：如果至少连接了一个远程集群则该值为`true`
+- initial_connect_timeout：连接远程集群的初始超时时间
+- skip_unavailable：跨集群搜索（CCS，cross-cluster search）在查询时是否跳过不可用的节点。如果为`true`，CCS会忽略这些集群返回的相关错误。参考[]()
+- seeds：当配置sniff后，远程集群中初始化的seed transport addresses
+- num_nodes_connected：当配置sniff后，连接的远程集群的节点数量
+- max_connections_per_cluster：当配置sniff模式时，为远程集群维护的最大连接数
+- proxy_address：当配置代理模式时，远程连接的地址
+- num_proxy_sockets_connected：当配置代理模式时，打开的远程集群套接字连接数
+- max_proxy_socket_connections：当配置代理模式时，远程集群的最大套接字连接数
 
 #### Task management API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/tasks.html)
