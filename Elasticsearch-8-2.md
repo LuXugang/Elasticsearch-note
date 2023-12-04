@@ -29801,7 +29801,29 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
 
 #### Delete desired nodes API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-desired-nodes.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-desired-nodes.html)
+
+> NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service]()、[Elastic Cloud Enterprise]()和[Elastic Cloud on Kubernetes]()使用。不支持直接使用。
+
+&emsp;&emsp;删除所需节点
+
+##### Request
+
+```text
+DELETE /_internal/desired_nodes
+```
+
+##### Description
+
+&emsp;&emsp;这个接口删除所需节点。
+
+##### Example
+
+&emsp;&emsp;下面的例子删除当前所需节点
+
+```text
+DELETE /_internal/desired_nodes
+```
 
 ### Cross-cluster replication APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
