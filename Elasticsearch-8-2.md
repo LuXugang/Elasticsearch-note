@@ -29798,12 +29798,52 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-desired-nodes.html)
 
 #### Get desired nodes API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
+
+> NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service](https://www.elastic.co/cn/cloud/elasticsearch-service/signup?page=docs&placement=docs-body)、[Elastic Cloud Enterprise](https://www.elastic.co/guide/en/cloud-enterprise/current/index.html)和[Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html)使用。不支持直接使用。
+ 
+&emsp;&emsp;获取所需节点
+
+##### Request
+
+```text
+GET /_internal/desired_nodes/_latest
+```
+
+##### Description
+
+&emsp;&emsp;这个接口获取最新的所需的节点。
+
+##### Examples
+
+&emsp;&emsp;这个例子获取最新的所需的节点。
+
+```text
+GET /_internal/desired_nodes/_latest
+```
+
+&emsp;&emsp;返回以下结果：
+
+```text
+{
+    "history_id": <history_id>,
+    "version": <version>,
+    "nodes": [
+        {
+            "settings": <node_settings>,
+            "processors": <node_processors>,
+            "memory": "<node_memory>",
+            "storage": "<node_storage>",
+            "node_version": "<node_version>"
+        }
+    ]
+}
+```
 
 #### Delete desired nodes API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-desired-nodes.html)
 
-> NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service]()、[Elastic Cloud Enterprise]()和[Elastic Cloud on Kubernetes]()使用。不支持直接使用。
+> NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service](https://www.elastic.co/cn/cloud/elasticsearch-service/signup?page=docs&placement=docs-body)、[Elastic Cloud Enterprise](https://www.elastic.co/guide/en/cloud-enterprise/current/index.html)和[Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html)使用。不支持直接使用。
 
 &emsp;&emsp;删除所需节点
 
