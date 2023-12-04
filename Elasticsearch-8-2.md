@@ -29690,7 +29690,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
 #### Pending cluster tasks API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-pending.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-pending.html)
 
 &emsp;&emsp;返回集群层（cluster-level）还未执行结束的变更。
 
@@ -29706,8 +29706,57 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 
 &emsp;&emsp;该接口返回所有的集群层未完成的变更（比如创建索引，更新mapping，分片分配或者分配失败）。
 
-> NOTE：
+> NOTE：这个API返回一个集群状态待处理更新的列表。这些更新与[Task Management API](####Task management API)报告的任务不同，后者包括周期性任务和用户发起的任务，如节点统计、搜索查询或创建索引请求。然而，如果用户发起的任务（例如创建索引命令）导致了集群状态的更新，这个任务的活动可能会同时被Task Management API和Pending cluster tasks报告。
 
+##### Path Parameters
+
+- `local`：（Optional, Boolean）如果为`true`，该请求只从本地节点获取信息。默认是`false`。即从master node获取
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Response body
+
+- task：（object）pending中的任务列表
+- insert_order：（integer）一个数值代表该任务插入到了任务队列
+- priority：（string）pending任务的优先级。合法的优先级从大到小依次为：`IMMEDIATE` > `URGENT` > `HIGH` > `NORMAL` > `LOW` > `LANGUID`
+- source：（string）提供了集群任务的一般描述，可能包括原因和来源（如果一个任务是由于创建新的索引而启动的，source字段可能会包含这方面的信息，如“创建索引[索引名]”）。
+- executing：（boolean）布尔值，表示pending任务当前是否在执行
+- time_in_queue_millis：（integer）表示自任务等待执行以来的时间（以毫秒为单位）
+- time_in_queue：（string）表示自任务等待执行以来的时间
+
+##### Example
+
+&emsp;&emsp;由于cluster level的变更都非常快，因此通常这个请求会返回一个空的list。然而，如果任务队列开始堆积，响应中就有类似下面的内容：
+
+```text
+{
+   "tasks": [
+      {
+         "insert_order": 101,
+         "priority": "URGENT",
+         "source": "create-index [foo_9], cause [api]",
+         "executing" : true,
+         "time_in_queue_millis": 86,
+         "time_in_queue": "86ms"
+      },
+      {
+         "insert_order": 46,
+         "priority": "HIGH",
+         "source": "shard-started ([foo_2][1], node[tMTocMvQQgGCkj7QDHl3OA], [P], s[INITIALIZING]), reason [after recovery from shard_store]",
+         "executing" : false,
+         "time_in_queue_millis": 842,
+         "time_in_queue": "842ms"
+      },
+      {
+         "insert_order": 45,
+         "priority": "HIGH",
+         "source": "shard-started ([foo_2][0], node[tMTocMvQQgGCkj7QDHl3OA], [P], s[INITIALIZING]), reason [after recovery from shard_store]",
+         "executing" : false,
+         "time_in_queue_millis": 858,
+         "time_in_queue": "858ms"
+      }
+  ]
+}
+```
 
 #### Remote cluster info API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-remote-info.html)
