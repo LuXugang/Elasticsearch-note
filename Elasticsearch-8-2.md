@@ -27986,7 +27986,7 @@ POST my-data-stream/_async_search
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Query parameter
 
@@ -28279,7 +28279,7 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。你也必须要有`monitor`或者`manage` [index privilege](#####Indices privileges)用于你需要检索的data stream、Index、或者alias。
+- 如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。你也必须要有`monitor`或者`manage` [index privilege](#####Indices privileges)用于你需要检索的data stream、Index、或者alias。
 
 ##### Path parameters
 
@@ -28631,7 +28631,7 @@ GET _cluster/allocation/explain
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
@@ -28893,7 +28893,7 @@ GET /_cluster/settings
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Request
 
@@ -28923,7 +28923,7 @@ GET /_cluster/settings
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`monitor`或者`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
@@ -29016,7 +29016,7 @@ GET /_cluster/health/my-index-000001?level=shards
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
@@ -29792,7 +29792,55 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/tasks.html)
 
 #### Voting configuration exclusions API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
+
+&emsp;&emsp;添加或者移除[voting configuration exclusion list](####Voting configurations)中的master-eligible 节点。
+
+##### Request
+
+`POST /_cluster/voting_config_exclusions?node_names=<node_names>`
+
+`POST /_cluster/voting_config_exclusions?node_ids=<node_ids>`
+
+`DELETE /_cluster/voting_config_exclusions`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了[operator privileges feature](####Operator privileges)，只有具有操作权限的用户才能使用这个API
+
+##### Description
+
+&emsp;&emsp;默认情况下，如果集群中有超过三个具备主节点资格的节点，并且一次性移除的这些节点少于一半，那么[voting configuration](####Voting configurations)会自动缩减。
+
+&emsp;&emsp;如果需要将voting configuration缩减到少于三个节点，或一次性移除一半或更多的master-eligible的节点，必须使用此 API 手动从voting configuration中移除已离开的节点。这包括在voting configuration的排除列表中为该节点添加条目，促使集群尝试重新配置voting configuration以移除该节点并防止其返回。
+
+&emsp;&emsp;如果接口调用失败，你可以安全的进行重试。一旦有成功的响应，那么就能保证节点从voting configuration总移除并且不会重新加入（reinstated）。
+
+> NOTE：投票排除（voting exclusions）仅在短时间内从集群中移除至少一半的master-eligible时才需要。在移除master-ineligible或少于一半的具备主节点资格的节点时，不需要投票排除。
+
+&emsp;&emsp;更多信息见: [Removing master-eligible nodes](#####Removing master-eligible nodes)。
+
+##### Query parameters
+
+- node_names：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名字，你可能无法指定`?node_ids`
+- node_ids：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名字，你可能无法指定`?node_names`
+- timeout：(Optional, [time units](###API conventions)) 在添加一个voting configuration exclusion时，请求会等待指定的节点从voting configuration中移除后再返回。通过`?timeout`指定时超时时间。如果在满足条件之前超时，请求将失败并返回错误。默认值为 30 秒。
+- wait_for_removal：（Optional, Boolean）它指定在清除voting configuration 排除列表之前是否等待所有被排除的节点从集群中移除。默认值为 true，这意味着在 API 采取任何行动之前，所有被排除的节点必须从集群中移除。如果设置为 false，则即使一些被排除的节点仍在集群中，voting configuration 排除列表也会被清除。简而言之，这个参数控制了在清除排除列表之前是否需要等待所有标记为排除的节点实际离开集群
+
+##### Examples
+
+&emsp;&emsp;将名为`nodeName1`和`nodeName2`的节点添加到voting configuration排除列表中：
+
+```text
+POST /_cluster/voting_config_exclusions?node_names=nodeName1,nodeName2
+```
+
+&emsp;&emsp;Remove all exclusions from the list:
+
+```text
+DELETE /_cluster/voting_config_exclusions
+```
 
 #### Create or update desired nodes API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-desired-nodes.html)
@@ -29869,7 +29917,7 @@ PUT /_internal/desired_nodes/Ywkh3INLQcuPT49f6kcppA/100
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-desired-nodes.html)
 
 > NOTE：这个功能不能直接使用，而是设计为只被[Elasticsearch Service](https://www.elastic.co/cn/cloud/elasticsearch-service/signup?page=docs&placement=docs-body)、[Elastic Cloud Enterprise](https://www.elastic.co/guide/en/cloud-enterprise/current/index.html)和[Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html)使用。不支持直接使用。
- 
+
 &emsp;&emsp;获取所需节点
 
 ##### Request
@@ -30256,7 +30304,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
@@ -30310,7 +30358,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 如果开启了Elasticsearch security features，你必须要有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Description
 
@@ -30390,7 +30438,7 @@ PUT /<index>/_split/<target-index>
 
 ##### Prerequisites
 
-&emsp;&emsp;如果开启了Elasticsearch security features，对于这个索引，你必须要有管理权限[manage index privilege](####Security privileges)。
+- 如果开启了Elasticsearch security features，对于这个索引，你必须要有管理权限[manage index privilege](####Security privileges)。
 
 &emsp;&emsp;在开始切分这个索引前需要满足下面的条件
 
