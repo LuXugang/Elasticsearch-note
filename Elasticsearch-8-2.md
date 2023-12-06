@@ -29791,6 +29791,118 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 #### Task management API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/tasks.html)
 
+> WARNING：task management API是一个新功能，应该被认为是一个测试版功能。这个API可能会发生调整使得不能向后兼容。对于这个功能的更多信息见[#51628](https://github.com/elastic/elasticsearch/issues/51628)
+
+&emsp;&emsp;返回集群中正在执行的任务的信息。
+
+##### Request
+
+`GET /_tasks/<task_id>`
+`GET /_tasks`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;该接口返回集群中一个或多个节点上正在允许的任务的信息。
+
+##### Path parameters
+
+- `<task_id>`：（Optional, string）要求查询的任务的ID（node_Id:task_number）
+
+##### Query parameters
+
+- actions：（Optional, string）用逗号隔开，或者通配符表达式，用来限制请求
+- detailed：（Optional, Boolean）如果为`true`，响应中包含关于分片恢复的详细信息。默认为`false`
+- group_by：（Optional, string）响应中对任务进行分组的字段（key）
+  - nodes：（Default）节点ID
+  - parents：父级任务ID
+  - none：不对任务进行分组
+- node_id：（Optional, string）用逗号隔开的节点ID或节点名字列表，用来限制返回的信息
+- parent_task_id：（Optional, string）父级任务ID，用来限制返回的信息。若要返回所有的任务，不使用这个参数或者另该值为`-1`
+- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_completion：（Optional, Boolean）如果为`true`。请求会阻塞直到操作完成。默认值为`false`
+
+##### Response codes
+
+- `404（missing resources）`
+  - 如果没有找到指定的`<taks_id>`，这个响应码说明没有资源匹配到该请求
+
+##### Examples
+
+```text
+GET _tasks 
+GET _tasks?nodes=nodeId1,nodeId2 
+GET _tasks?nodes=nodeId1,nodeId2&actions=cluster:* 
+```
+
+&emsp;&emsp;第1行，获取集群中所有节点上的所有任务的信息
+
+&emsp;&emsp;第2行，获取`nodeId1`和`nodeId2`上的所有任务的信息。关于如何选择单个节点的更多信息见[Node specification](#####Node specification)。
+
+&emsp;&emsp;第3行，获取节点`nodeId1`和`nodeId2`上跟集群相关的所有任务的信息
+
+&emsp;&emsp;这个接口返回下面的结果：
+
+```text
+{
+  "nodes" : {
+    "oTUltX4IQMOUUVeiohTt8A" : {
+      "name" : "H5dfFeA",
+      "transport_address" : "127.0.0.1:9300",
+      "host" : "127.0.0.1",
+      "ip" : "127.0.0.1:9300",
+      "tasks" : {
+        "oTUltX4IQMOUUVeiohTt8A:124" : {
+          "node" : "oTUltX4IQMOUUVeiohTt8A",
+          "id" : 124,
+          "type" : "direct",
+          "action" : "cluster:monitor/tasks/lists[n]",
+          "start_time_in_millis" : 1458585884904,
+          "running_time_in_nanos" : 47402,
+          "cancellable" : false,
+          "parent_task_id" : "oTUltX4IQMOUUVeiohTt8A:123"
+        },
+        "oTUltX4IQMOUUVeiohTt8A:123" : {
+          "node" : "oTUltX4IQMOUUVeiohTt8A",
+          "id" : 123,
+          "type" : "transport",
+          "action" : "cluster:monitor/tasks/lists",
+          "start_time_in_millis" : 1458585884904,
+          "running_time_in_nanos" : 236042,
+          "cancellable" : false
+        }
+      }
+    }
+  }
+}
+```
+
+###### Retrieve information from a particular task
+
+&emsp;&emsp;同样可以获取特定任务的信息。下面的例子中获取了任务`oTUltX4IQMOUUVeiohTt8A:124`的信息：
+
+```text
+GET _tasks/oTUltX4IQMOUUVeiohTt8A:124
+```
+
+&emsp;&emsp;如果没有找到该任务，API返回一个404。
+
+&emsp;&emsp;获取指定任务的所有子任务：
+
+```text
+GET _tasks?parent_task_id=oTUltX4IQMOUUVeiohTt8A:123
+```
+
+&emsp;&emsp;如果父级任务不存在，API返回一个404。
+
+###### Get more information about tasks
+
+&emsp;&emsp;你也可以使用`detailed`这个请求参数来获取更多关于运行中的任务的信息。
+
 #### Voting configuration exclusions API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
 
