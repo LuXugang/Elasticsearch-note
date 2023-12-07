@@ -29789,11 +29789,11 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 - max_proxy_socket_connections：当配置代理模式时，远程集群的最大套接字连接数
 
 #### Task management API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/tasks.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/tasks.html)
 
-> WARNING：task management API是一个新功能，应该被认为是一个测试版功能。这个API可能会发生调整使得不能向后兼容。对于这个功能的更多信息见[#51628](https://github.com/elastic/elasticsearch/issues/51628)
+> WARNING：task management API是一个新功能，但你应该将其认为是一个测试版功能。这个API可能会发生调整使得不能向后兼容。对于这个功能的更多信息见[#51628](https://github.com/elastic/elasticsearch/issues/51628)
 
-&emsp;&emsp;返回集群中正在执行的任务的信息。
+&emsp;&emsp;返回集群中正在执行的任务信息。
 
 ##### Request
 
@@ -29806,7 +29806,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 
 ##### Description
 
-&emsp;&emsp;该接口返回集群中一个或多个节点上正在允许的任务的信息。
+&emsp;&emsp;该接口返回集群中一个或多个节点上正在运行的任务信息。
 
 ##### Path parameters
 
@@ -29901,7 +29901,144 @@ GET _tasks?parent_task_id=oTUltX4IQMOUUVeiohTt8A:123
 
 ###### Get more information about tasks
 
-&emsp;&emsp;你也可以使用`detailed`这个请求参数来获取更多关于运行中的任务的信息。
+&emsp;&emsp;你也可以使用`detailed`这个请求参数来获取更多关于运行中的任务信息。对用来区分任务很有用，不过需要一定的开销。例如，下面是使用`detailed`请求参数获取到的所有的查询：
+
+```text
+GET _tasks?actions=*search&detailed
+```
+
+&emsp;&emsp;API返回下面的结果：
+
+```text
+{
+  "nodes" : {
+    "oTUltX4IQMOUUVeiohTt8A" : {
+      "name" : "H5dfFeA",
+      "transport_address" : "127.0.0.1:9300",
+      "host" : "127.0.0.1",
+      "ip" : "127.0.0.1:9300",
+      "tasks" : {
+        "oTUltX4IQMOUUVeiohTt8A:464" : {
+          "node" : "oTUltX4IQMOUUVeiohTt8A",
+          "id" : 464,
+          "type" : "transport",
+          "action" : "indices:data/read/search",
+          "description" : "indices[test], types[test], search_type[QUERY_THEN_FETCH], source[{\"query\":...}]",
+          "start_time_in_millis" : 1483478610008,
+          "running_time_in_nanos" : 13991383,
+          "cancellable" : true,
+          "cancelled" : false
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`description`字段包含了某任务正在执行的特定请求相关的可读的内容，例如上面示例中搜索任务正在执行的搜索请求。有些其他类型的任务有不同的描述，比如[\_reindex](####Reindex API)中同时有`search`以及`destination`，或者[\_bulk](####Bulk API)中有请求的数量和目标索引。许多请求的描述都是空的，是因为这些请求更加详细的信息不能轻易获取或者对于明确这个请求不是很有帮助。
+
+> IMPORTANT：带有`detailed`的`_task`请求可能也会返回一个`status`。它是任务内部状态的一个报告。因此不同的任务有不同的格式。我们尝试对于某一个任务的状态在不同的版本间保持一致性，但这通常是不可能的，因为我们有时会更改实现方式。因此对于某些特定的请求，我们可能会移除`status`这个字段，那在minor release后，对这个字段进行解析可能会出错
+
+###### Wait for completion
+
+&emsp;&emsp;task API可以等待特定任务结束后再返回。下面的请求会阻塞10秒或者id为`oTUltX4IQMOUUVeiohTt8A:12345`的任务完成后返回。
+
+```text
+GET _tasks/oTUltX4IQMOUUVeiohTt8A:12345?wait_for_completion=true&timeout=10s
+```
+
+&emsp;&emsp;你也可以等待某些动作对应的任务的完成。下面的命令会等待所有`reindex`任务的完成：
+
+```text
+GET _tasks?actions=*reindex&wait_for_completion=true&timeout=10s
+```
+
+###### Task Cancellation
+
+&emsp;&emsp;如果某个运行时间很长的任务支持取消，那可以通过这个API取消。下面的例子取消了`oTUltX4IQMOUUVeiohTt8A:12345`这个任务：
+
+```text
+POST _tasks/oTUltX4IQMOUUVeiohTt8A:12345/_cancel
+```
+
+&emsp;&emsp;取消任务命令支持跟上文中说到的一些参数，因此可以在同一时间取消多个任务。例如，下面的命令会取消在节点`nodeId1`和`nodeId2`上运行的所有reindex任务。
+
+```text
+POST _tasks/_cancel?nodes=nodeId1,nodeId2&actions=*reindex
+```
+
+&emsp;&emsp;有些任务被取消后，可能还会继续运行一段时间，因为它可能无法立即安全地停止当前活动。罗列任务的API（list tasks API）会继续列出这些已取消的任务，直到它们完成。list tasks API的响应中的`cancelled`标志表明取消命令已被处理，任务将尽快停止。
+
+###### Task Grouping
+
+&emsp;&emsp;可以通过task API的`group_by`参数对任务根据节点（默认）或者根据父级任务进行分组。下面的命令根据父级任务分组：
+
+```text
+GET _tasks?group_by=parents
+```
+
+&emsp;&emsp;可以指定`group_by`的参数为`none`来关闭分组：
+
+```text
+GET _tasks?group_by=none
+```
+
+###### Identifying running tasks
+
+&emsp;&emsp;当在HTTP请求头中提供X-Opaque-Id头部时，它将在响应头以及任务信息的`headers`字段中返回。这允许跟踪特定调用，或将某些任务与启动它们的客户端关联起来。这个功能有助于更好地管理和识别正在运行的任务：
+
+```text
+curl -i -H "X-Opaque-Id: 123456" "http://localhost:9200/_tasks?group_by=parents"
+```
+
+&emsp;&emsp;返回下面的结果：
+
+```text
+HTTP/1.1 200 OK
+X-Opaque-Id: 123456 
+content-type: application/json; charset=UTF-8
+content-length: 831
+
+{
+  "tasks" : {
+    "u5lcZHqcQhu-rUoFaqDphA:45" : {
+      "node" : "u5lcZHqcQhu-rUoFaqDphA",
+      "id" : 45,
+      "type" : "transport",
+      "action" : "cluster:monitor/tasks/lists",
+      "start_time_in_millis" : 1513823752749,
+      "running_time_in_nanos" : 293139,
+      "cancellable" : false,
+      "headers" : {
+        "X-Opaque-Id" : "123456" 
+      },
+      "children" : [
+        {
+          "node" : "u5lcZHqcQhu-rUoFaqDphA",
+          "id" : 46,
+          "type" : "direct",
+          "action" : "cluster:monitor/tasks/lists[n]",
+          "start_time_in_millis" : 1513823752750,
+          "running_time_in_nanos" : 92133,
+          "cancellable" : false,
+          "parent_task_id" : "u5lcZHqcQhu-rUoFaqDphA:45",
+          "headers" : {
+            "X-Opaque-Id" : "123456" 
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第1行，id作为响应中header的一部分
+
+&emsp;&emsp;第17行，由REST请求初始化的这个任务的id，
+
+&emsp;&emsp;第30行，子任务中由REST请求初始化的这个任务的id
+
+
 
 #### Voting configuration exclusions API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/voting-config-exclusions.html)
