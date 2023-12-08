@@ -29046,7 +29046,7 @@ GET /_cluster/health/my-index-000001?level=shards
   - routing_table：显示响应中`routing_tabel`部分的内容
   - version：显示集群状态版本
 - retry_failed：（Optional, Boolean）如果为`true`，会重试那些因为之前多次分配失败而被阻塞的分片的分配。（这是一种有用的手段来快速恢复集群正常状态，尤其是在紧急修复了阻止分片分配的问题之后）
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
@@ -29206,10 +29206,10 @@ GET /_cluster/state/blocks
 
 - flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;以下是更新持久类型（persistent）设置的例子：
 
@@ -29308,10 +29308,10 @@ PUT /_cluster/settings
 
 ##### Query parameters
 
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;Rest action example：
 
@@ -29382,11 +29382,11 @@ GET _nodes/usage
 - interval：(Optional, [time units](###API conventions)) 采样线程的时间间隔，默认为 `500ms`。
 - snapshots：（Optional, integer）线程堆栈跟踪（thread stacktrace）的样本数量，默认为 10。
 - threads：（Optional, integer）提供信息的热线程数量，默认为 `3`。用于故障排除时，可以将此参数设置为较大数值（如 9999）以获取系统中所有线程的信息。
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - type：（Optional, string）采样的类型，可选项包括 `block`、`cpu` 和 `wait`。默认为 cpu
 
-##### Example
+##### Examples
 
 ```text
 GET /_nodes/hot_threads
@@ -29469,7 +29469,7 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 ##### Query Parameters
 
 - flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -29653,7 +29653,7 @@ GET /_nodes/ingest
 
 - `secure_settings_password`：（Optional, string）Elasticsearch keystore的密码。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;下面的例子假设集群的每一个节点有相同的Elasticsearch keystore的密码：
 
@@ -29689,6 +29689,263 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 #### Nodes stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
+&emsp;&emsp;返回集群结点的统计信息。
+
+##### Request
+
+`GET /_nodes/stats`
+`GET /_nodes/<node_id>/stats`
+`GET /_nodes/stats/<metric>`
+`GET /_nodes/<node_id>/stats/<metric>`
+`GET /_nodes/stats/<metric>/<index_metric>`
+`GET /_nodes/<node_id>/stats/<metric>/<index_metric>`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;你可以使用这个API获取集群中节点的统计信息。
+
+&emsp;&emsp;节点的可选项见[Node specification](#####Node specification)。
+
+&emsp;&emsp;默认返回所有的统计信息。你可以通过使用指标`<metric>`限制返回的内容。
+
+##### Path Parameters
+
+- `<metric>`：（Optional, string）指定指标限制返回的信息。可以指定下了的选项并用逗号隔开：
+  - `adaptive_selection`：[Adaptive replica selection](####Adaptive replica selection)相关的统计信息
+  - `breaker`：field data circuit breaker（防止因过度内存消耗而导致的内存溢出错误）相关的统计信息
+  - `discovery`：`发现`（集群中节点的发现和通信相关）相关的统计
+  - `fs`：文件系统信息，数据路径，空闲磁盘空间爱你。读写统计
+  - `http`：HTTP连接信息
+  - `indexing_pressure`：节点索引负载和相关的rejection的统计
+  - `indices`：索引大小，文档数量，索引（indexing）和删除时间，查询时间，field cache大小，合并和flush的索引相关统计信息
+  - `ingest`：[ingest preprocessing](##Ingest pipelines)相关的统计 
+  - `jvm`：JVM统计数据，包括内存池信息、垃圾回收、缓冲池、加载/卸载类的数量。
+  - `os`：操作系统统计数据，包括平均负载、内存和交换区。
+  - `process`：进程统计数据，如内存消耗、CPU使用量和打开的文件描述符。
+  - `thread_pool`：每个线程池的统计数据，包括当前大小、队列和被拒绝（reject）的任务。
+  - `transport`：集群通信中发送和接收字节的传输统计数据。
+- `index_metric`：（Optional, string）指定索引指标（index metric）限制返回的`indices`指标信息。只有指定部分指标或者全部指标（`_all`）时才能使用。支持下列的指标：
+  - `completion`
+  - `docs`
+  - `fielddata`
+  - `flush`
+  - `get`
+  - `indexing`
+  - `merge`
+  - `query_cache`
+  - `recovery`
+  - `refresh`
+  - `request_cache`
+  - `search`
+  - `segments`
+  - `store`
+  - `translog`
+  - `warmer`
+- `<node_id>`：（Optional, string）用逗号隔开的节点列表或者节点名字来限制返回的信息
+
+##### Query parameters
+
+- completion_fields：（Optional, string）用逗号隔开或者通配符表达式指定字段，获取包含`fielddata`和`suggest`的统计信息
+- fielddata_fields：（Optional, string）用逗号隔开或者通配符表达式指定字段，获取包含`fielddata`的统计信息
+- fields：（Optional, string）逗号隔开或者通配符表达式来获取包含所有字段的统计信息。除非在`completion_fields`或`fielddata_fields`参数中提供了特定的字段列表，否则将作为默认列表使用。
+- groups：（Optional, string）用逗号隔开指定搜索组（search group），包含于`search`的统计信息中
+- level：（Optional, string）是否在cluster、index、shard层进行聚合。可选值为：
+  - cluster
+  - indices
+  - shards
+- types：（Optional, string）用逗号隔开的文档类型用于`indexing`的索引指标
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- include_segment_file_sizes：（Optional, Boolean）如果为`true`，该调用生成每一个Lucene索引文件的聚合后的磁盘使用量（只有请求Segment stats时才生效）。默认值为`false`
+- include_unloaded_segments：（Optional, Boolean）如果为`true`，响应中包含未加载到内存的段的信息。默认值为`false`
+
+##### Response body
+
+- \_nodes：（object）包含请求中指定的节点数量的统计信息
+  - total：（integer）请求中选择的节点数量总数
+  - successful：（integer）成功响应的节点数量
+  - failed：（integer）拒绝请求或者请求失败的节点数量。如果这个值不是`0`，拒绝或者失败的原因会包含在响应中
+- cluster_name：（string）集群的名字。基于这里的设置[Cluster name setting](#####Cluster name setting)
+- nodes：（object）请求中指定的节点的统计信息
+  - timestamp：（integer）对于这次响应收集节点统计信息的时间。毫秒级别，since [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time)
+  - name：（string）可读的节点标识、基于[Node name setting](#####Advanced transport settings)这个设置
+  - transport_address：（string）[transport layer](#####Advanced transport settings)的主机和端口号，用于集群中节点之间的内部通信
+  - host：（string）节点的网络主机地址，基于[Network host setting](#####Network host setting)这个设置
+  - ip：（string）节点的IP跟Port信息
+  - roles：（array of string）节点被赋予的角色。见[Node](####Node)
+  - attributes：（object）用列表描述的节点的一些属性
+  - indices：（object）分配到节点的索引分片的统计信息
+    - docs：（object）节点上所有主分片的文档统计信息
+      - count：（integer）Lucene提供的文档数量的报告。不包含被删除的文档以及[nested documents](####Nested field type)中从他们的parent分离的文档。同样不包含已经索引到内存但还未属于某个段的文档
+      - deleted：（integer）Lucene提供的被删除的文档数量。这个数字可能高于或低于你执行的删除操作次数。这个数字不包括最近执行的且尚未属于任何段的删除。被删除的文档可以通过[][automatic merge process](###Merge)进行清理，如果这样做是有意义的话。此外，Elasticsearch会内部创建额外的已删除文档，用以跟踪分片上最近的操作历史。
+    - store：（object）分配到该节点上的分片大小的统计信息
+      - size：（[byte value](####Byte size units)）分配到该结点上所有分片的大小（所有索引数据的物理磁盘占用大小，存储优化后的数据）总量
+      - size_in_bytes：（integer）同`size`，差别是单位为字节
+      - total_data_set_size：（[byte value](####Byte size units)）分配到该结点上所有分片中的数据集大小（原始数据在未压缩或未进行Elasticsearch索引处理之前的大小）总数。包括没有完全存储在该结点上的分片大小，比如[partially mounted indices](###### Partially mounted index)的缓存
+      - total_data_set_size_in_bytes：（integer）同`total_data_set_size`，差别是单位为字节
+      - reserved：（[byte value](####Byte size units)）预计由于正在进行的对等恢复、快照恢复和类似活动，该节点上的分片存储将最终增长多少。如果这个值是-1b，表示这个信息不可用。这个预测有助于管理节点存储空间，确保有足够空间处理这些正在进行的操作
+      - reserved_in_bytes：（Integer）同`reserved`，差别是单位为字节
+    - indexing：（object）节点上索引操作（indexing operation）相关的统计信息
+      - index_total：（integer）索引操作的数量
+      - index_time：（[time value](###API conventions)）索引操作花费的时间总量
+      - index_time_in_millis：（integer）同`inde_time`，差别是单位为毫秒
+      - index_current：（integer）正在执行索引操作的数量
+      - index_failed：（integer）索引操作失败的数量
+      - delete_total：（integer）删除操作的数量
+      - delete_time：（[time value](###API conventions)）删除操作花费的时间总量
+      - delete_time_in_millis：（integer）同`delete_time`，差别是单位为毫秒
+      - delete_current：（integer）正在执行删除操作的数量
+      - noop_update_total：（integer）noop_update（一个更新请求，该请求由于数据已经是最新的而不执行任何实际的更新操作）操作的数量
+      - is_throttled：（Boolean）被限流的操作的数量
+      - throttle_time：（[time value](###API conventions)）被限流的操作花费的时间总量
+      - throttle_time_in_millis：（integer）同`throttle_time`，差别是单位为毫秒
+    - get：（object）节点上GET操作（用于检索特定的单个文档。它根据文档的ID直接从索引中获取文档）的统计信息
+      - total：（integer）get操作的数量
+      - getTime：（[time value](###API conventions)）执行get操作花费的时间总量
+      - time_in_millis：（integer）同getTime，差别是单位为毫秒
+      - exists_total：（integer）成功的get操作的数量
+      - exists_time：（[time value](###API conventions)）成功的get操作花费的时间总量
+      - exists_time_in_millis：（integer）同`exists_time`，差别是单位为毫秒
+      - missing_total：（integer）失败的get操作的数量
+      - missing_time：（[time value](###API conventions)）失败的get操作花费的时间总量
+      - missing_time_in_millis：（integer）同`missing_time`，差别是单位为毫秒
+      - current：（integer）：正在运行get操作的数量
+    - search：（object）节点上search 操作（在一个或多个索引中进行广泛的搜索。它可以基于各种搜索条件（如关键词、过滤器、范围查询等）来查找文档）相关的统计信息
+      - open_contexts：（integer）打开的search contexts的数量
+      - query_total：（integer）query操作的数量
+      - query_time：（[time value](###API conventions)）执行query操作花费的时间总量
+      - query_time_in_millis：（integer）同`query_time`，差别是单位为毫秒
+      - query_current：（integer）正在运行query操作的数量
+      - fetch_total：（integer）fetch操作的数量
+      - fetch_time：（[time value](###API conventions)）执行fetch操作花费的时间总量
+      - fetch_time_in_millis：（integer）同`fetch_time`，差别是单位为毫秒
+      - fetch_current：（integer）正在运行fetch操作的数量
+      - scroll_total（integer）scroll操作的数量
+      - scroll_time：（[time value](###API conventions)）执行scroll操作花费的时间总量
+      - scroll_time_in_mills（integer）同`scroll_time`，差别是单位为毫秒
+      - scroll_current：（integer）正在运行scroll操作的数量
+      - suggest_total：（integer）suggest操作的数量
+      - suggest_time：（[time value](###API conventions)）执行suggest操作花费的时间总量
+      - suggest_time_in_millis：（integer）同`suggest_time`，差别是单位为毫秒
+      - suggest_current：（integer）正在运行suggest操作的数量
+    - merges：（object）节点上merge操作相关的统计信息
+      - current：（integer）正在运行的merge操作的数量
+      - current_docs：（integer）正在运行的merge操作中，合并的文档数量
+      - current_size：（[byte value](####Byte size units)）当前执行文档合并的内存使用量
+      - current_size_in_bytes：（integer）同`current_size`，差别是单位为毫秒
+      - total：（integer）merge操作的数量
+      - total_time：（[time value](###API conventions)）执行merge操作花费的时间总量
+      - total_time_in_millis：（integer）同`total_time`，差别是单位为毫秒
+      - total_docs：（integer）被合并的文档数量
+      - total_size：（[byte value](####Byte size units)）被合并的文档大小
+      - total_size_in_bytes：（integer）同`total_size`，差别是单位为毫秒
+      - total_stopped_time：（[time value](###API conventions)）停止合并操作上花费的时间（在某些情况下，出于性能或资源管理的考虑，可能需要暂时停止这些合并操作）
+      - total_stopped_time_in_millis：（integer）同`total_stopped_time`，差别是单位为毫秒
+      - total_throttled_time：（[time value](###API conventions)）限制合并操作上花费时间
+      - total_throttled_time_in_millis：（integer）同`total_throttled_time`，差别是单位为毫秒
+      - total_auto_throttle：（[byte value](####Byte size units)）自动限制合并操作的大小
+      - total_auto_throttle_in_bytes：（integer）同`total_throttled_time`，差别是单位为字节
+    - refresh：（object）节点上refresh相关的统计信息
+      - total：（Integer）refresh操作的数量
+      - total_time：（[time value](###API conventions)）执行refresh操作花费的时间
+      - total_time_in_millis：（integer）同`total_time`，差别是单位为毫秒
+      - external_total：（integer）
+      - external_total_time：（[time value](###API conventions)）
+      - external_total_time_in_millis：（integer）
+      - listeners：（integer）
+    - flush：（object）节点上flush相关的统计信息
+      - total：（Integer）flush操作的数量
+      - periodic：（integer）周期性flush操作的数量
+      - total_time：（[time value](###API conventions)）执行flush操作花费的时间
+      - total_time_in_millis：（integer）同`total_throttled_time`，差别是单位为毫秒
+    - warmer：（object）节点上index warming operation相关的统计信息
+    - query_cache：（object）节点上所有查询缓存的统计信息
+    - fielddata：（object）节点上所有分片的field data cache的统计信息
+    - completion：（object）节点上所有completions（包含了有关索引完成操作的统计信息）的统计信息
+    - segments：（object）节点上所有分片的段的统计信息
+    - translog：（object）节点上transaction log operations的统计信息
+    - request_cache：（object）节点上所有分片的请求缓存的统计信息
+    - recovery：（object）节点上恢复操作的统计信息
+    - shard_stats：（object）节点上所有分片的统计信息
+  - os：（object）节点所在操作系统的统计信息
+  - process：（object）节点上进程的统计信息
+  - jvm：（object）节点上JVM的统计信息
+  - thread_pool：（object）节点上线程池的统计信息
+  - fs：（object）节点上文件储存的统计信息
+  - transport：（object）节点上transport的统计信息
+  - http：（object）节点上http的统计信息
+  - breakers：（object）节点上断路器（circuit breaker）的统计信息
+  - script：（object）节点上脚本的统计信息
+  - discovery：（object）节点上服务发现的统计信息
+  - ingest：（object）节点上ingest的统计信息
+  - indexing_pressure：（object）节点上[indexing pressure](###Indexing pressure)的统计信息
+  - adaptive_selection：（object）节点上自适应选择（adaptive selection，用于基于各个节点的当前性能和负载状况来优化查询和操作的路由决策）的统计信息
+
+##### Examples
+
+```text
+# return just indices
+GET /_nodes/stats/indices
+
+# return just os and process
+GET /_nodes/stats/os,process
+
+# return just process for node with IP address 10.0.0.1
+GET /_nodes/10.0.0.1/stats/process
+```
+
+&emsp;&emsp;可以通过`/_nodes/stats/_all`或者`/_nodes/stats?metric=_all`请求所有的统计信息。
+
+&emsp;&emsp;你可以在`node`、`indices`、或者`shards`层获取索引的统计信息。
+
+```text
+# Fielddata summarized by node
+GET /_nodes/stats/indices/fielddata?fields=field1,field2
+
+# Fielddata summarized by node and index
+GET /_nodes/stats/indices/fielddata?level=indices&fields=field1,field2
+
+# Fielddata summarized by node, index, and shard
+GET /_nodes/stats/indices/fielddata?level=shards&fields=field1,field2
+
+# You can use wildcards for field names
+GET /_nodes/stats/indices/fielddata?fields=field*
+```
+
+&emsp;&emsp;你可以获取节点上执行查询的search group的统计信息。
+
+```text
+# All groups with all stats
+GET /_nodes/stats?groups=_all
+
+# Some groups from just the indices stats
+GET /_nodes/stats/indices?groups=foo,bar
+```
+
+###### Retrieve ingest statistics only
+
+&emsp;&emsp;若只要返回ingest相关的节点统计，将`<metric>`设置为`ingest`并且使用[filter_path](####Response Filtering)查询参数。
+
+```text
+GET /_nodes/stats/ingest?filter_path=nodes.*.ingest
+```
+
+&emsp;&emsp;你可以使用`metric`以及`filter_path`查询参数获取相同响应。
+
+```text
+GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest
+```
+
+&emsp;&emsp;若要进一步精确响应，修改`filter_path`的值。例如的下面的请求只返回ingest pipeline的统计信息。
+
+```text
+GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
+```
+
 #### Pending cluster tasks API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-pending.html)
 
@@ -29711,7 +29968,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 ##### Path Parameters
 
 - `local`：（Optional, Boolean）如果为`true`，该请求只从本地节点获取信息。默认是`false`。即从master node获取
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
 
@@ -29822,7 +30079,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - none：不对任务进行分组
 - node_id：（Optional, string）用逗号隔开的节点ID或节点名字列表，用来限制返回的信息
 - parent_task_id：（Optional, string）父级任务ID，用来限制返回的信息。若要返回所有的任务，不使用这个参数或者另该值为`-1`
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`。请求会阻塞直到操作完成。默认值为`false`
 
@@ -30123,7 +30380,7 @@ PUT /_internal/desired_nodes/<history_id>/<version>
 
 ##### Query parameters
 
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Description
 
@@ -30222,7 +30479,7 @@ DELETE /_internal/desired_nodes
 
 &emsp;&emsp;这个接口删除所需节点。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;下面的例子删除当前所需节点
 
@@ -30530,7 +30787,7 @@ PUT _template/template_1
 
 - create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
 - order：（可选项，整数）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 &emsp;&emsp;（未完成）
 
@@ -30570,7 +30827,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 ##### Query parameters
 
 - accept_data_loss：（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
@@ -30624,10 +30881,10 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 ##### Query Parameters
 
 - accept_data_loss：（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
-- master_timeout：（可选项，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;下面的例子描述了如何导入一个dangling Index：
 
@@ -30880,7 +31137,7 @@ GET /_dangling
 
 &emsp;&emsp;可以使用这个API列出dangling Index，你也可以[import](####Import dangling index API)或者[delete](####Delete dangling index API)这些索引。
 
-##### Example
+##### Examples
 
 &emsp;&emsp;API返回下面的响应：
 
