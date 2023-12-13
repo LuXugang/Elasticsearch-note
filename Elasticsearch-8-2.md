@@ -29862,16 +29862,96 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
       - periodic：（integer）周期性flush操作的数量
       - total_time：（[time value](###API conventions)）执行flush操作花费的时间
       - total_time_in_millis：（integer）同`total_throttled_time`，差别是单位为毫秒
-    - warmer：（object）节点上index warming operation相关的统计信息
-    - query_cache：（object）节点上所有查询缓存的统计信息
+    - warmer：（object）节点上index warming operation（index warmer（索引预热器）是一个功能，用于在搜索请求发生之前预加载特定的索引数据到内存中，从Elasticsearch 5.x版本开始，官方已经移除了这个功能）相关的统计信息
+      - current：（integer）活跃的index warmer的数量
+      - total：（integer）index warmer的数量总数
+      - total_time：（[time value](###API conventions)）执行index warming operation花费的时间
+      - total_time_in_millis（integer）同`total_time`，差别是单位为毫秒
+    - [query_cache](####Node query cache settings)：（object）节点上所有查询缓存的统计信息
+      - memory_size：（[byte value](####Byte size units)）节点中所有分片上query cache占用的内存量
+      - memory_size_in_bytes：（integer）同`memory_size`，，差别是单位为字节
+      - total_count：（integer）命中、未命中query cache和被移除的查询的总数
+      - hit_count：（integer）命中query cache的次数
+      - miss_count：（integer）未命中query cache的次数
+      - cache_size：（integer）当前被缓存的query的数量
+      - cache_count：（integer）被缓存的query的数量（包括已经被移除的query）
+      - evictions：（integer）被移除的query的数量（基于query cache的缓存策略，一般是LRU策略）
     - fielddata：（object）节点上所有分片的field data cache的统计信息
-    - completion：（object）节点上所有completions（包含了有关索引完成操作的统计信息）的统计信息
+      - memory_size：（[byte value](####Byte size units)）节点中所有分片用于缓存field data所需的内存量
+      - memory_size_in_bytes：（integer）同`memory_size`，差别是单位为字节
+      - evictions：（integer）被移除的fielddata的数量
+    - completion：（object）节点上所有completions（completion suggester功能）的统计信息
+      - size：（[byte value](####Byte size units)）completion suggester功能在所有分配给该节点的分片上使用的总内存量
+      - size：（integer）同`size`，差别是单位为字节
     - segments：（object）节点上所有分片的段的统计信息
+      - count：（integer）段的数量
+      - memory：（[byte value](####Byte size units)）分配给该节点的所有分片中的段所使用的总内存量
+      - memory_in_bytes：（integer）同`memory`，差别是单位为字节
+      - terms_memory：（[byte value](####Byte size units)）该节点的所有分片中的terms所使用的内存总量
+      - terms_memory_in_bytes：（integer）同`terms_memory`，差别是单位为字节
+      - stored_fields_memory：（[byte value](####Byte size units)）该节点的所有分片中的存储字段所使用的内存总量
+      - stored_fields_memory_in_bytes：（integer）同`stored_fields_memory`，差别是单位为字节
+      - term_vectors_memory：（[byte value](####Byte size units)）该节点的所有分片中的term vector所使用的内存总量
+      - term_vectors_memory_in_bytes：（integer）同`term_vectors_memory`，差别是单位为字节
+      - norms_memory：（[byte value](####Byte size units)）该节点的所有分片中的准化因子所使用的内存总量
+      - norms_memory_in_bytes：（integer）同`norms_memory`，差别是单位为字节
+      - points_memory：（[byte value](####Byte size units)）该节点的所有分片中的点数据结构所使用的内存总量
+      - points_memory_in_bytes：（integer）同`points_memory`，差别是单位为字节
+      - doc_values_memory：（[byte value](####Byte size units)）该节点的所有分片中的doc value所使用的内存总量
+      - doc_values_memory_in_bytes：（integer）同`doc_values_memory`，差别是单位为字节
+      - index_writer_memory：（[byte value](####Byte size units)）该节点的所有分片中的index_writer（当文档被添加或更新时，index_writer负责处理这些更改，并将它们写入磁盘）所使用的内存总量
+      - index_writer_memory_in_bytes：（integer）同`index_writer_memory`，差别是单位为字节
+      - version_map_memory：（[byte value](####Byte size units)）该节点的所有分片中的version_map（version map是一种内部数据结构，用于追踪和管理索引文档的版本信息，助于在执行读写操作时快速检查版本冲突）所使用的内存总量
+      - version_map_memory_in_bytes：（integer）同`version_map_memory`，差别是单位为字节
+      - fixed_bit_set：（[byte value](####Byte size units)）该节点的所有分片中的fixed_bit_set（fixed_bit_set是一个数据结构，用于追踪哪些文档被标记为已删除）所使用的内存总量
+      - fixed_bit_set_memory_in_bytes：（integer）同`fixed_bit_set`，差别是单位为字节
+      - max_unsafe_auto_id_timestamp：（integer）最近重试索引请求的时间，该时间以自Unix纪元（1970年1月1日）起的毫秒数计（这个属性主要用于处理自动生成的文档ID时的内部机制，以确保即使在高并发的情况下，文档ID的唯一性和一致性仍然得到维护）
+      - file_sizes（object）：段文件大小相关的统计信息
+        - size：（[byte value](####Byte size units)）段文件的大小
+        - size_in_bytes：（integer）同`size`，差别是单位为字节
+        - description：（string）段文件的描述信息
     - translog：（object）节点上transaction log operations的统计信息
-    - request_cache：（object）节点上所有分片的请求缓存的统计信息
+      - operations：（integer）事务日志（transaction log）操作的数量
+      - size：（[byte value](####Byte size units)）事务日志文件的大小
+      - size_in_bytes：（integer）同`size`，差别是单位为字节
+      - uncommitted_operations（integer）未提交的事务日志操作的数量
+      - uncommitted_size：（[byte value](####Byte size units)）未提交事务日志的大小
+      - uncommitted_size_in_bytes：（integer）同`uncommitted_size`，差别是单位为字节
+      - earliest_last_modified_age：（integer）事务日志中最早的未提交操作距离现在的时间
+    - [request_cache](####Shard request cache settings)：（object）节点上所有分片的请求缓存的统计信息
+      - memory_size：（[byte value](####Byte size units)）节点中所有分片上request cache占用的内存量
+      - memory_size_in_bytes：（integer）同`memory_sizes`，差别是单位为字节
+      - evictions：（integer）request cache操作的数量
+      - hit_count：（integer）命中request cache的次数
+      - miss_count：（integer）未命中request cache的次数
     - recovery：（object）节点上恢复操作的统计信息
+      - current_as_source：（integer）恢复操作中，作为源数据的索引分片的数量
+      - current_as_target：（integer）恢复操作中，作为目标索引分片的数量
+      - throttle_time：（[time value](###API conventions)）因限流导致延迟花费的时间
+      - throttle_time_in_millis：（integer）同`throttle_time`，差别是单位为毫秒
     - shard_stats：（object）节点上所有分片的统计信息
+      - total_count：（integer）分片到节点上的分片数量
   - os：（object）节点所在操作系统的统计信息
+    - timestamp：（integer）操作系统统计信息上次刷新时间。since the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time)
+    - cpu：（object）节点上cpu的统计信息
+      - percent：（integer）整个系统最近的CPU使用量。不支持的话则为`-1`
+      - load_average：（object）系统平均负载的统计信息
+        - 1m：（float）系统一分钟内的平均负载（如果不支持则不提供这个字段）
+        - 5m：（float）系统五分钟内的平均负载（如果不支持则不提供这个字段）
+        - 15m：（float）系统十五分钟内的平均负载（如果不支持则不提供这个字段）
+    - mem：（object）节点上内存使用的统计信息
+      - total：（[byte value](####Byte size units)）
+      - total_in_bytes：（integer）
+      - adjusted_total：（[byte value](####Byte size units)）
+      - adjusted_total_in_bytes：（integer）
+      - free：（[byte value](####Byte size units)）
+      - free_in_bytes：（integer）
+      - used：（[byte value](####Byte size units)）
+      - used_in_bytes：（integer）
+      - free_percent：（integer）
+      - used_percent：（integer）
+    - swap（object）
+    - cgroup（Linux only）（object）
   - process：（object）节点上进程的统计信息
   - jvm：（object）节点上JVM的统计信息
   - thread_pool：（object）节点上线程池的统计信息
