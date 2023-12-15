@@ -29784,75 +29784,75 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
       - deleted：（integer）Lucene提供的被删除的文档数量。这个数字可能高于或低于你执行的删除操作次数。这个数字不包括最近执行的且尚未属于任何段的删除。被删除的文档可以通过[][automatic merge process](###Merge)进行清理，如果这样做是有意义的话。此外，Elasticsearch会内部创建额外的已删除文档，用以跟踪分片上最近的操作历史。
     - store：（object）分配到该节点上的分片大小的统计信息
       - size：（[byte value](####Byte size units)）分配到该结点上所有分片的大小（所有索引数据的物理磁盘占用大小，存储优化后的数据）总量
-      - size_in_bytes：（integer）同`size`，差别是单位为字节
+      - size_in_bytes：（integer）同`size`，单位为字节
       - total_data_set_size：（[byte value](####Byte size units)）分配到该结点上所有分片中的数据集大小（原始数据在未压缩或未进行Elasticsearch索引处理之前的大小）总数。包括没有完全存储在该结点上的分片大小，比如[partially mounted indices](###### Partially mounted index)的缓存
-      - total_data_set_size_in_bytes：（integer）同`total_data_set_size`，差别是单位为字节
+      - total_data_set_size_in_bytes：（integer）同`total_data_set_size`，单位为字节
       - reserved：（[byte value](####Byte size units)）预计由于正在进行的对等恢复、快照恢复和类似活动，该节点上的分片存储将最终增长多少。如果这个值是-1b，表示这个信息不可用。这个预测有助于管理节点存储空间，确保有足够空间处理这些正在进行的操作
-      - reserved_in_bytes：（Integer）同`reserved`，差别是单位为字节
+      - reserved_in_bytes：（Integer）同`reserved`，单位为字节
     - indexing：（object）节点上索引操作（indexing operation）相关的统计信息
       - index_total：（integer）索引操作的数量
       - index_time：（[time value](###API conventions)）索引操作花费的时间总量
-      - index_time_in_millis：（integer）同`inde_time`，差别是单位为毫秒
+      - index_time_in_millis：（integer）同`inde_time`，单位为毫秒
       - index_current：（integer）正在执行索引操作的数量
       - index_failed：（integer）索引操作失败的数量
       - delete_total：（integer）删除操作的数量
       - delete_time：（[time value](###API conventions)）删除操作花费的时间总量
-      - delete_time_in_millis：（integer）同`delete_time`，差别是单位为毫秒
+      - delete_time_in_millis：（integer）同`delete_time`，单位为毫秒
       - delete_current：（integer）正在执行删除操作的数量
       - noop_update_total：（integer）noop_update（一个更新请求，该请求由于数据已经是最新的而不执行任何实际的更新操作）操作的数量
       - is_throttled：（Boolean）被限流的操作的数量
       - throttle_time：（[time value](###API conventions)）被限流的操作花费的时间总量
-      - throttle_time_in_millis：（integer）同`throttle_time`，差别是单位为毫秒
+      - throttle_time_in_millis：（integer）同`throttle_time`，单位为毫秒
     - get：（object）节点上GET操作（用于检索特定的单个文档。它根据文档的ID直接从索引中获取文档）的统计信息
       - total：（integer）get操作的数量
       - getTime：（[time value](###API conventions)）执行get操作花费的时间总量
-      - time_in_millis：（integer）同getTime，差别是单位为毫秒
+      - time_in_millis：（integer）同getTime，单位为毫秒
       - exists_total：（integer）成功的get操作的数量
       - exists_time：（[time value](###API conventions)）成功的get操作花费的时间总量
-      - exists_time_in_millis：（integer）同`exists_time`，差别是单位为毫秒
+      - exists_time_in_millis：（integer）同`exists_time`，单位为毫秒
       - missing_total：（integer）失败的get操作的数量
       - missing_time：（[time value](###API conventions)）失败的get操作花费的时间总量
-      - missing_time_in_millis：（integer）同`missing_time`，差别是单位为毫秒
+      - missing_time_in_millis：（integer）同`missing_time`，单位为毫秒
       - current：（integer）：正在运行get操作的数量
     - search：（object）节点上search 操作（在一个或多个索引中进行广泛的搜索。它可以基于各种搜索条件（如关键词、过滤器、范围查询等）来查找文档）相关的统计信息
       - open_contexts：（integer）打开的search contexts的数量
       - query_total：（integer）query操作的数量
       - query_time：（[time value](###API conventions)）执行query操作花费的时间总量
-      - query_time_in_millis：（integer）同`query_time`，差别是单位为毫秒
+      - query_time_in_millis：（integer）同`query_time`，单位为毫秒
       - query_current：（integer）正在运行query操作的数量
       - fetch_total：（integer）fetch操作的数量
       - fetch_time：（[time value](###API conventions)）执行fetch操作花费的时间总量
-      - fetch_time_in_millis：（integer）同`fetch_time`，差别是单位为毫秒
+      - fetch_time_in_millis：（integer）同`fetch_time`，单位为毫秒
       - fetch_current：（integer）正在运行fetch操作的数量
       - scroll_total（integer）scroll操作的数量
       - scroll_time：（[time value](###API conventions)）执行scroll操作花费的时间总量
-      - scroll_time_in_mills（integer）同`scroll_time`，差别是单位为毫秒
+      - scroll_time_in_mills（integer）同`scroll_time`，单位为毫秒
       - scroll_current：（integer）正在运行scroll操作的数量
       - suggest_total：（integer）suggest操作的数量
       - suggest_time：（[time value](###API conventions)）执行suggest操作花费的时间总量
-      - suggest_time_in_millis：（integer）同`suggest_time`，差别是单位为毫秒
+      - suggest_time_in_millis：（integer）同`suggest_time`，单位为毫秒
       - suggest_current：（integer）正在运行suggest操作的数量
     - merges：（object）节点上merge操作相关的统计信息
       - current：（integer）正在运行的merge操作的数量
       - current_docs：（integer）正在运行的merge操作中，合并的文档数量
       - current_size：（[byte value](####Byte size units)）当前执行文档合并的内存使用量
-      - current_size_in_bytes：（integer）同`current_size`，差别是单位为毫秒
+      - current_size_in_bytes：（integer）同`current_size`，单位为毫秒
       - total：（integer）merge操作的数量
       - total_time：（[time value](###API conventions)）执行merge操作花费的时间总量
-      - total_time_in_millis：（integer）同`total_time`，差别是单位为毫秒
+      - total_time_in_millis：（integer）同`total_time`，单位为毫秒
       - total_docs：（integer）被合并的文档数量
       - total_size：（[byte value](####Byte size units)）被合并的文档大小
-      - total_size_in_bytes：（integer）同`total_size`，差别是单位为毫秒
+      - total_size_in_bytes：（integer）同`total_size`，单位为毫秒
       - total_stopped_time：（[time value](###API conventions)）停止合并操作上花费的时间（在某些情况下，出于性能或资源管理的考虑，可能需要暂时停止这些合并操作）
-      - total_stopped_time_in_millis：（integer）同`total_stopped_time`，差别是单位为毫秒
+      - total_stopped_time_in_millis：（integer）同`total_stopped_time`，单位为毫秒
       - total_throttled_time：（[time value](###API conventions)）限制合并操作上花费时间
-      - total_throttled_time_in_millis：（integer）同`total_throttled_time`，差别是单位为毫秒
+      - total_throttled_time_in_millis：（integer）同`total_throttled_time`，单位为毫秒
       - total_auto_throttle：（[byte value](####Byte size units)）自动限制合并操作的大小
-      - total_auto_throttle_in_bytes：（integer）同`total_throttled_time`，差别是单位为字节
+      - total_auto_throttle_in_bytes：（integer）同`total_throttled_time`，单位为字节
     - refresh：（object）节点上refresh相关的统计信息
       - total：（Integer）refresh操作的数量
       - total_time：（[time value](###API conventions)）执行refresh操作花费的时间
-      - total_time_in_millis：（integer）同`total_time`，差别是单位为毫秒
+      - total_time_in_millis：（integer）同`total_time`，单位为毫秒
       - external_total：（integer）
       - external_total_time：（[time value](###API conventions)）
       - external_total_time_in_millis：（integer）
@@ -29861,15 +29861,15 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
       - total：（Integer）flush操作的数量
       - periodic：（integer）周期性flush操作的数量
       - total_time：（[time value](###API conventions)）执行flush操作花费的时间
-      - total_time_in_millis：（integer）同`total_throttled_time`，差别是单位为毫秒
+      - total_time_in_millis：（integer）同`total_throttled_time`，单位为毫秒
     - warmer：（object）节点上index warming operation（index warmer（索引预热器）是一个功能，用于在搜索请求发生之前预加载特定的索引数据到内存中，从Elasticsearch 5.x版本开始，官方已经移除了这个功能）相关的统计信息
       - current：（integer）活跃的index warmer的数量
       - total：（integer）index warmer的数量总数
       - total_time：（[time value](###API conventions)）执行index warming operation花费的时间
-      - total_time_in_millis（integer）同`total_time`，差别是单位为毫秒
+      - total_time_in_millis（integer）同`total_time`，单位为毫秒
     - [query_cache](####Node query cache settings)：（object）节点上所有查询缓存的统计信息
       - memory_size：（[byte value](####Byte size units)）节点中所有分片上query cache占用的内存量
-      - memory_size_in_bytes：（integer）同`memory_size`，，差别是单位为字节
+      - memory_size_in_bytes：（integer）同`memory_size`，，单位为字节
       - total_count：（integer）命中、未命中query cache和被移除的查询的总数
       - hit_count：（integer）命中query cache的次数
       - miss_count：（integer）未命中query cache的次数
@@ -29878,49 +29878,49 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
       - evictions：（integer）被移除的query的数量（基于query cache的缓存策略，一般是LRU策略）
     - fielddata：（object）节点上所有分片的field data cache的统计信息
       - memory_size：（[byte value](####Byte size units)）节点中所有分片用于缓存field data所需的内存量
-      - memory_size_in_bytes：（integer）同`memory_size`，差别是单位为字节
+      - memory_size_in_bytes：（integer）同`memory_size`，单位为字节
       - evictions：（integer）被移除的fielddata的数量
     - completion：（object）节点上所有completions（completion suggester功能）的统计信息
       - size：（[byte value](####Byte size units)）completion suggester功能在所有分配给该节点的分片上使用的总内存量
-      - size：（integer）同`size`，差别是单位为字节
+      - size：（integer）同`size`，单位为字节
     - segments：（object）节点上所有分片的段的统计信息
       - count：（integer）段的数量
       - memory：（[byte value](####Byte size units)）分配给该节点的所有分片中的段所使用的总内存量
-      - memory_in_bytes：（integer）同`memory`，差别是单位为字节
+      - memory_in_bytes：（integer）同`memory`，单位为字节
       - terms_memory：（[byte value](####Byte size units)）该节点的所有分片中的terms所使用的内存总量
-      - terms_memory_in_bytes：（integer）同`terms_memory`，差别是单位为字节
+      - terms_memory_in_bytes：（integer）同`terms_memory`，单位为字节
       - stored_fields_memory：（[byte value](####Byte size units)）该节点的所有分片中的存储字段所使用的内存总量
-      - stored_fields_memory_in_bytes：（integer）同`stored_fields_memory`，差别是单位为字节
+      - stored_fields_memory_in_bytes：（integer）同`stored_fields_memory`，单位为字节
       - term_vectors_memory：（[byte value](####Byte size units)）该节点的所有分片中的term vector所使用的内存总量
-      - term_vectors_memory_in_bytes：（integer）同`term_vectors_memory`，差别是单位为字节
+      - term_vectors_memory_in_bytes：（integer）同`term_vectors_memory`，单位为字节
       - norms_memory：（[byte value](####Byte size units)）该节点的所有分片中的准化因子所使用的内存总量
-      - norms_memory_in_bytes：（integer）同`norms_memory`，差别是单位为字节
+      - norms_memory_in_bytes：（integer）同`norms_memory`，单位为字节
       - points_memory：（[byte value](####Byte size units)）该节点的所有分片中的点数据结构所使用的内存总量
-      - points_memory_in_bytes：（integer）同`points_memory`，差别是单位为字节
+      - points_memory_in_bytes：（integer）同`points_memory`，单位为字节
       - doc_values_memory：（[byte value](####Byte size units)）该节点的所有分片中的doc value所使用的内存总量
-      - doc_values_memory_in_bytes：（integer）同`doc_values_memory`，差别是单位为字节
+      - doc_values_memory_in_bytes：（integer）同`doc_values_memory`，单位为字节
       - index_writer_memory：（[byte value](####Byte size units)）该节点的所有分片中的index_writer（当文档被添加或更新时，index_writer负责处理这些更改，并将它们写入磁盘）所使用的内存总量
-      - index_writer_memory_in_bytes：（integer）同`index_writer_memory`，差别是单位为字节
+      - index_writer_memory_in_bytes：（integer）同`index_writer_memory`，单位为字节
       - version_map_memory：（[byte value](####Byte size units)）该节点的所有分片中的version_map（version map是一种内部数据结构，用于追踪和管理索引文档的版本信息，助于在执行读写操作时快速检查版本冲突）所使用的内存总量
-      - version_map_memory_in_bytes：（integer）同`version_map_memory`，差别是单位为字节
+      - version_map_memory_in_bytes：（integer）同`version_map_memory`，单位为字节
       - fixed_bit_set：（[byte value](####Byte size units)）该节点的所有分片中的fixed_bit_set（fixed_bit_set是一个数据结构，用于追踪哪些文档被标记为已删除）所使用的内存总量
-      - fixed_bit_set_memory_in_bytes：（integer）同`fixed_bit_set`，差别是单位为字节
+      - fixed_bit_set_memory_in_bytes：（integer）同`fixed_bit_set`，单位为字节
       - max_unsafe_auto_id_timestamp：（integer）最近重试索引请求的时间，该时间以自Unix纪元（1970年1月1日）起的毫秒数计（这个属性主要用于处理自动生成的文档ID时的内部机制，以确保即使在高并发的情况下，文档ID的唯一性和一致性仍然得到维护）
       - file_sizes（object）：段文件大小相关的统计信息
         - size：（[byte value](####Byte size units)）段文件的大小
-        - size_in_bytes：（integer）同`size`，差别是单位为字节
+        - size_in_bytes：（integer）同`size`，单位为字节
         - description：（string）段文件的描述信息
     - translog：（object）节点上transaction log operations的统计信息
       - operations：（integer）事务日志（transaction log）操作的数量
       - size：（[byte value](####Byte size units)）事务日志文件的大小
-      - size_in_bytes：（integer）同`size`，差别是单位为字节
+      - size_in_bytes：（integer）同`size`，单位为字节
       - uncommitted_operations（integer）未提交的事务日志操作的数量
       - uncommitted_size：（[byte value](####Byte size units)）未提交事务日志的大小
-      - uncommitted_size_in_bytes：（integer）同`uncommitted_size`，差别是单位为字节
+      - uncommitted_size_in_bytes：（integer）同`uncommitted_size`，单位为字节
       - earliest_last_modified_age：（integer）事务日志中最早的未提交操作距离现在的时间
     - [request_cache](####Shard request cache settings)：（object）节点上所有分片的请求缓存的统计信息
       - memory_size：（[byte value](####Byte size units)）节点中所有分片上request cache占用的内存量
-      - memory_size_in_bytes：（integer）同`memory_sizes`，差别是单位为字节
+      - memory_size_in_bytes：（integer）同`memory_sizes`，单位为字节
       - evictions：（integer）request cache操作的数量
       - hit_count：（integer）命中request cache的次数
       - miss_count：（integer）未命中request cache的次数
@@ -29928,7 +29928,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
       - current_as_source：（integer）恢复操作中，作为源数据的索引分片的数量
       - current_as_target：（integer）恢复操作中，作为目标索引分片的数量
       - throttle_time：（[time value](###API conventions)）因限流导致延迟花费的时间
-      - throttle_time_in_millis：（integer）同`throttle_time`，差别是单位为毫秒
+      - throttle_time_in_millis：（integer）同`throttle_time`，单位为毫秒
     - shard_stats：（object）节点上所有分片的统计信息
       - total_count：（integer）分片到节点上的分片数量
   - os：（object）节点所在操作系统的统计信息
@@ -29940,30 +29940,48 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
         - 5m：（float）系统五分钟内的平均负载（如果不支持则不提供这个字段）
         - 15m：（float）系统十五分钟内的平均负载（如果不支持则不提供这个字段）
     - mem：（object）节点上内存使用的统计信息
-      - total：（[byte value](####Byte size units)）
-      - total_in_bytes：（integer）
-      - adjusted_total：（[byte value](####Byte size units)）
-      - adjusted_total_in_bytes：（integer）
-      - free：（[byte value](####Byte size units)）
-      - free_in_bytes：（integer）
-      - used：（[byte value](####Byte size units)）
-      - used_in_bytes：（integer）
-      - free_percent：（integer）
-      - used_percent：（integer）
-    - swap（object）
-    - cgroup（Linux only）（object）
+      - total：（[byte value](####Byte size units)）物理内存总量
+      - total_in_bytes：（integer）同`total`，单位为字节
+      - adjusted_total：（[byte value](####Byte size units)）如果使用`es.total_memory_bytes`覆盖了系统的物理内存总量，那么就报告这个值，否则该值跟`total`是一样的
+      - adjusted_total_in_bytes：（integer）同`adjusted_total`，单位为字节
+      - free：（[byte value](####Byte size units)）可用的物理内存量
+      - free_in_bytes：（integer）同`free`，单位为字节
+      - used：（[byte value](####Byte size units)）已使用的物理内存量
+      - used_in_bytes：（integer）同`used`，单位为字节
+      - free_percent：（integer）可用的物理内存量的占比
+      - used_percent：（integer）已使用的物理内存量的占比
+    - swap（object）：节点上交换空间的统计信息
+      - total：（[byte value](####Byte size units)）交换空间的总量
+      - total_in_bytes：（integer）同`total`，单位为字节
+      - free：（[byte value](####Byte size units)）可用的交换空间的总量
+      - free_in_bytes：（integer）同`free`，单位为字节
+      - used：（[byte value](####Byte size units)）已经使用的交换空间的总量
+      - used_in_bytes：（integer）同`used`，单位为字节
+    - cgroup（Linux only）（object）节点上cgroup的统计信息
+      - 未完成
   - process：（object）节点上进程的统计信息
+    - 未完成
   - jvm：（object）节点上JVM的统计信息
+    - 未完成
   - thread_pool：（object）节点上线程池的统计信息
+    - 未完成
   - fs：（object）节点上文件储存的统计信息
+    - 未完成
   - transport：（object）节点上transport的统计信息
+    - 未完成
   - http：（object）节点上http的统计信息
+    - 未完成
   - breakers：（object）节点上断路器（circuit breaker）的统计信息
   - script：（object）节点上脚本的统计信息
+    - 未完成
   - discovery：（object）节点上服务发现的统计信息
+    - 未完成
   - ingest：（object）节点上ingest的统计信息
+    - 未完成
   - indexing_pressure：（object）节点上[indexing pressure](###Indexing pressure)的统计信息
+    - 未完成
   - adaptive_selection：（object）节点上自适应选择（adaptive selection，用于基于各个节点的当前性能和负载状况来优化查询和操作的路由决策）的统计信息
+    - 未完成
 
 ##### Examples
 
