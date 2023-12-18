@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/11/29）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/12/15）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -17850,6 +17850,8 @@ GET /_search
 #### Intervals query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-intervals-query.html)
 
+&emsp;&emsp;
+
 #### Match query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
 
@@ -18222,7 +18224,7 @@ GET /_search
 &emsp;&emsp;见[completion suggester](#####Completion Suggester)和[search_as_you_type field type](####Search-as-you-type field type)了解更多`search-as-you-type`更好的解决方案。
 
 #### Combined fields
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
 
 &emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种term为中心的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
 
@@ -18267,55 +18269,51 @@ GET /_search
 
 ##### Top-level parameters for combined_fields
 
-###### fields
-
-&emsp;&emsp;（Required, array of strings）待查询的域名列表。域名可以是wildcard patterns。只支持[text](####Text type family)，并且只能是相同的[analyzer](####analyzer(mapping parameter))。
-
-###### query
-
-&emsp;&emsp;（Required, strings）待查询的内容
-
-&emsp;&emsp;`combined_fields` query在执行查询前会[analyzer](####analyzer(mapping parameter)) 待查询的内容。
-
-###### auto_generate_synonyms_phrase_query
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会为多个term同义词创建 [match phrase](####Match phrase query) query。默认为`true`。
-
-&emsp;&emsp;见[Use synonyms with match query](####Match query)。
-
-###### operator
-
-&emsp;&emsp;（Optional, string）用来描述`query`中的值之间的布尔关系。可选值为：
-
-- or(默认值)
-
-&emsp;&emsp;例如，`query`的值如果是`database systems`会解释（interpret）为`database OR systems`。
-
-- and
-
-&emsp;&emsp;例如，`query`的值如果是`database systems`会解释（interpret）为`database AND systems`。
-
-###### minimum_should_match
-
-&emsp;&emsp;（Optional, string）返回的文档必须匹配到的clause的数量最小值。见[minimum_should_match parameter](####minimum_should_match parameter)。
-
-###### zero_terms_query
-
-&emsp;&emsp;（Optional, string）如果分词（`analyzer`）之后移除了所有的token（比如使用了`stop`过滤器），是否要返回文档。可选值：
-
-- none（default）
-  - 如果在分词后移除了所有的token不返回任何文档
-
-- all
-  - 返回所有的文档，类似[match_all](###Match all query)
-
-&emsp;&emsp;见[Zero terms query](######Zero terms query)中的例子。
+- fields：（Required, array of strings）待查询的域名列表。域名可以是wildcard patterns。只支持[text](####Text type family)，并且只能是相同的[analyzer](####analyzer(mapping parameter))。
+- query：（Required, strings）待查询的内容。`combined_fields` query在执行查询前会[analyzer](####analyzer(mapping parameter)) 待查询的内容。
+- auto_generate_synonyms_phrase_query：（Optional, Boolean）如果为`true`，会为多个term同义词创建 [match phrase](####Match phrase query) query。默认为`true`。见[Use synonyms with match query](####Match query)。
+- operator：（Optional, string）用来描述`query`中的值之间的布尔关系。可选值为：
+  - or(默认值)：例如，`query`的值如果是`database systems`会解释（interpret）为`database OR systems`。
+  - and：例如，`query`的值如果是`database systems`会解释（interpret）为`database AND systems`。
+- minimum_should_match：（Optional, string）返回的文档必须匹配到的clause的数量最小值。见[minimum_should_match parameter](####minimum_should_match parameter)。
+- zero_terms_query：（Optional, string）如果分词（`analyzer`）之后移除了所有的token（比如使用了`stop`过滤器），是否要返回文档。可选值：
+  - none（default）：如果在分词后移除了所有的token不返回任何文档
+  - all：返回所有的文档，类似[match_all](###Match all query)。见[Zero terms query](######Zero terms query)中的例子。
 
 ##### Comparison to multi_match query
 
-&emsp;&emsp;`combined_fields` query
+&emsp;&emsp;`combined_fields` query提供了一种在多个[text](####Text type family)域中匹配和评分的有原则的方式。为了支持这一点，它要求所有字段具有相同的查询分词器[analyzer](####analyzer(mapping parameter))。
 
-（未完成）
+&emsp;&emsp;如果你的某个查询要在不同类型的域上进行，那么[multi_match](####Multi-match query)比较合适。他同时支持text和非text类型的域，并且接受在不同的text域上可以有不同的分词器。
+
+&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种以域为中心视角（field-centric view）的查询。与之相反的`combined_fields`则是以term为中心视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
+
+```text
+GET /_search
+{
+  "query": {
+    "combined_fields" : {
+      "query":      "database systems",
+      "fields":     [ "title", "abstract"],
+      "operator":   "and"
+    }
+  }
+}
+```
+
+&emsp;&emsp;执行后如下：
+
+```text
++(combined("database", fields:["title" "abstract"]))
++(combined("systems", fields:["title", "abstract"]))
+```
+
+&emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配
+
+&emsp;&emsp;`cross_fields` `multi_match`模式同样是以term为中心的方法并且`operator`和`minimum_should_match`作用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
+
+> NOTE：Custom similarities
+> `combined_fields`只支持BM25，他是默认的Similarity，可以通过[custom similarity](###Similarity module)配置。同样也不允许[Per-field similarities](####similarity)。否则使用`combined_fields`时报错。
 
 
 #### Multi-match query
