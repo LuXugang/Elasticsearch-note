@@ -18319,6 +18319,153 @@ GET /_search
 #### Multi-match query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-match-query.html)
 
+&emsp;&emsp;`multi_match`基于[match query](####Match query)，允许在多个域上查询：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":    "this is a test", 
+      "fields": [ "subject", "message" ] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第5行是查询语句（query string）
+
+&emsp;&emsp;第6行，查询的目标域
+
+##### fields and per-field boosting
+
+&emsp;&emsp;可以使用通配符指定域：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":    "Will Smith",
+      "fields": [ "title", "*_name" ] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第6行，在`title`、`first_name`以及`last_name`域上查询
+
+&emsp;&emsp;不同的域可以通过插入`^`符号来提高权重：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query" : "this is a test",
+      "fields" : [ "subject^3", "message" ] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第6行，在`subject`域上得出的分数会乘以3，而在`message`域上的打分则不变
+
+&emsp;&emsp;如果没有提供`fields`，`multi_match`默认在`index.query.default_field`中指定的域上查询，默认是`*`。`*`会从mapping中提取出所有的合适的域并且过滤掉metadata fields。所有提取出的域随后组合构建成一个query。
+
+> WARNING：Field number limit
+> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_coun](#####indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
+
+&emsp;&emsp;Types of multi_match query:
+
+&emsp;&emsp;`multi_match`在内部执行方式取决于`type`参数，可以设置为以下的值：
+
+- best_fields：（default）找出匹配到任意域的文档，但是`_score`使用最佳域（best field）的打分值，见[best_fields](#####best_fields)
+- most_fields：找出匹配到任意域的文档，但是`_score`的值结合了（combine）每一个域的打分值，见[most_fields](#####most_fields)
+- cross_fields：所有的字段使用相同的分词器，并且是视为同一类型的域（they were one big field，例如，名和姓分别在两个字段中，但用于搜索同一个人），在每一个域中搜索关键字。见[cross_fields](#####cross_fields)
+- phrase：在每一个域上执行`match_phrase`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#####phrase and phrase_prefix)
+- phrase_prefix：在每一个域上执行`match_phrase_prefix`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#####phrase and phrase_prefix)
+- bool_prefix：创建一个`match_bool_prefix`，对每一个域进行查询。`_score`的值结合了（combine）每一个域的打分值，见[bool_prefix](#####bool_prefix)
+
+##### best_fields
+
+&emsp;&emsp;当你搜索的多个关键字（word）在同一个域中时，`best_fields`是非常有用的。比如说`brown fox`在单个域中肯定比`brown`在一个域而`fox`在另一个域更有意义。
+
+&emsp;&emsp;`best_fields`会为每一个域生成一个[match query](####Match query)并且封装到一个[dis_max](####Disjunction max query) query，来找出单个最佳匹配的域。例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "brown fox",
+      "type":       "best_fields",
+      "fields":     [ "subject", "message" ],
+      "tie_breaker": 0.3
+    }
+  }
+}
+```
+
+&emsp;&emsp;将会按下面的方式执行：
+
+```text
+GET /_search
+{
+  "query": {
+    "dis_max": {
+      "queries": [
+        { "match": { "subject": "brown fox" }},
+        { "match": { "message": "brown fox" }}
+      ],
+      "tie_breaker": 0.3
+    }
+  }
+}
+```
+
+&emsp;&emsp;通常`best_fields`类型会采用匹配到的单个最佳的域对应的打分值，但如果指定了`tie_breaker`，那会考虑下面的情况：
+
+- 打分值从最佳匹配的域中获取
+- 加上其他所有匹配到的域中的分数，计算方式：`tie_breaker * _score`
+
+&emsp;&emsp;同样支持这些参数：`analyzer`, `boost`, `operator`, `minimum_should_match`, `fuzziness`, `lenient`, `prefix_length`, `max_expansions`, `fuzzy_rewrite`, `zero_terms_query`, `auto_generate_synonyms_phrase_query` 以及 `fuzzy_transpositions`，见[match query](####Match query)中的介绍。
+
+> IMPORTANT：operator and minimum_should_match
+> `best_fields`和`most_fields`这两个类型是以域为中心，每一个域都生成了一个`match query`。意味着`operator`和`minimum_should_match`参数是作用到域之间，可能不是你期望的那样。例如下面的query：
+> GET /\_search
+>{
+>  "query": {
+>    "multi_match" : {
+>      "query":      "Will Smith",
+>      "type":       "best_fields",
+>      "fields":     [ "first_name", "last_name" ],
+>      "operator":   "and" 
+>    }
+> }
+>}
+>`operator`为`and`说明每个域中必须出现所有的term
+>这个query的执行相当于：
+>`(+first_name:will +first_name:smith)| (+last_name:will +last_name:smith)`
+>换句话说，对于匹配到的文档，单个域中必须出现所有的term
+>
+>[combined_fields](####Combined fields)提供了以term为中心的视角，`operator`和`minimum_should_match`作用到每一个term之间。其他的`multi-match`模式[cross_fields](#####cross_fields)同样能解决这个问题
+
+##### most_fields
+
+&emsp;&emsp;
+
+##### phrase and phrase_prefix
+
+##### cross_fields
+
+##### cross_field and analysis
+
+##### tie_breaker
+
+##### bool_prefix
+
+
 #### Query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-query-string-query.html)
 
