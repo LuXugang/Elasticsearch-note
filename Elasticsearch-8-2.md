@@ -11,6 +11,7 @@
 
 &emsp;&emsp;虽然不是每一个问题都是一个查询问题，Elasticsearch为在各种用例中处理数据提供了速度（speed）和灵活性（flexibility）。
 
+
 - 添加一个搜索框（search box）到一个app或者网页中
 - 存储和分析日志，指标以及安全事件数据
 - 使用machine learning自动对你的数据行为构建实时的模型
