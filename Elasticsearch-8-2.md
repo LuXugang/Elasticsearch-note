@@ -12167,7 +12167,22 @@ PUT my-index-000001
 ```
 
 ### Built-in analyzer reference
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-analyzers.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-analyzers.html)
+
+&emsp;&emsp;Elasticsearch自带多种内置分析器，这些分析器可以在任何索引中使用，无需进一步配置：
+
+- [Standard Analyzer](####Standard analyzer)：`standard`根据Unicode文本分割算法的定义，在单词边界处将文本划分为term。它移除大部分标点符号，将词项转换为小写，并支持移除停用词
+- [Simple Analyzer](####Simple analyzer)：`simple`在遇到非字母字符时将文本划分为term。它将所有词项转换为小写
+- [Whitespace Analyzer](####Whitespace analyzer)：`whitespace`在遇到任何空白字符时将文本划分为term。它不会将词项转换为小写
+- [Stop Analyzer](####Stop analyzer)：`stop`类似于`simple`分词器，但也支持移除停用词
+- [Keyword Analyzer](####Keyword analyzer)：`keyword`是一种“无操作”分析器，接受任何给定的文本，并将相同的文本作为单个term输出
+- [Pattern Analyzer](####Pattern analyzer)：`pattern`使用正则表达式将文本分割为term。它支持小写转换和停用词。
+- [Language Analyzers](####Language analyzers)：Elasticsearch提供了许多特定语言的分析器，如英语或法语。
+- [Fingerprint Analyzer](####Fingerprint analyzer)：`fingerprint`是一种专门的分词器，用于创建可用于重复检测的指纹。
+
+#### Custom analyzers
+
+&emsp;&emsp;如果你没有找到你想要的分词器，那你可以[custom](####Create a custom analyzer)一个分词器，让这个分词器包含合适的[character filter](###Character filters reference)、[tokenizer](###Tokenizer reference)以及[token filters](###Token filter reference)。
 
 #### Language analyzers
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lang-analyzer.html)
@@ -17837,21 +17852,157 @@ GET /_search
 
 &emsp;&emsp;属于full text query的query包括：
 
-| [intervals query](####Intervals query) |      |
-| :----------------------------------------------------------: | ---- |
-| [match query](####Match query) |      |
-| [match_bool_prefix query](####Match boolean prefix query) |      |
-| [match_phrase query](####Match phrase query) |      |
-| [match_phrase_prefix query](####Match phrase prefix query) |      |
-| [multi_match query](####Multi-match query) |      |
-| [combined_fields query](####Combined fields) |      |
-| [query_string query](####Query string query) |      |
-| [simple_query_string query](####Simple query string query) |      |
+- [intervals query](####Intervals query)：
+- [match query](####Match query)：
+- [match_bool_prefix query](####Match boolean prefix query)：
+- [match_phrase query](####Match phrase query)：
+- [match_phrase_prefix query](####Match phrase prefix query)：
+- [multi_match query](####Multi-match query)：
+- [combined_fields query](####Combined fields)：
+- [query_string query](####Query string query)：
+- [simple_query_string query](####Simple query string query)：
 
 #### Intervals query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-intervals-query.html)
 
-&emsp;&emsp;
+&emsp;&emsp;基于匹配到的terms的顺序以及接近度（proximity。term之间在文档中的物理距离或位置接近程度）返回文档。
+
+&emsp;&emsp;`intervals`使用由一小组**matching rules**定义组成。这些规则会作用到指定的一个域的域值中。
+
+&emsp;&emsp;定义的规则会生成文本内容中term之间的最小间隔序列（也就是term的顺序跟接近度），并且还可以进一步跟父级中的定义进行组合
+
+#### Example request
+
+&emsp;&emsp;下面的`intervals`查询返回的文档中，域名为`my_text`的域值中包含`my favorite food`，这三个term（my、favorite、food）在文档中是先后有序紧挨着的，并且紧跟着`hot water`或者`cold porridge`。
+
+&emsp;&emsp;这个查询会匹配域名为`my_text`中包含`my favorite food is cold porridge`的文档，但是不会匹配`when it's cold my favorite food is porridge`（因为在cold porridge跟my favorite food没有顺序出现）。
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "all_of" : {
+          "ordered" : true,
+          "intervals" : [
+            {
+              "match" : {
+                "query" : "my favorite food",
+                "max_gaps" : 0,
+                "ordered" : true
+              }
+            },
+            {
+              "any_of" : {
+                "intervals" : [
+                  { "match" : { "query" : "hot water" } },
+                  { "match" : { "query" : "cold porridge" } }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for intervals
+
+- `<field>`：（Required，rule object）你想要查询的域名。
+  - 这个参数的值是一个规则对象（rule object），基于待匹配的terms、顺序以及接近度匹配文档。
+  - 可用的规则包括：
+    - [match](#####match rule parameters)
+    - [prefix](#####prefix rule parameters)
+    - [wildcard](#####wildcard rule parameters)
+    - [fuzzy](#####fuzzy rule parameters)
+    - [all_of](#####all_of rule parameters)
+    - [any_of](#####any_of rule parameters)
+
+##### match rule parameters
+
+&emsp;&emsp;`match`规则匹配被分词后的文本（analyzed text）
+
+- query：（Required，string）你想要从`<field>`中查找的内容
+- max_gaps：（Optional，integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
+  - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
+- ordered：（Optional，Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
+- analyzer：（Optional，string）[analyzer](##Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
+- filter：（Optional，[interval filter](####Intervals query) 规则对象）可选的interval filter
+- use_field：（Optional，string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的域值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
+
+##### prefix rule parameters
+
+&emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes]()选项避免这种限制。
+
+- prefix：（Required，string）你想要从顶层的`<field>`中以这个参数为前缀的term
+- analyzer：（Optional，string）[analyzer](##Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+  - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
+
+##### wildcard rule parameters
+
+&emsp;&emsp;`wildcard`规则使用通配符匹配term。最多可以扩展到128个term。如果匹配出超过128个，Elasticsearch会返回一个错误。
+
+- pattern：（Required，string）用来找到匹配的term的通配符
+  - 这个参数支持两个通配符字符：
+    - `?`：匹配任意的单个字符
+    - `*`：匹配一个或多个字符，包括空的情况
+
+> WARNING：最高避免以`*`或者`?`为开头的通配符。为了能找到匹配 的term会会增加迭代次数，使得降低查询性能
+
+- analyzer：（Optional，string）[analyzer](##Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+  - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
+
+##### fuzzy rule parameters
+
+&emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](####Fuzziness)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
+
+- term：（Required，string）待匹配的term
+- prefix_length：（Optional，integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
+- transpositions：（Optional，Boolean）
+- fuzziness：（Optional，Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
+- analyzer：（Optional，string）[analyzer](##Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+  - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
+
+##### all_of rule parameters
+
+&emsp;&emsp;`all_of`规则中由多个其他规则组成，这些规则都满足则返回对应文档
+
+- intervals：(Required, array of rule objects)：由规则数组组成。对于某篇文档，所有的规则必须匹配
+- max_gaps：（Optional，integer）匹配到的term之间最大的位置距离。超过这个距离不会被匹配。默认值为`-1`
+  - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
+- ordered：如果为`true`，每一个规则要按照在定义中的先后顺序依次匹配。默认值为`false`
+- filter：（Optional，[interval filter](####Intervals query) 规则对象）用来过滤返回的`intervals`的规则
+
+##### any_of rule parameters
+
+&emsp;&emsp;`any_of`规则返回它包含的规则中的任意一个。
+
+- intervals：(Required, array of rule objects)：用于匹配的规则数组
+- filter：（Optional，[interval filter](####Intervals query) 规则对象）用来过滤返回的`intervals`的规则
+
+##### filter rule parameters
+
+&emsp;&emsp;`filter`规则基于一个query来过滤`intervals`。见[Filter example](######Filter example)中的例子。
+
+- after：（Optional, query object）
+- before：（Optional, query object）
+- contained_by：（Optional, query object）
+- containing：（Optional, query object）
+- not_contained_by：（Optional, query object）
+- not_containing：（Optional, query object）
+- not_overlapping：（Optional, query object）
+- overlapping：（Optional, query object）
+- script：（Optional, [script object](###How to write scripts)）
+
+##### Note
+
+###### Filter example
 
 #### Match query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
