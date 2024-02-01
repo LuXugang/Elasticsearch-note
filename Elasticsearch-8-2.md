@@ -17863,7 +17863,7 @@ GET /_search
 - [simple_query_string query](####Simple query string query)：
 
 #### Intervals query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-intervals-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-intervals-query.html)
 
 &emsp;&emsp;基于匹配到的terms的顺序以及接近度（proximity。term之间在文档中的物理距离或位置接近程度）返回文档。
 
@@ -17871,7 +17871,7 @@ GET /_search
 
 &emsp;&emsp;定义的规则会生成文本内容中term之间的最小间隔序列（也就是term的顺序跟接近度），并且还可以进一步跟父级中的定义进行组合
 
-#### Example request
+##### Example request
 
 &emsp;&emsp;下面的`intervals`查询返回的文档中，域名为`my_text`的域值中包含`my favorite food`，这三个term（my、favorite、food）在文档中是先后有序紧挨着的，并且紧跟着`hot water`或者`cold porridge`。
 
@@ -18003,6 +18003,136 @@ POST _search
 ##### Note
 
 ###### Filter example
+
+&emsp;&emsp;下面的查询中定义了一个`filter`规则。返回的文档中有`hot`以及`porridge`，这两个term之间的位置距离不超过10，并且这两个term之间没有`salty`。
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "match" : {
+          "query" : "hot porridge",
+          "max_gaps" : 10,
+          "filter" : {
+            "not_containing" : {
+              "match" : {
+                "query" : "salty"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Script filters**
+
+&emsp;&emsp;你可以使用一个脚本，基于开始、结束以及间隔来过滤`intervals`。下面的`filter`脚本中使用了`interval`变量以及`start`、`end`、`gaps`方法：
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "match" : {
+          "query" : "hot porridge",
+          "filter" : {
+            "script" : {
+              "source" : "interval.start > 10 && interval.end < 20 && interval.gaps == 0"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Minimization**
+
+&emsp;&emsp;`intervals` query总是最小化间隔，以确保查询可以在线性时间内运行。有时这可能导致意想不到的结果，尤其是在使用max_gaps限制或过滤器时。例如，考虑以下查询，搜索包含在短语`hot porridge`中的`salty`：
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "match" : {
+          "query" : "salty",
+          "filter" : {
+            "contained_by" : {
+              "match" : {
+                "query" : "hot porridge"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询不会匹配包含这个短语的文档：`hot porridge is salty porridge`，因为只匹配到文档中最开始的`hot porridge`这两个term后就返回了，并且这两个term之间没有包含`salty`。
+
+&emsp;&emsp;在`any_of`规则中需要注意到另一个限制，那就是子规则出现重叠的情况。特别是其中一个规则是另一个规则的前缀，那么较长的规则不会被匹配，这使得在使用`max_gaps`时会带来一些意想不到的结果。下面的query中，查询`the`以及紧接着`big`或`big bad`，紧接着`wolf`：
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "all_of" : {
+          "intervals" : [
+            { "match" : { "query" : "the" } },
+            { "any_of" : {
+                "intervals" : [
+                    { "match" : { "query" : "big" } },
+                    { "match" : { "query" : "big bad" } }
+                ] } },
+            { "match" : { "query" : "wolf" } }
+          ],
+          "max_gaps" : 0,
+          "ordered" : true
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个query不会匹配包含`the big bad wolf`的文档，因为`any_of`规则在`big`和`big bad`中仅为`big`生成间隔。由于`big bad`的间隔比`big`的长但起始位置相同，因此它会被最小化处理而不被考虑。在这种情况下，建议重新编写查询，将所有选项在顶层明确列出：
+
+```text
+POST _search
+{
+  "query": {
+    "intervals" : {
+      "my_text" : {
+        "any_of" : {
+          "intervals" : [
+            { "match" : {
+                "query" : "the big bad wolf",
+                "ordered" : true,
+                "max_gaps" : 0 } },
+            { "match" : {
+                "query" : "the big wolf",
+                "ordered" : true,
+                "max_gaps" : 0 } }
+           ]
+        }
+      }
+    }
+  }
+}
+```
 
 #### Match query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query.html)
@@ -18660,7 +18790,7 @@ GET /_search
 
 &emsp;&emsp;默认是index setting中的[index.query.default_field](#####index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
 
-&emsp;&emsp;查询会跨所有符合的域但是不包括[nested documents](####Nested field type)，可以使用[nested query](#####Nested query)来查询。
+&emsp;&emsp;查询会跨所有符合的域但是不包括[nested documents](####Nested field type)，可以使用[nested query](####Nested query)来查询。
 
 &emsp;&emsp;对于定义了大量字段的mapping，在所有符合的（eligible）域上进行搜索的开销是很大的。
 
@@ -18744,10 +18874,10 @@ GET /_search
 #### Simple query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
 
-#### Joining queries
+### Joining queries
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/joining-queries.html)
 
-##### Nested query
+#### Nested query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-nested-query.html#query-dsl-nested-query)
 
 ### Match all query
