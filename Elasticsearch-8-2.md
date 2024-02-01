@@ -18508,7 +18508,7 @@ GET /_search
 #### Combined fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
 
-&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种term为中心的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
+&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种"以term为中心"的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
 
 ```text
 GET /_search
@@ -18568,7 +18568,7 @@ GET /_search
 
 &emsp;&emsp;如果你的某个查询要在不同类型的域上进行，那么[multi_match](####Multi-match query)比较合适。他同时支持text和非text类型的域，并且接受在不同的text域上可以有不同的分词器。
 
-&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种以域为中心视角（field-centric view）的查询。与之相反的`combined_fields`则是以term为中心视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
+&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
 
 ```text
 GET /_search
@@ -18592,14 +18592,14 @@ GET /_search
 
 &emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配
 
-&emsp;&emsp;`cross_fields` `multi_match`模式同样是以term为中心的方法并且`operator`和`minimum_should_match`作用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
+&emsp;&emsp;`cross_fields` `multi_match`模式同样是"以term为中心"的方法并且`operator`和`minimum_should_match`作用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
 
 > NOTE：Custom similarities
 > `combined_fields`只支持BM25，他是默认的Similarity，可以通过[custom similarity](###Similarity module)配置。同样也不允许[Per-field similarities](####similarity)。否则使用`combined_fields`时报错。
 
 
 #### Multi-match query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-match-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-match-query.html)
 
 &emsp;&emsp;`multi_match`基于[match query](####Match query)，允许在多个域上查询：
 
@@ -18731,22 +18731,266 @@ GET /_search
 >`(+first_name:will +first_name:smith)| (+last_name:will +last_name:smith)`
 >换句话说，对于匹配到的文档，单个域中必须出现所有的term
 >
->[combined_fields](####Combined fields)提供了以term为中心的视角，`operator`和`minimum_should_match`作用到每一个term之间。其他的`multi-match`模式[cross_fields](#####cross_fields)同样能解决这个问题
+>[combined_fields](####Combined fields)提供了"以term为中心"的视角，`operator`和`minimum_should_match`作用到每一个term之间。其他的`multi-match`模式[cross_fields](#####cross_fields)同样能解决这个问题
 
 ##### most_fields
 
-&emsp;&emsp;
+&emsp;&emsp;`most_fields`类型最适合在多个域中进行查询，并且每个域都索引了相同的文本，但是使用了不同的分词器的情况。例如，主字段可能包含synonyms、stemming term和没有变音符号（diacritics）的term。第二个字段可能包含原始的term，第三个字段可能包含词缀（shingles）。通过结合来自所有这三个字段的分数，我们可以匹配尽可能多的与主字段相符的文档，同时利用第二和第三字段将最相似的结果推到列表的顶部：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "quick brown fox",
+      "type":       "most_fields",
+      "fields":     [ "title", "title.original", "title.shingles" ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询将通过以下的方式：
+
+```text
+GET /_search
+{
+  "query": {
+    "bool": {
+      "should": [
+        { "match": { "title":          "quick brown fox" }},
+        { "match": { "title.original": "quick brown fox" }},
+        { "match": { "title.shingles": "quick brown fox" }}
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;汇总每一个`match`的打分值，然后除以`match`的数量就是最终的打分值。
+
+&emsp;&emsp;同样接受这些参数：`analyzer`， `boost`， `operator`，`minimum_should_match`， `fuzziness`，`lenient`，`prefix_length`，`max_expansions`，`fuzzy_rewrite`，以及 `zero_terms_query`。
 
 ##### phrase and phrase_prefix
 
+&emsp;&emsp;`phrase`和`phrase_prefix`类型跟[best_fields](#####best_fields)很像，只是他们使用了`match_phrase`或者`match_phrase_prefix`而不是`match` query。
+
+&emsp;&emsp;这个请求：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "quick brown f",
+      "type":       "phrase_prefix",
+      "fields":     [ "subject", "message" ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询将通过以下的方式：
+
+```text
+GET /_search
+{
+  "query": {
+    "dis_max": {
+      "queries": [
+        { "match_phrase_prefix": { "subject": "quick brown f" }},
+        { "match_phrase_prefix": { "message": "quick brown f" }}
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;同样的接受参数`analyzer`，`boost`，`lenient`以及 `zero_terms_query`，见[Match](####Match query)中的介绍。接受参数`slop`，见[Match phrase](####Match phrase query)中的介绍。另外`phrase_prefix`类型接受`max_expansions`参数。
+
+> IMPORTANT：**phrase, phrase_prefix and fuzziness**
+> `phrase`和`phrase_prefix`不能使用`fuzziness`参数。
+
 ##### cross_fields
 
-##### cross_field and analysis
+&emsp;&emsp;`cross_fields`类型对于在结构化的文档中期望在多个域中进行匹配这种场景就特别的有用。例如，当在`first_name`和`last_name`中查找`Will Smith`，最好的匹配结果应该是`Will`在上面两个域中的一个，并且`Smith`在另一个域中。
 
-##### tie_breaker
+- 这看起来好像使用[most_fields](#####most_fields)就可以完成，但是这种方法有两个问题。第一个问题是`operator`跟`minimum_should_match`是作用在每一个域上，而不是每一个term上（见[explanation above](#####best_fields)）
+- 第二个问题是相关性问题：`first_name`跟`last_name`域中相同term的词频不同会产生非期望的结果
+- 比如说，我们有两个人：`Will Smith`和`Smith Jones`。`Smith`作为last name是非常常见的（因此重要性较低）但是`Smith`作为first name是不常见的（因此重要性高）
+- 如果我们查询`Will Smith`，包含`Smith Jones`的文档应该优于包含`Will Smith`的文档，因为`first_name:Smith`的打分会高于`first_name:will`和`last_name:smith`的打分值和值，这不是我们期望的结果。
+
+&emsp;&emsp;一种解决方式是简单的将`first_name`和`last_name`合成为一个`full_name`。当然，只能在索引期间完成。
+
+&emsp;&emsp;`cross_field`类型能够在查询时间通过一种"以term为中心"的方法解决。它首先将query string分词成单独的term，然后在每一个域中为每一个term进行查找，就好像它们是一个big field。
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "Will Smith",
+      "type":       "cross_fields",
+      "fields":     [ "first_name", "last_name" ],
+      "operator":   "and"
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询将通过以下的方式：
+
+```text
++(first_name:will last_name:will)
++(first_name:smith last_name:smith)
+```
+
+&emsp;&emsp;换句话说，所有的term必须存在于至少一个域中（所有的term分布在不同的域中，最多一个域中有所有的term）。而`best_field`跟`most_field`则可能做不到这一点。
+
+- 也就说`cross_field`能保证query string中的每一个term都会出现在匹配的文档中（min_should_match），这些term可能分布在多个域，也有可能同时出现在同一个域。而`best_field`跟`most_field`匹配到的文档中可能无法找到query string中的某些term
+
+&emsp;&emsp;这种类型解决了上述两个问题中的一个问题。term在不同域中词频不同的问题通过`混合词频(blending term frequencies)`来平衡差异性。
+
+&emsp;&emsp;在实践中，`first_name:smith`被视为跟`last_name:smith`有相同的词频并且加1。这使得匹配`first_name`和`last_name`时有可比较的打分值，但`last_name`会有轻微优势，因为它更可能包含词`smith`
+
+&emsp;&emsp;`cross_fields`类型查询通常仅适用于短的string field，且这些字段的boost值为1。如果字段有不同的boost、freq和length normalization，则混合词频统计可能失去意义
+
+&emsp;&emsp;如果你通过[Validate](####Validate API)运行上面的query，它会返回这种解释：
+
+```text
++blended("will",  fields: [first_name, last_name])
++blended("smith", fields: [first_name, last_name])
+```
+
+&emsp;&emsp;接受这些参数：`analyzer`, `boost`, `operator`, `minimum_should_match`, `lenient` 以及 `zero_terms_query`。
+
+> WARNING：`cross_fields`类型的查询在混合字段统计时可能不总是产生合理的评分（例如评分可能变为负数）。作为替代，Ni可以考虑使用[combined_fields]()查询，这种查询同样"以term为中心"，但以更稳健的方式结合字段统计。这是针对跨字段查询的一种改进方法。
+
+###### cross_field and analysis
+
+&emsp;&emsp;查询的域有相同的分词器才能"以term为中心"的模式工作。有相同分词器的域会被划分为一个组。如果有多个组，查询将会使用这些组中打分值最高的那个。
+
+&emsp;&emsp;例如，如果`first`和`last`域有相同的分词器，而`first.edge`和`last.edge`有相同的`edge_ngram`分词器，如下所示：
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "Jon",
+      "type":       "cross_fields",
+      "fields":     [
+        "first", "first.edge",
+        "last",  "last.edge"
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个query会按下面的方式执行：
+
+```text
+    blended("jon", fields: [first, last])
+| (
+    blended("j",   fields: [first.edge, last.edge])
+    blended("jo",  fields: [first.edge, last.edge])
+    blended("jon", fields: [first.edge, last.edge])
+)
+```
+
+&emsp;&emsp;换句话说，`first`和`last`会被化为同一组，就像是单个域一样，而而`first.edge`和`last.edge`会被化为同一组，就像是单个域一样。
+
+&emsp;&emsp;存在多个组是没有问题的，但当使用了`operator`或`minimum_should_match`就会出现上文中提到使用`most_field`和`best_field`的问题。
+
+&emsp;&emsp;你可以很容易的使用`dis_max`query来组合两个`cross_field`类型的查询，并且只将`minimum_should_match`作用到其中一个就行了 ：
+
+```text
+GET /_search
+{
+  "query": {
+    "dis_max": {
+      "queries": [
+        {
+          "multi_match" : {
+            "query":      "Will Smith",
+            "type":       "cross_fields",
+            "fields":     [ "first", "last" ],
+            "minimum_should_match": "50%" 
+          }
+        },
+        {
+          "multi_match" : {
+            "query":      "Will Smith",
+            "type":       "cross_fields",
+            "fields":     [ "*.edge" ]
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第11行，`will`或者`smith`必须出现在`frist`或`last`域中。
+
+&emsp;&emsp;你可以通过在请求中指定分词器将所有的域归为一个组：
+
+```text
+GET /_search
+{
+  "query": {
+   "multi_match" : {
+      "query":      "Jon",
+      "type":       "cross_fields",
+      "analyzer":   "standard", 
+      "fields":     [ "first", "last", "*.edge" ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，所有的域使用`standard`分词器。
+
+&emsp;&emsp;这个请求按照下面的方式执行：
+
+```text
+blended("will",  fields: [first, first.edge, last.edge, last])
+blended("smith", fields: [first, first.edge, last.edge, last])
+```
+
+###### tie_breaker
+
+&emsp;&emsp;默认情况下，一个组中每个term的`blended`query会返回最高的打分值。当跨多个组整合打分值时，会使用组中打分值最高的。`tie_breaker`参数能对这两个步骤进行更改：
+
+| 0.0           | Take the single best score out of (eg) `first_name:will` and `last_name:will` (default) |
+| ------------- | ------------------------------------------------------------ |
+| 1.0           | Add together the scores for (eg) `first_name:will` and `last_name:will` |
+| 0.0 < n < 1.0 | Take the single best score plus `tie_breaker` multiplied by each of the scores from other matching fields/ groups |
+
+> IMPORTANT：cross_fields and fuzziness
+> `cross_fields`类型不能使用`fuzziness`参数。
 
 ##### bool_prefix
 
+&emsp;&emsp;`bool_prefix`类型的行为跟[most_fields](#####most_fields)很像，但是使用了[match_bool_prefix](####Match boolean prefix query) query而不是`match` query。
+
+```text
+GET /_search
+{
+  "query": {
+    "multi_match" : {
+      "query":      "quick brown f",
+      "type":       "bool_prefix",
+      "fields":     [ "subject", "message" ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;可以接受`analyzer`, `boost`, `operator`, `minimum_should_match`, `lenient`, `zero_terms_query`以及 `auto_generate_synonyms_phrase_query`参数，见[match query](####Match query)中的介绍。`fuzziness`, `prefix_length`, `max_expansions`, `fuzzy_rewrite`, `fuzzy_transpositions`用于terms来构造term query，但是不会对prefix query构造出的term生效。
+
+&emsp;&emsp;不支持`slop`参数。
 
 #### Query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-query-string-query.html)
@@ -31969,6 +32213,9 @@ GET /_search
 
 #### Multi search API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-multi-search.html)
+
+#### Validate API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-validate.html)
 
 #### Profile API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-field-caps.html)
