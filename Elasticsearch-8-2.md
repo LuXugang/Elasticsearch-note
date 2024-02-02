@@ -17505,7 +17505,7 @@ GET /_search
 ## Query DSL
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl.html)
 
-#### Allow expensive queries
+#### Allow expensive queries（Query DSL）
 
 ### Query and filter context
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-filter-context.html)
@@ -18658,7 +18658,7 @@ GET /_search
 > WARNING：Field number limit
 > 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_coun](#####indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
 
-&emsp;&emsp;Types of multi_match query:
+##### Types of multi_match query:
 
 &emsp;&emsp;`multi_match`在内部执行方式取决于`type`参数，可以设置为以下的值：
 
@@ -18993,7 +18993,7 @@ GET /_search
 &emsp;&emsp;不支持`slop`参数。
 
 #### Query string query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-query-string-query.html)
+（8.2）link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-query-string-query.html)
 
 >TIP：本节内容介绍的是`query_string`这个query类型，更多关于在Elasticsearch中运行一个查询query的内容见[Search your data](##Search your data).
 
@@ -19433,18 +19433,255 @@ GET /my-index-000001/_search
 
 ###### Search multiple fields（query string）
 
+&emsp;&emsp;你可以使用`field`参数在多个域上执行`quert_string` query。
+
+&emsp;&emsp;多个域上执行`quert_string` query的设计是能query term能实现`OR`的查询：
+
+```text
+field1:query_term OR field2:query_term | ...
+```
+
+&emsp;&emsp;例如有以下的查询：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "fields": [ "content", "name" ],
+      "query": "this AND that"
+    }
+  }
+}
+```
+
+&emsp;&emsp;相当于：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "query": "(content:this OR name:this) AND (content:that OR name:that)"
+    }
+  }
+}
+```
+
+&emsp;&emsp;由于多个独立的查询term（search term）生成了多个query，因此自动的使用`dis_max`以及`tie_breaker`实现。例如（`name`字段使用`^5`提高了（boost）权重）：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string" : {
+      "fields" : ["content", "name^5"],
+      "query" : "this AND that OR thus",
+      "tie_breaker" : 0
+    }
+  }
+}
+```
+
+&emsp;&emsp;简单的通配符可以用于查询文档内部的元素（inner elements of the document）。例如，如果我们有一个`city`域，它有多个子域（或者它是一个object），我们可以自动的在`city`的所有域上查询：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string" : {
+      "fields" : ["city.*"],
+      "query" : "this AND that OR thus"
+    }
+  }
+}
+```
+
+&emsp;&emsp;还有一种方式就是在query string自身里面提供通配符域（wildcard fields）（正确的对`*`进行转义）。例如：`city.\*:something`：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string" : {
+      "query" : "city.\\*:(this AND that OR thus)"
+    }
+  }
+}
+```
+
+> NOTE：由于反斜杠在json字符串中是一个特殊字符，所以它需要被转移术，因此上面的`query_string`中有两个反斜杠。
+
+&emsp;&emsp;`field`参数中可以有基于域名的pattern，允许自动扩展到相关的域（会自动的引入包含的域）。例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string" : {
+      "fields" : ["content", "name.*^5"],
+      "query" : "this AND that OR thus"
+    }
+  }
+}
+```
+
 ###### Additional parameters for multiple field searches
+
+&emsp;&emsp;在多个域上运行`query_string` query时，支持以下额外的参数：
+
+- type：（Optional, string）决定这个query如何匹配文档以及打分。合法的值如下所示：
+  - best_fields (Default)：从任意域中找到[\_score](####Relevance scores)最高的那个文档。见[best_fileds](#####best_fields)
+  - bool_prefix：在每个query上创建一个`match_bool_prefix` query并且结合每一个域上的`_score`。见[bool_prefix](#####bool_prefix)
+  - cross_fields：将所有的域视为有相同的`analyzer`，就像它们是一个big filed，在每一个域中查找每一个word。见[cross_fields](#####cross_fields)
+  - most_fields：只要匹配到任何一个域，这篇文档就认为是匹配的，并且结合每一个域的`_score`。见[most_fields](#####most_fields)
+  - phrase：在每一个域上执行`match_phrase`并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#####phrase and phrase_prefix)
+  - phrase_prefix：在每一个域上执行`match_phrase_prefix` query并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#####phrase and phrase_prefix)
+
+&emsp;&emsp;注意的是，基于[type](#####Types of multi_match query:)值的不同，`multi_match`查询可能支持额外的顶级参数。
 
 ###### Synonyms and the query_string query
 
+&emsp;&emsp;`query_string` query支持使用[synonym_graph token filter](####Synonym graph token filter)对multi-terms synonyms进行扩展。在使用filter之后，解析后会为每一个multi-terms synonyms创建一个短语查询（下面用双引号修饰了`new york`）。例如下面的同义词`ny，new york`会生成如下的查询：
+
+```text
+(ny OR ("new york"))
+```
+
+&emsp;&emsp;也可以通过conjunction方式（也就是使用`AND`）进行匹配：
+
+```text
+GET /_search
+{
+   "query": {
+       "query_string" : {
+           "default_field": "title",
+           "query" : "ny city",
+           "auto_generate_synonyms_phrase_query" : false
+       }
+   }
+}
+```
+
+&emsp;&emsp;上面的例子会创建一个boolean query：
+
+```text
+(ny OR (new AND york)) city
+```
+
+&emsp;&emsp;匹配到的文档中有term `ny`或者`new AND york`。`auto_generate_synonyms_phrase_query`参数默认为`true`。
+
 ###### How minimum_should_match works
+
+&emsp;&emsp;`query_string` 会分割成多个query，然后使用操作符创建一个boolean query作为整个输入。你可以使用`minimum_should_match`来控制结果中应该匹配多少个`clause`。
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "fields": [
+        "title"
+      ],
+      "query": "this that thus",
+      "minimum_should_match": 2
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子创建了一个boolean query：
+
+```text
+(title:this title:that title:thus)~2
+```
+
+&emsp;&emsp;满足匹配的文档中至少在单个`title`域上要匹配`this`、`that`、`thus`中的两个。
 
 ###### How minimum_should_match works for multiple fields
 
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "fields": [
+        "title",
+        "content"
+      ],
+      "query": "this that thus",
+      "minimum_should_match": 2
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子创建了一个boolean query：
+
+```text
+((content:this content:that content:thus) | (title:this title:that title:thus))
+```
+
+&emsp;&emsp;在`title`跟`content`上使用disjunction max来匹配文档。这里的`minimum_should_match`并没有生效。
+
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "fields": [
+        "title",
+        "content"
+      ],
+      "query": "this OR that OR thus",
+      "minimum_should_match": 2
+    }
+  }
+}
+```
+
+&emsp;&emsp;每一个term之间显示的指定操作后会被认为是独立的clause。
+
+&emsp;&emsp;上面的例子创建了一个boolean query：
+
+```text
+((content:this | title:this) (content:that | title:that) (content:thus | title:thus))~2
+```
+
+&emsp;&emsp;匹配到的文档至少要包含上面3个`should` clause中的两个。每一个term之间使用了disjunction max。
+
 ###### How minimum_should_match works for cross-field searches
 
-###### Allow expensive queries
+&emsp;&emsp;`type`参数使用了`cross_files`值后，意味着所有域使用使用了相同的分词器。
 
+```text
+GET /_search
+{
+  "query": {
+    "query_string": {
+      "fields": [
+        "title",
+        "content"
+      ],
+      "query": "this OR that OR thus",
+      "type": "cross_fields",
+      "minimum_should_match": 2
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子创建了一个boolean query：
+
+```text
+(blended(terms:[field2:this, field1:this]) blended(terms:[field2:that, field1:that]) blended(terms:[field2:thus, field1:thus]))~2
+```
+
+&emsp;&emsp;匹配到的文档中至少满足有三个per-tem blended query中的两个。
+
+###### Allow expensive queries（Query string query）
+
+&emsp;&emsp;`query_string` query会被自动的转化为一个[prefix query](####Prefix query)，意味着如果禁用了prefix query（见[这里](######Allow expensive queries（Prefix query）)的说明）。那么这个query就不会被执行并且会抛出一个异常。
 
 #### Simple query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
@@ -19514,6 +19751,11 @@ GET /_search
 
 #### Exists query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-exists-query.html)
+
+#### Prefix query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
+
+###### Allow expensive queries（Prefix query）
 
 #### Range query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
@@ -28020,11 +28262,11 @@ GET _nodes/stats?filter_path=nodes.*.jvm.mem.pools.old
 
 &emsp;&emsp;Expensive searches会使用大量的内存。可以开启[show logs](###Slow Log)来更好的追踪集群上的expensive searches。
 
-&emsp;&emsp;Expensive searches可能是因为使用了非常大的[size argument](###Paginate search results)，使用了大量分桶的聚合，或者包含了[expensive queries](####Allow expensive queries)。若要防止expensive searches，考虑进行更改下面的设置：
+&emsp;&emsp;Expensive searches可能是因为使用了非常大的[size argument](###Paginate search results)，使用了大量分桶的聚合，或者包含了[expensive queries](####Allow expensive queries（Query DSL）)。若要防止expensive searches，考虑进行更改下面的设置：
 
 - 使用索引设置[index.max_result_window](#####index.max_result_window)来降低`size`的上限
 - 使用集群设置[search.max_buckets](#####search.max_buckets)降低允许分桶的数量
-- 使用集群设置[search.allow_expensive_queries](####Allow expensive queries)关闭expensive query
+- 使用集群设置[search.allow_expensive_queries](####Allow expensive queries（Query DSL）)关闭expensive query
 
 ```text
 PUT _settings
