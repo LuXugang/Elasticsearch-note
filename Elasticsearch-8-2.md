@@ -19103,17 +19103,348 @@ GET /_search
 
 ###### max_determinized_states
 
-&emsp;&emsp;（Optional, integer）
+&emsp;&emsp;（Optional, integer）查询所需最大自动机状态（[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)）数。默认值为`10000`。
+
+&emsp;&emsp;Elasticsearch使用Apache Lucene解析正则表达式。Lucene将正则表达式转化为一个有一定状态数的[有限自动状态机](https://amazingkoala.com.cn/unsupported/Automaton.html)。
+
+&emsp;&emsp;可以使用这个参数防止这个转化过程造成资源的过度使用。当然你可能需要提高这个限制来允许复杂的正则表达式。
+
+###### minimum_should_match
+
+&emsp;&emsp;（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](###minimum_should_match parameter)查看更多信息。见[How minimum_should_match works](######How minimum_should_match works)中的例子。
+
+###### quote_analyzer
+
+&emsp;&emsp;（Optional, string）[Analyzer](##Text analysis)用来将query string中引用的文本（比如说"\\"The Great Gatsby\\""）转化为token。默认使用`default_field`映射的[search_quote_analyzer](#####search_quote_analyzer)。
+
+&emsp;&emsp;对于引用的文本，这个参数会覆盖`analyzer`参数中指定的分词器。
+
+###### phrase_slop
+
+&emsp;&emsp;（Optional, integer）短语中的token之间最大的距离。默认是`0`。如果是`0`，需要匹配精准的短语。位置颠倒的term的`slop`为2。
+
+###### quote_field_suffix
+
+&emsp;&emsp;（Optional, string）query string中引用的文本对应的后缀名。
+
+&emsp;&emsp;例如说有一个mapping：
+
+```text"mappings": {
+    "properties": {
+      "body": {
+        "type": "text",
+        "analyzer": "english",
+        "fields": {
+          "exact": {
+            "type": "text",
+            "analyzer": "english_exact"
+          }
+        }
+      }
+    }
+  }
+```
+
+&emsp;&emsp;这个例子中，`quote_field_suffix`的值就是`exact`。如果指定了 `quote_field_suffix`。那么相当于在`body.exact`域上查询query string。
+
+&emsp;&emsp;你可以根据后缀来使用一个不同的分词器使得可以进行精准匹配。见[Mixing exact search with stemming](####Mixing exact search with stemming)。
+
+###### rewrite
+
+&emsp;&emsp;（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](###rewrite parameter)。
+
+###### time_zone
+
+&emsp;&emsp;（Optional, string）使用[Coordinated Universal Time (UTC) offset ](https://en.wikipedia.org/wiki/List_of_UTC_offsets)或者[IANA time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)将query string中的`date`值转化为UTC。
+
+&emsp;&emsp;Valid values are ISO 8601 UTC offsets, such as +01:00 or -08:00, and IANA time zone IDs, such as America/Los_Angeles.
+
+> NOTE：`time_zone`参数不会影响`now`这种[date math](####Date Math)。`now`始终是UTC的当前系统时间。但是，`time_zone`参数会转换使用now和[date math rounding](####Date Math)计算出的日期。例如，使用`time_zone`参数会转换`now/d`的值。
 
 ##### Note
 
+###### Query string syntax
+
+&emsp;&emsp;这个query string：`mini-language`用于[Query string](####Query string query)以及[search API](####Search API)中的`q`这个query string parameter。
+
+&emsp;&emsp;query string被解析为一系列的term以及操作符。term可以是单个Word，比如`quick`或者`brown`。也可以是一个短语，使用引号修饰，比如`quick brown`，这种将查找短语中所有的word，并且是有序的。
+
+&emsp;&emsp;操作符使得你可以自定义查询，可用选项如下所示：
+
+###### Field Names
+
+&emsp;&emsp;你可以在查询语法中指定域名：
+
+- `status`域中包含`active`
+
+```text
+status:active
+```
+
+- `title`域中包含`qucik`或者`brown`
+
+```text
+title:(quick OR brown)
+```
+
+- `author`域中包含精确的短语`john smith`
+
+```text
+author:"John Smith"
+```
+
+- `first name`域中包含`Alice`（注意的是对空格使用了反斜杠）
+
+```text
+first\ name:Alice
+```
+
+- `book.title`，`book.content`或者`book.date`中任意一个域中包含`qucik`或者`brown`（注意的是我们需要\*使用反斜杠）
+
+```text
+book.\*:(quick OR brown)
+```
+
+- `title`域没有空值
+
+```text
+_exists_:title
+```
+
+###### Wildcards（query string）
+
+&emsp;&emsp;通配符查询可以运行在单个term上，使用`?`替换单个字符，使用`*`替换0个或多个字符：
+
+```text
+qu?ck bro*
+```
+
+&emsp;&emsp;注意的是通配符查询会使用大量的内存，并且性能很差。你可以想象下匹配`a* b* c*`这个query string会有多少个term？
+
+> WARNING：如果你只使用了`*`，那么会被重写为[exists query]()。因此，`field:*`将会匹配空值（不是null）：
+{
+  "field": ""
+}
+不会匹配缺失字段或者显示的设置字段值为null：
+{
+  "field": null
+}
+
+> WARNING：如果将`*`作为起始字符（leading wildcards）是特别开销大的，因为索引中所有的term都需要处理。可以通过设置`allow_leading_wildcard`为`false`关闭。
+> 
+
+###### Regular expressions（query string）
+
+&emsp;&emsp;可以在query string中插入正则表达式，使用`/`修饰：
+
+```text
+name:/joh?n(ath[oa]n)/
+```
+
+&emsp;&emsp;正则表达式的语法支持见[Regular expression syntax](###Regular expression syntax)。
+
+> WARNING：`allow_leading_wildcard`参数不会作用于正则表达式。query string中包含下面的内容将会让Elasticsearch访问索引中的每一个term：`/.*n/`。请小心使用。
+
 ###### Fuzziness（query string）
+
+&emsp;&emsp;你可以`~`操作符来允许[fuzzy queries](####Fuzzy query)：
+
+```text
+quikc~ brwn~ foks~
+```
+
+&emsp;&emsp;对于这些query，query string会被[normalized](###Normalizers)（对query string进行处理，处理方式基于[character filters](###Character filters reference)和[token filters](###Token filter reference)），不过只能使用部分filter，见[Normalizers](###Normalizers)。
+
+&emsp;&emsp;query使用[Damerau-Levenshtein distance](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance)来找出所有最多有两处变化的term，这个变化可以是插入，删除，或者单个字符的替换或者两个相邻字符的位置互换。
+
+&emsp;&emsp;默认的编辑距离是`2`，但是编辑距离为`1`时能满足80%的人为拼写。通过下面的方式指定：
+
+```text
+quikc~1
+
+```
+
+> WARNING：Avoid mixing fuzziness with wildcards
+> 不支持混合使用[fuzzy](####Fuzziness)和[wildcard](######Wildcards（query string）)操作符。如果出现了混合使用，其中一种操作不会被应用（apply）。例如，你可以查询`app~1（fuzzy）`或者`app*`（wildcard），但对于`app~1`，不会应用fuzzy中的操作符`~`
+
+###### Proximity searches
+
+&emsp;&emsp;短语查询（例如`john smith`）期望所有的term有精准的先后顺序，而`Proximity searches`允许指定的word可以离开它相邻的word距离更大或者先手顺序不同。同样的fuzzy query可以为一个word中的字符指定一个最大编辑距离，而`proximity searches`允许我们指定短语中一个word的最大编辑距离：
+
+```text
+"fox quick"~5
+```
+
+&emsp;&emsp;相比于query string中原有的先手顺序越近，相关性则越高。如果比较上面的这个查询，短语`quick fox`比`quick brown fox`更有相关性。
+
+###### Ranges（query string）
+
+&emsp;&emsp;可以对时间、数值或者字符串域指定一个范围。包含上下界的范围使用中括号`[min TO max]`，不包含上下界的范围使用花括号`{min TO max}`。
+
+- All days in 2012:
+
+  ```text
+  date:[2012-01-01 TO 2012-12-31]
+  ```
+
+- Numbers 1..5
+
+  ```text
+  count:[1 TO 5]
+  ```
+
+- Tags between `alpha` and `omega`, excluding `alpha` and `omega`:
+
+  ```text
+  tag:{alpha TO omega}
+  ```
+
+- Numbers from 10 upwards
+
+  ```text
+  count:[10 TO *]
+  ```
+
+- Dates before 2012
+
+  ```text
+  date:{* TO 2012-01-01}
+  ```
+
+&emsp;&emsp;也可以组合使用花括号跟中括号：
+
+- Numbers from 1 up to but not including 5
+
+```text
+count:[1 TO 5}
+```
+
+&emsp;&emsp;一边是无界的语法如下：
+
+```text
+age:>10
+age:>=10
+age:<10
+age:<=10
+```
+
+> NOTE：要使用简化语法同时结合上界和下界，你需要用AND操作符连接两个子句。这种方法允许你在查询中明确指定一个范围，确保结果符合两个条件的交集。
+> age:(>=10 AND <20) age:(+>=10 +<20)
+
+&emsp;&emsp;对query string中的范围语句进行解析可能复杂并且容易出错，最好直接使用[range](####Range query)query。
+
+###### Boosting（query string）
+
+&emsp;&emsp;使用增强（boost）操作符`^`使得某个term比其他term更具相关性。例如，如果我们要找到所有关于fox的文档，但是我们又特别对quick fox感兴趣，那么就可以：
+
+```text
+quick^2 fox
+```
+
+&emsp;&emsp;`boost`的默认值为 `1`，它可以是任意的正浮点数。0到1之间的boost值会降低相关性。
+
+&emsp;&emsp;boost同样可以作用在短语或者组：
+
+```text
+"john smith"^2   (foo bar)^4
+```
+
+###### Boolean operators（query string）
+
+&emsp;&emsp;默认情况下，所有的term都是optional。如果查询`foo bar baz`，那么包含一个或者多个其中一个term（`foo`或者`bar`或者`baz`）的文档都是满足匹配的。上文中我们已经讨论过`default_operator`，它使得必须所有的term都要匹配到。但可以在query string中使用`boolean operator`来提供更多的控制。
+
+&emsp;&emsp;首选的操作符是`+`（文档中必须有所有的term）以及`-`（文档中不能出现term）。其他的term则是可有可无的。例如这个query：
+
+```text
+quick brown +fox -news
+```
+
+&emsp;&emsp;表示：
+
+- `fox`必须存在
+- `news`不能存在
+- `quick`和`brown`是可选的——它们的存在增加了相关性
+
+&emsp;&emsp;虽然也支持常见的布尔操作符`AND`、`OR`和`NOT`（也可以写作`&&`、`||`和`!`），但要注意它们不遵循通常的优先级规则，所以当一起使用多个操作符时应使用括号。例如，上述查询可以重写为：
+
+```text
+((quick AND fox) OR (brown AND fox) OR fox) AND NOT news
+```
+
+&emsp;&emsp;这种形式正确解释了原始查询的逻辑，但相关性评分与原始查询相去甚远。相比之下，使用[match](####Match query)重写的同一个查询将会是这样的：
+
+```text
+{
+    "bool": {
+        "must":     { "match": "fox"         },
+        "should":   { "match": "quick brown" },
+        "must_not": { "match": "news"        }
+    }
+}
+```
+
+###### Grouping（query string）
+
+&emsp;&emsp;多个term或者clause可以通过括号组合在一起形成子query（sub-query）：
+
+```text
+(quick OR brown) AND fox
+```
+
+&emsp;&emsp;分组还可以用于作用到某个特定的域上，或者boost这个子query的打分：
+
+```text
+status:(active OR pending) title:(full text search)^2
+```
+
+###### Reserved characters（query string）
+
+&emsp;&emsp;如果在你的查询中，某些字符（保留字符reversed character）的功能是作为操作符或者不作为操作符，那你可以使用反斜杠进行转移控制。例如，若要查询`(1+1)=2`，那么你的query应该是`\(1\+1\)\=2`。
+
+&emsp;&emsp;请求body中使用JSON时，需要用到两个反斜杠(`\\`)，注意在JSON中反斜杠是保留的转义字符。
+
+```text
+GET /my-index-000001/_search
+{
+  "query" : {
+    "query_string" : {
+      "query" : "kimchy\\!",
+      "fields"  : ["user.id"]
+    }
+  }
+}
+```
+
+&emsp;&emsp;需要进行转义的保留字符有：`+ - = && || > < ! ( ) { } [ ] ^ " ~ * ? : \ /`
+
+&emsp;&emsp;没有正确对这些特殊字符进行转义会导致语法错误并且阻止query的运行。
+
+> NOTE：`<`跟`>`通常不能被转义，因为它们用来描述范围查询，唯一防止被解析为范围查询的方式就是从query string中完全的移除
+
+###### Whitespaces and empty queries（query string）
+
+&emsp;&emsp;空格不认为是一个操作符。
+
+&emsp;&emsp;如果query string是空的或者只包含空格，那么这个query被认为是空的结果集。
+
+###### Avoid using the query_string query for nested documents（query string）
+
+&emsp;&emsp;`query_string`查询会不会返回[nested](####Nested field type) 文档。如果搜索nested文档，则应使用[nested query](####Nested query)。
 
 ###### Search multiple fields（query string）
 
+###### Additional parameters for multiple field searches
 
+###### Synonyms and the query_string query
 
-###### Query string syntax
+###### How minimum_should_match works
+
+###### How minimum_should_match works for multiple fields
+
+###### How minimum_should_match works for cross-field searches
+
+###### Allow expensive queries
+
 
 #### Simple query string query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
@@ -26585,7 +26916,7 @@ xpack.searchable.snapshot.shared_cache.size: 4TB
 #### Mixing exact search with stemming
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mixing-exact-search-with-stemming.html)
 
-&emsp;&emsp;在构建一个查询应用时，stem通常是必要的，因为在查询`skiing`时会渴望匹配到包含`ski`或者`skis`的文档。但如果用户就想专门查询`skiing`呢？通常的做法就是使用[multi-field](####fields)使得对相同的内容用两种不同的方式进行索引：
+&emsp;&emsp;在构建一个查询应用时，stemming通常是必要的，因为在查询`skiing`时会渴望匹配到包含`ski`或者`skis`的文档。但如果用户就想专门查询`skiing`呢？通常的做法就是使用[multi-field](####fields)使得对相同的内容用两种不同的方式进行索引：
 
 ```text
 PUT index
