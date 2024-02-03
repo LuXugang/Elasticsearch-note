@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2023/02/03）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/03）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -17959,7 +17959,7 @@ POST _search
 
 ##### fuzzy rule parameters
 
-&emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](####Fuzziness)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
+&emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](####Fuzziness（Common options）)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
 
 - term：（Required，string）待匹配的term
 - prefix_length：（Optional，integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
@@ -18182,7 +18182,7 @@ GET /_search
 
 ###### fuzziness
 
-&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](####Fuzziness)了解更多信息。见[Fuzziness in the match query](######Fuzziness in the match query)给出的例子。
+&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](####Fuzziness（Common options）)了解更多信息。见[Fuzziness in the match query](######Fuzziness in the match query)给出的例子。
 
 ###### max_expansions
 
@@ -19265,7 +19265,7 @@ quikc~1
 ```
 
 > WARNING：Avoid mixing fuzziness with wildcards
-> 不支持混合使用[fuzzy](####Fuzziness)和[wildcard](######Wildcards（query string）)操作符。如果出现了混合使用，其中一种操作不会被应用（apply）。例如，你可以查询`app~1（fuzzy）`或者`app*`（wildcard），但对于`app~1`，不会应用fuzzy中的操作符`~`
+> 不支持混合使用[fuzzy](####Fuzziness（Common options）)和[wildcard](######Wildcards（query string）)操作符。如果出现了混合使用，其中一种操作不会被应用（apply）。例如，你可以查询`app~1（fuzzy）`或者`app*`（wildcard），但对于`app~1`，不会应用fuzzy中的操作符`~`
 
 ###### Proximity searches
 
@@ -19684,7 +19684,245 @@ GET /_search
 &emsp;&emsp;`query_string` query会被自动的转化为一个[prefix query](####Prefix query)，意味着如果禁用了prefix query（见[这里](######Allow expensive queries（Prefix query）)的说明）。那么这个query就不会被执行并且会抛出一个异常。
 
 #### Simple query string query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
+（8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
+
+&emsp;&emsp;根据提供的query string，使用有限的但容错语法的解析器返回匹配的文档。
+
+&emsp;&emsp;这个query使用[simple syntax](######Simple query string syntax)进行解析并且根据指定的操作符将query string切分为term。随后这个query在返回匹配文档之前分别[analyzer](##Text analysis)每一个term。
+
+&emsp;&emsp;尽管这个query中的语法比[query_string query](####Query string query)更具有限制性，但是`simple_query_string` query不会在遇到非法语法时返回错误。而是忽略query string中非法的部分。
+
+##### Example request
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string" : {
+        "query": "\"fried eggs\" +(eggplant | potato) -frittata",
+        "fields": ["title^5", "body"],
+        "default_operator": "and"
+    }
+  }
+}
+```
+##### Top-level parameters for simple_query_string
+
+###### query
+
+&emsp;&emsp;（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Simple query string syntax](######Simple query string syntax)。
+
+###### fields
+
+&emsp;&emsp;（Optional, array of string）你想要查询的域名数组。
+
+&emsp;&emsp;域名可以使用通配符表达式。你也可以对特定的域使用`^`符号来提高（boost）匹配时的相关性。见[Wildcards and per-field boosts in the fields parameter](######Wildcards and per-field boosts in the fields parameter)。
+
+&emsp;&emsp;默认使用索引设置中的`index.query.default_field`，该参数默认值为`*`，`*`值会提取出所有满足term query的域，会过滤掉元数据域（[metadata field](###Metadata fields)）。提取出的域组成一个query，如果没有指定`prefix`的话。
+
+> WARNING：域的数量在查询时候有一定的限制。该值定义在[search setting](####Search settings)中的`indices.query.bool.max_clause_count`中，默认值为`1024`。
+
+###### default_operator
+
+&emsp;&emsp;（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
+
+- OR（Default）
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+- AND
+  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
+
+###### analyze_wildcard
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
+
+###### analyzer
+
+&emsp;&emsp;（Optional, string） [Analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#text-analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#specify-an-analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
+
+###### auto_generate_synonyms_phrase_query
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，会为每一个[multi-position token](#####Multi-position tokens)创建一个[match_phrase](####Match phrase query) query。见[Multi-position tokens](######Multi-position tokens（Simple query string query）)。
+
+###### flags
+
+&emsp;&emsp;（Optional, Boolean）[simple query string syntax](######Simple query string syntax)中允许生效的操作符列表。默认是`ALL`（所有的操作符）。见[LImit operator](######Limit operators)中的合法值。
+
+###### fuzzy_max_expansions
+
+&emsp;&emsp;（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
+
+###### fuzzy_prefix_length
+
+&emsp;&emsp;（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
+
+###### fuzzy_transpositions
+
+&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+
+###### lenient
+
+&emsp;&emsp;（Optional, Boolean）如果`为true`，例如当在一个[numeric](####Numeric field types)域中，query的内容为文本时会忽略format-based的错误，默认值为`false`。
+
+###### minimum_should_match
+
+&emsp;&emsp;（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](###minimum_should_match parameter)查看更多信息。
+
+###### quote_field_suffix
+
+&emsp;&emsp;（Optional, string）query string中引用的文本对应的后缀名。
+
+&emsp;&emsp;例如说有一个mapping：
+
+```text
+    "properties": {
+      "body": {
+        "type": "text",
+        "analyzer": "english",
+        "fields": {
+          "exact": {
+            "type": "text",
+            "analyzer": "english_exact"
+          }
+        }
+      }
+    }
+  }
+```
+
+&emsp;&emsp;这个例子中，`quote_field_suffix`的值就是`exact`。如果指定了 `quote_field_suffix`。那么相当于在`body.exact`域上查询query string。
+
+&emsp;&emsp;你可以根据后缀来使用一个不同的分词器使得可以进行精准匹配。见[Mixing exact search with stemming](####mixing-exact-search-with-stemming)。
+
+##### Note
+
+###### Simple query string syntax
+
+&emsp;&emsp;`simple_query_string` query 支持以下的操作符：
+
+- `+` 表示 AND 操作符
+- `|` 表示 OR 操作符
+- `-` 否定（文档中不能包含）一个Token
+- `"` 封装一定数量的token表示要作为短语查询
+- `*` 在一个term之后使用表示是一个prefix query
+- `(` 和 `)` 用双括号修饰表示优先执行括号里的内容
+- `~N` 在一个word之后表示编辑距离（fuzziness）
+- `~N` 在一个短语后表示slop大小（短语中token之间的距离差距）
+
+&emsp;&emsp;若要使用这些字符的字面值，需要用反斜杠进行转义。
+
+&emsp;&emsp;基于`default_operator`的值，操作符的行为可能有所不同，例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string": {
+      "fields": [ "content" ],
+      "query": "foo bar -baz"
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个查询想要返回的文档中，包含`foo`或者 包含`bar`并且不能包含`baz`。然而由于`default_operator`的值为`OR`，这个查询实际上返回的文中包含`foo`或者`bar`，但是所有的文档不能包含`baz`。若要按照你想要的结果返回，需要将query string中的内容改为`foo bar +-baz`
+
+###### Limit operators
+
+&emsp;&emsp;你可以使用`flags`参数限制simple query string语法中支持指定操作符。
+
+&emsp;&emsp;若要显示的只开启指定操作符，使用`|`操作符。例如，`flags`的值为`OR|AND|PREFIX`时将禁用所有操作符，除了`OR`, `AND`和 `PREFIX`。
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string": {
+      "query": "foo | bar + baz*",
+      "flags": "OR|AND|PREFIX"
+    }
+  }
+}
+```
+
+&emsp;&emsp;合法的`flags`值包括：
+
+- ALL (Default)：启动所有的可用的操作
+- AND：启用`+` AND操作符
+- ESCAPE：`\`作为一个反斜杠字符
+- FUZZY：启用`~N`操作符，它位于一个word后时表示匹配word时允许的最大编辑距离是`N`。见[Fuzziness](####Fuzziness（Common options）)
+- NEAR：启用`~N`操作符，它位于一个短语后时表示匹配到的token之间的距离最远是`N`。同`SLOP`
+- NONE：禁用所有操作符
+- NOT：启用`-` NOT操作符
+- OR：启用`|` OR曹邹付
+- PHRASE：启用`"`用来短语查询
+- PRECEDENCE：启用`( )`控制操作优先级
+- PREFIX：启用`*`操作符
+- SLOP：启用`~N`操作符，它位于一个短语后时表示匹配到的token之间的距离最远是`N`。同`NEAR`
+- WHITESPACE：启用空格用来对字符进行分割
+
+###### Wildcards and per-field boosts in the fields parameter
+
+&emsp;&emsp;域名可以指定为通配符：
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string" : {
+      "query":    "Will Smith",
+      "fields": [ "title", "*_name" ] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第6行，请求`title`、`first_name`以及`last_name`域
+
+&emsp;&emsp;每个域可以分别使用`^`符号进行boost，提高该域的相关性：
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string" : {
+      "query" : "this is a test",
+      "fields" : [ "subject^3", "message" ] 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第6行，`subject`域的重要性是`message`的3倍。
+
+###### Multi-position tokens（Simple query string query）
+
+&emsp;&emsp;默认情况下`simple_query_string`在解析后会为query string中的每一个[multi-position token](#####Multi-position tokens)创建一个[match_phrase](####Match phrase query)。例如，会为这个multi-word synonym：`ny, new york`创建一个`match_phrase`：
+
+```text
+(ny OR ("new york"))
+```
+
+&emsp;&emsp;同样的也可以匹配多个同义词，这些同义词之间的关系为AND，而不是这几个同义词作为短语查询。
+
+```text
+GET /_search
+{
+  "query": {
+    "simple_query_string": {
+      "query": "ny city",
+      "auto_generate_synonyms_phrase_query": false
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子创建出下面的[boolean query](####Boolean query)：
+
+```text
+(ny OR (new AND york)) city
+```
+
+&emsp;&emsp;满足条件的文档中要么匹配到`ny`，或者匹配到`new AND york`，或者都匹配到。
 
 ### Joining queries
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/joining-queries.html)
@@ -29206,6 +29444,8 @@ POST my-data-stream/_async_search
 #### Date Math
 
 #### Response Filtering
+
+#### Fuzziness（Common options）
 
 ### Compact and aligned text (CAT) APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rest-apis.html)
