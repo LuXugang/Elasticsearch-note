@@ -18508,7 +18508,7 @@ GET /_search
 #### Combined fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
 
-&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种"以term为中心"的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后再所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
+&emsp;&emsp;`Combined fields` query支持查询多个`text`域，就像是这些域的值索引到一个组合域（combined fields）中。该query是一种"以term为中心"的（term-centric）的视角（见[multi_match](####Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后在所有域中去查找每一个term。这个query特别适用在多个text域中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
 
 ```text
 GET /_search
@@ -18568,7 +18568,7 @@ GET /_search
 
 &emsp;&emsp;如果你的某个查询要在不同类型的域上进行，那么[multi_match](####Multi-match query)比较合适。他同时支持text和非text类型的域，并且接受在不同的text域上可以有不同的分词器。
 
-&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
+&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种"以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
 
 ```text
 GET /_search
@@ -18590,7 +18590,7 @@ GET /_search
 +(combined("systems", fields:["title", "abstract"]))
 ```
 
-&emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配
+&emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配（换句话说，一篇文档中只要有database，system就满足匹配，这两个term可以分布在不同的域上，最好的情况是这两个term在同一个域上）。
 
 &emsp;&emsp;`cross_fields` `multi_match`模式同样是"以term为中心"的方法并且`operator`和`minimum_should_match`作用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
 
@@ -18656,7 +18656,7 @@ GET /_search
 &emsp;&emsp;如果没有提供`fields`，`multi_match`默认在`index.query.default_field`中指定的域上查询，默认是`*`。`*`会从mapping中提取出所有的合适的域并且过滤掉metadata fields。所有提取出的域随后组合构建成一个query。
 
 > WARNING：Field number limit
-> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_coun](#####indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
+> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_count](#####indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
 
 ##### Types of multi_match query:
 
@@ -19686,7 +19686,7 @@ GET /_search
 #### Simple query string query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
 
-&emsp;&emsp;根据提供的query string，使用有限的但容错语法的解析器返回匹配的文档。
+&emsp;&emsp;根据提供的query string，使用有限的（比如不能使用`AND`，而应该使用`+`）但可以容错语法的解析器返回匹配的文档。
 
 &emsp;&emsp;这个query使用[simple syntax](######Simple query string syntax)进行解析并且根据指定的操作符将query string切分为term。随后这个query在返回匹配文档之前分别[analyzer](##Text analysis)每一个term。
 
@@ -19853,7 +19853,7 @@ GET /_search
 - NEAR：启用`~N`操作符，它位于一个短语后时表示匹配到的token之间的距离最远是`N`。同`SLOP`
 - NONE：禁用所有操作符
 - NOT：启用`-` NOT操作符
-- OR：启用`|` OR曹邹付
+- OR：启用`|` OR操作符
 - PHRASE：启用`"`用来短语查询
 - PRECEDENCE：启用`( )`控制操作优先级
 - PREFIX：启用`*`操作符
