@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/03）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/04）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -32944,13 +32944,42 @@ POST /_snapshot/<repository>
   - 你可以通过[verify snapshot repository API](####Verify snapshot repository API)手动执行验证操作。
 
 #### Verify snapshot repository API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/verify-snapshot-repo-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/verify-snapshot-repo-api.html)
+
+&emsp;&emsp;验证某个快照仓库是否功能正常。见[Verify a repository](####Verify a repository)。
+
+```text
+POST /_snapshot/my_repository/_verify
+```
+
+##### Request
+
+```text
+POST /_snapshot/<repository>/_verify
+````
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+
+##### Response bdy
+
+- nodes：（object）
+  - `node_id`：（object）某个节点连接到快照仓库的信息。对象中的key是node的ID
+    - name（string）：节点的名字（Human-readable）。你可以在`elasticsearch.yml`中使用[node.name](#####Node name setting)属性定义节点的名字。默认是机器的hostname
 
 #### Repository analysis API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repo-analysis-api.html)
 
 #### Get snapshot repository API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-repo-api.html)
+
+&emsp;&emsp;
 
 #### Delete snapshot repository API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-repo-api.html)
