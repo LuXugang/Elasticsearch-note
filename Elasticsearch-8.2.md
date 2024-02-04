@@ -29432,6 +29432,8 @@ POST my-data-stream/_async_search
 
 ##### ignore_unavailable
 
+##### Hidden data streams and indices
+
 ##### allow_no_indices
 
 #### Byte size units
@@ -33113,7 +33115,108 @@ POST /_snapshot/my_repository/_cleanup
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clone-snapshot-api.html)
 
 #### Create snapshot API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-snapshot-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-snapshot-api.html)
+
+&emsp;&emsp;指定data stream和Index生成一个快照。见[take a snapshot](###Create a snapshot)。
+
+```text
+PUT /_snapshot/my_repository/my_snapshot
+```
+
+##### Request
+
+```text
+PUT /_snapshot/<repository>/<snapshot>
+POST /_snapshot/<repository>/<snapshot>
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`create_snapshot`、`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Path parameters
+
+- `<repository>`：（Required, string）快照仓库的名字
+- `<snapshot>`：（Required, string）快照的名字。支持[date math](####Date math support in index and index alias names)。在快照仓库中必须名字唯一
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- wait_for_completion：（Optional, Boolean）如果为`true`，当快照完成后才返回一个响应。如果为`false`，当快照初始化结束就返回一个响应。默认值是`false`
+
+##### Request body
+
+- expand_wildcards：（Optional, string）决定在`indices`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+- ignore_unavailable：（Optional, Boolean）如果为`false`，如果任意的data streams或indices丢失或者关闭会导致生成快照失败。如果为`true`，快照会忽略data streams或indices丢失或者关闭。默认值为`false`
+- include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
+  - [Persistent cluster settings](####Cluster and node setting types)
+  - [Index templates](##Index templates)
+  - [Legacy index templates](####Create or update index template API)
+  - [Ingest pipelines](##Ingest pipelines)
+  - [ILM policies](###ILM: Manage the index lifecycle)
+  - For snapshots taken after 7.12.0, [feature states](####Feature states)
+- indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](####Multi-target syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
+  - 你不能使用这个参数来包含或者排除[system indices or system data streams](#####System indices)，可以转而使用下面的feature_states参数
+- feature_states：（Optional, array of strings）将[Feature states ](####Feature states)包含到快照中。若要获取可能的值以及他们的描述，可以使用[get features API](####Get Features API)
+  - 如果`include_global_state`为`true`，快照默认包含所有的feature states。否则不包含
+  - 注意的是指定一个空数组会产生默认行为。若要排除素有的feature states，并且不用关心`include_global_state`是何值，则可以指定一个只有`none`值的数组（`["none"]`）
+- metadata：（Optional, object）任意的附加快照的一些元数据。比如记录哪个人生成了快照，为什么要生成快照，或者其他有用的数据。元数据大小必须小于1024个字节
+- partial：（Optional, Boolean）如果为`false`，那么当一个或者多个索引的所有主分片不是都可用，那么整个快照会失败。默认值为`false`。否则允许对可用的分片进行快照并且得到一个不完整的快照
+
+##### Examples
+
+&emsp;&emsp;下面的请求创建了包含`index_1`和`index_2`的快照。
+
+```text
+PUT /_snapshot/my_repository/snapshot_2?wait_for_completion=true
+{
+  "indices": "index_1,index_2",
+  "ignore_unavailable": true,
+  "include_global_state": false,
+  "metadata": {
+    "taken_by": "user123",
+    "taken_because": "backup before upgrading"
+  }
+}
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshot": {
+    "snapshot": "snapshot_2",
+    "uuid": "vdRctLCxSketdKb54xw67g",
+    "repository": "my_repository",
+    "version_id": <version_id>,
+    "version": <version>,
+    "indices": [],
+    "data_streams": [],
+    "feature_states": [],
+    "include_global_state": false,
+    "metadata": {
+      "taken_by": "user123",
+      "taken_because": "backup before upgrading"
+    },
+    "state": "SUCCESS",
+    "start_time": "2020-06-25T14:00:28.850Z",
+    "start_time_in_millis": 1593093628850,
+    "end_time": "2020-06-25T14:00:28.850Z",
+    "end_time_in_millis": 1593094752018,
+    "duration_in_millis": 0,
+    "failures": [],
+    "shards": {
+      "total": 0,
+      "failed": 0,
+      "successful": 0
+    }
+  }
+}
+```
 
 #### Get snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-api.html)
@@ -33240,9 +33343,18 @@ POST /_snapshot/my_repository/_cleanup
 &emsp;&emsp;参考[elasticsearch-reset-password ](###elasticsearch-reset-password)工具来为内置的用户重置密码。
 
 ### Manage existing periodic indices with ILM
-（8.2）[link](hhttps://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-with-existing-periodic-indices.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-with-existing-periodic-indices.html)
 
 &emsp;&emsp;见[Apply policies to existing time series indices](####Apply policies to existing time series indices)。
+
+### Multi-target syntax-1
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-index.html#hidden)
+
+&emsp;&emsp;见[Multi-target syntax](####Multi-target syntax)。
+
+#### Hidden data streams and indices-1
+
+&emsp;&emsp;见[Hidden data streams and indices](#####Hidden data streams and indices)。
 
 ### Request body search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-request-body.html)
