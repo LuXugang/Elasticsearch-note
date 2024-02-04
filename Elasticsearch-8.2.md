@@ -33086,7 +33086,72 @@ GET /_search
 - [Delete snapshot](####Delete snapshot API)
 
 #### Create or update snapshot repository API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-snapshot-repo-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-snapshot-repo-api.html)
+
+&emsp;&emsp;注册或更新一个[snapshot repository](###Register a snapshot repository)。
+
+```text
+PUT /_snapshot/my_repository
+{
+  "type": "fs",
+  "settings": {
+    "location": "my_backup_location"
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /_snapshot/<repository>
+POST /_snapshot/<repository>
+````
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+- 若要注册一个快照仓库，集群的全局元数据必须是可写的。确保没有任何[cluster blocks](######Metadata)阻止写入
+
+##### Path parameters
+
+- `<repository>`：（Required, string）注册或更新的快照仓库名字
+
+##### Query parameter
+
+> IMPORTANT：这个API的有些选项可以通过请求参数（query parameter）或者请求体（query body）指定。如果同时指定了，那么只会使用请求参数。
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- verify：（Optional, Boolean）如果为`true`，那么请求会验证是否在所有master和数据节点上都功能正常。如果为`false`，则跳过验证。默认值为`true`
+  - 你可以通过[verify snapshot repository API](####Verify snapshot repository API)手动执行验证操作。
+
+##### Request body
+
+- type：（Required, string）仓库类型
+  - azure：[Azure repository](####Azure repository)
+  - gcs：[Google Cloud Storage repository](####Google Cloud Storage repository)
+  - s3：[S3 repository](####S3 repository)
+  - fs：[Shared file system repository](####Shared file system repository)
+  - source：[Source-only repository](####Source-only repository)
+  - url：[Read-only URL repository](####Read-only URL repository)
+  
+  其他仓库类型可以通过官方插件实现使用
+  
+  - hdfs：[Hadoop Distributed File System (HDFS) repository](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/repository-hdfs.html)
+
+- settings：（Required, object）仓库设置。根据不同的仓库类型支持的选项各不相同：
+  - [Azure repository](####Azure repository)
+  - [Google Cloud Storage repository](####Google Cloud Storage repository)
+  - [S3 repository](####S3 repository)
+  - [Shared file system repository](####Shared file system repository)
+  - [Read-only URL repository](####Read-only URL repository)
+  - [Source-only repository](####Source-only repository)
+  
+  其他仓库类型可以通过官方插件实现使用
+  
+  - [Hadoop Distributed File System (HDFS) repository](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/repository-hdfs.html)
+  
+- verify：（Optional, Boolean）如果为`true`，那么请求会验证是否在所有master和数据节点上都功能正常。如果为`false`，则跳过验证。默认值为`true`
+  - 你可以通过[verify snapshot repository API](####Verify snapshot repository API)手动执行验证操作。
 
 #### Verify snapshot repository API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/verify-snapshot-repo-api.html)
