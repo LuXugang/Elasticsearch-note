@@ -33063,7 +33063,51 @@ DELETE /_snapshot/my_repository
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 #### Clean up snapshot repository API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clean-up-snapshot-repo-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clean-up-snapshot-repo-api.html)
+
+&emsp;&emsp;触发对快照仓库的审查并且删除不会现有快照引用的陈旧数据。见[Clean up a repository](####Clean up a repository)。
+
+```text
+POST /_snapshot/my_repository/_cleanup
+```
+
+##### Request
+
+```text
+POST /_snapshot/<repository>/_cleanup
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+
+##### Response body
+
+- result：（object）包含清理操作的统计信息
+  - deleted_bytes：（integer ）清理操作释放的字节数
+  - deleted_blobs：（integer ）在清理过程中从快照仓库移除的二进制大对象（Binary Large OBjects即blobs）的数量
+
+##### Example
+
+```text
+POST /_snapshot/my_repository/_cleanup
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "results": {
+    "deleted_bytes": 20,
+    "deleted_blobs": 5
+  }
+}
+```
 
 #### Clone snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clone-snapshot-api.html)
