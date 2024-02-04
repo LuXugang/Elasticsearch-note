@@ -33219,7 +33219,495 @@ PUT /_snapshot/my_repository/snapshot_2?wait_for_completion=true
 ```
 
 #### Get snapshot API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-api.html)
+
+&emsp;&emsp;获取一个或多个快照的信息。
+
+```text
+GET /_snapshot/my_repository/my_snapshot
+```
+
+##### Request
+
+```text
+GET /_snapshot/<repository>/<snapshot>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`monitor_snapshot`、`create_snapshot`、`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+  - 若要获取集群中所有注册的快照仓库，移除这个参数或者使用`*`或`_all`
+- `<Snapshot>`：（Required,string）快照名字用逗号隔开。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+  - 若要获取某个已注册的仓库中的所有快照，使用通配符（`*`）或者`_all`
+  - 使用`_current`获取当前正在运行的快照
+
+> NOTE：所有存在不可用的快照，使用`_all`的请求会失败。将ignore_unavailable(见下文中的请求参数)设置为`true`来返回可见的快照。
+
+##### Query parameters
+
+- master_timeout：（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，任何快照如果不可见的话则请求返回一个错误。默认为`false`
+- verbose：（Optional, Boolean）如果为`true`，返回每一个快照额外的信息，比如生成快照的Elasticsearch版本，快照的开始结束时间，快照中的分片数量。默认是`true`。如果为`false`。则省略这些额外的信息
+- index_details：（Optional, Boolean）如果为`true`，返回快照中每一个索引的额外信息，例如索引中的分片数量，索引的大小（单位字节），索引中每一个分片中的段的树林。默认是`false`，意味着这些信息会被省略
+- sort：（Optional, string）对结果进行排序。默认是`start_time`。比如根据快照处理的开始时间进行排序
+  - start_time：根据快照处理的开始时间排序，如果相同则继续使用快照名字排序
+  - duration：根据创建快照花费的时间排序，如果相同则继续使用快照名字排序
+  - name：根据快照名字排序
+  - repository：根据仓库名字排序，如果相同则继续使用快照名字排序
+  - index_count：根据快照中包含的索引数量排序，如果相同则继续使用快照名字排序
+  - shard_count：根据快照中包含的分片数量排序，如果相同则继续使用快照名字排序
+  - failed_shard_count：根据没能写进快照的分片数量排序，如果相同则继续使用快照名字排序
+- size：（Optional, integer）返回的最大快照数量。默认值为`0`意味着没有限制
+- order：（Optional, string）排序方式。合法值为`asc`即升序或者`desc`即降序。默认值为`asc`。即默认是升序
+- from_sort_value：（Optional, string）从一个有序的字段中的某个值开始检索。当根据快照或仓库名字排序时，该值可以是一个string类型，当根据索引或分片数量排序时，该值可以是一个数值或者毫秒
+- after：（Optional, string）该值是一个偏移标识符用于分页查询，它来源于上一次分页查询的响应中`next`字段的值。使用这个参数跟`from_sort_value`是互斥的
+- offset：（Optional, integer）该值是一个数值偏移，描述分页查询中的开始位置。使用一个non-zero值，它与`after`参数是互斥的
+- slm_policy_filter：（Optional, string）根据快照所属SLM策略的名字，一个或者多个，用逗号隔开来过滤快照。支持通配符(`\*`)包括使用以`-`开头进行排除的组合通配符。例如`*,-policy-a-\*`将会返回所有的快照，以`policy-a-`开头的SLM策略名创建的快照除外。注意的是通配符`*`匹配了所有的由SLM策略创建的快照，不会匹配不是由SLM策略创建的快照。若要包含不是由SLM策略创建的快照，你可以使用特殊的`_none`，那么将会匹配所有不是由SLM策略创建的快照
+
+> NOTE：`after`参数和`next`字段允许在迭代快照时提供一些关于快照的并发创建或删除的一致性保证。它保证了任何在迭代开始时存在且未被并发删除的快照将在迭代过程中被看到。在迭代过程中可能会看到并发创建的快照。
+
+> NOTE：当参数`verbose`为false时，`size`, `order`, `after`, `from_sort_value`, `offset`, `slm_policy_filter` 以及 `sort`参数将不被支持。且verbose=false的请求的排序顺序是未定义的。
+
+##### Response body
+
+- snapshot：（string）快照的名字
+- uuid：（string）快照的UUID
+- version_id：（int）用来创建快照的Elasticsearch的构建ID
+- version：（float）用来创建快照的Elasticsearch的版本号
+- indices：（array）快照中包含的索引列表
+- index_details：（object）快照中每一个索引的详细信息。索引名作为key。只有设置了请求参数`index_details`才会呈现，并且足够较近版本的Elasticsearch中才包含索引的详细信息
+  - shard_count：（integer）索引中分片数量
+  - size：（string）索引中分片大小总量。只有设置了请求参数`?human`才会显示
+  - size_in_bytes：（long）索引中分片大小总量（单位字节）
+  - max_segments_per_shard：（integer）Maximum number of segments per shard in this index snapshot
+- data_streams：（array of strings）快照中包含的[data streams](##Data streams)列表
+- include_global_state：（Boolean）快照中是否包含当前的集群状态
+- feature_states：（array of objects）快照中的[feature states](####Feature states)。只有当快照中包含一个或者多个feature states时才展示
+  - feature_name：（string）feature的名字，通过[get features API](####Get Features API)返回
+  - indices：（array of strings）feature state中的索引
+- start_time：（string）快照处理的开始时间（Date timestamp）
+- start_time_in_millis：（long）快照处理的开始时间（时间戳）
+- end_time：（string）快照处理的结束时间（Date timestamp）
+- end_time_in_millis：（long）快照处理的结束时间（时间戳）
+- duration_in_millis：（long）创建快照花费的时间
+- failures：（array）创建快照时遇到的失败列表
+- shard：（object）快照中包含的分片数量
+  - total：（integer）快照中包含的分片数量总和
+  - successful：（integer）快照中成功写入的分片数量总和
+  - failed：（integer）快照中没能写入的分片数量总和
+  - total分片数是指尝试进行快照的分片总数，而successful和failed分别表示成功和失败的分片数
+- state：（string）
+  - 该字段可以是以下的值：
+    - IN_PROGRESS：快照当前正在运行
+    - SUCCESS：快照已经完成并且所有的分片都成功存储了
+    - FAILED：快照已经完成但是出现了错误并且没能存储任何数据
+    - PARTIAL：存储了全局的集群状态，但是至少有一个分片数据没能成功存储。响应中`failure`部分会包含分片为什么没能被正确处理的相信原因
+- next：（string）如果请求中包含了一个size limit并且如果有更多的结果。那么`next`会被添加到响应中，随后这个字段的值可以作为下一次请求中的`after`来获取更多的值。
+- total：（integer）忽略size limit或者`after`参数，当前请求匹配到的快照数量
+- remaining：（integer）由于size limit使得还有一定数量的快照未返回，未返回的数量用该字段描述。随后可以使用`next`的值用于下一次请求更多的结果。
+
+##### Example
+
+&emsp;&emsp;下面的请求返回了快照仓库`my_repository`中名为`snapshot_2`的快照
+
+```text
+GET /_snapshot/my_repository/snapshot_2
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_2",
+      "uuid": "vdRctLCxSketdKb54xw67g",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 1,
+  "remaining": 0
+}
+```
+
+&emsp;&emsp;下面的请求返回了快照仓库`my_repository`中快照名以`snapshot`开头的快照。
+
+```text
+GET /_snapshot/my_repository/snapshot*?size=2&sort=name
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_1",
+      "uuid": "dKb54xw67gvdRctLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    },
+    {
+      "snapshot": "snapshot_2",
+      "uuid": "vdRctLCxSketdKb54xw67g",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.130Z",
+      "start_time_in_millis": 1593093628851,
+      "end_time": "2020-07-06T21:55:18.130Z",
+      "end_time_in_millis": 1593094752019,
+      "duration_in_millis": 1,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "next": "c25hcHNob3RfMixteV9yZXBvc2l0b3J5LHNuYXBzaG90XzI=",
+  "total": 3,
+  "remaining": 1
+}
+
+```
+
+&emsp;&emsp;接下里的请求来获取剩余的快照（上一个请求中remaining的值为1，说明没有返回所有的快照），使用上面响应中`next`的值作为下一次请求参数`after`的值。
+
+```text
+GET /_snapshot/my_repository/snapshot*?size=2&sort=name&after=c25hcHNob3RfMixteV9yZXBvc2l0b3J5LHNuYXBzaG90XzI=
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_3",
+      "uuid": "dRctdKb54xw67gvLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 3,
+  "remaining": 0
+}
+```
+
+&emsp;&emsp;获取使用偏移值`2`来跳过已经获取的两个快照也能获取相同的结果。
+
+```text
+GET /_snapshot/my_repository/snapshot*?size=2&sort=name&offset=2
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_3",
+      "uuid": "dRctdKb54xw67gvLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 3,
+  "remaining": 0
+}
+```
+
+&emsp;&emsp;下面的请求返回了快照仓库`my_repository`中快照名以`snapshot`开头的快照，除了名为`snapshot_3`的快照。
+
+```text
+GET /_snapshot/my_repository/snapshot*,-snapshot_3?sort=name
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_1",
+      "uuid": "dKb54xw67gvdRctLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    },
+    {
+      "snapshot": "snapshot_2",
+      "uuid": "vdRctLCxSketdKb54xw67g",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.130Z",
+      "start_time_in_millis": 1593093628851,
+      "end_time": "2020-07-06T21:55:18.130Z",
+      "end_time_in_millis": 1593094752019,
+      "duration_in_millis": 1,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 2,
+  "remaining": 0
+}
+```
+
+&emsp;&emsp;当使用默认的升序，并且按照快照名字排序，下面的请求返回了在`snapshot_2`之后的所有快照：
+
+```text
+GET /_snapshot/my_repository/*?sort=name&from_sort_value=snapshot_2
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_2",
+      "uuid": "vdRctLCxSketdKb54xw67g",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.130Z",
+      "start_time_in_millis": 1593093628851,
+      "end_time": "2020-07-06T21:55:18.130Z",
+      "end_time_in_millis": 1593094752019,
+      "duration_in_millis": 1,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    },
+    {
+      "snapshot": "snapshot_3",
+      "uuid": "dRctdKb54xw67gvLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.129Z",
+      "start_time_in_millis": 1593093628850,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593094752018,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 2,
+  "remaining": 0
+}
+```
+
+&emsp;&emsp;当使用默认的升序，并且按照快照处理的开始时间排序，下面的请求返回了快照名以`snapshot_`开头并且快照处理的开始时间在`1577833200000`(Jan 1st 2020) 之后（包含）的所有快照：
+
+```text
+GET /_snapshot/my_repository/snapshot_*?sort=start_time&from_sort_value=1577833200000
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "snapshots": [
+    {
+      "snapshot": "snapshot_1",
+      "uuid": "dKb54xw67gvdRctLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.128Z",
+      "start_time_in_millis": 1593093628849,
+      "end_time": "2020-07-06T21:55:18.129Z",
+      "end_time_in_millis": 1593093628850,
+      "duration_in_millis": 1,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    },
+    {
+      "snapshot": "snapshot_2",
+      "uuid": "vdRctLCxSketdKb54xw67g",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.130Z",
+      "start_time_in_millis": 1593093628851,
+      "end_time": "2020-07-06T21:55:18.130Z",
+      "end_time_in_millis": 1593093628851,
+      "duration_in_millis": 0,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    },
+    {
+      "snapshot": "snapshot_3",
+      "uuid": "dRctdKb54xw67gvLCxSket",
+      "repository": "my_repository",
+      "version_id": <version_id>,
+      "version": <version>,
+      "indices": [],
+      "data_streams": [],
+      "feature_states": [],
+      "include_global_state": true,
+      "state": "SUCCESS",
+      "start_time": "2020-07-06T21:55:18.131Z",
+      "start_time_in_millis": 1593093628852,
+      "end_time": "2020-07-06T21:55:18.135Z",
+      "end_time_in_millis": 1593093628856,
+      "duration_in_millis": 4,
+      "failures": [],
+      "shards": {
+        "total": 0,
+        "failed": 0,
+        "successful": 0
+      }
+    }
+  ],
+  "total": 3,
+  "remaining": 0
+}
+```
 
 #### Get snapshot status API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-status-api.html)
