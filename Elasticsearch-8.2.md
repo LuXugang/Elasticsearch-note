@@ -29474,240 +29474,120 @@ POST my-data-stream/_async_search
 
 ##### Query parameter
 
-###### bytes
+- bytes：（Optional，[byte size units](####Byte size units)）展示字节值的单位。
+- format：（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
+- full_id：（Optional，Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
+- h：（Optional，string）需要展示的列名，使用逗号分隔。
+  - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
+  - 可选的列包括：
+    - ip、i：（default）IP地址，比如`127.0.1.1`
+    - heap.percent、hp、heapPercent：（default）配置的最大堆内存，比如`7`
+    - heap.max、hm、heapMax：（default）堆内存总量，比如`4gb`
+    - ram.percent、rp、ramPercent：（default）已使用的内存百分比，比如`47`
+    - file_desc.percent、fdp、fileDescriptorPercent：（default）已使用的文件描述符的百分比，比如``
+    - node.role、r、role、nodeRole：（default）节点的角色，返回的值包括:
+      - `c`（cold node）
+      - `d`（data node）
+      - `f`（frozen node）
+      - `h`（hot node）
+      - `i`（ingest node）
+      - `l`（machine learning node）
+      - `m`（master-eligiable node）
+      - `r`（remote cluster client node）
+      - `s`（content node）
+      - `t`（transform node）
+      - `v`（voting-only node）
+      - `w`（warm node）
+      - `-` （coordinating node only）
+      - 比如说，`dim`说的是master-eligiable、data、ingest node。见[Node](####Node)。
+    - master、m：（default）节点是否为elected master node。返回的值有
+      - `*`（elected master）
+      - `-`（not elected master）
+    - name、n：（default）节点名字，比如`I8hydUG`
+    - id、nodeId：节点的ID，比如`k0zy`
+    - pid、p：进程ID、比如`13061`
+    - port、po：绑定的transport port、比如`9300`
+    - http_address、http：绑定的http地址，比如`127.0.0.0:9200`
+    - version、v：Elasticsearch的版本，比如`8.2.3`
+    - build，d：构建Elasticsearch的哈希值，比如`5c03844`
+    - jdk、j：Java版本，比如`1.8.0`
+    - disk.total、dt、diskTotal：磁盘总空间，比如`458.3gb`
+    - disk.used、du、diskUsed：已使用的磁盘空间、比如`259.8gb`
+    - disk.avail、d、disk、diskAvail：可用的磁盘空间，比如`198.4gb`
+    - disk.used_percent、dup、diskUsedPercent：已使用的磁盘空间百分比，比如`47`
+    - heap.current、hc、heapCurrent：Used heap, such as `311.2mb`
+    - ram.current、rc、ramCurrent：Used total memory, such as `513.4mb`
+    - ram.max、rm、ramMax：内存总量、比如`2.9gb`
+    - file_desc.current、fdc、fileDescriptorCurrent：已使用的文件描述符数量，比如`123`
+    - file_desc.max、fdm、fileDescriptorMax：文件描述符数量最大值，比如`2014`
+    - cpu：最近CPU使用量百分比，比如`12`
+    - load_1m、l：最近的负载均值，比如`0.22`
+    - load_5m、l：最近5分钟的负载均值，比如`0.78`
+    - load_15m、l：最近15分钟的负载均值，比如`1.24`
+    - uptime、u：节点在线时长，比如`17.3m`
+    - completion.size、cs、completionSize：Size of completion, such as 0b.
+    - fielddata.memory_size、fm、fielddataMemory：[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
+    - fielddata.evictions、fe、fielddataEvictions：清除掉的fielddata cache的内存量，比如`0`
+    - query_cache.memory_size、qcm、queryCacheMemory：查询缓存（query cache）占用的内存量，比如`0b`
+    - query_cache.evictions、qce、queryCacheEvictions：清除掉的query cache的内存量，比如`0`
+    - query_cache.hit_count、qchc、queryCacheHitCount：命中query cache的次数，比如`0`
+    - query_cache.miss_count、qcmc、queryCacheMissCount：未命中query cache的次数，比如`0`
+    - request_cache.memory_size、rcm、requestCacheMemory：request cache已使用的内存量，比如`0b`
+    - request_cache.evictions、rce、requestCacheEvictions：清除掉的request cache缓存量，比如`0`
+    - request_cache.hit_count、rchc、requestCacheHitCount：命中request cache的次数，比如`0`
+    - request_cache.miss_count、rcmc、requestCacheMissCount：request cache未命中request cache的次数，比如`0：
+    - flush.total、 ft、flushTotal：[flush](####Flush API)的次数，比如`1`
+    - flush.total_time、ftt、flushTotalTime：flush操作花费的时间，比如`1`
+    - get.current、gc、getCurrent：当前GET操作的数量，比如`0`
+    - get.time、gti、getTime：GET操作花费的时间，比如`14ms`
+    - get.total、gto、getTotal：GET操作的数量，比如`2`
+    - get.exists_time、 geti、getExistsTime：GET操作成功花费的时间，比如`14ms`
+    - get.exists_total、geto、getExistsTotal：GET操作成功的数量，比如`2`
+    - get.missing_time、gmti、getMissingTime：GET操作失败花费的时间，比如`0s`
+    - get.missing_total、gmto、getMissingTotal：GET操作失败的数量，比如`1`
+    - indexing.delete_current、idc、indexingDeleteCurrent：当前DELETE操作的数量，比如`0`
+    - indexing.delete_time、idti、indexingDeleteTime：DELETE操作花费的时间，比如`2ms`
+    - indexing.delete_total、idto、indexingDeleteTotal：DELETE操作的数量，比如`2`
+    - indexing.index_current、iic、indexingIndexCurrent：当前索引操作的数量，比如`0`
+    - indexing.index_time、iiti、indexingIndexTime：索引操作花费的时间。比如`134ms`
+    - indexing.index_total、iito、indexingIndexTotal：索引操作的数量，比如`1`
+    - indexing.index_failed、iif、indexingIndexFailed：索引操作失败的数量，比如`0`
+    - merges.current、mc、mergesCurrent：当前merge操作的数量，比如`0`
+    - merges.current_docs、mcd、mergesCurrentDocs：当前merge操作中文档的数量，比如`0`
+    - merges.current_size、mcs、mergesCurrentSize：当前merge的大小，比如`0b`
+    - merges.total、mt、mergesTotal：完成merge操作的数量，比如`0`
+    - merges.total_docs、mtd、mergesTotalDocs：完成合并的文档数量，比如`0`
+    - merges.total_size、mts、mergesTotalSize：Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
+    - merges.total_time、mtt、mergesTotalTime：合并文档花费的时间，比如`0s`
+    - refresh.total、rto、refreshTotal：[refresh](####Refresh API)的数量，比如`16`
+    - refresh.time、rti、refreshTime：refresh花费的时间，比如`91ms`
+    - script.compilations、scrcc、scriptCompilations：script compilations的次数、比如`17`
+    - script.cache_evictions、scrce、scriptCacheEvictions：通过cache进行script compilations的次数、比如`6`
+    - search.fetch_current、sfc、searchFetchCurrent：当前fetch阶段操作，比如`0`
+    - search.fetch_time、sfti、searchFetchTime：fetch阶段花费的时间，比如`37ms`
+    - search.fetch_total、sfto、searchFetchTotal：fetch操作的数量，比如`7`
+    - search.open_contexts、so、searchOpenContexts：已打开的search context的数量，比如`0`
+    - search.query_current、sqc、searchQueryCurrent：当前query阶段的操作，比如`0`
+    - search.query_time、sqti、searchQueryTime：query阶段花费的时间，比如`43ms`
+    - search.query_total、sqto、searchQueryTotal：query操作的数量，比如`9`
+    - search.scroll_current、scc、searchScrollCurrent：已打开的scroll context的数量，比如`2`
+    - search.scroll_time、scti、searchScrollTime：已打开的scroll context的保留时间，比如`2m`
+    - search.scroll_total、scto、searchScrollTotal：已完成的scroll context的数量，比如`1`
+    - segments.count、sc、segmentsCount：段的数量，例如`4`
+    - segments.memory、sm、segmentsMemory：段的内存使用量，例如`4`
+    - segments.index_writer_memory、siwm、segmentsIndexWriterMemory：index writer的内存使用量，例如`1.4kb`
+    - segments.version_map_memory、svmm、segmentsVersionMapMemory：版本映射（version map）的内存使用量，例如`1.0kb`
+    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](####Nested field type)类型的域和[join](####Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
+    - suggest.current、suc、suggestCurrent：当前suggest操作的数量，比如`0`
+    - suggest.time、suti、suggestTime：suggest花费的时间，例如`0`
+    - suggest.total、suto、suggestTotal：suggest操作的数量，比如`0`
 
-&emsp;&emsp;（Optional，[byte size units](####Byte size units)）展示字节值的单位。
-
-###### format
-
-&emsp;&emsp;（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
-
-###### full_id
-
-&emsp;&emsp;（Optional，Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
-
-###### h
-
-&emsp;&emsp;（Optional，string）需要展示的列名，使用逗号分隔。
-
-&emsp;&emsp;如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
-
-&emsp;&emsp;可选的列包括：
-
-- ip、i
-&emsp;&emsp;（default）IP地址，比如`127.0.1.1`
-- heap.percent、hp、heapPercent
-&emsp;&emsp;（default）配置的最大堆内存，比如`7`
-- heap.max、hm、heapMax
-&emsp;&emsp;（default）堆内存总量，比如`4gb`
-- ram.percent、rp、ramPercent
-&emsp;&emsp;（default）已使用的内存百分比，比如`47`
-- file_desc.percent、fdp、fileDescriptorPercent
-&emsp;&emsp;（default）已使用的文件描述符的百分比，比如``
-- node.role、r、role、nodeRole
-  &emsp;&emsp;（default）节点的角色，返回的值包括:
-  - `c`（cold node）
-  - `d`（data node）
-  - `f`（frozen node）
-  - `h`（hot node）
-  - `i`（ingest node）
-  - `l`（machine learning node）
-  - `m`（master-eligiable node）
-  - `r`（remote cluster client node）
-  - `s`（content node）
-  - `t`（transform node）
-  - `v`（voting-only node）
-  - `w`（warm node）
-  - `-` （coordinating node only）
-
-&emsp;&emsp;比如说，`dim`说的是master-eligiable、data、ingest node。见[Node](####Node)。
-
-- master、m
-&emsp;&emsp;（default）节点是否为elected master node。返回的值有
-
-  - `*`（elected master）
-  - `-`（not elected master）
-
-- name、n
-&emsp;&emsp;（default）节点名字，比如`I8hydUG`
-- id、nodeId
-&emsp;&emsp;节点的ID，比如`k0zy`
-- pid、p
-&emsp;&emsp;进程ID、比如`13061`
-- port、po
-&emsp;&emsp;绑定的transport port、比如`9300`
-- http_address、http
-&emsp;&emsp;绑定的http地址，比如`127.0.0.0:9200`
-- version、v
-&emsp;&emsp;Elasticsearch的版本，比如`8.2.3`
-- build，d
-&emsp;&emsp;构建Elasticsearch的哈希值，比如`5c03844`
-- jdk、j
-&emsp;&emsp;Java版本，比如`1.8.0`
-- disk.total、dt、diskTotal
-&emsp;&emsp;磁盘总空间，比如`458.3gb`
-- disk.used、du、diskUsed
-&emsp;&emsp;已使用的磁盘空间、比如`259.8gb`
-- disk.avail、d、disk、diskAvail
-&emsp;&emsp;可用的磁盘空间，比如`198.4gb`
-- disk.used_percent、dup、diskUsedPercent
-&emsp;&emsp;已使用的磁盘空间百分比，比如`47`
-- heap.current、hc、heapCurrent
-&emsp;&emsp;Used heap, such as `311.2mb`
-- ram.current、rc、ramCurrent
-&emsp;&emsp;Used total memory, such as `513.4mb`
-- ram.max、rm、ramMax
-&emsp;&emsp;内存总量、比如`2.9gb`
-- file_desc.current、fdc、fileDescriptorCurrent
-&emsp;&emsp;已使用的文件描述符数量，比如`123`
-- file_desc.max、fdm、fileDescriptorMax
-&emsp;&emsp;文件描述符数量最大值，比如`2014`
-- cpu
-&emsp;&emsp;最近CPU使用量百分比，比如`12`
-- load_1m、l
-&emsp;&emsp;最近的负载均值，比如`0.22`
-- load_5m、l
-&emsp;&emsp;最近5分钟的负载均值，比如`0.78`
-- load_15m、l
-&emsp;&emsp;最近15分钟的负载均值，比如`1.24`
-- uptime、u
-&emsp;&emsp;节点在线时长，比如`17.3m`
-- completion.size、cs、completionSize
-&emsp;&emsp;Size of completion, such as 0b.
-- fielddata.memory_size、fm、fielddataMemory
-&emsp;&emsp;[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
-- fielddata.evictions、fe、fielddataEvictions
-&emsp;&emsp;清除掉的fielddata cache的内存量，比如`0`
-- query_cache.memory_size、qcm、queryCacheMemory
-&emsp;&emsp;查询缓存（query cache）占用的内存量，比如`0b`
-- query_cache.evictions、qce、queryCacheEvictions
-&emsp;&emsp;清除掉的query cache的内存量，比如`0`
-- query_cache.hit_count、qchc、queryCacheHitCount
-&emsp;&emsp;命中query cache的次数，比如`0`
-- query_cache.miss_count、qcmc、queryCacheMissCount
-&emsp;&emsp;未命中query cache的次数，比如`0`
-- request_cache.memory_size、rcm、requestCacheMemory
-&emsp;&emsp;request cache已使用的内存量，比如`0b`
-- request_cache.evictions、rce、requestCacheEvictions
-&emsp;&emsp;清除掉的request cache缓存量，比如`0`
-- request_cache.hit_count、rchc、requestCacheHitCount
-&emsp;&emsp;命中request cache的次数，比如`0`
-- request_cache.miss_count、rcmc、requestCacheMissCount
-&emsp;&emsp;request cache未命中request cache的次数，比如`0`
-- flush.total、 ft、flushTotal
-&emsp;&emsp;[flush](####Flush API)的次数，比如`1`
-- flush.total_time、ftt、flushTotalTime
-&emsp;&emsp;flush操作花费的时间，比如`1`
-- get.current、gc、getCurrent
-&emsp;&emsp;当前GET操作的数量，比如`0`
-- get.time、gti、getTime
-&emsp;&emsp;GET操作花费的时间，比如`14ms`
-- get.total、gto、getTotal
-&emsp;&emsp;GET操作的数量，比如`2`
-- get.exists_time、 geti、getExistsTime
-&emsp;&emsp;GET操作成功花费的时间，比如`14ms`
-- get.exists_total、geto、getExistsTotal
-&emsp;&emsp;GET操作成功的数量，比如`2`
-- get.missing_time、gmti、getMissingTime
-&emsp;&emsp;GET操作失败花费的时间，比如`0s`
-- get.missing_total、gmto、getMissingTotal
-&emsp;&emsp;GET操作失败的数量，比如`1`
-- indexing.delete_current、idc、indexingDeleteCurrent
-&emsp;&emsp;当前DELETE操作的数量，比如`0`
-- indexing.delete_time、idti、indexingDeleteTime
-&emsp;&emsp;DELETE操作花费的时间，比如`2ms`
-- indexing.delete_total、idto、indexingDeleteTotal
-&emsp;&emsp;DELETE操作的数量，比如`2`
-- indexing.index_current、iic、indexingIndexCurrent
-&emsp;&emsp;当前索引操作的数量，比如`0`
-- indexing.index_time、iiti、indexingIndexTime
-&emsp;&emsp;索引操作花费的时间。比如`134ms`
-- indexing.index_total、iito、indexingIndexTotal
-&emsp;&emsp;索引操作的数量，比如`1`
-- indexing.index_failed、iif、indexingIndexFailed
-&emsp;&emsp;索引操作失败的数量，比如`0`
-- merges.current、mc、mergesCurrent
-&emsp;&emsp;当前merge操作的数量，比如`0`
-- merges.current_docs、mcd、mergesCurrentDocs
-&emsp;&emsp;当前merge操作中文档的数量，比如`0`
-- merges.current_size、mcs、mergesCurrentSize
-&emsp;&emsp;当前merge的大小，比如`0b`
-- merges.total、mt、mergesTotal
-&emsp;&emsp;完成merge操作的数量，比如`0`
-- merges.total_docs、mtd、mergesTotalDocs
-&emsp;&emsp;完成合并的文档数量，比如`0`
-- merges.total_size、mts、mergesTotalSize
-&emsp;&emsp;Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
-- merges.total_time、mtt、mergesTotalTime
-&emsp;&emsp;合并文档花费的时间，比如`0s`
-- refresh.total、rto、refreshTotal
-&emsp;&emsp;[refresh](####Refresh API)的数量，比如`16`
-- refresh.time、rti、refreshTime
-&emsp;&emsp;refresh花费的时间，比如`91ms`
-- script.compilations、scrcc、scriptCompilations
-&emsp;&emsp;script compilations的次数、比如`17`
-- script.cache_evictions、scrce、scriptCacheEvictions
-&emsp;&emsp;通过cache进行script compilations的次数、比如`6`
-- search.fetch_current、sfc、searchFetchCurrent
-&emsp;&emsp;当前fetch阶段操作，比如`0`
-- search.fetch_time、sfti、searchFetchTime
-&emsp;&emsp;fetch阶段花费的时间，比如`37ms`
-- search.fetch_total、sfto、searchFetchTotal
-&emsp;&emsp;fetch操作的数量，比如`7`
-- search.open_contexts、so、searchOpenContexts
-&emsp;&emsp;已打开的search context的数量，比如`0`
-- search.query_current、sqc、searchQueryCurrent
-&emsp;&emsp;当前query阶段的操作，比如`0`
-- search.query_time、sqti、searchQueryTime
-&emsp;&emsp;query阶段花费的时间，比如`43ms`
-- search.query_total、sqto、searchQueryTotal
-&emsp;&emsp;query操作的数量，比如`9`
-- search.scroll_current、scc、searchScrollCurrent
-&emsp;&emsp;已打开的scroll context的数量，比如`2`
-- search.scroll_time、scti、searchScrollTime
-&emsp;&emsp;已打开的scroll context的保留时间，比如`2m`
-- search.scroll_total、scto、searchScrollTotal
-&emsp;&emsp;已完成的scroll context的数量，比如`1`
-- segments.count、sc、segmentsCount
-&emsp;&emsp;段的数量，例如`4`
-- segments.memory、sm、segmentsMemory
-&emsp;&emsp;段的内存使用量，例如`4`
-- segments.index_writer_memory、siwm、segmentsIndexWriterMemory
-&emsp;&emsp;index writer的内存使用量，例如`1.4kb`
-- segments.version_map_memory、svmm、segmentsVersionMapMemory
-&emsp;&emsp;版本映射（version map）的内存使用量，例如`1.0kb`
-- segments.fixed_bitset_memory、sfbm、fixedBitsetMemory
-&emsp;&emsp;[nested object](####Nested field type)类型的域和[join](####Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
-- suggest.current、suc、suggestCurrent
-&emsp;&emsp;当前suggest操作的数量，比如`0`
-- suggest.time、suti、suggestTime
-&emsp;&emsp;suggest花费的时间，例如`0`
-- suggest.total、suto、suggestTotal
-&emsp;&emsp;suggest操作的数量，比如`0`
-
-###### help
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`。响应中包含帮助信息。默认值为`false`。
-
-###### master_timeout
-
-&emsp;&emsp;（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
-
-###### s
-
-&emsp;&emsp;（Optional, string）用逗号隔开的列名或者列的别名对响应进行排序。
-
-###### time
-
-&emsp;&emsp;（Optional, [time units](####Time units)）展示时间使用的时间单位。
-
-###### v
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，响应中会包含列名。默认为`false`。
-
-###### include_unloaded_segments
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，响应中会包含未载入到内存的段的信息。默认为`false`。
+- help：（Optional, Boolean）如果为`true`。响应中包含帮助信息。默认值为`false`。
+- master_timeout：（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
+- s：（Optional, string）用逗号隔开的列名或者列的别名对响应进行排序。
+- time：（Optional, [time units](####Time units)）展示时间使用的时间单位。
+- v：（Optional, Boolean）如果为`true`，响应中会包含列名。默认为`false`。
+- include_unloaded_segments：（Optional, Boolean）如果为`true`，响应中会包含未载入到内存的段的信息。默认为`false`。
 
 ##### Examples
 
@@ -29771,196 +29651,106 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Query parameter
 
-###### bytes
+- bytes：（Optional，[byte size units](####Byte size units)）展示字节值的单位。
 
-&emsp;&emsp;（Optional，[byte size units](####Byte size units)）展示字节值的单位。
+- format：（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
 
-###### format
+- h：（Optional，string）需要展示的列名，使用逗号分隔。
+  - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
+  - 可选的列包括：
+    - index、i、idx：（default）索引的名字
+    - shard、s、sh：（default）分片的名字
+    - prirep、p、pr、primaryOrReplica：（default）分片类型，返回值为`primary`或者`replica`
+    - state、st：（default）分片状态。返回的值有：
+      - `INITIALIZING`：分片正在从对等节点（peer shard）或者gateway中恢复
+      - `RELOCATING`：分片正在分配中（relocating）
+      - `STARTED`：分片已启用（started）
+      - `UNASSIGNED`：分片还未分配给任何一个节点
+    - docs、d、dc：（default）分片中文档的数量，比如`25`
+    - store、sto：（default）分片的磁盘使用量，比如`5kb`
+    - ip：（default）节点的IP地址，比如`127.0.1.1`
+    - id：（default）节点的ID，比如`k0zy`
+    - node、n：（default）节点的名字，比如`I8hydUG`
+    - completion.size、cs、completionSize：Size of completion, such as 0b.
+    - fielddata.memory_size、fm、fielddataMemory：[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
+    - fielddata.evictions、fe、fielddataEvictions：清除掉的fielddata cache的内存量，比如`0`
+    - flush.total、 ft、flushTotal：[flush](####Flush API)的次数，比如`1`
+    - flush.total_time、ftt、flushTotalTimeflush操作花费的时间，比如`1`
+    - get.current、gc、getCurrent当前GET操作的数量，比如`0`
+    - get.time、gti、getTimeGET操作花费的时间，比如`14ms`
+    - get.total、gto、getTotal：GET操作的数量，比如`2`
+    - get.exists_time、 geti、getExistsTime：GET操作成功花费的时间，比如`14ms`   
+    - get.exists_total、geto、getExistsTotal：GET操作成功的数量，比如`2`
+    - get.missing_time、gmti、getMissingTime：GET操作失败花费的时间，比如`0s`
+    - get.missing_total、gmto、getMissingTotal：GET操作失败的数量，比如`1`
+    - indexing.delete_current、idc、indexingDeleteCurrent：当前DELETE操作的数量，比如`0`
+    - indexing.delete_time、idti、indexingDeleteTime：DELETE操作花费的时间，比如`2ms`
+    - indexing.delete_total、idto、indexingDeleteTotal：DELETE操作的数量，比如`2`
+    - indexing.index_current、iic、indexingIndexCurrent：当前索引（indexing）操作的数量，比如`0`
+    - indexing.index_time、iiti、indexingIndexTime：索引操作花费的时间，比如`134ms`
+    - indexing.index_total、iito、indexingIndexTotal：索引操作的数量，比如`1`
+    - indexing.index_failed、iif、indexingIndexFailed：索引操作失败的数量，比如`0`
+    - merges.current、mc、mergesCurrent：当前merge操作的数量，比如`0`
+    - merges.current_docs、mcd、mergesCurrentDocs：当前merge操作中文档的数量，比如`0`
+    - merges.current_size、mcs、mergesCurrentSize：当前merge的大小，比如`0b`
+    - merges.total、mt、mergesTotal：完成merge操作的数量，比如`0`
+    - merges.total_docs、mtd、mergesTotalDocs：完成合并的文档数量，比如`0`
+    - merges.total_size、mts、mergesTotalSize：Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
+    - merges.total_time、mtt、mergesTotalTime：合并文档花费的时间，比如`0s`
+    - query_cache.memory_size、qcm、queryCacheMemory：查询缓存（query cache）占用的内存量，比如`0b`
+    - query_cache.evictions、qce、queryCacheEvictions：清除掉的查询缓存的内存量，比如`0`
+    - recoverysource.type、rs：Type of recovery source
+    - refresh.total、rto、refreshTotal：[refresh](####Refresh API)的数量，比如`16`
+    - refresh.time、rti、refreshTime：refresh花费的时间，比如`91ms`
+    - search.fetch_current、sfc、searchFetchCurrent：当前fetch阶段操作，比如`0`
+    - search.fetch_time、sfti、searchFetchTime：fetch阶段花费的时间，比如`37ms`
+    - search.fetch_total、sfto、searchFetchTotal：fetch操作的数量，比如`7`
+    - search.open_contexts、so、searchOpenContexts：已打开的search context的数量，比如`0`
+    - search.query_current、sqc、searchQueryCurrent：当前query阶段的操作，比如`0`
+    - search.query_time、sqti、searchQueryTime：query阶段花费的时间，比如`43ms`
+    - search.query_total、sqto、searchQueryTotal：query操作的数量，比如`9`
+    - search.scroll_current、scc、searchScrollCurrent：已打开的scroll context的数量，比如`2`
+    - search.scroll_time、scti、searchScrollTime：已打开的scroll context的保留时间，比如`2m`
+    - search.scroll_total、scto、searchScrollTotal：已完成的scroll context的数量，比如`1`
+    - segments.count、sc、segmentsCount：段的数量，例如`4`
+    - segments.memory、sm、segmentsMemory：段的内存使用量，例如`4`
+    - segments.index_writer_memory、siwm、segmentsIndexWriterMemory：index writer的内存使用量，例如`1.4kb`
+    - segments.version_map_memory、svmm、segmentsVersionMapMemory：版本映射（version map）的内存使用量，例如`1.0kb`
+    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](####Nested field type)类型的域和[join](####Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
+    - seq_no.global_checkpoint、sqg、globalCheckpoint：全局检查点（global checkpoint）
+    - seq_no.local_checkpoint、sql、localCheckpoint：本地检查点（local checkpoint）
+    - seq_no.max、sqm、maxSeqNo：sequence数值最大值
+    - suggest.current、suc、suggestCurrent：当前suggest操作的数量，比如`0`
+    - suggest.time、suti、suggestTime：suggest花费的时间，例如`0`
+    - suggest.total、suto、suggestTotal：suggest操作的数量，比如`0`
+    - sync_id：分片的Sync ID 
+    - unassigned.at, ua：成为未分配分片的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
+    - unassigned.details, ud：某个分片成为未分配分片的详细原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) 
+    - unassigned.for, uf：分片被要求成为未分配的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
+    - unassigned.reason, ur：未分配分片的状态上一次发生变更的原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) ，返回的值包括：
+      - ALLOCATION_FAILED：分片分配操作发生故障导致未分配
+      - CLUSTER_RECOVERED：[full cluster recovery](###Full cluster restart upgrade)导致未分配
+      - DANGLING_INDEX_IMPORTED：正在导入[dangling index](#####Dangling indices)导致未分配
+      - EXISTING_INDEX_RESTORED：正在恢复成一个closed index导致未分配
+      - FORCED_EMPTY_PRIMARY：The shard’s allocation was last modified by forcing an empty primary using the [Cluster reroute API](####Cluster reroute API)
+      - INDEX_CLOSED：index被关闭了导致未分配
+      - INDEX_CREATED：Unassigned as a result of an API creation of an index
+      - INDEX_REOPENED：正在打开一个关闭的索引导致未分配
+      - MANUAL_ALLOCATION：分片的分配因为上一次通过[Cluster reroute API](####Cluster reroute API)进行了变更
+      - NEW_INDEX_RESTORED：正在恢复成一个新的索引导致未分配
+      - NODE_LEFT：节点正在离开集群导致未分配
+      - NODE_RESTARTING：类似NODE_LEFT，只是节点通过[Node shutdown API](###Node lifecycle APIs)进行重启以及注册到集群
+      - PRIMARY_FAILED：分片正在初始化为一个副本分片（replica），但是在初始化完成之前主分片发生了故障
+      - REALLOCATED_REPLICA：识别到了一个更好的副本分片位置使得现有的副本分片被取消了
+      - REINITIALIZED：When a shard moves from started back to initializing
+      - REPLICA_ADDED：显示的（explicit）增加了一个副本分片导致未分配
+      - REROUTE_CANCELLED：显示的取消reroute命令导致未分配
 
-&emsp;&emsp;（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
-
-###### h
-
-&emsp;&emsp;（Optional，string）需要展示的列名，使用逗号分隔。
-
-&emsp;&emsp;如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
-
-&emsp;&emsp;可选的列包括：
-
-- index、i、indx
-&emsp;&emsp;（default）索引的名字
-- shard、s、sh
-&emsp;&emsp;（default）分片的名字
-- prirep、p、pr、primaryOrReplica
-&emsp;&emsp;（default）分片类型，返回值为`primary`或者`replica`
-- state、st
-  &emsp;&emsp;（default）分片状态。返回的值有：
-    - `INITIALIZING`：分片正在从对等节点（peer shard）或者gateway中恢复
-    - `RELOCATING`：分片正在分配中（relocating）
-    - `STARTED`：分片已启用（started）
-    - `UNASSIGNED`：分片还未分配给任何一个节点
-- docs、d、dc
-&emsp;&emsp;（default）分片中文档的数量，比如`25`
-- store、sto
-&emsp;&emsp;（default）分片的磁盘使用量，比如`5kb`
-- ip
-&emsp;&emsp;（default）节点的IP地址，比如`127.0.1.1`
-- id
-&emsp;&emsp;（default）节点的ID，比如`k0zy`
-- node、n
-&emsp;&emsp;（default）节点的名字，比如`I8hydUG`
-- completion.size、cs、completionSize
-&emsp;&emsp;Size of completion, such as 0b.
-- fielddata.memory_size、fm、fielddataMemory
-&emsp;&emsp;[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
-- fielddata.evictions、fe、fielddataEvictions
-&emsp;&emsp;清除掉的fielddata cache的内存量，比如`0`
-- flush.total、 ft、flushTotal
-&emsp;&emsp;[flush](####Flush API)的次数，比如`1`
-- flush.total_time、ftt、flushTotalTime
-&emsp;&emsp;flush操作花费的时间，比如`1`
-- get.current、gc、getCurrent
-&emsp;&emsp;当前GET操作的数量，比如`0`
-- get.time、gti、getTime
-&emsp;&emsp;GET操作花费的时间，比如`14ms`
-- get.total、gto、getTotal
-&emsp;&emsp;GET操作的数量，比如`2`
-- get.exists_time、 geti、getExistsTime
-&emsp;&emsp;GET操作成功花费的时间，比如`14ms`
-- get.exists_total、geto、getExistsTotal
-&emsp;&emsp;GET操作成功的数量，比如`2`
-- get.missing_time、gmti、getMissingTime
-&emsp;&emsp;GET操作失败花费的时间，比如`0s`
-- get.missing_total、gmto、getMissingTotal
-&emsp;&emsp;GET操作失败的数量，比如`1`
-- indexing.delete_current、idc、indexingDeleteCurrent
-&emsp;&emsp;当前DELETE操作的数量，比如`0`
-- indexing.delete_time、idti、indexingDeleteTime
-&emsp;&emsp;DELETE操作花费的时间，比如`2ms`
-- indexing.delete_total、idto、indexingDeleteTotal
-&emsp;&emsp;DELETE操作的数量，比如`2`
-- indexing.index_current、iic、indexingIndexCurrent
-&emsp;&emsp;当前索引（indexing）操作的数量，比如`0`
-- indexing.index_time、iiti、indexingIndexTime
-&emsp;&emsp;索引操作花费的时间，比如`134ms`
-- indexing.index_total、iito、indexingIndexTotal
-&emsp;&emsp;索引操作的数量，比如`1`
-- indexing.index_failed、iif、indexingIndexFailed
-&emsp;&emsp;索引操作失败的数量，比如`0`
-- merges.current、mc、mergesCurrent
-&emsp;&emsp;当前merge操作的数量，比如`0`
-- merges.current_docs、mcd、mergesCurrentDocs
-&emsp;&emsp;当前merge操作中文档的数量，比如`0`
-- merges.current_size、mcs、mergesCurrentSize
-&emsp;&emsp;当前merge的大小，比如`0b`
-- merges.total、mt、mergesTotal
-&emsp;&emsp;完成merge操作的数量，比如`0`
-- merges.total_docs、mtd、mergesTotalDocs
-&emsp;&emsp;完成合并的文档数量，比如`0`
-- merges.total_size、mts、mergesTotalSize
-&emsp;&emsp;Size of current merges, such as `0b`.（怎么跟merges.current_size、mcs、mergesCurrentSize是一样的？）
-- merges.total_time、mtt、mergesTotalTime
-&emsp;&emsp;合并文档花费的时间，比如`0s`
-- query_cache.memory_size、qcm、queryCacheMemory
-&emsp;&emsp;查询缓存（query cache）占用的内存量，比如`0b`
-- query_cache.evictions、qce、queryCacheEvictions
-&emsp;&emsp;清除掉的查询缓存的内存量，比如`0`
-- recoverysource.type、rs
-&emsp;&emsp;Type of recovery source
-- refresh.total、rto、refreshTotal
-&emsp;&emsp;[refresh](####Refresh API)的数量，比如`16`
-- refresh.time、rti、refreshTime
-&emsp;&emsp;refresh花费的时间，比如`91ms`
-- search.fetch_current、sfc、searchFetchCurrent
-&emsp;&emsp;当前fetch阶段操作，比如`0`
-- search.fetch_time、sfti、searchFetchTime
-&emsp;&emsp;fetch阶段花费的时间，比如`37ms`
-- search.fetch_total、sfto、searchFetchTotal
-&emsp;&emsp;fetch操作的数量，比如`7`
-- search.open_contexts、so、searchOpenContexts
-&emsp;&emsp;已打开的search context的数量，比如`0`
-- search.query_current、sqc、searchQueryCurrent
-&emsp;&emsp;当前query阶段的操作，比如`0`
-- search.query_time、sqti、searchQueryTime
-&emsp;&emsp;query阶段花费的时间，比如`43ms`
-- search.query_total、sqto、searchQueryTotal
-&emsp;&emsp;query操作的数量，比如`9`
-- search.scroll_current、scc、searchScrollCurrent
-&emsp;&emsp;已打开的scroll context的数量，比如`2`
-- search.scroll_time、scti、searchScrollTime
-&emsp;&emsp;已打开的scroll context的保留时间，比如`2m`
-- search.scroll_total、scto、searchScrollTotal
-&emsp;&emsp;已完成的scroll context的数量，比如`1`
-- segments.count、sc、segmentsCount
-&emsp;&emsp;段的数量，例如`4`
-- segments.memory、sm、segmentsMemory
-&emsp;&emsp;段的内存使用量，例如`4`
-- segments.index_writer_memory、siwm、segmentsIndexWriterMemory
-&emsp;&emsp;index writer的内存使用量，例如`1.4kb`
-- segments.version_map_memory、svmm、segmentsVersionMapMemory
-&emsp;&emsp;版本映射（version map）的内存使用量，例如`1.0kb`
-- segments.fixed_bitset_memory、sfbm、fixedBitsetMemory
-&emsp;&emsp;[nested object](####Nested field type)类型的域和[join](####Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
-- seq_no.global_checkpoint、sqg、globalCheckpoint
-&emsp;&emsp;全局检查点（global checkpoint）
-- seq_no.local_checkpoint、sql、localCheckpoint
-&emsp;&emsp;本地检查点（local checkpoint）
-- seq_no.max、sqm、maxSeqNo
-&emsp;&emsp;sequence数值最大值
-- suggest.current、suc、suggestCurrent
-&emsp;&emsp;当前suggest操作的数量，比如`0`
-- suggest.time、suti、suggestTime
-&emsp;&emsp;suggest花费的时间，例如`0`
-- suggest.total、suto、suggestTotal
-&emsp;&emsp;suggest操作的数量，比如`0`
-- sync_id
-&emsp;&emsp;分片的Sync ID 
-- unassigned.at, ua
-&emsp;&emsp;成为未分配分片的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
-- unassigned.details, ud
-  某个分片成为未分配分片的详细原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) 
-- unassigned.for, uf
-&emsp;&emsp;分片被要求成为未分配的时间（[Coordinated Universal Time (UTC)](https://en.wikipedia.org/wiki/List_of_UTC_offsets)）
-- unassigned.reason, ur
-  &emsp;&emsp;未分配分片的状态上一次发生变更的原因。This does not explain why the shard is currently unassigned。若要理解为什么某个分片没有被分片，使用[Cluster allocation explain ](####Cluster allocation explain API) ，返回的值包括：
-
-  - ALLOCATION_FAILED：分片分配操作发生故障导致未分配
-  - CLUSTER_RECOVERED：[full cluster recovery](###Full cluster restart upgrade)导致未分配
-  - DANGLING_INDEX_IMPORTED：正在导入[dangling index](#####Dangling indices)导致未分配
-  - EXISTING_INDEX_RESTORED：正在恢复成一个closed index导致未分配
-  - FORCED_EMPTY_PRIMARY：The shard’s allocation was last modified by forcing an empty primary using the [Cluster reroute API](####Cluster reroute API)
-  - INDEX_CLOSED：index被关闭了导致未分配
-  - INDEX_CREATED：Unassigned as a result of an API creation of an index
-  - INDEX_REOPENED：正在打开一个关闭的索引导致未分配
-  - MANUAL_ALLOCATION：分片的分配因为上一次通过[Cluster reroute API](####Cluster reroute API)进行了变更
-  - NEW_INDEX_RESTORED：正在恢复成一个新的索引导致未分配
-  - NODE_LEFT：节点正在离开集群导致未分配
-  - NODE_RESTARTING：类似NODE_LEFT，只是节点通过[Node shutdown API](###Node lifecycle APIs)进行重启以及注册到集群
-  - PRIMARY_FAILED：分片正在初始化为一个副本分片（replica），但是在初始化完成之前主分片发生了故障
-  - REALLOCATED_REPLICA：识别到了一个更好的副本分片位置使得现有的副本分片被取消了
-  - REINITIALIZED：When a shard moves from started back to initializing
-  - REPLICA_ADDED：显示的（explicit）增加了一个副本分片导致未分配
-  - REROUTE_CANCELLED：显示的取消reroute命令导致未分配
-
-###### help
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`。响应中包含帮助信息。默认值为`false`。
-
-###### master_timeout
-
-&emsp;&emsp;（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
-
-###### s
-
-&emsp;&emsp;（Optional, string）用逗号隔开的列名或者列的别名对响应进行排序
-
-###### time
-
-&emsp;&emsp;（Optional, [time units](####Time units)）展示时间使用的时间单位。
-
-###### v
-
-（Optional, Boolean）如果为`true`，响应中会包含列名。默认为`false`。
+- help：（Optional, Boolean）如果为`true`。响应中包含帮助信息。默认值为`false`。
+- master_timeout：（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
+- s：（Optional, string）用逗号隔开的列名或者列的别名对响应进行排序
+- time：（Optional, [time units](####Time units)）展示时间使用的时间单位。
+- v：（Optional, Boolean）如果为`true`，响应中会包含列名。默认为`false`。
 
 ##### Examples
 
