@@ -33038,7 +33038,29 @@ GET /_snapshot/my_repository
 ```
 
 #### Delete snapshot repository API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-repo-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-repo-api.html)
+
+&emsp;&emsp;注销一个或多个[snapshot repositories](###Register a snapshot repository)。
+
+&emsp;&emsp;当快照仓库注销后，Elasticsearch只是移除了对该位置的引用，这个仓库仍然存放着快照。快照本身保持不变，且位置不动。
+
+##### Request 
+
+```text
+DELETE /_snapshot/my_repository
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Path parameters
+
+- `<repository>`：（Required, string）待注销的快照仓库的名字。可以使用通配符`*`
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 #### Clean up snapshot repository API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clean-up-snapshot-repo-api.html)
