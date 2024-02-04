@@ -33062,7 +33062,49 @@ GET /_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api.html#security-role-mapping-apis)
 
 ### Snapshot and restore APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshot-restore-apis.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshot-restore-apis.html)
+
+&emsp;&emsp;你可以使用下面的APIs来设置快照仓库、管理快照备份以及将快照回到一个运行中的集群中。
+
+&emsp;&emsp;更多信息见[Snapshot and restore](##Snapshot and restore)。
+
+##### Snapshot repository management APIs
+
+- [Create or update snapshot repository](####Create or update snapshot repository API)
+- [Verify snapshot repository](Verify snapshot repository API)
+- [Get snapshot repository](####Get snapshot repository API)
+- [Delete snapshot repository](####Delete snapshot repository API)
+- [Clean up snapshot repository](####Clean up snapshot repository API)
+
+##### Snapshot management APIs
+
+- [Create snapshot](####Create snapshot API)
+- [Clone snapshot](####Clone snapshot API)
+- [Get snapshot](####Get snapshot API)
+- [Get snapshot status](####Get snapshot status API)
+- [Restore snapshot](####Restore snapshot API)
+- [Delete snapshot](####Delete snapshot API)
+
+#### Create or update snapshot repository API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-snapshot-repo-api.html)
+
+#### Verify snapshot repository API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/verify-snapshot-repo-api.html)
+
+#### Repository analysis API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repo-analysis-api.html)
+
+#### Get snapshot repository API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-repo-api.html)
+
+#### Delete snapshot repository API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-repo-api.html)
+
+#### Clean up snapshot repository API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clean-up-snapshot-repo-api.html)
+
+#### Clone snapshot API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clone-snapshot-api.html)
 
 #### Create snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-snapshot-api.html)
@@ -33070,11 +33112,11 @@ GET /_search
 #### Get snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-api.html)
 
-#### Clone snapshot API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clone-snapshot-api.html)
+#### Get snapshot status API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-status-api.html)
 
-#### Repository analysis API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repo-analysis-api.html)
+#### Restore snapshot API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/restore-snapshot-api.html)
 
 #### Delete snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-api.html)
