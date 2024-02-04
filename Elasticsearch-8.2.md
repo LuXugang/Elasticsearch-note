@@ -32977,9 +32977,65 @@ POST /_snapshot/<repository>/_verify
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repo-analysis-api.html)
 
 #### Get snapshot repository API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-repo-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-repo-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取关于一个或多个已注册的[snapshot repositories](###Register a snapshot repository)信息。
+
+##### Request
+
+```text
+GET /_snapshot/<repository>
+GET /_snapsho
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor_snapshot`、`create_snapshot`、`manage` [cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Path parameters
+
+- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+  - 若要获取集群中所有注册的快照仓库，移除这个参数或者使用`*`或`_all`
+
+##### Query parameters
+
+- `local`：（Optional, Boolean）如果为`true`，该请求只从本地节点获取信息。默认是`false`。即从master node获取，默认是`false`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Response body
+
+- `<repository>`：（object）包含快照仓库的信息。object中的key是快照仓库的名字。
+  - type：仓库类型，type的值可以有：
+    - fs：Shared file system repository. See [Shared file system repository](####Shared file system repository)
+    - source：Source-only repository. See [Source-only repository](####Source-only repositor).
+    - url：URL repository. See [Read-only URL repository](####Read-only URL repository).
+    &emsp;&emsp;更多官方插件可以有更多的仓库类型：
+    - [repository-s3](####S3 repository) for S3 repository support
+    - [repository-hdfs](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/repository-hdfs.html) for HDFS repository support in Hadoop environments
+    - [repository-azure](####Azure repository) for Azure storage repositories
+    - [repository-gcs](####Google Cloud Storage repository) for Google Cloud Storage repositories
+
+- settings：（object）包含仓库的设置。`settings`中合法属性取决于仓库类型[type](####Create or update snapshot repository API)
+
+##### Examples
+
+```text
+GET /_snapshot/my_repository
+```
+
+&emsp;&emsp;这个API返回下面的响应：
+
+```text
+{
+  "my_repository" : {
+    "type" : "fs",
+    "uuid" : "0JLknrXbSUiVPuLakHjBrQ",
+    "settings" : {
+      "location" : "my_backup_location"
+    }
+  }
+}
+```
 
 #### Delete snapshot repository API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-repo-api.html)
