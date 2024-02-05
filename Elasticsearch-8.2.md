@@ -33945,7 +33945,44 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 - rename_replacement：（Optional, string）
 
 #### Delete snapshot API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-api.html)
+
+&emsp;&emsp;删除一个[snapshot](##Snapshot and restore)。
+
+```text
+DELETE /_snapshot/my_repository/my_snapshot
+```
+
+##### Request
+
+```text
+DELETE /_snapshot/<repository>/<snapshot>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+- `<repository>`：（Required, string）待删除的快照所在的快照仓库
+- `<snapshot>`：（Required, string）待删除的用逗号隔开的快照名。同样支持通配符（`*`）
+
+##### Example
+
+&emsp;&emsp;下面的请求删除了快照仓库`my_repository`中名为`snapshot_2`和`snapshot_3`的两个快照
+
+```text
+DELETE /_snapshot/my_repository/snapshot_2,snapshot_3
+```
+
+&emsp;&emsp;上面的API返回以下响应：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 ### Snapshot lifecycle management APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshot-lifecycle-management-api.html)
