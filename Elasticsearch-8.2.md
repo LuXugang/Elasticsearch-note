@@ -32562,7 +32562,29 @@ GET /_dangling
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
 
 ### Index lifecycle management APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
+
+&emsp;&emsp;你可以使用下面的API设置策略来自动的管理索引的生命周期。更多关于索引生命周期index lifecycle management (ILM)的信息见[ILM: Manage the index lifecycle](###ILM: Manage the index lifecycle)
+
+##### Policy management APIs
+
+- [Create lifecycle policy](####Create or update lifecycle policy API)
+- [Get lifecycle policy](####Get lifecycle policy API)
+- [Delete lifecycle policy](####Delete lifecycle policy API)
+
+##### Index management APIs
+
+- [Move index to step](####Move to lifecycle step API)
+- [Retry policy on indices](####Retry policy execution API)
+- [Remove policy from index](####Remove policy from index API)
+
+##### Operation management APIs
+
+- [Get ILM operation mode](####Get index lifecycle management status API)
+- [Start ILM](####Start index lifecycle management API)
+- [Stop ILM](####Stop index lifecycle management API)
+- [Explain API](####Explain lifecycle API)
+- [Migrate to data tiers routing API](####Migrate to data tiers routing APIl)
 
 #### Create or update lifecycle policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-put-lifecycle.html)
