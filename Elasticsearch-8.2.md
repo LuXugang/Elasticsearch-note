@@ -32652,6 +32652,7 @@ PUT _ilm/policy/my_policy
 }
 ```
 
+
 &emsp;&emsp;如果请求成功，你会收到如下结果：
 
 ```text
@@ -32783,6 +32784,89 @@ DELETE _ilm/policy/my_policy
 }
 ```
 
+#### Move to lifecycle step API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-move-to-step.html)
+
+&emsp;&emsp;触发执行生命周期策略中的指定的一个步骤。
+
+##### Request
+
+```text
+POST _ilm/move/<index>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+> WARNING：这个操作可能会导致数据丢失。手动将某个索引移动到一个指定步骤，即使该步骤已经执行过也会再次执行。 这是一项潜在的破坏性操作，应将此视为专家级别的API。
+
+&emsp;&emsp;手动将某个索引移动到一个指定步骤并且执行该步骤。你必须在请求体中执行当前步骤和需要执行的步骤。
+
+&emsp;&emsp;如果当前步骤不匹配索引当前正在执行的步骤，请求则会失败。这样的目的是防止索引从一个非期望的步骤移动到下一步。
+
+&emsp;&emsp;当指定了索引被移动的目标阶段（`next_step`）后，`name`或者`action`跟`name`是可选的。如果只指定了阶段（共有Hot、Warm、Cold、Frozen、Delete这五个阶段），索引会被移动到目标阶段的第一个动作的第一步。如果阶段跟动作都制定了，那么索引会被移动到指定阶段的指定动作的第一步。只指定动作是合法的，索引不能被移动不是策略的一部分的步骤。
+
+##### Path parameters
+
+- `<index>`：（Required, string）索引的标识符
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- current_step：（Required, object）
+  - phase：（Required, string）当前阶段的名字，必须匹配这个阶段，通过[explain](###Explain lifecycle API)获取
+  - action：（Required, string）当前动作的名字，必须匹配这个动作，通过[explain](###Explain lifecycle API)获取
+  - name：（Required, string）当前步骤的名字。必须匹配这个步骤，通过[explain](###Explain lifecycle API)获取。如果ILM执行动作时遇到了问题，则会暂定策略的执行，然后转到`ERROR`步骤。如果解决了问题并且尝试让策略继续下去，你必须将`ERROR`指定为当前步骤。更多信息见[ILM error handling](###Troubleshooting index lifecycle management errors)
+- next_step（Required, boject）
+  - phase：（Required, string）你想要执行/恢复的包含动作的阶段名字
+  - action：（Required, string）你要执行/恢复的动作名字
+  - name：（Required, string）你想要移动并且执行的步骤
+
+##### Examples
+
+&emsp;&emsp;下面的例子将名为`my-index-000001`的索引从初始化步骤移动到`forcemerge`步骤：
+
+```text
+POST _ilm/move/my-index-000001
+{
+  "current_step": { 
+    "phase": "new",
+    "action": "complete",
+    "name": "complete"
+  },
+  "next_step": { 
+    "phase": "warm",
+    "action": "forcemerge", 
+    "name": "forcemerge" 
+  }
+}
+```
+
+&emsp;&emsp;第3行，期望索引正处于的步骤
+
+&emsp;&emsp;第8行，你想要执行的步骤
+
+&emsp;&emsp;第10行，索引将被移动到某个动作（可选）
+
+&emsp;&emsp;第11行，索引将被移到某一步骤（可选）
+
+&emsp;&emsp;如果请求成功，你会收到如下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
+
+&emsp;&emsp;如果索引不在`current_step`中指定的`new`阶段，请求将失败。
+
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
 
@@ -32797,6 +32881,8 @@ DELETE _ilm/policy/my_policy
 ##### Path parameters
 
 ##### Query parameters
+
+##### Request body
 
 ##### Examples
 
