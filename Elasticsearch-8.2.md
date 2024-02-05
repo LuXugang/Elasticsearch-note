@@ -34405,6 +34405,40 @@ POST _slm/start
 }
 ```
 
+#### Stop snapshot lifecycle management API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-stop.html)
+
+&emsp;&emsp;关闭snapshot lifecycle management (SLM)。
+
+##### Request
+
+```text
+POST /_slm/stop
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;暂停所有的snapshot lifecycle management (SLM)的操作并且停止SLM插件。当你想要对集群进行维护并且需要防止SLM对你的data streams和indices执行任何操作时是非常有用的。停止SLM不会停止处理中的快照。即使SLM已经停止了，你可以通过[Execute snapshot lifecycle policy](####Execute snapshot lifecycle policy API)手动的触发快照的生成。
+
+&emsp;&emsp;请求再被确认后会马上返回一个响应，但是在处理中的操作完成并且正确的被停止前，插件可能仍然在运行。
+
+&emsp;&emsp;使用[Get snapshot lifecycle management status](####Get snapshot lifecycle management status API)查看SLM是否运行中。
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+```text
+POST _slm/stop
+```
+
 ### SQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
 
