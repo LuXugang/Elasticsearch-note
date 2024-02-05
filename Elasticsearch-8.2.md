@@ -34327,10 +34327,46 @@ GET _slm/status
 }
 ```
 
-
-
 #### Get snapshot lifecycle stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
+
+&emsp;&emsp;返回全局的以及策略层级的由SLM（snapshot lifecycle management）执行的动作（操作）的统计信息。
+
+##### Request
+
+```text
+GET /_slm/stats
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Examples
+
+```text
+GET /_slm/stats
+```
+
+&emsp;&emsp;这个请求返回以下响应：
+
+```text
+{
+  "retention_runs": 13,
+  "retention_failed": 0,
+  "retention_timed_out": 0,
+  "retention_deletion_time": "1.4s",
+  "retention_deletion_time_millis": 1404,
+  "policy_stats": [ ],
+  "total_snapshots_taken": 1,
+  "total_snapshots_failed": 1,
+  "total_snapshots_deleted": 0,
+  "total_snapshot_deletion_failures": 0
+}
+```
+
+### SQL APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
 
 ##### Request
 
@@ -34341,9 +34377,6 @@ GET _slm/status
 ##### Description
 
 ##### Examples
-
-### SQL APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
 
 #### SQL search API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
