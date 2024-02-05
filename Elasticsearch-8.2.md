@@ -34365,6 +34365,46 @@ GET /_slm/stats
 }
 ```
 
+#### Start snapshot lifecycle management API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-start.html)
+
+&emsp;&emsp;开启snapshot lifecycle management (SLM)。
+
+##### Request
+
+```text
+POST /_slm/start
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;如果SLM插件不在运行中，则启动。当形成集群后，SLM会自动开始。只有通过使用[Stop snapshot lifecycle management](####Stop snapshot lifecycle management API)停止SLM插件后，才有手动启动SLM的必要。
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;启动SLM插件：
+
+```text
+POST _slm/start
+```
+
+&emsp;&emsp;如果启动成功，请求返回如下内容：
+
+```text
+{
+  "acknowledged": true
+}
+```
+
 ### SQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
 
