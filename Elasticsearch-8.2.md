@@ -29434,6 +29434,8 @@ POST my-data-stream/_async_search
 
 ##### Hidden data streams and indices
 
+##### System indices
+
 ##### allow_no_indices
 
 #### Byte size units
@@ -33305,7 +33307,7 @@ GET /_snapshot/<repository>/<snapshot>
     - IN_PROGRESS：快照当前正在运行
     - SUCCESS：快照已经完成并且所有的分片都成功存储了
     - FAILED：快照已经完成但是出现了错误并且没能存储任何数据
-    - PARTIAL：存储了全局的集群状态，但是至少有一个分片数据没能成功存储。响应中`failure`部分会包含分片为什么没能被正确处理的相信原因
+    - PARTIAL：存储了全局的集群状态，但是至少有一个分片数据没能成功存储。响应中`failure`部分会包含分片为什么没能被正确处理的详细原因
 - next：（string）如果请求中包含了一个size limit并且如果有更多的结果。那么`next`会被添加到响应中，随后这个字段的值可以作为下一次请求中的`after`来获取更多的值。
 - total：（integer）忽略size limit或者`after`参数，当前请求匹配到的快照数量
 - remaining：（integer）由于size limit使得还有一定数量的快照未返回，未返回的数量用该字段描述。随后可以使用`next`的值用于下一次请求更多的结果。
@@ -33710,10 +33712,198 @@ GET /_snapshot/my_repository/snapshot_*?sort=start_time&from_sort_value=15778332
 ```
 
 #### Get snapshot status API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-status-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-snapshot-status-api.html)
+
+&emsp;&emsp;获取快照中每一个分片当前状态的详细描述。
+
+```text
+GET _snapshot/_status
+```
+
+##### Request
+
+```text
+GET _snapshot/_status
+GET _snapshot/<repository>/_status
+GET _snapshot/<repository>/<snapshot>/_status
+```
+
+##### Prerequisites
+
+
+- 如果开启了Elasticsearch security features，你必须要有`monitor_snapshot`、`create_snapshot`、`manage`的[cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;使用这个API来获取快照中每一个分片当前状态的详细描述。
+
+&emsp;&emsp;如果你忽略`<snapshot>`这个请求参数，那么请求只会获取当前运行中的快照的信息。推介这种方式。
+
+&emsp;&emsp;如果有需要，你可以指定`<repository>`和`<snapshot>`来获取指定快照的信息，即使它们不在运行中。
+
+> WARNING：使用这个API获取任意的快照比获取当前运行中的快照需要的开销更高。这个API会读取快照仓库中每一个快照的每一个分片。例如，如果你有100个快照，每个快照有1000个分片。那么这个API请求读取所有快照时会要求100000次读取（100 snapshots * 1000 shards）
+> 基于你存储介质的延迟，这种请求可能会需要相当长的时间才能返回。这些请求还可能消耗机器资源，并且在使用云存储时，可能会产生高昂的处理成本
+
+##### Path parameters
+
+- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。如果未指定`<snapshot>`，可以支持通配符`*`。
+- `<Snapshot>`：（Required,string）快照名字用逗号隔开用于获取其状态。默认是当前运行中的快照。不支持通配符（`*`）
+
+##### Query parameters
+
+- master_timeout：（Optional, [time units](####Time units)）周期性的等待连接master node。如果在超时前未收到响应，则请求失败并且返回一个错误。默认是`30s`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，任何快照如果不可见的话则请求返回一个错误。默认为`false`
+  - 如果为`true`，请求会忽略不可见的快照，比如那些被损坏或者临时不能返回的快照
+
+##### Response body
+
+- repository：（string）包含快照的仓库名字
+- snapshot：（string）快照的名字
+- uuid：（string）快照的uuid
+- state：（string）快照的当前状态
+  - FAILED：快照已经完成但是出现了错误并且没能存储任何数据
+  - IN_PROGRESS：快照正在运行中
+  - PARTIAL：存储了全局的集群状态，但是至少有一个分片数据没能成功存储。响应中failure部分会包含分片为什么没能被正确处理的详细原因
+  - SUCCESS：快照已经完成并且所有的分片都成功存储了
+- include_global_state：（Boolean）快照中是否会包含集群状态
+- shards_stats：（object）快照中分片的一些计数信息
+  - initializing：（integer）仍然在初始化的分片数量
+  - started：（integer）已经开始但尚未完成的分片数量。这些分片已经开始快照过程，但还没有完成所有必要的步骤。
+  - finalizing：（integer）正在完成但尚未完全完成的分片数量
+  - done：（integer）成功初始化、开始并完成的分片数量
+  - failed：（integer）未能成功包含在快照中的分片数量
+  - total：（integer）快照中包含的总分片数量。这个数字是以上所有状态的分片数之和
+- stats：（object）提供快照中文件的数量和大小的详细信息
+  - incremental：（object）作为增量快照（incremental snapshot）一部分仍需复制的文件的数量和大小。对于已完成的快照，此属性指示作为增量快照一部分而复制的、仓库中原本不存在的文件的数量和大小
+  - processed：（object）已经上传到快照的文件的数量和大小。文件上传后，`processed`的file_count和size_in_bytes会在`stats`中相应增加
+  - total：（object）快照引用的文件的总数量和大小
+  - start_time_in_millis：（long）快照创建过程开始的时间，以毫秒为单位
+  - time_in_millis：（long）快照过程完成所需的总时间，以毫秒为单位
+- `<index>`：（list of objects）快照中索引相关，以列表展示的信息
+  - shards_stats：（object）同上文中的`shards_stats`
+  - stats：（object）同上文中的`stats.`
+  - shards：（list of objects）快照中索引相关，以列表展示的信息
+    - stage：（string）快照中包含的分片的当前状态
+      - DONE：成功存储到快照的分片数量
+      - FAILURE：没有成功存储到快照的分片数量
+      - FINALIZE：在存储到仓库过程中，处于`finalizing`阶段的分片数量
+      - INIT：在存储到仓库过程中，处于`initializing`阶段的分片数量
+      - STARTED：在存储到仓库过程中，处于`started`阶段的分片数量
+    - stats：（object）见上文的`stats`
+    - total：（object）快照引用的文件数量和大小
+    - start_time_in_millis：（long）见上文中的`start_time_in_millis`
+    - time_in_millis：（long）见上文中的`time_in_millis`
+
+##### Example
+
+&emsp;&emsp;下面的请求返回快照仓库`myZ_repository`中名为`snapshot_2`的快照中详细的状态信息。响应中相比较[Get snapshot API](####Get snapshot API)，包含额外的信息，比如分片状态跟文件统计。
+
+```text
+GET _snapshot/my_repository/snapshot_2/_status
+```
+
+```text
+{
+  "snapshots" : [
+    {
+      "snapshot" : "snapshot_2",
+      "repository" : "my_repository",
+      "uuid" : "lNeQD1SvTQCqqJUMQSwmGg",
+      "state" : "SUCCESS",
+      "include_global_state" : false,
+      "shards_stats" : {
+        "initializing" : 0,
+        "started" : 0,
+        "finalizing" : 0,
+        "done" : 1,
+        "failed" : 0,
+        "total" : 1
+      },
+      "stats" : {
+        "incremental" : {
+          "file_count" : 3,
+          "size_in_bytes" : 5969
+        },
+        "total" : {
+          "file_count" : 4,
+          "size_in_bytes" : 6024
+        },
+        "start_time_in_millis" : 1594829326691,
+        "time_in_millis" : 205
+      },
+      "indices" : {
+        "index_1" : {
+          "shards_stats" : {
+            "initializing" : 0,
+            "started" : 0,
+            "finalizing" : 0,
+            "done" : 1,
+            "failed" : 0,
+            "total" : 1
+          },
+          "stats" : {
+            "incremental" : {
+              "file_count" : 3,
+              "size_in_bytes" : 5969
+            },
+            "total" : {
+              "file_count" : 4,
+              "size_in_bytes" : 6024
+            },
+            "start_time_in_millis" : 1594829326896,
+            "time_in_millis" : 0
+          },
+          "shards" : {
+            "0" : {
+              "stage" : "DONE",
+              "stats" : {
+                "incremental" : {
+                  "file_count" : 3,
+                  "size_in_bytes" : 5969
+                },
+                "total" : {
+                  "file_count" : 4,
+                  "size_in_bytes" : 6024
+                },
+                "start_time_in_millis" : 1594829326896,
+                "time_in_millis" : 0
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+```
 
 #### Restore snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/restore-snapshot-api.html)
+
+&emsp;&emsp;恢复集群或者data streams和indices的某个[snapshot](##Snapshot and restore)。
+
+```text
+POST /_snapshot/my_repository/my_snapshot/_restore
+```
+
+##### Request
+
+```text
+POST /_snapshot/<repository>/<snapshot>/_restore
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage`或者` cluster:admin/snapshot/*`的[cluster privilege](#####Cluster privileges)来使用这个API。
+- 你可以将快照只恢复到一个运行中的集群的[master node]()上。快照仓库必须已注册（[registered]()）并且对集群可见
+- 快照跟集群版本必须兼容。见[Snapshot compatibility]()
+- 若要恢复一个快照，集群的全局元数据必须使可写入的。确保没有任何的[cluster blocks]()阻止写入。恢复操作会忽略[index blocks]()
+- 在你恢复一个data stream时，确保集群中包含一个[matching index template ]()并且启用了data stream。可以通过Kibana中的[Index Management]()或者[get index template API]()检查。
+
+```text
+GET _index_template/*?filter_path=index_templates.name,index_templates.index_template.index_patterns,index_templates.index_template.data_stream
+```
+ 
 
 #### Delete snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-api.html)
