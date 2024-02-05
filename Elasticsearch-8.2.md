@@ -25953,7 +25953,7 @@ POST _transform/_preview
 
 &emsp;&emsp;单个节点的集群是不具备弹性的。如果这个节点发生了故障，集群将停止工作。因为在这个单节点的集群中没有replica，你无法存储冗余数据。然而默认情况下`green` [cluster health](####Cluster health API)状态至少需要一个replica。为了你的集群能显示一个`green`状态，可以对每一个索引通过[index.number_of_replicas](#####index.number_of_replicas)设置为`0`。
 
-&emsp;&emsp;如果节点发生故障，你可能需要从[snapshot](###Snapshot module)中恢复会丢失索引数据的较老的拷贝。
+&emsp;&emsp;如果节点发生故障，你可能需要从[snapshot](###Snapshot module-1)中恢复会丢失索引数据的较老的拷贝。
 
 &emsp;&emsp;由于对于任何的故障不具备弹性，我们不建议在生产中使用单节点的集群。
 
@@ -34005,12 +34005,112 @@ DELETE /_snapshot/my_repository/snapshot_2,snapshot_3
 ##### Operation management APIs
 
 - [Get SLM status](####Get snapshot lifecycle management status API)
-- [Get global and policy-level action statistics](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
-- [Start SLM](####Get snapshot lifecycle stats API)
-- [Stop SLM](####Start snapshot lifecycle management API)
+- [Get global and policy-level action statistics](####Get snapshot lifecycle stats API)
+- [Start SLM](####Start snapshot lifecycle management API)
+- [Stop SLM](####Stop snapshot lifecycle management API)
 
 #### Create or update snapshot lifecycle policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-put-policy.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-put-policy.html)
+
+&emsp;&emsp;创建或者更新一个snapshot lifecycle policy。
+
+##### Request
+
+```text
+PUT /_slm/policy/<snapshot-lifecycle-policy-id>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)以及`manage`的Index privilege来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;`create or update snapshot lifecycle policy API`用来创建或更新一个snapshot lifecycle policy。
+
+&emsp;&emsp;如果策略已存在，这个请求会更新策略的版本。只有最新的策略才会被存储。
+
+##### Path parameters
+
+- `<snapshot-lifecycle-policy-id>`：（Required, string）你想要创建或更新的snapshot lifecycle policy的ID
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- config：（Required, object）通过策略创建的每一个快照的配置
+  - expand_wildcards：（Optional, string）决定在indices参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如open, hidden。默认是all。合法值有：
+    - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+    - open：匹配打开的data streams和indices
+    - closed：匹配关闭的data streams和indices
+    - hidden：匹配隐藏的data streams和indices。必须和open、closed中的一个或全部组合使用
+    - none：不展开通配符模式
+  - ignore_unavailable：（Optional, Boolea）如果为`false`，如果任意的data streams或indices丢失或者关闭会导致生成快照失败。如果为`true`，快照会忽略data streams或indices丢失或者关闭。默认值为`false`
+  - include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
+    - [Persistent cluster settings](####Cluster and node setting types)
+    - [Index templates](##Index templates)
+    - [Legacy index templates](####Create or update index template API)
+    - [Ingest pipelines](##Ingest pipelines)
+    - [ILM policies](###ILM: Manage the index lifecycle)
+    - For sna  pshots taken after 7.12.0, [feature states](####Feature states)
+  - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](####Multi-target syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
+    - 你不能使用这个参数来包含或者排除[system indices or system data streams](#####System indices)，可以转而使用下面的feature_states参数
+  - feature_states：（Optional, array of strings）将[Feature states ](####Feature states)包含到快照中。若要获取可能的值以及他们的描述，可以使用[get features API](####Get Features API)
+    - 如果`include_global_state`为`true`，快照默认包含所有的feature states。否则不包含
+    - 注意的是指定一个空数组会产生默认行为。若要排除素有的feature states，并且不用关心`include_global_state`是何值，则可以指定一个只有`none`值的数组（`["none"]`）
+  - metadata：（Optional, object）任意的附加快照的一些元数据。比如记录哪个人生成了快照，为什么要生成快照，或者其他有用的数据。元数据大小必须小于1024个字节
+  - partial：（Optional, Boolean）如果为`false`，那么当一个或者多个索引的所有主分片不是都可用，那么整个快照会失败。默认值为`false`。否则允许对可用的分片进行快照并且得到一个不完整的快照
+- name：（Required, string）通过策略创建的快照会被自动分配一个名字。支持[Date math](###Date math support in system and index alias names-1)。若要防止出现快照名字冲突，UUID会被自动的添加到每一个快照名字的后面
+- repository：（Required, string）用来存储通过策略创建的快照的仓库。这个仓库必须在创建策略之前就已存在。你可以使用[snapshot repository API](###Snapshot module-1)创建一个仓库
+- retention：（Optional, object）保留规则（retention rule）用来保留以及删除策略创建的快照
+  - expire_after：（Optional, [time units](####Time units)）某个时间段后的快照会被认为是过期的并且可以删除。SLM基于[slm.retention_schedule](######slm.retention_schedule)删除过期的快照
+  - max_count：（Optional, string）即使快照尚未过期，也要保留的最大快照数量。如果仓库中的快照数量超过此限制，策略将保留最新的快照并删除较旧的快照。这个限制只包括[state](####Get snapshot API)为`SUCCESS`的快照。
+  - min_count：（Optional, integer）即使快照已经过期，也要保留的最小快照数量
+- schedule：（Required, [Cron syntax](###Cron expressions-1)）
+
+##### Example
+
+&emsp;&emsp;创建一个名为`daily-snapshots`的生命周期策略：
+
+```text
+PUT /_slm/policy/daily-snapshots
+{
+  "schedule": "0 30 1 * * ?", 
+  "name": "<daily-snap-{now/d}>", 
+  "repository": "my_repository", 
+  "config": { 
+    "indices": ["data-*", "important"], 
+    "ignore_unavailable": false,
+    "include_global_state": false
+  },
+  "retention": { 
+    "expire_after": "30d", 
+    "min_count": 5, 
+    "max_count": 50 
+  }
+}
+```
+
+&emsp;&emsp;第3行，生成快照的时间，在这个例子中是每天的1:30am
+
+&emsp;&emsp;第4行，每一个快照给定的名字
+
+&emsp;&emsp;第5行，存储快照的仓库
+
+&emsp;&emsp;第6行，额外的快照配置
+
+&emsp;&emsp;第7行，快照中包含的data streams和indices
+
+&emsp;&emsp;第11行，可选的保留快照的配置
+
+&emsp;&emsp;第12行，快照保留30天
+
+&emsp;&emsp;第13行，总是至少保留最新的5个状态为成功的快照，即使快照30天才过期
+
+&emsp;&emsp;第14行，最多保留不超过50个状态为成功的快照，即使快照30天才过期
 
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
@@ -34094,10 +34194,21 @@ DELETE /_snapshot/my_repository/snapshot_2,snapshot_3
 
 &emsp;&emsp;见[Cluster-level shard allocation settings](#####Cluster-level shard allocation settings)。
 
+### Cron expressions-1
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cron-expressions.html#cron-expressions)
+
+&emsp;&emsp;见[Cron expressions](####Cron expressions)。
+
+
 ### Dangling indices-1
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-gateway-dangling-indices.html)
 
 &emsp;&emsp;见[Dangling indices](#####Dangling indices)。
+
+### Date math support in system and index alias names-1
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-math-index-names.html)
+
+&emsp;&emsp;见[Date math support in index and index alias names](####Date math support in index and index alias names)
 
 ### fielddata mapping parameter(1)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-gateway-dangling-indices.html)
@@ -34139,8 +34250,18 @@ DELETE /_snapshot/my_repository/snapshot_2,snapshot_3
 
 &emsp;&emsp;见[Stored fields](#####Stored fields)。
 
-### Snapshot module
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-snapshots.html)
+### Snapshot module-1
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-snapshots.html)
+
+&emsp;&emsp;见[Snapshot and restore](##Snapshot and restore)
+
+#### Repository plugins
+
+&emsp;&emsp;见[Self-managed repository types.](#####Self-managed repository types)
+
+#### Change index settings during restore
+
+&emsp;&emsp;见[Request body](#####index_settings)
 
 ### Shard allocation awareness-1
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/allocation-awareness.html)
