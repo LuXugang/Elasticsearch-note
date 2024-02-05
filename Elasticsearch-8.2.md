@@ -32567,11 +32567,6 @@ GET /_dangling
 #### Create or update lifecycle policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-put-lifecycle.html)
 
-#### Execute snapshot lifecycle policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-lifecycle.html)
-
-#### Execute snapshot retention policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-retention.html)
 
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
@@ -34221,6 +34216,54 @@ DELETE /_slm/policy/<snapshot-lifecycle-policy-id>
 ```text
 DELETE /_slm/policy/daily-snapshots
 ```
+
+#### Execute snapshot lifecycle policy API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-lifecycle.html)
+
+&emsp;&emsp;不等待定时计划时间，立即根据生命周期策略生成一个快照。
+
+##### Request
+
+```text
+PUT /_slm/policy/<snapshot-lifecycle-policy-id>/_execute
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;手动应用快照策略，立即创建一个快照。快照策略通常根据定时计划时间，但是你可能想要手动的，在执行一次升级或者其他维护之前执行一个策略。
+
+##### Path parameters
+
+- `<policy-id>`：（Required, string ）待执行的snapshot lifecycle policy的ID
+
+##### Example
+
+&emsp;&emsp;若要根据名为`daily-snapshots`的策略立即生成一个快照：
+
+```text
+POST /_slm/policy/daily-snapshots/_execute
+```
+
+&emsp;&emsp;如果成功了，请求会返回生成的快照名：
+
+```text
+{
+  "snapshot_name": "daily-snap-2019.04.24-gwrqoo2xtea3q57vvg0uea"
+}
+```
+
+&emsp;&emsp;快照在后台生成。你可以使用[snapshot APIs](###Snapshot lifecycle management APIs)或者[monitor the status of the snapshot](####Monitor a snapshot)来观察快照生成状态。
+
+&emsp;&emsp;若要查看某个策略对应的最新的快照，你可以使用[get snapshot lifecycle policy API](####Get snapshot lifecycle policy API)。
+
+#### Execute snapshot retention policy API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-retention.html)
+
+
 
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
