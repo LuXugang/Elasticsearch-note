@@ -32870,6 +32870,96 @@ POST _ilm/move/my-index-000001
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
 
+&emsp;&emsp;从某个Index或者data stream的backing indices中移除被分配的生命周期策略。
+
+##### Request
+
+```text
+POST <target>/_ilm/remove
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;对于indices，这个接口将移除indices被分配的生命周期策略并且停止管理策略中指定的索引
+
+&emsp;&emsp;对于data streams，这个接口将移backing indices被分配的生命周期策略并且停止管理策略中指定的索引
+
+##### Path parameters
+
+- `<target>`：（Required, string）用逗号隔开的indices、data stream、aliases的目标名字。支持通配符（`*`）。若要全部的data stream和indices，使用`*`或者`_all`
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;下面的例子将移除名为`my-index-000001`的索引，它被分配的策略。
+
+```text
+POST my-index-000001/_ilm/remove
+```
+
+&emsp;&emsp;如果请求成功，你会收到以下结果：
+
+```text
+{
+  "has_failures" : false,
+  "failed_indexes" : []
+}
+```
+
+#### Retry policy execution API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-retry-policy.html)
+
+&emsp;&emsp;对正处于`ERROR`步骤的索引，重试它对应的策略。
+
+##### Request
+
+```text
+POST <index>/_ilm/retry
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;将策略回到错误发生的地方然后继续步骤。使用[ILM Explain API ](####Explain lifecycle API)查看某个索引是否处于`ERROR`步骤。
+
+##### Path parameters
+
+- `<index>`：（Required, string）用逗号隔开的待重试的索引标识符
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;下面的例子对名为`my-index-000001`的索引进行重试：
+
+```text
+POST my-index-000001/_ilm/retry
+```
+
+&emsp;&emsp;如果请求成功，你会收到以下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
+
+#### Get index lifecycle management status API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-status.html)
+
 &emsp;&emsp;
 
 ##### Request
@@ -32885,9 +32975,6 @@ POST _ilm/move/my-index-000001
 ##### Request body
 
 ##### Examples
-
-#### Get index lifecycle management status API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-status.html)
 
 #### Explain lifecycle API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-explain-lifecycle.html)
