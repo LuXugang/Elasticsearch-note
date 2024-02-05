@@ -34289,12 +34289,54 @@ POST /_slm/_execute_retention
 
 &emsp;&emsp;该操作在后台异步运行。
 
+#### Get snapshot lifecycle management status API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-status.html)
+
+&emsp;&emsp;获取snapshot lifecycle management (SLM)的状态
+
+##### Request
+
+```text
+GET /_slm/status
+```
+
+##### Description
+
+&emsp;&emsp;返回SLM插件的状态。响应中的`operation_mode`域展示了三种状态之一：`RUNNING STOPPING STOPPED`。可以使用[stop](####Stop snapshot lifecycle management API)和[start](####Start snapshot lifecycle management API) API来分别暂定以及重启SLM插件。
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`或`read_slm`的[cluster privilege](#####Cluster privileges)以及`manage`的Index privilege来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Examples
+
+```text
+GET _slm/status
+```
+
+&emsp;&emsp;这个请求返回以下结果：
+
+```text
+{
+  "operation_mode": "RUNNING"
+}
+```
+
+
+
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
 
 ##### Request
 
 ##### Prerequisites
+
+##### Query parameters
 
 ##### Description
 
