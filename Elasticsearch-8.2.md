@@ -33895,15 +33895,54 @@ POST /_snapshot/<repository>/<snapshot>/_restore
 ##### Prerequisites
 
 - 如果开启了Elasticsearch security features，你必须有`manage`或者` cluster:admin/snapshot/*`的[cluster privilege](#####Cluster privileges)来使用这个API。
-- 你可以将快照只恢复到一个运行中的集群的[master node]()上。快照仓库必须已注册（[registered]()）并且对集群可见
-- 快照跟集群版本必须兼容。见[Snapshot compatibility]()
-- 若要恢复一个快照，集群的全局元数据必须使可写入的。确保没有任何的[cluster blocks]()阻止写入。恢复操作会忽略[index blocks]()
-- 在你恢复一个data stream时，确保集群中包含一个[matching index template ]()并且启用了data stream。可以通过Kibana中的[Index Management]()或者[get index template API]()检查。
+- 你可以将快照只恢复到一个运行中的集群的[master node](#####Master-eligible node)上。快照仓库必须已注册（[registered](###Register a snapshot repository)）并且对集群可见
+- 快照跟集群版本必须兼容。见[Snapshot compatibility](####Snapshot compatibility)
+- 若要恢复一个快照，集群的全局元数据必须使可写入的。确保没有任何的[cluster blocks](######Metadata)阻止写入。恢复操作会忽略[index blocks](###Index blocks)
+- 在你恢复一个data stream时，确保集群中包含一个[matching index template ](####Create an index template)并且启用了data stream。可以通过Kibana中的[Index Management](####Manage index templates)或者[get index template API](####Get index template API)检查。
 
 ```text
 GET _index_template/*?filter_path=index_templates.name,index_templates.index_template.index_patterns,index_templates.index_template.data_stream
 ```
- 
+
+&emsp;&emsp;如果没有这样的模板，你可以[create one](####Create the data stream)或者[restore a cluster state](####Restore an entire cluster)，其中包含了这样的模板。没有一个匹配的索引模板，data stream无法roll over或者创建backing indices
+
+- 如果你的快照中包含App Search或者Workplace Search的数据，确保在恢复快照前已经恢复[Enterprise Search encryption key](https://www.elastic.co/guide/en/enterprise-search/8.2/encryption-keys.html)
+
+##### Path parameters
+
+- `<repository>`：（Optional, string）仓库的名字用来读取待恢复的快照
+- `<Snapshot>`：（Required,string）待恢复的快照名字
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- wait_for_completion：（Optional, Boolean）如果为`true`，当恢复操作完成后才返回一个响应。当所有要恢复的索引中的所有主分片都尝试恢复（[recover primary shards](####Monitor a restore)）完成后，这个操作才算是完成。如果一个或者多个恢复尝试失败也是如此
+  - 如果为`false`，当恢复操作初始化结束就返回一个响应。默认值是`false`
+
+##### Request body
+
+- ignore_unavailable：（Optional, Boolean）如果为`true`，并且快照中没有`indices`参数中定义的index或者data stream，那么恢复操作会忽略这些。如果为`false`，则会在遇到任意缺失的index或 data stream之后返回一个错误。默认值为`false`
+- ignore_index_settings：（Optional, string or array of strings）从快照中恢复的索引设置（Index settings）。你不能使用这个选项来忽略[index.number_of_shards]()
+ - 对于data streams，这个选项只能作用于恢复backing indices。新的backing indices使用data streams匹配到的索引模板中的配置
+- include_aliases：（Optional, Boolean）如果为`true`，请求恢复data streams和indices的别名（Alias）。如果为`false`，则不会恢复别名。默认为`true`
+- include_global_state：（Optional, Boolean）如果为`true`，则恢复集群状态。默认是`false`。集群状态包括：
+    - [Persistent cluster settings](####Cluster and node setting types)
+    - [Index templates](##Index templates)
+    - [Legacy index templates](####Create or update index template API)
+    - [Ingest pipelines](##Ingest pipelines)
+    - [ILM policies](###ILM: Manage the index lifecycle)
+    - For snapshots taken after 7.12.0, [feature states](#####Feature states)
+  - 如果`include_global_state`为真，则恢复操作会将集群中的旧版索引模板与快照中包含的模板合并，替换掉任何存在的、名称与快照中的某个模板相匹配的现有模板。它会完全移除所有存在于你的集群中的持久设置、非旧版索引模板、摄取管道和ILM生命周期策略，并用快照中的相应项替换它们。
+  
+    使用`feature_states`参数来配置如何恢复功能状态。
+  
+    如果`include_global_state`为真且一个快照是在没有全局状态的情况下创建的，那么恢复请求将失败。
+- feature_states：（Optional, array of strings）
+- index_settings：（Optional, object）
+- indices：（Optional, string or array of strings）
+- partial：（Optional, Boolean）
+- rename_pattern：（Optional, string）
+- rename_replacement：（Optional, string）
 
 #### Delete snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-snapshot-api.html)
