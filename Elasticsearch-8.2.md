@@ -32587,11 +32587,95 @@ GET /_dangling
 - [Migrate to data tiers routing API](####Migrate to data tiers routing APIl)
 
 #### Create or update lifecycle policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-put-lifecycle.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-put-lifecycle.html)
 
+&emsp;&emsp;创建或更新生命周期策略。见[Index lifecycle](####Index lifecycle)了解策略组成的定义
+
+##### Request
+
+```text
+PUT _ilm/policy/<policy_id>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。你必须在所有的索引上有`manage` [Index privilege](#####Indices privileges)才能通过`policy`管理。ILM（索引生命周期管理）作为最后更新策略的用户执行操作。ILM仅拥有最后一次策略更新时分配给该用户的[role](####Defining roles)。
+
+##### Description
+
+&emsp;&emsp;创建一个生命周期策略。如果指定的策略已经存在，那么就替换该策略并提高版本号。
+
+> NOTE：只有最新版本的策略才会被存储，你不能倒退到之前的版本。
+
+
+##### Path parameters
+
+- `<policy_id>`：（Required, string）策略的标识符
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;下面的例子创建了一个名为`my_policy`的新策略。另外，你可以使用`_meta`参数添加任意的元数据到策略中，这个`_meta`参数是可选的并且不会自动生成，不会被Elasticsearch使用。若要取消`_meta`，可以替换策略而不需要再指定一个。若要检查`_meta`，你可以使用[Get lifecycle policy](####Get lifecycle policy API)。
+
+```text
+PUT _ilm/policy/my_policy
+{
+  "policy": {
+    "_meta": {
+      "description": "used for nginx log",
+      "project": {
+        "name": "myProject",
+        "department": "myDepartment"
+      }
+    },
+    "phases": {
+      "warm": {
+        "min_age": "10d",
+        "actions": {
+          "forcemerge": {
+            "max_num_segments": 1
+          }
+        }
+      },
+      "delete": {
+        "min_age": "30d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果请求成功，你会收到如下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
 
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
+
+&emsp;&emsp;
+
+##### Request
+
+##### Prerequisites
+
+##### Description
+
+##### Path parameters
+
+##### Query parameters
+
+##### Examples
 
 #### Get index lifecycle management status API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-status.html)
