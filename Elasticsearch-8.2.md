@@ -32739,6 +32739,50 @@ GET _ilm/policy/my_policy
 
 &emsp;&emsp;第25行，哪些索引、data streams或者模版正使用这个策略
 
+#### Delete lifecycle policy API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-delete-lifecycle.html)
+
+&emsp;&emsp;删除一个索引生命周期策略。
+
+##### Request
+
+```text
+DELETE _ilm/policy/<policy_id>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;删除指定的生命周期策略定义。你不能删除一个正在被使用的策略。如果策略正在被用于管理任意的索引，请求会失败并且返回一个错误。
+
+##### Path parameters
+
+- `<policy_id>`：（Required, string）策略的标识符
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+
+##### Examples
+
+&emsp;&emsp;下面的例子删除了一个名为`my_policy`的策略：
+
+```text
+DELETE _ilm/policy/my_policy
+```
+
+&emsp;&emsp;当成功删除了一个策略，你会收到以下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
+
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
 
