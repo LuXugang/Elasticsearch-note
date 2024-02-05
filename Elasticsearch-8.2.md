@@ -32660,6 +32660,85 @@ PUT _ilm/policy/my_policy
 }
 ```
 
+#### Get lifecycle policy API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-lifecycle.html)
+
+&emsp;&emsp;获取一个生命周期策略。
+
+##### Request
+
+```text
+GET _ilm/policy
+GET _ilm/policy/<policy_id>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`read_ilm`或`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;返回指定策略的定义。包含了策略版本和最后一次改动的时间。如果没有指定策略，那么返回所有定义好的策略。
+
+##### Path parameters
+
+- `<policy_id>`：（Optional, string）策略的标识符
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;下面的例子获取了一个名为`my_policy`的生命周期策略：
+
+```text
+GET _ilm/policy/my_policy
+```
+
+&emsp;&emsp;如果请求成功，响应中的内容包含了策略定义：
+
+```text
+{
+  "my_policy": {
+    "version": 1, 
+    "modified_date": 82392349, 
+    "policy": {
+      "phases": {
+        "warm": {
+          "min_age": "10d",
+          "actions": {
+            "forcemerge": {
+              "max_num_segments": 1
+            }
+          }
+        },
+        "delete": {
+          "min_age": "30d",
+          "actions": {
+            "delete": {
+              "delete_searchable_snapshot": true
+            }
+          }
+        }
+      }
+    },
+    "in_use_by" : { 
+      "indices" : [],
+      "data_streams" : [],
+      "composable_templates" : []
+    }
+  }
+}
+```
+
+&emsp;&emsp;第3行，当策略更新后，策略版本号则会提高
+
+&emsp;&emsp;第4行，上一次策略更改时间
+
+&emsp;&emsp;第25行，哪些索引、data streams或者模版正使用这个策略
+
 #### Remove policy from index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-remove-policy.html)
 
