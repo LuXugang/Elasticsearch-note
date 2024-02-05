@@ -34194,6 +34194,34 @@ GET _slm/policy/daily-snapshots?human
 GET _slm/policy
 ```
 
+#### Delete snapshot lifecycle policy API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-delete-policy.html)
+
+&emsp;&emsp;删除一个现有的snapshot lifecycle policy
+
+##### Request
+
+```text
+DELETE /_slm/policy/<snapshot-lifecycle-policy-id>
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;删除指定的生命周期策略定义。可以防止新快照的生成，但是不会取消正在进行中的任务，不会移除之前生成的快照。
+
+##### Path parameters
+
+- `<policy-id>`：（Required, string）待删除的snapshot lifecycle policy的ID
+
+##### Examples
+
+```text
+DELETE /_slm/policy/daily-snapshots
+```
+
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
 
