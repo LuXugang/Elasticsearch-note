@@ -34112,11 +34112,91 @@ PUT /_slm/policy/daily-snapshots
 
 &emsp;&emsp;第14行，最多保留不超过50个状态为成功的快照，即使快照30天才过期
 
+#### Get snapshot lifecycle policy API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-policy.html)
+
+&emsp;&emsp;获取一个或者多个snapshot lifecycle policy 的定义以及l最新尝试创建快照成功和失败的信息。
+
+##### Request
+
+```text
+GET _slm/policy/<policy-id>
+GET _slm/policy
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;返回指定策略的定义以及最新尝试创建快照成功和失败的信息。
+
+##### Path parameters
+
+- `<policy-id>`：（Optional, string）用逗号隔开的snapshot lifecycle policy的ID列表
+
+##### Examples
+
+###### Get a specific policy
+
+&emsp;&emsp;获取名为`daily-snapshots`的策略：
+
+```text
+GET _slm/policy/daily-snapshots?human
+```
+
+&emsp;&emsp;这个请求返回以下响应：
+
+```text
+{
+  "daily-snapshots": {
+    "version": 1,                                 
+    "modified_date": "2099-05-06T01:30:00.000Z",  
+    "modified_date_millis": 4081757400000,
+    "policy" : {
+      "schedule": "0 30 1 * * ?",
+      "name": "<daily-snap-{now/d}>",
+      "repository": "my_repository",
+      "config": {
+        "indices": ["data-*", "important"],
+        "ignore_unavailable": false,
+        "include_global_state": false
+      },
+      "retention": {
+        "expire_after": "30d",
+        "min_count": 5,
+        "max_count": 50
+      }
+    },
+    "stats": {
+      "policy": "daily-snapshots",
+      "snapshots_taken": 0,
+      "snapshots_failed": 0,
+      "snapshots_deleted": 0,
+      "snapshot_deletion_failures": 0
+    },
+    "next_execution": "2099-05-07T01:30:00.000Z", 
+    "next_execution_millis": 4081843800000
+  }
+}
+```
+
+&emsp;&emsp;第3行，快照策略的版本号，只有最新版本的策略才会被存储，每次更新策略会增加这个版本号的值
+
+&emsp;&emsp;第4行，上一次策略更改的时间
+
+&emsp;&emsp;第28行，下一次策略执行的时间
+
+###### Get all policy
+
+```text
+GET _slm/policy
+```
+
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
 
-#### Get snapshot lifecycle policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-policy.html)
 
 ### SQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
