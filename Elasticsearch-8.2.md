@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/04）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/05）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -33985,7 +33985,29 @@ DELETE /_snapshot/my_repository/snapshot_2,snapshot_3
 ```
 
 ### Snapshot lifecycle management APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshot-lifecycle-management-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshot-lifecycle-management-api.html)
+
+&emsp;&emsp;你可以使用下面的API设置策略来自动的生成快照并且控制保留时间。
+
+&emsp;&emsp;更多关于snapshot lifecycle management（SLM）的信息见[Automate snapshots with SLM](####Automate snapshots with SLM)。
+
+##### Policy management APIs
+
+- [Create lifecycle policy](####Create or update snapshot lifecycle policy API)
+- [Get lifecycle policy](####Get snapshot lifecycle policy API)
+- [Delete lifecycle policy](####Delete snapshot lifecycle policy API)
+
+##### Snapshot management APIs
+
+- [Execute snapshot lifecycle policy](####Execute snapshot lifecycle policy API) (take snapshots)
+- [Execute snapshot retention policy](####Execute snapshot retention policy API) (delete expired snapshots)
+
+##### Operation management APIs
+
+- [Get SLM status](####Get snapshot lifecycle management status API)
+- [Get global and policy-level action statistics](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
+- [Start SLM](####Get snapshot lifecycle stats API)
+- [Stop SLM](####Start snapshot lifecycle management API)
 
 #### Create or update snapshot lifecycle policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-put-policy.html)
