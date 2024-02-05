@@ -34261,13 +34261,44 @@ POST /_slm/policy/daily-snapshots/_execute
 &emsp;&emsp;若要查看某个策略对应的最新的快照，你可以使用[get snapshot lifecycle policy API](####Get snapshot lifecycle policy API)。
 
 #### Execute snapshot retention policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-retention.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-execute-retention.html)
 
+&emsp;&emsp;根据策略的保留规则，删除过期的快照。
 
+##### Request
+
+```text
+POST /_slm/_execute_retention
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_slm`的[cluster privilege](#####Cluster privileges)来使用这个API。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;手动作用保留策略来强制立即移除过期的快照。保留策略通常根据定时计划时间执行。
+
+##### Examples
+
+&emsp;&emsp;若要强制移除过期的快照：
+
+```text
+POST /_slm/_execute_retention
+```
+
+&emsp;&emsp;该操作在后台异步运行。
 
 #### Get snapshot lifecycle stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/slm-api-get-stats.html)
 
+##### Request
+
+##### Prerequisites
+
+##### Description
+
+##### Examples
 
 ### SQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sql-apis.html)
