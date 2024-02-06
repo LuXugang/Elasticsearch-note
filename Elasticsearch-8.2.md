@@ -32290,9 +32290,8 @@ DELETE /_data_stream/<data-stream>
 
 ##### Prerequisites
 
-
 - 如果开启了Elasticsearch security features，你必须要有这个data stream的`delete_index`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
-- 
+
 ##### Path parameters
 
 - `<data-stream>`：（Required, string）用逗号隔开的待删除的data stream列表。可以使用通配符（`*`）
@@ -32307,14 +32306,123 @@ DELETE /_data_stream/<data-stream>
 &emsp;&emsp;默认是`open`。
 
 #### Get data stream API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-data-stream.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-data-stream.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取一个或多个[data stream]()的信息。见[Get information about a data stream]()。
 
 ##### Request
+
+```text
+GET /_data_stream/my-data-stream
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
 ##### Path parameters
+
+- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名字列表来限制请求量。支持通配符（`*`）。如果忽略这个参数，则返回所有的data stream。
+
 ##### Query parameters
+
+- expand_wildcards：（Optional, string）通配符能匹配的data stream类型。支持多值，例如`open`, `hidden`。合法值有：
+  - all、hidden：匹配任意的data stream，包括[hidden](####Hidden data streams and indices-1)类型
+  - open、closed：匹配除了`hidden`的data stream。不能是已关闭的data stream
+  - none：不展开通配符模式
+
+&emsp;&emsp;默认是`open`。
+
+##### Response body
+
+- data-streams：（array of objects）获取到的data stream信息
+  - name：（string）data stream的名字
+  - timestamp_field：（object）data stream中`@timestamp`字段的信息
+    - name：（string）data stream中时间戳字段的名字，必须是`@timestamp`。添加到data stream中的文档中必须包含`@timestamp`字段
+  - indices：（array of objects）data stream中的backing indices的信息，用数组表示。数组中最后一个backing index是当前data stream的[write index](####Write index)
+    - index_name：（string）backing index的名字，对于名字的一些约定，见[Generation](####Generation)
+    - index_uuid：（string）索引的唯一标识符
+  - generation：（integer）data stream当前的[generation](####Generation)。这个数值表示rollover的统计值，从1开始计数
+  - `_meta`：（object）自定义的元数据，从匹配到的[index template](####Create an index template)中的`_meta`拷贝而来。如果为空，响应中就不展示这个属性
+  - status：（string）data stream的[Health status](####Cluster health API)，健康状态基于stream中backing indices的主分片跟副本分片的状态
+    - green：所有分片都被分配
+    - yellow：所有的主分片已经分配，但是一个或多个副本分片没有被分配
+    - red：一个或多个主分片没有被分配，意味着有些数据是不可见的
+  - template：（string）用来创建data stream的backing indices的索引模板名字
+    - 模版中的`index_patterns`必须能匹配data stream的名字。见[create an index template](####Create an index template)
+  - ilm_policy：（string）data stream匹配的索引模板中的ILM生命周期策略名字。这个生命周期策略设置于`index.lifecycle.name`中。
+    - 如果模版中没有生命周期策略，响应中就不会显示这个属性
+    > NOTE：data stream中的backing indices可能被分配了不同的生命周期策略，若要查看某个单独backing indices的生命周期策略，见[get index settings API](####Get index settings API)
+  
+  - hidden：（Boolean）如果为`true`，data stream是[hidden](####Hidden data streams and indices-1)
+  - system：（Boolean）如果为`true`，data stream是由Elastic stack组件创建管理的并且不能被普通用户修改
+  - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据运行自定义写请求
+  - replicated：（Boolean）如果为`true`。data stream由CCR创建管理，local cluster不能写入到这个data stream或者更改它的mapping
+
+##### Example
+
+```text
+GET _data_stream/my-data-stream*
+```
+
+&emsp;&emsp;这个请求返回以下响应：
+
+```text
+{
+  "data_streams": [
+    {
+      "name": "my-data-stream",
+      "timestamp_field": {
+        "name": "@timestamp"
+      },
+      "indices": [
+        {
+          "index_name": ".ds-my-data-stream-2099.03.07-000001",
+          "index_uuid": "xCEhwsp8Tey0-FLNFYVwSg"
+        },
+        {
+          "index_name": ".ds-my-data-stream-2099.03.08-000002",
+          "index_uuid": "PA_JquKGSiKcAKBA8DJ5gw"
+        }
+      ],
+      "generation": 2,
+      "_meta": {
+        "my-meta-field": "foo"
+      },
+      "status": "GREEN",
+      "template": "my-index-template",
+      "ilm_policy": "my-lifecycle-policy",
+      "hidden": false,
+      "system": false,
+      "allow_custom_routing": false,
+      "replicated": false
+    },
+    {
+      "name": "my-data-stream-two",
+      "timestamp_field": {
+        "name": "@timestamp"
+      },
+      "indices": [
+        {
+          "index_name": ".ds-my-data-stream-two-2099.03.08-000001",
+          "index_uuid": "3liBu2SYS5axasRt6fUIpA"
+        }
+      ],
+      "generation": 1,
+      "_meta": {
+        "my-meta-field": "foo"
+      },
+      "status": "YELLOW",
+      "template": "my-index-template",
+      "ilm_policy": "my-lifecycle-policy",
+      "hidden": false,
+      "system": false,
+      "allow_custom_routing": false,
+      "replicated": false
+    }
+  ]
+}
+```
 
 #### Promote data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
@@ -32325,6 +32433,8 @@ DELETE /_data_stream/<data-stream>
 ##### Prerequisites
 ##### Path parameters
 ##### Query parameters
+##### Response body
+##### Example
 
 ### Document APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
