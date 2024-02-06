@@ -32245,7 +32245,33 @@ DELETE /_internal/desired_nodes
 &emsp;&emsp;更多概念跟教程见[Data streams](##Data streams)。
 
 #### Create data stream API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-data-stream.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-data-stream.html)
+
+&emsp;&emsp;创建一个新的[data stream](##Data streams)。
+
+```text
+PUT /_data_stream/my-data-stream
+```
+
+##### Request
+
+```text
+PUT /_data_stream/<data-stream>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`create_index`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+- 要有data stream能匹配使用的[index template](##Index templates)。见[Set up a data stream](###Set up a data stream)
+
+##### Path parameters
+
+- `<data-stream>`：（Required, string）待创建的data stream的名字。名字必须满足下面的标准：
+  - 只能是小写
+  - 不能包含`\, /, *, ?, ", <, >, |, ,, #, :`以及空格
+  - 不能以` -, _, +, 或者 .ds-`开头
+  - 不能是`.`或`..`
+  - 不能超过255个字节。多字节的字符会更快达到这个上限
 
 #### Delete data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-data-stream.htm)
