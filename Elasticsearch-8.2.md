@@ -13275,7 +13275,7 @@ POST /_index_template/_simulate
 > TIP：如果你要频繁的更新或删除时序数据，使用write index的index alias来替换数据流。见[Manage time series data without data streams](####Manage time series data without data streams)。
 
 ### Set up a data stream 
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-up-a-data-stream.html#set-up-a-data-stream)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-up-a-data-stream.html#set-up-a-data-stream)
 
 &emsp;&emsp;按照下面几个步骤来设置一个数据流
 
@@ -13354,14 +13354,14 @@ PUT _ilm/policy/my-lifecycle-policy
 &emsp;&emsp;当你创建组件模版时，包括：
 
 - 为`@timestamp`字段定义mapping类型，[date](####Date field type)或者[date_nanos](####Date nanoseconds field type)。如果你不指定，Elasticsearch会默认将这个字段作为`date`类型的字段
-- 索引设置`index.lifecycle.nam`中，你的生命周期策略的名字
+- 索引设置`index.lifecycle.name`中给定生命周期策略的名字
 
 > TIP：使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)来映射你的域类型。ECS域默认跟一些Elastic Stack features 集成
 > 如果你不确定如何映射你的域类型，你可以在查询期间使用[runtime fields](####Define runtime fields in a search request)从非结构化的内容[unstructured content](#####Wildcard field type)中提取字段。例如你可以将log message索引到一个`wildcard`域，随后在查询期间从这个域中提取IP地址和其他数据。
 
-&emsp;&emsp;若要创建在kibana中创建一个组件模版，打开主菜单然后跳转到`Stack Management > Index Management`。在`Index Templates`视图中，点击`Create component template`。
+&emsp;&emsp;若要创建在kibana中创建一个组件模版，打开主菜单然后跳转到**Stack Management > Index Management**。在**Index Templates**视图中，点击**Create component template**。
 
-&emsp;&emsp;你也可以使用[create component template API]()创建组件模版。
+&emsp;&emsp;你也可以使用[create component template API](####Create or update component template API)创建组件模版。
 
 ```text
 # Creates a component template for mappings
@@ -13491,15 +13491,224 @@ DELETE _data_stream/my-data-stream
 ```
 
 ### Use a data stream
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/use-a-data-stream.html#manually-roll-over-a-data-stream)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/use-a-data-stream.html#manually-roll-over-a-data-stream)
+
+&emsp;&emsp;在[set up a data stream](###Set up a data stream)之后，你可以：
+
+- [Add documents to a data stream](####Add documents to a data stream)
+- [Search a data stream](####Search a data stream)
+- [Get statistics for a data stream](####Get statistics for a data stream)
+- [Manually roll over a data stream](####Manually roll over a data stream)
+- [Open closed backing indices](####Open closed backing indices)
+- [Reindex with a data stream](####Reindex with a data stream)
+- [Update documents in a data stream by query](####Update documents in a data stream by query)
+- [Delete documents in a data stream by query](####Delete documents in a data stream by query)
+- [Update or delete documents in a backing index](######## Update or delete documents in a backing index)
+
+#### Add documents to a data stream
+
+&emsp;&emsp;若要添加一篇独立的文档，使用[index API](####Index API)。支持[Ingest pipeline](##Ingest pipelines)。
+
+```text
+POST /my-data-stream/_doc/
+{
+  "@timestamp": "2099-03-08T11:06:07.000Z",
+  "user": {
+    "id": "8a4f500d"
+  },
+  "message": "Login successful"
+}
+```
+
+&emsp;&emsp;你不能使用index API中的`PUT/<target>/_doc/<_id>`这种请求格式将一篇文档添加到data stream中。若要指定文档ID，使用`PUT/<target>/_create/<_id>`这种格式刷。只支持`create`类型中的[op_type](####Index API)。
+
+&emsp;&emsp;若要一次请求添加多篇文档，使用[bulk API](####Bulk API)。只支持`create`选项。
+
+```text
+PUT /my-data-stream/_bulk?refresh
+{"create":{ }}
+{ "@timestamp": "2099-03-08T11:04:05.000Z", "user": { "id": "vlb44hny" }, "message": "Login attempt failed" }
+{"create":{ }}
+{ "@timestamp": "2099-03-08T11:06:07.000Z", "user": { "id": "8a4f500d" }, "message": "Login successful" }
+{"create":{ }}
+{ "@timestamp": "2099-03-09T11:07:08.000Z", "user": { "id": "l7gk7f82" }, "message": "Logout successful" }
+```
+
+#### Search a data stream
+
+&emsp;&emsp;data stream支持以下查询：
+
+- [Search](####Search API)
+- [Async search](####Async search)
+- [Multi search](####Multi search API)
+- [Field capabilities](####Field capabilities API)
+- [EQL search](####EQL search API)
+
+#### Get statistics for a data stream
+
+&emsp;&emsp;使用[data stream stats API](####Data stream stats API)获取一个或多个data stream的统计数据。
+
+```text
+GET /_data_stream/my-data-stream/_stats?human=true
+```
 
 #### Manually roll over a data stream
 
+&emsp;&emsp;使用[rollover API](####Rollover API)手动[roll over](####Rollover)一个data stream：
+
+```text
+POST /my-data-stream/_rollover/
+```
+
+#### Open closed backing indices
+
+&emsp;&emsp;你不能搜索一个[closed](####Close index API) backing index，即使是搜索对应的data stream也不行。你不能[update](####Update documents in a data stream by query)或[delete](####Delete documents in a data stream by query)关闭的索引中的文档。
+
+&emsp;&emsp;若要重新打开一个关闭的backing index，向对应的索引直接提交一个[open index API request](####Open index API)：
+
+```text
+POST /.ds-my-data-stream-2099.03.07-000001/_open/
+```
+
+&emsp;&emsp;若要重新打开data stream中所有已关闭的索引，向这个stream提交一个open index API 请求：
+
+```text
+POST /my-data-stream/_open/
+```
+
+#### Reindex with a data stream
+
+&emsp;&emsp;使用[reindex API](####Reindex API)从一个现有的索引、别名。或者data stream中拷贝文档到一个data stream中。因为data stream是[append-only](####Append-only)，因此reindex到一个data stream时必须使用`create`类型为`op_type`的值。reindex不能更新现有文档到一个data stream中。
+
+```text
+POST /_reindex
+{
+  "source": {
+    "index": "archive"
+  },
+  "dest": {
+    "index": "my-data-stream",
+    "op_type": "create"
+  }
+}
+```
+
 #### Update documents in a data stream by query
+
+&emsp;&emsp;使用[update by query API](####Update By Query API)将满足Query的文档更新到一个data stream中。
+
+```text
+POST /my-data-stream/_update_by_query
+{
+  "query": {
+    "match": {
+      "user.id": "l7gk7f82"
+    }
+  },
+  "script": {
+    "source": "ctx._source.user.id = params.new_id",
+    "params": {
+      "new_id": "XgdX0NoX"
+    }
+  }
+}
+```
 
 #### Delete documents in a data stream by query
 
+&emsp;&emsp;使用[delete by query API](####Delete by query API)将满足Query的文档从data stream中删除。
+
 #### Update or delete documents in a backing index
+
+&emsp;&emsp;如果有需要的话，你可以通过往包含文档的backing index中发送请求来更新/删除data stream中的文档。你需要：
+
+- [Document ID](####\_id field)
+- 包含文档的backing index的名字
+- 如果是更新文档，需要[sequence number and primary term](####Optimistic concurrency control)
+
+&emsp;&emsp;若要获取这些信息，使用一个[search request](####Search a data stream)：
+
+```text
+GET /my-data-stream/_search
+{
+  "seq_no_primary_term": true,
+  "query": {
+    "match": {
+      "user.id": "yWIumJd7"
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  "took": 20,
+  "timed_out": false,
+  "_shards": {
+    "total": 3,
+    "successful": 3,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 0.2876821,
+    "hits": [
+      {
+        "_index": ".ds-my-data-stream-2099.03.08-000003",      
+        "_id": "bfspvnIBr7VVZlfp2lqX",              
+        "_seq_no": 0,                               
+        "_primary_term": 1,                         
+        "_score": 0.2876821,
+        "_source": {
+          "@timestamp": "2099-03-08T11:06:07.000Z",
+          "user": {
+            "id": "yWIumJd7"
+          },
+          "message": "Login successful"
+        }
+      }
+    ]
+  }
+}
+```
+
+&emsp;&emsp;第18行，包含文档的backing index
+&emsp;&emsp;第19行，文档的Document ID
+&emsp;&emsp;第20行，文档目前的序号
+&emsp;&emsp;第21行，文档的primary term
+
+&emsp;&emsp;若要更新文档，使用[index API]()并且携带合法的`if_seq_no`和`if_primary_term`参数  ：
+
+```text
+PUT /.ds-my-data-stream-2099-03-08-000003/_doc/bfspvnIBr7VVZlfp2lqX?if_seq_no=0&if_primary_term=1
+{
+  "@timestamp": "2099-03-08T11:06:07.000Z",
+  "user": {
+    "id": "8a4f500d"
+  },
+  "message": "Login successful"
+}
+```
+
+&emsp;&emsp;若要删除文档，使用[delete API](####Delete API)：
+
+```text
+DELETE /.ds-my-data-stream-2099.03.08-000003/_doc/bfspvnIBr7VVZlfp2lqX
+```
+
+&emsp;&emsp;如要使用一个请求来删除/更新多篇文档，使用[buli API](####Bulk API)中的`delete`、`index`以及`update`动作。对于`index`，需要包含合法的[if_seq_no and if_primary_term ](######Optimistic concurrency control)参数。
+
+```text
+PUT /_bulk?refresh
+{ "index": { "_index": ".ds-my-data-stream-2099.03.08-000003", "_id": "bfspvnIBr7VVZlfp2lqX", "if_seq_no": 0, "if_primary_term": 1 } }
+{ "@timestamp": "2099-03-08T11:06:07.000Z", "user": { "id": "8a4f500d" }, "message": "Login successful" }
+```
 
 ### Change mappings and settings for a data stream
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-streams-change-mappings-and-settings.html)
