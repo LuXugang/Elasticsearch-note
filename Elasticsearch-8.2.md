@@ -33238,17 +33238,44 @@ GET my-index-000001/_ilm/explain
 &emsp;&emsp;第24行，出现的问题信息
 
 #### Start index lifecycle management API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-start.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-start.html)
 
-&emsp;&emsp;
+&emsp;&emsp;启动索引生命周期管理插件（index lifecycle management (ILM) plugin）。
+
 ##### Request
+
+```text
+POST /_ilm/start
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
 ##### Description
+
+&emsp;&emsp;如果ILM插件停止了，则启动它。当形成集群后，ILM会自动启动ILM。只有在使用[Stop ILM API](####Stop index lifecycle management API)停止ILM插件后才有必要重新启动它。
+
 ##### Path parameters
-##### Query parameters
-##### Request body
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 ##### Examples
 
+&emsp;&emsp;下面的例子启动了ILM插件。
+
+```text
+POST _ilm/start
+```
+
+&emsp;&emsp;如果请求成功，你会收到以下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
 
 #### Stop index lifecycle management API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-stop.html)
