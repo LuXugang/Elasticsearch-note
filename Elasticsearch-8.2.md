@@ -32230,7 +32230,19 @@ DELETE /_internal/desired_nodes
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-resume-auto-follow-pattern.html)
 
 ### Data stream APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-apis.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-apis.html)
+
+&emsp;&emsp;下面的API用来管理[data stream](##Data streams)：
+
+- [Create data stream](####Create data stream API)
+- [Delete data stream](####Delete data stream API)
+- [Get data stream](####Get data stream API)
+- [Migrate to data stream](####Migrate to data stream API)
+- [Data stream stats](####Data stream stats API)
+- [Promote data stream](####Promote data stream API)
+- [Modify data streams](####Modify data streams API)
+
+&emsp;&emsp;更多概念跟教程见[Data streams](##Data streams)。
 
 #### Create data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-data-stream.html)
