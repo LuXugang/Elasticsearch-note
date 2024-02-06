@@ -33278,17 +33278,46 @@ POST _ilm/start
 ```
 
 #### Stop index lifecycle management API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-stop.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-stop.html)
 
-&emsp;&emsp;
+&emsp;&emsp;停用生命周期管理插件（index lifecycle management (ILM) plugin）。
+
 ##### Request
+
+```text
+POST /_ilm/stop
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
 ##### Description
+
+&emsp;&emsp;暂停所有的生命周期管理操作并且停止ILM插件。当你想要对集群进行维护并且需要防止ILM对你的索引执行任何操作时是非常有用的。
+
+&emsp;&emsp;这个接口在被确认后会马上返回，但是插件可能还会继续运行直到处理中的操作完成并且插件能被正确的停止。使用[Get ILM Status API](####Get index lifecycle management status API)查看ILM是否运行中。
+
 ##### Path parameters
-##### Query parameters
-##### Request body
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 ##### Examples
 
+&emsp;&emsp;下面的例子停用了ILM插件。
+
+```text
+POST _ilm/stop
+```
+
+&emsp;&emsp;如果请求没有遇到错误，你会收到如下结果：
+
+```text
+{
+  "acknowledged": true
+}
+```
 
 ### Machine learning APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ml-apis.html)
