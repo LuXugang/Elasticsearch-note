@@ -32274,13 +32274,57 @@ PUT /_data_stream/<data-stream>
   - 不能超过255个字节。多字节的字符会更快达到这个上限
 
 #### Delete data stream API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-data-stream.htm)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-data-stream.htm)
+
+&emsp;&emsp;删除一个或多个[data streams](##Data streams)以及它们的backing indices。见[Delete a data stream](####Delete a data stream)。
+
+```text
+DELETE /_data_stream/my-data-stream
+```
+
+##### Request
+
+```text
+DELETE /_data_stream/<data-stream>
+```
+
+##### Prerequisites
+
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`delete_index`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+- 
+##### Path parameters
+
+- `<data-stream>`：（Required, string）用逗号隔开的待删除的data stream列表。可以使用通配符（`*`）
+
+##### Query parameters
+
+- expand_wildcards：（Optional, string）通配符能匹配的data stream类型。支持多值，例如`open`, `hidden`。合法值有：
+  - all、hidden：匹配任意的data stream，包括[hidden](####Hidden data streams and indices-1)类型
+  - open、closed：匹配除了`hidden`的data stream。不能是已关闭的data stream
+  - none：不展开通配符模式
+
+&emsp;&emsp;默认是`open`。
 
 #### Get data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-data-stream.html)
 
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+
 #### Promote data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
+
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
 
 ### Document APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
