@@ -32958,26 +32958,62 @@ POST my-index-000001/_ilm/retry
 ```
 
 #### Get index lifecycle management status API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-status.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-get-status.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取当前索引生命周期index lifecycle management (ILM)的状态。
+
+&emsp;&emsp;你可以通过[start ILM](####Start index lifecycle management API)和[stop ILM](####Stop index lifecycle management API)来分别启动和停止ILM
 
 ##### Request
 
+```text
+GET /_ilm/status
+```
+
 ##### Prerequisites
 
-##### Description
-
-##### Path parameters
+- 如果开启了Elasticsearch security features，你必须要有`read_ilm`或`manage_ilm`[cluster privilege](#####Cluster privileges)来使用这个API。更多信息叫[Security privileges](####Security privileges)
 
 ##### Query parameters
 
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 ##### Request body
+
+- operation_mode：（string）当前ILM的操作模式
+  - RUNNING：ILM运行中
+  - STOPPING：ILM正在完成敏感操作（sensitive actions），比如说[shrink](####Shrink)，正在处理中。当这个动作完成后，ILM将会移动到`STOPPED`
+  - STOPPED：ILM不在运行中
 
 ##### Examples
 
+&emsp;&emsp;下面的例子获取ILM插件状态：
+
+```text
+GET _ilm/status
+```
+
+&emsp;&emsp;如果请求成功，响应中的内容会展示操作模式（operation mode）：
+
+```text
+{
+  "operation_mode": "RUNNING"
+}
+```
+
 #### Explain lifecycle API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-explain-lifecycle.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Request body
+##### Examples
+
 
 #### Start index lifecycle management API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-start.html)
