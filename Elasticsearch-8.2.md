@@ -32807,7 +32807,7 @@ POST _ilm/move/<index>
 
 &emsp;&emsp;如果当前步骤不匹配索引当前正在执行的步骤，请求则会失败。这样的目的是防止索引从一个非期望的步骤移动到下一步。
 
-&emsp;&emsp;当指定了索引被移动的目标阶段（`next_step`）后，`name`或者`action`跟`name`是可选的。如果只指定了阶段（共有Hot、Warm、Cold、Frozen、Delete这五个阶段），索引会被移动到目标阶段的第一个动作的第一步。如果阶段跟动作都制定了，那么索引会被移动到指定阶段的指定动作的第一步。只指定动作是合法的，索引不能被移动不是策略的一部分的步骤。
+&emsp;&emsp;当指定了索引被移动的目标阶段（`next_step`）后，`name`或者`action`跟`name`是可选的。如果只指定了阶段（共有Hot、Warm、Cold、Frozen、Delete这五个阶段，索引刚被管理时处于一个`new`阶段），索引会被移动到目标阶段的第一个动作的第一步。如果阶段跟动作都制定了，那么索引会被移动到指定阶段的指定动作的第一步。只指定动作是合法的，索引不能被移动不是策略的一部分的步骤。
 
 ##### Path parameters
 
@@ -33002,8 +33002,243 @@ GET _ilm/status
 }
 ```
 
+
+
 #### Explain lifecycle API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-explain-lifecycle.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-explain-lifecycle.html)
+
+&emsp;&emsp;为一个或多个索引获取当前生命周期状态。对于data streams，这个接口为流中的backing indices获取当前生命周期状态。
+
+##### Request
+
+```text
+GET <target>/_ilm/explain
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在这些索引上有`view_index_metadata`或者`manage_ilm`[cluster privilege](#####Cluster privileges)或者同时包含来使用这个API。更多信息叫[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;获取索引当前的生命周期状态，比如当前执行中的阶段，动作和步骤。展示索引进入时间、运行中的阶段的定义、以及关于任何相关的错误信息。
+
+##### Path parameters
+
+- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`
+- 
+##### Query parameters
+
+- only_managed：（Optional, Boolean）过滤出只由ILM管理的索引
+- only_errors：（Optional, Boolean）过滤出只由ILM管理的索引并且处于一个错误状态，要么由于在执行策略时遇到了一个错误，要么尝试使用了一个不存在的策略
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Examples
+
+&emsp;&emsp;下面的例子获取了名为`my-index-000001`的索引的生命周期状态：
+
+```text
+GET my-index-000001/_ilm/explain
+```
+
+&emsp;&emsp;当索引刚刚由ILM接管，`explain`中会显示索引处于管理中并且处于`new`阶段：
+
+```text
+{
+  "indices": {
+    "my-index-000001": {
+      "index": "my-index-000001",
+      "index_creation_date_millis": 1538475653281,  
+      "time_since_index_creation": "15s",           
+      "managed": true,                              
+      "policy": "my_policy",                        
+      "lifecycle_date_millis": 1538475653281,       
+      "age": "15s",                                 
+      "phase": "new",
+      "phase_time_millis": 1538475653317,           
+      "action": "complete"
+      "action_time_millis": 1538475653317,          
+      "step": "complete",
+      "step_time_millis": 1538475653317             
+    }
+  }
+}
+```
+
+&emsp;&emsp;第5行，当索引创建后，这个时间戳用来决定什么时候开始rollover
+&emsp;&emsp;第6行，索引创建后到现在的时间（通过`max_mag`计算什么时候开始rollover）
+&emsp;&emsp;第7行，显示索引是否被ILM管理。如果没有被管理，其他字段将不会显示
+&emsp;&emsp;第8行，正用于管理这个索引的ILM的策略名字
+&emsp;&emsp;第9行，用于`min_age`的时间戳
+&emsp;&emsp;第10行，索引的年龄（用来计算什么时候进入下一阶段）
+&emsp;&emsp;第12行，当前阶段是什么时候进入的
+&emsp;&emsp;第14行，当前动作是什么时候进入的
+&emsp;&emsp;第16行，当前步骤是什么时候进入的
+
+&emsp;&emsp;一个某个策略在索引上运行，响应中会包含一个`phase_execution`对象来展示当前阶段的定义。对策略进行修改不会影响这个索引，直到当前阶段完成。
+
+```text
+{
+  "indices": {
+    "test-000069": {
+      "index": "test-000069",
+      "index_creation_date_millis": 1538475653281,
+      "time_since_index_creation": "25.14s",
+      "managed": true,
+      "policy": "my_lifecycle3",
+      "lifecycle_date_millis": 1538475653281,
+      "lifecycle_date": "2018-10-15T13:45:21.981Z",
+      "age": "25.14s",
+      "phase": "hot",
+      "phase_time_millis": 1538475653317,
+      "phase_time": "2018-10-15T13:45:22.577Z",
+      "action": "rollover",
+      "action_time_millis": 1538475653317,
+      "action_time": "2018-10-15T13:45:22.577Z",
+      "step": "attempt-rollover",
+      "step_time_millis": 1538475653317,
+      "step_time": "2018-10-15T13:45:22.577Z",
+      "phase_execution": {
+        "policy": "my_lifecycle3",
+        "phase_definition": { 
+          "min_age": "0ms",
+          "actions": {
+            "rollover": {
+              "max_age": "30s"
+            }
+          }
+        },
+        "version": 3, 
+        "modified_date": "2018-10-15T13:21:41.576Z", 
+        "modified_date_in_millis": 1539609701576 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第23行，当索引进入到这个阶段，显示这个阶段的JSON格式的定义
+&emsp;&emsp;第31行，加载的策略版本
+&emsp;&emsp;第32行，上一次策略修改时间
+&emsp;&emsp;第33行，上一层策略修改时间（epoch time）
+
+&emsp;&emsp;如果ILM正在等待某个步骤的完成，响应中会包含在索引上正在执行中的步骤状态信息。
+
+```text
+{
+  "indices": {
+    "test-000020": {
+      "index": "test-000020",
+      "index_creation_date_millis": 1538475653281,
+      "time_since_index_creation": "4.12m",
+      "managed": true,
+      "policy": "my_lifecycle3",
+      "lifecycle_date_millis": 1538475653281,
+      "lifecycle_date": "2018-10-15T13:45:21.981Z",
+      "age": "4.12m",
+      "phase": "warm",
+      "phase_time_millis": 1538475653317,
+      "phase_time": "2018-10-15T13:45:22.577Z",
+      "action": "allocate",
+      "action_time_millis": 1538475653317,
+      "action_time": "2018-10-15T13:45:22.577Z",
+      "step": "check-allocation",
+      "step_time_millis": 1538475653317,
+      "step_time": "2018-10-15T13:45:22.577Z",
+      "step_info": { 
+        "message": "Waiting for all shard copies to be active",
+        "shards_left_to_allocate": -1,
+        "all_shards_active": false,
+        "number_of_replicas": 2
+      },
+      "phase_execution": {
+        "policy": "my_lifecycle3",
+        "phase_definition": {
+          "min_age": "0ms",
+          "actions": {
+            "allocate": {
+              "number_of_replicas": 2,
+              "include": {
+                "box_type": "warm"
+              },
+              "exclude": {},
+              "require": {}
+            },
+            "forcemerge": {
+              "max_num_segments": 1
+            }
+          }
+        },
+        "version": 2,
+        "modified_date": "2018-10-15T13:20:02.489Z",
+        "modified_date_in_millis": 1539609602489
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第21行，正在处理中的步骤状态
+
+&emsp;&emsp;如果在执行策略中某一步骤时发生错误，则索引会移动到`ERROR`步骤，那么你必须采取行动使得能让其进入下一步骤。有些步骤在特定环境下会安全的自动重试。若要帮助你诊断问题，这个接口的响应中会显示失败的步骤，提供错误相关信息，以及尝试重试这个失败步骤的信息。
+
+```text
+{
+  "indices": {
+    "test-000056": {
+      "index": "test-000056",
+      "index_creation_date_millis": 1538475653281,
+      "time_since_index_creation": "50.1d",
+      "managed": true,
+      "policy": "my_lifecycle3",
+      "lifecycle_date_millis": 1538475653281,
+      "lifecycle_date": "2018-10-15T13:45:21.981Z",
+      "age": "50.1d",
+      "phase": "hot",
+      "phase_time_millis": 1538475653317,
+      "phase_time": "2018-10-15T13:45:22.577Z",
+      "action": "rollover",
+      "action_time_millis": 1538475653317,
+      "action_time": "2018-10-15T13:45:22.577Z",
+      "step": "ERROR",
+      "step_time_millis": 1538475653317,
+      "step_time": "2018-10-15T13:45:22.577Z",
+      "failed_step": "check-rollover-ready", 
+      "is_auto_retryable_error": true, 
+      "failed_step_retry_count": 1, 
+      "step_info": { 
+        "type": "cluster_block_exception",
+        "reason": "index [test-000057/H7lF9n36Rzqa-KfKcnGQMg] blocked by: [FORBIDDEN/5/index read-only (api)",
+        "index_uuid": "H7lF9n36Rzqa-KfKcnGQMg",
+        "index": "test-000057"
+      },
+      "phase_execution": {
+        "policy": "my_lifecycle3",
+        "phase_definition": {
+          "min_age": "0ms",
+          "actions": {
+            "rollover": {
+              "max_age": "30s"
+            }
+          }
+        },
+        "version": 3,
+        "modified_date": "2018-10-15T13:21:41.576Z",
+        "modified_date_in_millis": 1539609701576
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第21行，发生错误的步骤
+&emsp;&emsp;第22行，指示是否重试这个步骤可以解决这个错误，如果为`true`，ILM会自动重试这一步骤
+&emsp;&emsp;第23行，尝试重试执行失败步骤的次数
+&emsp;&emsp;第24行，出现的问题信息
+
+#### Start index lifecycle management API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-start.html)
 
 &emsp;&emsp;
 ##### Request
@@ -33015,11 +33250,18 @@ GET _ilm/status
 ##### Examples
 
 
-#### Start index lifecycle management API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-start.html)
-
 #### Stop index lifecycle management API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-stop.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Request body
+##### Examples
+
 
 ### Machine learning APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ml-apis.html)
