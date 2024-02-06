@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/05）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/06）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -13004,7 +13004,7 @@ PUT index
 
 &emsp;&emsp;在创建一个索引时，index template告诉Elasticsearch如何进行创建。对于[data streams](##Data streams)，index template用于创建流的[backing](####Backing indices)索引。Template先于索引的创建。手动或者通过索引一篇文档创建一个索引后，template setting会作为创建索引的一个基本要素（ basis）。
 
-&emsp;&emsp;一共有index template和[component template](####Create or update component template API)两种类型的模板。component template构建配置了mapping，settings，alias这几块并可以复用。你可以使用一个或多个component template来构造index template，但不能直接作用到（apply）索引集合（a set of indices）。index templates 可以包含一个component template集合，直接指定settings，mappings和aliases。
+&emsp;&emsp;一共有索引模板index template和组件模版[component template](####Create or update component template API)两种类型的模板。component template构建配置了mapping，settings，alias这几块并可以复用。你可以使用一个或多个component template来构造index template，但不能直接作用到（apply）索引集合（a set of indices）。index templates 可以包含一个component template集合，直接指定settings，mappings和aliases。
 
 &emsp;&emsp;应用（apply）index template的几个条件：
 
@@ -13349,18 +13349,146 @@ PUT _ilm/policy/my-lifecycle-policy
 
 #### Create component templates(data stream)
 
+&emsp;&emsp;data stream需要匹配一个索引模板（Index template）。在大多数情况下，你会使用一个或者多个组件模版component templates来组合成一个索引模板。你通常会为mappings跟Index settingss使用各自的component templates。这可以让你在多个索引模板中复用component templates。
+
+&emsp;&emsp;当你创建组件模版时，包括：
+
+- 为`@timestamp`字段定义mapping类型，[date](####Date field type)或者[date_nanos](####Date nanoseconds field type)。如果你不指定，Elasticsearch会默认将这个字段作为`date`类型的字段
+- 索引设置`index.lifecycle.nam`中，你的生命周期策略的名字
+
+> TIP：使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)来映射你的域类型。ECS域默认跟一些Elastic Stack features 集成
+> 如果你不确定如何映射你的域类型，你可以在查询期间使用[runtime fields](####Define runtime fields in a search request)从非结构化的内容[unstructured content](#####Wildcard field type)中提取字段。例如你可以将log message索引到一个`wildcard`域，随后在查询期间从这个域中提取IP地址和其他数据。
+
+&emsp;&emsp;若要创建在kibana中创建一个组件模版，打开主菜单然后跳转到`Stack Management > Index Management`。在`Index Templates`视图中，点击`Create component template`。
+
+&emsp;&emsp;你也可以使用[create component template API]()创建组件模版。
+
+```text
+# Creates a component template for mappings
+PUT _component_template/my-mappings
+{
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date",
+          "format": "date_optional_time||epoch_millis"
+        },
+        "message": {
+          "type": "wildcard"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Mappings for @timestamp and message fields",
+    "my-custom-meta-field": "More arbitrary metadata"
+  }
+}
+
+# Creates a component template for index settings
+PUT _component_template/my-settings
+{
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "my-lifecycle-policy"
+    }
+  },
+  "_meta": {
+    "description": "Settings for ILM",
+    "my-custom-meta-field": "More arbitrary metadata"
+  }
+}
+```
+
 #### Create an index template(data stream)
+
+&emsp;&emsp;若要使用你的组件模版来创建一个索引模板，需要指定：
+
+- 一个或者多个`index_patterns`来匹配data stream的名字。我们建议使用[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
+- 这个模版是data stream可以使用的（用`data_stream`字段表示该模版可以用于数据流）
+- 包含你mapping跟索引设置Index settings的组件模版
+- 优先级大于`200`，以避免与内置模板发生冲突。见[Avoid index pattern collisions](#####Avoid index pattern collisions))
+
+&emsp;&emsp;若要在Kibana中创建一个index template，那么打开主菜单然后跳转到Stack Management > Index Management。在Index Templates视图中，点击Create template。
+
+&emsp;&emsp;你也可以使用[create index template API](####Create or update index template API)。包含`data_stream` object使得模版可以用于data streams。
+
+```text
+PUT _index_template/my-index-template
+{
+  "index_patterns": ["my-data-stream*"],
+  "data_stream": { },
+  "composed_of": [ "my-mappings", "my-settings" ],
+  "priority": 500,
+  "_meta": {
+    "description": "Template for my time series data",
+    "my-custom-meta-field": "More arbitrary metadata"
+  }
+}
+```
 
 #### Create the data stream(data stream)
 
+&emsp;&emsp;[Indxing requests](####Add documents to a data stream)将文档添加到data stream中。这些请求必须使用`create`类型中的`op_type`。文档中必须包含`@timestamp`字段。
+
+&emsp;&emsp;若要自动创建你的data stream，提交一个索引请求并指定目标data stream的名字。名字必须能匹配到索引模板中的`index_patterns`。
+
+```text
+PUT my-data-stream/_bulk
+{ "create":{ } }
+{ "@timestamp": "2099-05-06T16:21:15.000Z", "message": "192.0.2.42 - - [06/May/2099:16:21:15 +0000] \"GET /images/bg.jpg HTTP/1.0\" 200 24736" }
+{ "create":{ } }
+{ "@timestamp": "2099-05-06T16:25:42.000Z", "message": "192.0.2.255 - - [06/May/2099:16:25:42 +0000] \"GET /favicon.ico HTTP/1.0\" 200 3638" }
+
+POST my-data-stream/_doc
+{
+  "@timestamp": "2099-05-06T16:21:15.000Z",
+  "message": "192.0.2.42 - - [06/May/2099:16:21:15 +0000] \"GET /images/bg.jpg HTTP/1.0\" 200 24736"
+}
+```
+
+&emsp;&emsp;你也可以使用[create data stream API](####Create data stream API)手动创建时stream。这个stream的名字仍然必须能匹配到索引模板中的`index_patterns`。
+
+```text
+PUT _data_stream/my-data-stream
+```
+
 #### Secure the data stream
+
+&emsp;&emsp;使用[index privilege](#####Indices privileges)来控制对data stream的访问。保证data stream跟它的backing indices有相同的权限。
+
+&emsp;&emsp;见[Data stream privileges](#####Data stream privileges)中的例子。
 
 #### Convert an index alias to a data stream
 
+&emsp;&emsp;在Elasticsearch7.9之前，你通常使用[index alias with a write index](####Manage time series data without data streams)来管理时序数据。Data stream替代了这个功能，更低的维护成本以及自动跟[data tiers](###Data tiers)集成。
+
+&emsp;&emsp;若要将带有writer Index的索引别名转化为一个data stream，并且使用相同的名字，请使用[migrate to data stream API](####Migrate to data stream API)。在传化期间，别名的索引变成了stream中的隐藏的backing indices。索引别名中的writer Index变成了stream的writer Index。这个stream依然要求一个能匹配的索引模板，并且这个索引模板能适用于data stream（模版中要有`data_stream`字段）。
+
+```text
+POST _data_stream/_migrate/my-time-series-data
+```
+
 #### Get information about a data stream
+
+&emsp;&emsp;若要在Kibana中获取data stream的信息，打开主菜单然后跳转到**Stack Management > Index Management**，在**Data Streams**视图中，点击data stream的名字。
+
+&emsp;&emsp;你可以使用[get data stream API](####Get data stream API)。
+
+```text
+GET _data_stream/my-data-stream
+```
 
 #### Delete a data stream
 
+&emsp;&emsp;若要在kibana中删除一个data stream和它的backing indices。打开主菜单然后跳转到**Stack Management > Index Management**，在**Data Streams**视图中，点击trash icon。当你有这个data stream的`delete_index`的[security privilege ](####Security privileges)才能看到这个图标。
+
+&emsp;&emsp;你也可以使用[delete data stream API](####Delete data stream API)实现
+
+```text
+DELETE _data_stream/my-data-stream
+```
 
 ### Use a data stream
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/use-a-data-stream.html#manually-roll-over-a-data-stream)
@@ -21512,7 +21640,7 @@ GET timeseries-*/_ilm/explain
 
 1. 添加[component templates](####Create or update component template API)到你的index template中
 
-&emsp;&emsp;Component templates时预先配置好的mappings, index settings, and aliases的集合，你可以跨多个Index template使用。标签指出了某个component template是否包含mappings（M），Index settings（S），aliases（A），或者是三者都有。
+&emsp;&emsp;Component templates是预先配置好的mappings, index settings, and aliases的集合，你可以跨多个Index template使用。标签指出了某个component template是否包含mappings（M），Index settings（S），aliases（A），或者是三者都有。
 
 &emsp;&emsp;Component templates是可选的，对于这个教程，不要添加任何的component templates。
 
@@ -23234,10 +23362,6 @@ PUT _cluster/settings
 
 ### Restore a managed data stream or index
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-and-snapshots.html)
-
-### Index lifecycle management APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
-
 
 ### Data tiers
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-tiers.html)
@@ -29270,13 +29394,13 @@ PUT _component_template/my-settings
 &emsp;&emsp;使用你的component templates来创建一个index template：
 
 - 一个或多个index pattern满足data stream的名字，我们建议你使用我们的[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
-- That the template is data stream enabled
-- 任何一个component template都包含你的mapping和索引设置
-- A priority higher than 200 to avoid collisions with built-in templates. See[ Avoid index pattern collisions](#####Avoid index pattern collisions)
+- 这个模版是data stream可以使用的（用`data_stream`字段表示该模版可以用于数据流）
+- 包含你mapping跟索引设置Index settings的组件模版
+- 优先级大于`200`，以避免与内置模板发生冲突。见[Avoid index pattern collisions](#####Avoid index pattern collisions))
 
 &emsp;&emsp;若要在Kibana中创建一个index template，那么打开主菜单然后跳转到**Stack Management > Index Management**。在**Index Templates**视图中，点击**Create template**。
 
-&emsp;&emsp;你也可以使用[create index template API](####Create or update index template API)。包含`data_stream` object来开启data streams。
+&emsp;&emsp;你也可以使用[create index template API](####Create or update index template API)。包含`data_stream` object可以模版用于data streams。
 
 ```text
 PUT _index_template/my-index-template
@@ -33318,6 +33442,10 @@ POST _ilm/stop
   "acknowledged": true
 }
 ```
+
+#### Migrate to data tiers routing API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-migrate-to-data-tiers.html)
+
 
 ### Machine learning APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ml-apis.html)
