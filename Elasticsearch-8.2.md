@@ -12999,7 +12999,7 @@ PUT index
 ## Index templates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-templates.html)
 
->这个主题介绍了在Elasticsearch 7.8引入的composable index template。关于之前版本的index template是如何工作的见[legacy template documentation](####Create or update index template API)。
+>这个主题介绍了在Elasticsearch 7.8引入的composable index template。关于之前版本的index template是如何工作的见[legacy template documentation](####Create or update index template API（legacy）)。
 >
 
 &emsp;&emsp;在创建一个索引时，index template告诉Elasticsearch如何进行创建。对于[data streams](##Data streams)，index template用于创建流的[backing](####Backing indices)索引。Template先于索引的创建。手动或者通过索引一篇文档创建一个索引后，template setting会作为创建索引的一个基本要素（ basis）。
@@ -26975,7 +26975,7 @@ Cluster A
 
 - [Persistent cluster settings](####Cluster and node setting types)
 - [Index templates](##Index templates)
-- [Legacy index templates](####Create or update index template API)
+- [Legacy index templates](####Create or update index template API（legacy）)
 - [Ingest pipelines](##Ingest pipelines)
 - [ILM policies](###ILM: Manage the index lifecycle)
 - For snapshots taken after 7.12.0, [feature states](#####Feature states)
@@ -32356,7 +32356,7 @@ GET /_data_stream/my-data-stream
   
   - hidden：（Boolean）如果为`true`，data stream是[hidden](####Hidden data streams and indices-1)
   - system：（Boolean）如果为`true`，data stream是由Elastic stack组件创建管理的并且不能被普通用户修改
-  - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据运行自定义写请求
+  - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据允许自定义写请求
   - replicated：（Boolean）如果为`true`。data stream由CCR创建管理，local cluster不能写入到这个data stream或者更改它的mapping
 
 ##### Example
@@ -32728,7 +32728,7 @@ POST /_data_stream/_modify
 #### Index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)
 
-###### Create document IDs automatically
+###### document IDs automatically
 
 ###### Routing(REST APIs)
 
@@ -32816,6 +32816,255 @@ POST /_data_stream/_modify
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
 
 #### Create or update index template API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-template.html)
+
+&emsp;&emsp;创建/更新一个索引模板（index template）。索引模板中定义了[settings](####Index Settings)，[mappings](##Mapping)和[aliases ](##Aliases)，使得自动的作用到新的索引上。
+
+```text
+PUT /_index_template/template_1
+{
+  "index_patterns" : ["te*"],
+  "priority" : 1,
+  "template": {
+    "settings" : {
+      "number_of_shards" : 2
+    }
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /_index_template/<index-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;Elasticsearch基于通配模式匹配索引名字将索引模板作用到新的索引上。
+
+&emsp;&emsp;在创建data stream或者index时应用索引模板。对于data stream，当流中的backing index创建时应用settings和mappings。
+
+&emsp;&emsp;在[create index](####Create index API)请求中定义的settings和mappings会覆盖某个索引模板中的settings和mapping。
+
+&emsp;&emsp;索引模板的变更不会作用到现有的索引，包括data stream中现有的backing indices。
+
+###### Comments in index templates
+
+&emsp;&emsp;你可以使用C风格的`/**/`在索引模板中添加注释。在请求体的任何位置都可以包含注释，但JSON开头的大括号之前除外。
+
+##### Path parameters
+
+- `<index-template>`：（Required, string）待创建的索引模板名字
+
+##### Query parameters
+
+- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Response body
+
+- composed_of：（Optional, array of object）有序的组件模版（component template）列表。组件模板按照定义中的顺序进下合并，意味着最后一个组件模版有最高的优先级。见[Composing multiple component templates](######Composing aliases, mappings, and settings)中的例子
+- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及他们的backing indices。支持空的对象（即`data_stream: {}`）
+  - Data stream要求满足匹配的模板中要有一个`data_stream`字段。见[create an index template](####Create an index template)
+    - hidden：（Boolean）如果为`true`，data stream是[hidden](####Hidden data streams and indices-1)
+    - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据允许自定义写请求([custom routing](####\_routing field))
+- index_patterns：（Required, array of strings）通配符（`*`）数组，用于对创建中的data streams和indices进行匹配
+  - Elasticsearch中有一些内置的索引模板。若要防止跟这些模板发生冲突（被这些模板匹配），见[Avoid index pattern collisions](##Index templates)
+- \_meta：（Optional, object）跟索引模板相关的，可选的用户自定义的元数据。可能有许多内容。这个字段不是由Elasticsearch自动生成的
+- priority：（Optional, integer）当data stream或者index创建时，决定了优先匹配哪些索引。总是选择优先级最高的模版。如果索引模板中没有指定优先级，即默认为优先级为`0`（最低的优先级）。Elasticsearch不会自动生成这个字段
+- template：（Optional, object）待作用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
+    - aliases：（Optional, object of objects）待添加的别名
+      - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+        - `<alias>`：（Required, object）别名的名字，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+          - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+          - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+          - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+          - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+          - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+          - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - mappings：（Optional, [mapping object](##Mapping)）
+      - Field names
+      - [Field data types](###Field data types)
+      - [Mapping parameters](###Mapping parameters)
+    - settings：（Optional, [index setting object](####Index Settings)）
+- version：（Optional,  integer）用来管理索引模板版本信息。这个值不会由Elasticsearch自动生成
+
+##### Example
+
+###### Index template with index aliases
+
+&emsp;&emsp;你可以在索引模板中包含[index aliases](##Aliases)。
+
+```text
+PUT _index_template/template_1
+{
+  "index_patterns" : ["te*"],
+  "template": {
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "aliases" : {
+        "alias1" : {},
+        "alias2" : {
+            "filter" : {
+                "term" : {"user.id" : "kimchy" }
+            },
+            "routing" : "shard-1"
+        },
+        "{index}-alias" : {} 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第16行，在别名中，`{index}`占位符将在索引创建时替代真正的索引名字。
+
+###### Multiple matching templates
+
+&emsp;&emsp;如果匹配到了多个索引模板，那么使用优先级的高的索引模板。例如：
+
+```text
+PUT /_index_template/template_1
+{
+  "index_patterns" : ["t*"],
+  "priority" : 0,
+  "template": {
+    "settings" : {
+      "number_of_shards" : 1,
+      "number_of_replicas": 0
+    },
+    "mappings" : {
+      "_source" : { "enabled" : false }
+    }
+  }
+}
+
+PUT /_index_template/template_2
+{
+  "index_patterns" : ["te*"],
+  "priority" : 1,
+  "template": {
+    "settings" : {
+      "number_of_shards" : 2
+    },
+    "mappings" : {
+      "_source" : { "enabled" : true }
+    }
+  }
+}
+```
+
+&emsp;&emsp;对于以`te*`开头的索引，它将启动`_source`、2个主分片以及1个副本分片，因为只有`template_2`作用到以`te*`开头的索引。
+
+> NOTE：拥有相同优先级且索引模式重叠的多个模板是不允许的，当尝试创建一个与现有相同优先级的索引模板匹配的模板时，系统会抛出错误。
+
+###### Template versioning
+
+&emsp;&emsp;你可以使用`version`字段像索引模板中添加版本号。内部系统能通过这个版本号简单的管理模板。
+
+&emsp;&emsp;`version`字段是可选的，Elasticsearch不会自动生成该字段。
+
+&emsp;&emsp;若要unset这个`version`，用未定义该字段的模板替换。
+
+```text
+PUT /_index_template/template_1
+{
+  "index_patterns" : ["foo", "bar"],
+  "priority" : 0,
+  "template": {
+    "settings" : {
+        "number_of_shards" : 1
+    }
+  },
+  "version": 123
+}
+```
+
+&emsp;&emsp;你可以通过[get index template](####Get index template API)检查这个`verison`字段。
+
+###### Template metadata
+
+&emsp;&emsp;你可以使用`_meta`字段来添加任意的元数据到索引模板中。这个用户定义的对象存储在集群中，因此最好简短些。
+
+&emsp;&emsp;`_meta`字段是可选的，Elasticsearch不会自动生成该字段。
+
+&emsp;&emsp;若要unset这个`_meta`，用未定义该字段的模板替换。
+
+```text
+PUT /_index_template/template_1
+{
+  "index_patterns": ["foo", "bar"],
+  "template": {
+    "settings" : {
+        "number_of_shards" : 3
+    }
+  },
+  "_meta": {
+    "description": "set number of shards to three",
+    "serialization": {
+      "class": "MyIndexTemplate",
+      "id": 17
+    }
+  }
+}
+```
+
+###### Data stream definition
+
+&emsp;&emsp;若要为data stream定义一个模板，模板中必须包含`data_stream`字段。见[create an index template](####Create an index template)。
+
+```text
+PUT /_index_template/template_1
+{
+  "index_patterns": ["logs-*"],
+  "data_stream": { }
+}
+```
+
+###### Composing aliases, mappings, and settings
+
+&emsp;&emsp;当在索引模板的`composed_of`字段中指定了多个组件模板时，它们会按照指定的顺序合并，这意味着后面的组件模板会覆盖前面的组件模板。来自父索引模板的任何映射、设置或别名随后会被合并进来。最后，索引请求本身的任何配置也会被合并。
+
+在这个例子中，两个组件模板的顺序改变了索引的分片数量。
+
+```text
+PUT /_component_template/template_with_2_shards
+{
+  "template": {
+    "settings": {
+      "index.number_of_shards": 2
+    }
+  }
+}
+
+PUT /_component_template/template_with_3_shards
+{
+  "template": {
+    "settings": {
+      "index.number_of_shards": 3
+    }
+  }
+}
+
+PUT /_index_template/template_1
+{
+  "index_patterns": ["t*"],
+  "composed_of": ["template_with_2_shards", "template_with_3_shards"]
+}
+```
+
+&emsp;&emsp;在这种情况下，匹配`t*`的索引将会有三个主分片。如果组成模板的顺序颠倒了，索引将会有两个主分片。
+
+&emsp;&emsp;Mapping定义是递归合并的，这意味着后来的Mapping组件可以引入新的字段Mapping并更新Mapping配置。如果一个字段Mapping已经在前面的组件中存在，它的定义将被后来的组件完全覆盖。
+
+&emsp;&emsp;这种递归合并策略不仅适用于字段mappings，也适用于像`dynamic_templates`和`meta`这样的根选项。如果前面的组件包含一个`dynamic_templates`块，那么默认情况下新的`dynamic_templates`会被添加到末尾。如果已经存在一个具有相同键的key，那么它将被新定义覆盖。
+
+#### Create or update index template API（legacy）
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-templates-v1.html)
 
 >IMPORTANT：这篇文档介绍legacy index templates。在Elasticsearch7.8中legacy index templates已被弃用并且使用可组合的模板（composable  template）代替。更多关于composable templates的信息见[Index templates](##Index templates)。
@@ -32886,6 +33135,18 @@ PUT _template/template_1
 ###### index_patterns
 
 ###### aliases(1)
+
+#### Delete component template
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-component-template.html)
+
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 
 #### Delete dangling index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
@@ -34606,7 +34867,7 @@ POST /_snapshot/<repository>/<snapshot>
 - include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
   - [Persistent cluster settings](####Cluster and node setting types)
   - [Index templates](##Index templates)
-  - [Legacy index templates](####Create or update index template API)
+  - [Legacy index templates](####Create or update index template API（legacy）)
   - [Ingest pipelines](##Ingest pipelines)
   - [ILM policies](###ILM: Manage the index lifecycle)
   - For snapshots taken after 7.12.0, [feature states](####Feature states)
@@ -35377,7 +35638,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 - include_global_state：（Optional, Boolean）如果为`true`，则恢复集群状态。默认是`false`。集群状态包括：
     - [Persistent cluster settings](####Cluster and node setting types)
     - [Index templates](##Index templates)
-    - [Legacy index templates](####Create or update index template API)
+    - [Legacy index templates](####Create or update index template API（legacy）)
     - [Ingest pipelines](##Ingest pipelines)
     - [ILM policies](###ILM: Manage the index lifecycle)
     - For snapshots taken after 7.12.0, [feature states](#####Feature states)
@@ -35501,7 +35762,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
   - include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
     - [Persistent cluster settings](####Cluster and node setting types)
     - [Index templates](##Index templates)
-    - [Legacy index templates](####Create or update index template API)
+    - [Legacy index templates](####Create or update index template API（legacy）)
     - [Ingest pipelines](##Ingest pipelines)
     - [ILM policies](###ILM: Manage the index lifecycle)
     - For sna  pshots taken after 7.12.0, [feature states](####Feature states)
