@@ -32573,6 +32573,49 @@ POST /_data_stream/_promote/<data-stream>
 
 - `<data-stream>`：（Required, string）待提升的data stream的名字
 
+#### Modify data streams API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modify-data-streams-api.html)
+
+&emsp;&emsp;在一个原子操作内执行一个或者多个data stream的修改动作。
+
+```text
+POST _data_stream/_modify
+{
+  "actions": [
+    {
+      "remove_backing_index": {
+        "data_stream": "my-logs",
+        "index": ".ds-my-logs-2099.01.01-000001"
+      }
+    },
+    {
+      "add_backing_index": {
+        "data_stream": "my-logs",
+        "index": "index-to-add"
+      }
+    }
+  ]
+}
+```
+
+##### Request
+
+```text
+POST /_data_stream/_modify
+```
+
+##### Request body
+
+- actions：（Required, array of objects）执行的动作
+  - `<action>`：（Required, object）动作类型的key。至少需要一个动作
+    - add_backing_index：添加一个现有的索引到data stream中。索引被隐藏将作为这个操作的一部分
+    > WARNING：使用`add_backing_index`来添加索引可能会导致data stream的不当行为。这个接口要视为专家接口
+    - remove_backing_index：从data stream中移除一个backing index。索引被隐藏作为这个操作的一部分。writer index不能被移除
+      - data_stream：（Required\*, string）执行动作的data stream名
+      - index：（Required\*, string）执行动作的索引名
+
+
+
 ### Document APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
 
