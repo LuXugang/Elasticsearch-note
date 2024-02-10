@@ -15243,7 +15243,7 @@ GET my-data-stream/_alias
 GET _alias/logs
 ```
 
-#### Write_index
+#### Write index（Alias）
 
 &emsp;&emsp;你可以为别名使用`is_write_index`来指定一个用于写入的索引或者数据流。Elasticsearch会将对这个别名的任何写请求路由到这个索引或者数据流。
 
@@ -22451,7 +22451,7 @@ PUT _ilm/policy/my_policy
 
 - 索引名字必须满足这个pattern `^.*-\d+$`，例如（my-index-00001）
 - `index.lifecycle.rollover_alias`必须配置为alias进行转存
-- 索引必须是alias的[write index](####Write_index)
+- 索引必须是alias的[write index](####Write index（Alias）)
 
 &emsp;&emsp;例如如果`my-index-000001`是名为`my_data`的alias。那么必须配置下面的设置：
 
@@ -32423,6 +32423,48 @@ GET _data_stream/my-data-stream*
   ]
 }
 ```
+
+#### Migrate to data stream API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-migrate-to-data-stream.html#indices-migrate-to-data-stream)
+
+&emsp;&emsp;将[index alias](##Aliases)转化为一个[data stream](##Data streams)。
+
+```text
+POST /_data_stream/_migrate/my-logs
+```
+
+##### Request
+
+```text
+POST /_data_stream/_migrate/<alias>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个索引别名（Index alias）的`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+- 比如要有一个能用于data stream的[index template](##Index templates)。见[Set up a data stream](###Set up a data stream)
+
+##### Path parameters
+
+- `<alias>`：（Required, string）转化为data stream的索引别名名称。这个别名必须满足下面的要求：
+  - 别名必须要有一个[write index](####Write_index（Alias）)
+  - 别名对应的所有索引必须要有一个`date`或者`date_nanos`类型的`@timestamp`
+  - 必须不能有任何的[filter](####Filter an alias)
+  - 必须没有使用[custom routing](####Routing)
+
+&emsp;&emsp;成功后，该请求会移除别名并且创建一个名字相同的data stream。别名的索引变成这个流的backing indices。别名的writer index变成流的writer index。
+
+#### Data stream stats API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-stats-api.html)
+
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Promote data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
