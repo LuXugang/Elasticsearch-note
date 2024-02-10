@@ -32455,16 +32455,98 @@ POST /_data_stream/_migrate/<alias>
 &emsp;&emsp;成功后，该请求会移除别名并且创建一个名字相同的data stream。别名的索引变成这个流的backing indices。别名的writer index变成流的writer index。
 
 #### Data stream stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-stats-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-stats-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取[data streams](##Data streams)的统计信息。
+
+```text
+GET /_data_stream/my-data-stream/_stats
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有data stream的`monitor`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
 
 ##### Request
-##### Prerequisites
+
+```text
+GET /_data_stream/<data-stream>/_stats
+```
+
 ##### Path parameters
+
+- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名字来限制请求。支持通配符（`*`）
+  - 若要获取集群中所有data stream，使用`*`或者忽略这个参数
+
 ##### Query parameters
+
+- expand_wildcards：（Optional, string）通配符能匹配的data stream类型。支持多值，例如`open`, `hidden`。合法值有：
+  - all、hidden：匹配任意的data stream，包括[hidden](####Hidden data streams and indices-1)类型
+  - open、closed：匹配除了`hidden`的data stream。不能是已关闭的data stream
+  - none：不展开通配符模式
+
+&emsp;&emsp;默认是`open`。
+
+- human：（Optional, Boolean）如果为`true`，响应中包含具有可读性的[byte values](####Byte size units)统计信息。默认是`false`
+
 ##### Response body
+
+- \_shards：（object）尝试请求分片的信息
+  - total：（integer）尝试执行的分片数量
+  - successful：（integer）成功执行的分片数量
+  - failed：（integer）执行失败的分片数量
+- data_stream_count：（integer）选择的data streams的数量
+- backing_indices：（integer）选择的data streams中的backing_indices的数量
+- total_store_sizes：[byte value](####Byte size units) 选择的data stream中分片大小总量。只有设置请求参数`human`后才展示这个字段
+- total_store_size_bytes：（integer）选择的data stream中分片大小总量，单位是字节
+- data_streams：（array of objects）选择的data stream的统计信息
+  - data_stream：（string）data stream的名字
+  - backing_indices：（integer）data stream中的backing indices
+  - store_size：[byte value](####Byte size units) data stream中所有分片的大小总量。只有请求参数`human`为`true`才会返回
+  - store_size_bytes：（integer） data stream中所有分片的大小总量，单位是字节
+  - maximum_timestamp：（integer）data stream中`@timestamp`最大值，该值会转化为字符串，见[Unix epoch](https://en.wikipedia.org/wiki/Unix_time)
+
+> NOTE：这个时间戳可能不是最大的。如果满足以下一个或多个条件，那么可能data stream中存在比`@timestamp`数值更大的值：
+> - stream中包含[closed](####Open index API) backing indices
+> - 有[lower generation](####Generation)的backing indices中包含更大的`@timestamp`的值
+
 ##### Example
+
+```text
+GET /_data_stream/my-data-stream*/_stats?human=true
+```
+
+&emsp;&emsp;API返回下面的响应：
+
+```text
+{
+  "_shards": {
+    "total": 10,
+    "successful": 5,
+    "failed": 0
+  },
+  "data_stream_count": 2,
+  "backing_indices": 5,
+  "total_store_size": "7kb",
+  "total_store_size_bytes": 7268,
+  "data_streams": [
+    {
+      "data_stream": "my-data-stream",
+      "backing_indices": 3,
+      "store_size": "3.7kb",
+      "store_size_bytes": 3772,
+      "maximum_timestamp": 1607512028000
+    },
+    {
+      "data_stream": "my-data-stream-two",
+      "backing_indices": 2,
+      "store_size": "3.4kb",
+      "store_size_bytes": 3496,
+      "maximum_timestamp": 1607425567000
+    }
+  ]
+}
+```
 
 #### Promote data stream API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
