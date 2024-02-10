@@ -32549,7 +32549,32 @@ GET /_data_stream/my-data-stream*/_stats?human=true
 ```
 
 #### Promote data stream API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
+（8.1）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/promote-data-stream-api.html)
+
+&emsp;&emsp;这个接口的目的是将通过CCR复制的data stream转换成一个常规的data stream。
+
+&emsp;&emsp;通过CCR的Auto Following，远端的data stream可以被复制到本地集群中。这些data stream不能再本地集群中rollover 。只有当上游的data stream执行了rollover后，这些被复制的data stream才能执行rollover。当远端集群不可用时，本地集群的data stream可以提升为一个常规的data stream，运行在本地集群中执行rollover。
+
+```text
+POST /_data_stream/_promote/my-data-stream
+```
+
+##### Request
+
+```text
+POST /_data_stream/_promote/<data-stream>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_follow_index`的[cluster privilege](#####Cluster privileges)来使用这个API
+
+##### Path parameters
+
+- `<data-stream>`：（Required, string）待提升的data stream的名字
+
+### Document APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
 
 &emsp;&emsp;
 
@@ -32559,9 +32584,6 @@ GET /_data_stream/my-data-stream*/_stats?human=true
 ##### Query parameters
 ##### Response body
 ##### Example
-
-### Document APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
 
 #### Reading and Writing documents
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-replication.html#basic-write-model)
