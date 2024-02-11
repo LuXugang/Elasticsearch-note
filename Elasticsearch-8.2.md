@@ -219,7 +219,7 @@ cd elasticsearch-7.15.2/
 action.auto_create_index: .monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*
 ```
 
->IMPORTANT：如果你正在使用Logstash或者Beats，那么你很有可能需要在action.auto_create_index配置额外的索引名，确切的名字取决去你的本地配置。如果你不能保证正确的名字，你可以考虑将索引名设置为\*，这样就会自动创建所有的索引
+>IMPORTANT：如果你正在使用Logstash或者Beats，那么你很有可能需要在action.auto_create_index配置额外的索引名，确切的名称取决去你的本地配置。如果你不能保证正确的名称，你可以考虑将索引名设置为\*，这样就会自动创建所有的索引
 
 
 ##### Running Elasticsearch from the command line
@@ -552,7 +552,7 @@ PUT _cluster/settings
 
 ##### Cluster name setting
 
-&emsp;&emsp;在一个集群中，一个节点只有跟集群中的其他节点共享他的`cluster.name`才能加入到这个集群中。默认的名字是`elasticsearch`，但是你应该把这个名字改成一个合适的名字，这个名字能描述这个集群的目的。
+&emsp;&emsp;在一个集群中，一个节点只有跟集群中的其他节点共享他的`cluster.name`才能加入到这个集群中。默认的名称是`elasticsearch`，但是你应该把这个名称改成一个合适的名称，这个名称能描述这个集群的目的。
 
 ```text
 cluster.name: logging-prod
@@ -562,7 +562,7 @@ cluster.name: logging-prod
 
 ##### Node name setting
 
-&emsp;&emsp;Elasticsearch使用`node.name`作为可读（human-readable）的一个特定的Elasticsearch实例。在很多APIs的返回中（response）会用到。当Elasticsearch启动后，节点名字默认是服务器的hostname，可以在`elasticsearch.yml`中显示配置：
+&emsp;&emsp;Elasticsearch使用`node.name`作为可读（human-readable）的一个特定的Elasticsearch实例。在很多APIs的返回中（response）会用到。当Elasticsearch启动后，节点名称默认是服务器的hostname，可以在`elasticsearch.yml`中显示配置：
 
 ```text
 node.name: prod-data-2
@@ -600,7 +600,7 @@ discovery.seed_hosts:
 1. 如果hostname关联多个IP 地址，那么当前节点会试图发现hostname关联的所有地址上的节点
 1. IPv6地址使用方括号包裹（enclosed in square brackets）
 
-&emsp;&emsp;如果候选的主节点的节点没有固定的名字或者地址，可以使用[alternative hosts provider](####Discovery) 来动态的找到他们的地址。
+&emsp;&emsp;如果候选的主节点的节点没有固定的名称或者地址，可以使用[alternative hosts provider](####Discovery) 来动态的找到他们的地址。
 
 ###### cluster.initial_master_nodes
 
@@ -622,7 +622,7 @@ cluster.initial_master_nodes:
    - master-node-c
 ```
 
-1. 通过`node.name`来确定最初的master节点身份，默认是hostname。要确保`cluster.initial_master_nodes`跟`node.name`的值是一致的。如果节点的名字使用了全限定域名（fully-qualified domain name），比如master-node-a.example.com，那么你必须在cluster.initial_master_nodes中使用FQDN。相反的，如果只是仅仅使用了hostname而没有尾随的限定符，那么在cluster.initial_master_nodes也不能带尾随的限定符
+1. 通过`node.name`来确定最初的master节点身份，默认是hostname。要确保`cluster.initial_master_nodes`跟`node.name`的值是一致的。如果节点的名称使用了全限定域名（fully-qualified domain name），比如master-node-a.example.com，那么你必须在cluster.initial_master_nodes中使用FQDN。相反的，如果只是仅仅使用了hostname而没有尾随的限定符，那么在cluster.initial_master_nodes也不能带尾随的限定符
 
 &emsp;&emsp;见 [bootstrapping a cluster](####Bootstrapping-a-cluster)和[discovery and cluster formation settings](###Discovery-and-cluster-formation)。
 
@@ -776,7 +776,7 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.emit_node_name
 
-&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点名字[node name](####Important-Elasticsearch-configuration)是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）指定在每一个日志事件中，节点名称[node name](####Important-Elasticsearch-configuration)是否作为其中的一个域field。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_host_address
 
@@ -796,7 +796,7 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.users
 
-&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用户名字列表或者名字通配值（wildcards）。匹配该值的所有用户的日志事件不会打印出来。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）用户名称列表或者名称通配值（wildcards）。匹配该值的所有用户的日志事件不会打印出来。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.realms
 
@@ -804,7 +804,7 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.actions
 
-&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）action名字的列表或者通配值，action的名字可以在日志事件的`action`域中找到， 匹配该值的所有action的日志事件不会打印出来。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）action名称的列表或者通配值，action的名称可以在日志事件的`action`域中找到， 匹配该值的所有action的日志事件不会打印出来。
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.roles
 
@@ -812,7 +812,7 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.events.ignore_filters.\<policy_name>.indices
 
-&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）索引名字列表或者通配值，日志事件中所有的索引名都匹配后才不会打印。如果事件中涉及（concern）了多条索引，并且一些索引没有被该策略覆盖到，那么该策略不会覆盖日志事件。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）索引名称列表或者通配值，日志事件中所有的索引名都匹配后才不会打印。如果事件中涉及（concern）了多条索引，并且一些索引没有被该策略覆盖到，那么该策略不会覆盖日志事件。
 
 #### Circuit breaker settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/circuit-breaker.html)
@@ -2785,7 +2785,7 @@ logger.org.elasticsearch.cluster.coordination.LagDetector: DEBUG
 &emsp;&emsp;你可以在你的本地机器上运行多个节点来体验多个节点的集群的行为。若要添加一个节点到一个运行在你本地机器上的集群，你需要：
 
 1. 启动一个新的Elasticsearch实例
-2. 在`elasticsearch.yml`文件中的`cluster.name`配置中指定集群名字。例如若要将一个节点添加到名为`logging-prod`的集群中，那么在`elasticsearch.yml`中添加一行： cluster.name: "logging-prod" 
+2. 在`elasticsearch.yml`文件中的`cluster.name`配置中指定集群名称。例如若要将一个节点添加到名为`logging-prod`的集群中，那么在`elasticsearch.yml`中添加一行： cluster.name: "logging-prod" 
 
 &emsp;&emsp;若要添加一个节点到运行在多个机器上的集群，你必须要[set discovery.seed_hosts](######discovery.seed_hosts)，使得新的节点可以发现集群中的其他节点。
 
@@ -3057,7 +3057,7 @@ POST _ml/set_upgrade_mode?enabled=false
 
 ##### Sniff mode
 
-&emsp;&emsp;在sniff mode中，使用名字和seed node list来创建集群。当注册了一个remote cluster后，它的cluster state从seed node中获取并且最多三个`gateway nodes`作为remote cluster requests的一部分。这个模式要求gateway node 的publish address能被本地集群访问到。
+&emsp;&emsp;在sniff mode中，使用名称和seed node list来创建集群。当注册了一个remote cluster后，它的cluster state从seed node中获取并且最多三个`gateway nodes`作为remote cluster requests的一部分。这个模式要求gateway node 的publish address能被本地集群访问到。
 
 &emsp;&emsp;Sniff模式是默认的连接模式。
 
@@ -3088,7 +3088,7 @@ POST _ml/set_upgrade_mode?enabled=false
 
 ##### Proxy mode
 
-&emsp;&emsp;在proxy模式中，使用一个名字和单个代理地址来创建一个集群。当你注册了一个remote cluster，数量可配置的socket 连接对代理地址开放。这个proxy要求将这些连接路由到remote cluster。Proxy mode不要求remote cluster node‘有用于访问的publish address。
+&emsp;&emsp;在proxy模式中，使用一个名称和单个代理地址来创建一个集群。当你注册了一个remote cluster，数量可配置的socket 连接对代理地址开放。这个proxy要求将这些连接路由到remote cluster。Proxy mode不要求remote cluster node‘有用于访问的publish address。
 
 &emsp;&emsp;proxy模式不是默认的连接模式并且必须要配置。Proxy mode跟sniff mode有相同的版本兼容要求。
 
@@ -3250,7 +3250,7 @@ PUT _cluster/settings
 
 > NOTE：对于每一个节点，使用[cluster update settings API](####Cluster update settings API)指定的cluster settings优先在`elasticsearch.yml`中的设置
 
-&emsp;&emsp;在下面的例子中，`cluster_one`, `cluster_two`, 和`cluster_three`是随意的（arbitrary）取的名字（aliases）用来代表连接的集群。这些名字随后用于区分本地和远程的索引。
+&emsp;&emsp;在下面的例子中，`cluster_one`, `cluster_two`, 和`cluster_three`是随意的（arbitrary）取的名称（aliases）用来代表连接的集群。这些名称随后用于区分本地和远程的索引。
 
 ```text
 cluster:
@@ -3668,11 +3668,11 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 
 ##### index.default_pipeline
 
-&emsp;&emsp;用于索引的默认的[ingest pipeline](##Ingest pipelines)。如果设置了默认的pipeline但pipeline不存在，索引请求则会失败。可以使用`pipeline`参数覆盖默认的pipeline。特定的pipeline名字`none`意味着不允许任何pipeline 。
+&emsp;&emsp;用于索引的默认的[ingest pipeline](##Ingest pipelines)。如果设置了默认的pipeline但pipeline不存在，索引请求则会失败。可以使用`pipeline`参数覆盖默认的pipeline。特定的pipeline名称`none`意味着不允许任何pipeline 。
 
 ##### index.final_pipeline
 
-&emsp;&emsp;索引的final [ingest pipeline]()。如果设置了final pipeline并且该pipeline不存在，索引请求则会失败。 final pipeline总是在请求中指定的pipeline以及默认的pipeline之后运行。特定的pipeline名字`none`意味着不允许任何pipeline 。
+&emsp;&emsp;索引的final [ingest pipeline]()。如果设置了final pipeline并且该pipeline不存在，索引请求则会失败。 final pipeline总是在请求中指定的pipeline以及默认的pipeline之后运行。特定的pipeline名称`none`意味着不允许任何pipeline 。
 
 > NOTE：你不能使用一个final pipeline修改`_index`域，如果pipeline尝试进行修改，索引请求则会失败。
 
@@ -3818,7 +3818,7 @@ PUT test/_settings
 
 &emsp;&emsp;索引的分配设置支持下列的内置属性：
 
-|    \_name    |                     根据节点名字进行匹配                     |
+|    \_name    |                     根据节点名称进行匹配                     |
 | :-----------: | :----------------------------------------------------------: |
 |  \_host_ip   |                     根据host ip进行匹配                      |
 | \_publish_ip |            根据发布的IP（publish IP）地址进行匹配            |
@@ -3923,7 +3923,7 @@ PUT _all/_settings
 
 - 可选的`index.priority`的值（higher before lower）
 - 索引的创建时间（higher before lower）
-- 索引的名字（higher before lower）
+- 索引的名称（higher before lower）
 
 &emsp;&emsp;这意味着默认情况下，新的索引会先于旧的索引进行恢复。
 
@@ -4658,7 +4658,7 @@ PUT my-index-000001/_doc/1
 
 > IMPORTANT：只有当某个域包含一个具体的值才能添加Dynamic field mappings。当域中包含`null`或者空的数组时，Elasticsearch不会添加一个dynamic field mapping。如果在`dynamic_template`中使用了`null_value`选项，只有在一篇有具体的值的文档索引后才能作用这个选项。 
 
-&emsp;&emsp;Dynamic template由一组带名字的object数组组成：
+&emsp;&emsp;Dynamic template由一组带名称的object数组组成：
 
 ```text
   "dynamic_templates": [
@@ -4672,7 +4672,7 @@ PUT my-index-000001/_doc/1
   ]
 ```
 
-&emsp;&emsp;第3行，模板的名字可以是任意的string value
+&emsp;&emsp;第3行，模板的名称可以是任意的string value
 
 &emsp;&emsp;第4行，匹配条件可以包含: `match_mapping_type`, `match`, `match_pattern`, `unmatch`, `path_match`, `path_unmatch`
 
@@ -4796,7 +4796,7 @@ PUT my-index-000001/_doc/1
   "match": "^profit_\d+$"
 ```
 
-&emsp;&emsp;下面的例子匹配了所有名字以`long_`开头的域，但是排除了以`_text`结尾的域，并将他们的域值映射为`long`：
+&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的域，但是排除了以`_text`结尾的域，并将他们的域值映射为`long`：
 
 ```text
 PUT my-index-000001
@@ -5358,7 +5358,7 @@ PUT my-index-000001/
 
 ##### Updating and removing runtime fields
 
-&emsp;&emsp;你可以在任何时候更新或者移除runtime fileds。添加一个相同名字的runtime files就可以覆盖现在有的runtime files，通过设置为null来移除现在有的runtime files：
+&emsp;&emsp;你可以在任何时候更新或者移除runtime fileds。添加一个相同名称的runtime files就可以覆盖现在有的runtime files，通过设置为null来移除现在有的runtime files：
 
 ```text
 PUT my-index-000001/_mapping
@@ -6279,7 +6279,7 @@ GET my-index-000001/_search
 
 ##### Define a composite runtime field
 
-&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个域。你可以定义类型化的子域（typed subfields）集合然后emit多个值。在查询期间，每一个子域会检索出跟他们名字相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
+&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个域。你可以定义类型化的子域（typed subfields）集合然后emit多个值。在查询期间，每一个子域会检索出跟他们名称相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
 
 ```text
 PUT my-index-000001/_mappings
@@ -6854,7 +6854,7 @@ GET trips/_field_caps?fields=route_*,transit_mode
 
 &emsp;&emsp;不支持往alias中写入域值：尝试在索引或者更新alias域会产生一个错误。同样的，alias不能作为多个域的[copy_to](####copy_to)的目标。
 
-&emsp;&emsp;因为alias的名字没有在输入文档中呈现，所以不能通过用于source filtering。例如下面的请求会返回一个空结果：
+&emsp;&emsp;因为alias的名称没有在输入文档中呈现，所以不能通过用于source filtering。例如下面的请求会返回一个空结果：
 
 ```text
 GET /_search
@@ -7295,7 +7295,7 @@ GET my-index-000001/_search
 #### Flattened field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
 
-&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名字无法提前知晓，那么他们会被自动映射（[mapped dynamically](###Dynamic mapping)）。
+&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名称无法提前知晓，那么他们会被自动映射（[mapped dynamically](###Dynamic mapping)）。
 
 &emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将他们作为keyword索引到一个域中。对象的内容随后可以通过query和aggregation查询。
 
@@ -8930,7 +8930,7 @@ GET /_search
 #### \_ignored field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-ignored-field.html)
 
-&emsp;&emsp;`_ignored` field 用来索引并存储在索引期间被忽略的文档的所有域的名字。例如域值是格式错误的并且开启了[ignore_malformed](####ignore_malformed)或者keyword域值超过了[ignore_above](####ignore_above)中的设置。
+&emsp;&emsp;`_ignored` field 用来索引并存储在索引期间被忽略的文档的所有域的名称。例如域值是格式错误的并且开启了[ignore_malformed](####ignore_malformed)或者keyword域值超过了[ignore_above](####ignore_above)中的设置。
 
 &emsp;&emsp;这个域可以使用 [term](####Term query), [terms](####Terms query), [exists](####Exists query)进行查询。
 
@@ -11229,7 +11229,7 @@ GET my-index-000001/_search
 
 #### index.mapping.field_name_length.limit
 
-&emsp;&emsp;域的名字长度最大值。这个设置不能解决mappings explosion的问题，但是如果你想要限制filed length时仍然是有用的。通常不需要设置它。除非用户增加了大量的域，并且每个域的域名长度非常的长，否则使用默认值就可以了。默认值是`Long.MAX_VALUE (no limit)`。
+&emsp;&emsp;域的名称长度最大值。这个设置不能解决mappings explosion的问题，但是如果你想要限制filed length时仍然是有用的。通常不需要设置它。除非用户增加了大量的域，并且每个域的域名长度非常的长，否则使用默认值就可以了。默认值是`Long.MAX_VALUE (no limit)`。
 
 #### index.mapping.dimension_fields.limit
 
@@ -11800,7 +11800,7 @@ GET my-index-000001/_analyze
 
 &emsp;&emsp;第27行，要想引用这个分词器，`analyze` API必须要指定索引名
 
-&emsp;&emsp;第29行，通过分词器的名字来指定一个分词器
+&emsp;&emsp;第29行，通过分词器的名称来指定一个分词器
 
 &emsp;&emsp;第35行，对`my_text`域进行分词
 
@@ -13264,7 +13264,7 @@ POST /_index_template/_simulate
 
 &emsp;&emsp;`<yyyy.MM.dd> `是backing index的创建时间。generation数值越大的backing index包含更多最近的数据。例如，`web-server-logs`这个数据流的generation的值为`34`。这个流在2099年3月7日创建，那么就命名为`.ds-web-server-logs-2099.03.07-000034`。
 
-&emsp;&emsp;有些[shink](####Shrink index API)或者[restore](###Restore a snapshot)操作会更改backing index的名字。这些名字的变更不会数据流中移除backing index。
+&emsp;&emsp;有些[shink](####Shrink index API)或者[restore](###Restore a snapshot)操作会更改backing index的名称。这些名称的变更不会数据流中移除backing index。
 
 #### Append-only
 
@@ -13354,7 +13354,7 @@ PUT _ilm/policy/my-lifecycle-policy
 &emsp;&emsp;当你创建组件模版时，包括：
 
 - 为`@timestamp`字段定义mapping类型，[date](####Date field type)或者[date_nanos](####Date nanoseconds field type)。如果你不指定，Elasticsearch会默认将这个字段作为`date`类型的字段
-- 索引设置`index.lifecycle.name`中给定生命周期策略的名字
+- 索引设置`index.lifecycle.name`中给定生命周期策略的名称
 
 > TIP：使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)来映射你的域类型。ECS域默认跟一些Elastic Stack features 集成
 > 如果你不确定如何映射你的域类型，你可以在查询期间使用[runtime fields](####Define runtime fields in a search request)从非结构化的内容[unstructured content](#####Wildcard field type)中提取字段。例如你可以将log message索引到一个`wildcard`域，随后在查询期间从这个域中提取IP地址和其他数据。
@@ -13405,7 +13405,7 @@ PUT _component_template/my-settings
 
 &emsp;&emsp;若要使用你的组件模版来创建一个索引模板，需要指定：
 
-- 一个或者多个`index_patterns`来匹配data stream的名字。我们建议使用[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
+- 一个或者多个`index_patterns`来匹配data stream的名称。我们建议使用[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
 - 这个模版是data stream可以使用的（用`data_stream`字段表示该模版可以用于数据流）
 - 包含你mapping跟索引设置Index settings的组件模版
 - 优先级大于`200`，以避免与内置模板发生冲突。见[Avoid index pattern collisions](#####Avoid index pattern collisions))
@@ -13432,7 +13432,7 @@ PUT _index_template/my-index-template
 
 &emsp;&emsp;[Indxing requests](####Add documents to a data stream)将文档添加到data stream中。这些请求必须使用`create`类型中的`op_type`。文档中必须包含`@timestamp`字段。
 
-&emsp;&emsp;若要自动创建你的data stream，提交一个索引请求并指定目标data stream的名字。名字必须能匹配到索引模板中的`index_patterns`。
+&emsp;&emsp;若要自动创建你的data stream，提交一个索引请求并指定目标data stream的名称。名称必须能匹配到索引模板中的`index_patterns`。
 
 ```text
 PUT my-data-stream/_bulk
@@ -13448,7 +13448,7 @@ POST my-data-stream/_doc
 }
 ```
 
-&emsp;&emsp;你也可以使用[create data stream API](####Create data stream API)手动创建时stream。这个stream的名字仍然必须能匹配到索引模板中的`index_patterns`。
+&emsp;&emsp;你也可以使用[create data stream API](####Create data stream API)手动创建时stream。这个stream的名称仍然必须能匹配到索引模板中的`index_patterns`。
 
 ```text
 PUT _data_stream/my-data-stream
@@ -13464,7 +13464,7 @@ PUT _data_stream/my-data-stream
 
 &emsp;&emsp;在Elasticsearch7.9之前，你通常使用[index alias with a write index](####Manage time series data without data streams)来管理时序数据。Data stream替代了这个功能，更低的维护成本以及自动跟[data tiers](###Data tiers)集成。
 
-&emsp;&emsp;若要将带有writer Index的索引别名转化为一个data stream，并且使用相同的名字，请使用[migrate to data stream API](####Migrate to data stream API)。在传化期间，别名的索引变成了stream中的隐藏的backing indices。索引别名中的writer Index变成了stream的writer Index。这个stream依然要求一个能匹配的索引模板，并且这个索引模板能适用于data stream（模版中要有`data_stream`字段）。
+&emsp;&emsp;若要将带有writer Index的索引别名转化为一个data stream，并且使用相同的名称，请使用[migrate to data stream API](####Migrate to data stream API)。在传化期间，别名的索引变成了stream中的隐藏的backing indices。索引别名中的writer Index变成了stream的writer Index。这个stream依然要求一个能匹配的索引模板，并且这个索引模板能适用于data stream（模版中要有`data_stream`字段）。
 
 ```text
 POST _data_stream/_migrate/my-time-series-data
@@ -13472,7 +13472,7 @@ POST _data_stream/_migrate/my-time-series-data
 
 #### Get information about a data stream
 
-&emsp;&emsp;若要在Kibana中获取data stream的信息，打开主菜单然后跳转到**Stack Management > Index Management**，在**Data Streams**视图中，点击data stream的名字。
+&emsp;&emsp;若要在Kibana中获取data stream的信息，打开主菜单然后跳转到**Stack Management > Index Management**，在**Data Streams**视图中，点击data stream的名称。
 
 &emsp;&emsp;你可以使用[get data stream API](####Get data stream API)。
 
@@ -13623,7 +13623,7 @@ POST /my-data-stream/_update_by_query
 &emsp;&emsp;如果有需要的话，你可以通过往包含文档的backing index中发送请求来更新/删除data stream中的文档。你需要：
 
 - [Document ID](####\_id field)
-- 包含文档的backing index的名字
+- 包含文档的backing index的名称
 - 如果是更新文档，需要[sequence number and primary term](####Optimistic concurrency control)
 
 &emsp;&emsp;若要获取这些信息，使用一个[search request](####Search a data stream)：
@@ -13948,9 +13948,9 @@ PUT /_index_template/my-data-stream-template
 
 &emsp;&emsp;按照下面的步骤执行：
 
-1. 为新的data stream选择一个名字或者index pattern。这个新的data stream会包含你现有的stream中的数据。
+1. 为新的data stream选择一个名称或者index pattern。这个新的data stream会包含你现有的stream中的数据。
 
-&emsp;&emsp;你可以使用[ resolve index API](####Resolve index API)检查下 名字或者pattern会不会匹配到现有的索引，aliases或者data stream。如果有，你应该考虑使用其他的名字或者pattern。
+&emsp;&emsp;你可以使用[ resolve index API](####Resolve index API)检查下 名称或者pattern会不会匹配到现有的索引，aliases或者data stream。如果有，你应该考虑使用其他的名称或者pattern。
 
 &emsp;&emsp;下面的resolve index API请求会检查现有的索引，aliases或者data stream有没有以`new-data-stream`开头的。如果没有，index pattern `new-data-stream*` 可以用于创建新的data stream。
 
@@ -13970,7 +13970,7 @@ GET /_resolve/index/new-data-stream*
 
 2. 创建或者更新一个index template。这个模板引应该包含你想要应用到新的data stream中的backing index的mappings和settings。
 
-&emsp;&emsp;这个index template必须满足[requirements for a data stream template](####Create an index template(data stream))。他应该在`index_patterns`属性中同样包含之前选择的名字或者index patter。
+&emsp;&emsp;这个index template必须满足[requirements for a data stream template](####Create an index template(data stream))。他应该在`index_patterns`属性中同样包含之前选择的名称或者index patter。
 
 > TIP：如果你只增加或者修改小部分东西，我们建议你通过拷贝现有的模板，根据你的需要进行修改，然后用于创建一个新的模板。
 
@@ -14010,14 +14010,14 @@ PUT /_index_template/new-data-stream-template
 
 &emsp;&emsp;第16行，增加index setting `sort.order`
 
-3. 使用[create data stream API ](####Create data stream API)手动创建新的data stream。data stream的名字必须匹配定义在index template中的`index_patterns`属性。
+3. 使用[create data stream API ](####Create data stream API)手动创建新的data stream。data stream的名称必须匹配定义在index template中的`index_patterns`属性。
 
 &emsp;&emsp;我们不建议[indexing new data to create this data stream](####Create data stream API)。因为随后你将从现有的data stream中的旧数据reindex到这个data stream中。这会导致一个或者多个backing index会同时包含新旧数据。
 
 > IMPORTANT：Mixing new and old data in a data stream
 > 尽管新旧数据的混合是安全，但它会影响data retention。如果你要删除旧的索引，你可能会意外的删除一个同时包含新旧数据的索引。为了防止过早的（premature）数据丢失，你需要保留这样的backing index直到里面最新的数据可以被删除。
 
-&emsp;&emsp;下面的create data stream API请求的目标是`new-data-stream`，它会匹配到index template中的`new-data-stream-template`。因为现有的索引或data stream没有使用这个名字，所以这个请求会创建名为`new-data-stream`的data stream。
+&emsp;&emsp;下面的create data stream API请求的目标是`new-data-stream`，它会匹配到index template中的`new-data-stream-template`。因为现有的索引或data stream没有使用这个名称，所以这个请求会创建名为`new-data-stream`的data stream。
 
 ```text
 PUT /_data_stream/new-data-stream
@@ -14408,9 +14408,9 @@ PUT _index_template/logs-my_app-template
 ```
 
 3. 在Fleet中增加或者编辑**Custom logs** integration时，点击**Configure integration > Custom log file > Advanced options**。
-4. 在**Dataset name**中，指定你的数据集名字，Fleet会为integration添加新的数据并输出（resulting）`logs-<dataset-name>-default` data stream。
+4. 在**Dataset name**中，指定你的数据集名称，Fleet会为integration添加新的数据并输出（resulting）`logs-<dataset-name>-default` data stream。
 
-&emsp;&emsp;例如，如果你的数据集名字是`my_app`，Fleet将新的数据添加到`logs-my_app-default`数据流。
+&emsp;&emsp;例如，如果你的数据集名称是`my_app`，Fleet将新的数据添加到`logs-my_app-default`数据流。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/custom-logs.png">
 
@@ -14422,9 +14422,9 @@ POST logs-my_app-default/_rollover/
 
 ##### Option 2: Custom configuration
 
-1. [Create](####Create and manage pipelines)和[test](####Test a pipeline)你的ingest pipeline。默认命名pipeline的名字为`logs-<dataset-name>-default`。这使得让你的integration更易于追踪（track）。
+1. [Create](####Create and manage pipelines)和[test](####Test a pipeline)你的ingest pipeline。默认命名pipeline的名称为`logs-<dataset-name>-default`。这使得让你的integration更易于追踪（track）。
 
-&emsp;&emsp;例如，下面的请求中为数据集`my-app`创建了一个pipeline。这个pipeline的名字是`logs-my_app-default`。
+&emsp;&emsp;例如，下面的请求中为数据集`my-app`创建了一个pipeline。这个pipeline的名称是`logs-my_app-default`。
 
 ```text
 PUT _ingest/pipeline/logs-my_app-default
@@ -14436,9 +14436,9 @@ PUT _ingest/pipeline/logs-my_app-default
 
 2. 当你在Fleet中添加或者编辑你的**Custom logs** integration。点击**Configure integration > Custom log file > Advanced options**。
 
-3. 在**Dataset name**，指定你的数据集名字。Fleet将为integration添加新的数据并且输出到`logs-<dataset-name>-default` 数据流中。
+3. 在**Dataset name**，指定你的数据集名称。Fleet将为integration添加新的数据并且输出到`logs-<dataset-name>-default` 数据流中。
 
-&emsp;&emsp;例如，如果你的数据集名字是`my_app`，Fleet将添加新的数据到`logs-my_app-default` 数据流中。
+&emsp;&emsp;例如，如果你的数据集名称是`my_app`，Fleet将添加新的数据到`logs-my_app-default` 数据流中。
 
 4. 在**Custom Configurations**，在`pipeline`策略设置中指定你的pipeline。
 
@@ -14527,7 +14527,7 @@ PUT _ingest/pipeline/my-pipeline
 
 #### Access metadata fields in a processor
 
-&emsp;&emsp;Processor能通过名字访问下面的metadata filed：
+&emsp;&emsp;Processor能通过名称访问下面的metadata filed：
 
 - \_index
 - \_id
@@ -14878,7 +14878,7 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36\"
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-pipeline-list.png">
 
 2. 点击**Create pipeline > New pipeline**
-3. 给这个pipeline提供一个名字以及描述
+3. 给这个pipeline提供一个名称以及描述
 4. 添加一个[grok processor](####Grok processor)来解析日志消息。
    1. 点击**Add a processor**并且选择Grok processor类型
    2. 设置**Field**为`message`并且**Patterns**设置为下面的[grok pattern](###Grok basics)
@@ -15611,7 +15611,7 @@ POST /_search/scroll
 }
 ```
 
-&emsp;&emsp;第1行，可以使用`GET`或`POST`并且URL中不应该包含`index`的名字----索引的名字在最开始的查询中指定
+&emsp;&emsp;第1行，可以使用`GET`或`POST`并且URL中不应该包含`index`的名称----索引的名称在最开始的查询中指定
 
 &emsp;&emsp;第3行，`scroll`参数告诉Elasticsearch接着保留1分钟的search context
 
@@ -15834,7 +15834,7 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;下面的响应中，对`first`和`last`名字进行了分组而不是平铺出来。
+&emsp;&emsp;下面的响应中，对`first`和`last`名称进行了分组而不是平铺出来。
 
 ```text
 {
@@ -16329,7 +16329,7 @@ GET /cluster_one:my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第23行，查询响应中的`_index`参数包含了remote cluster的名字
+&emsp;&emsp;第23行，查询响应中的`_index`参数包含了remote cluster的名称
 
 ##### Search multiple remote clusters
 
@@ -16431,7 +16431,7 @@ GET /my-index-000001,cluster_one:my-index-000001,cluster_two:my-index-000001/_se
 }
 ```
 
-&emsp;&emsp;第24行，这篇文档的`_index`参数没有集群的名字，说明这个文档来自本地集群
+&emsp;&emsp;第24行，这篇文档的`_index`参数没有集群的名称，说明这个文档来自本地集群
 
 &emsp;&emsp;第41行，这篇文档来自`cluster_one`
 
@@ -16585,7 +16585,7 @@ GET /my-index-000001,my-index-000002/_search
 
 &emsp;&emsp;你也可以使用一个index pattern查询多个data stream和索引。
 
-&emsp;&emsp;下面的请求目标是`my-index-*`的index pattern。这个请求会查询集群中名字以`my-index-`开头的data stream或者索引。
+&emsp;&emsp;下面的请求目标是`my-index-*`的index pattern。这个请求会查询集群中名称以`my-index-`开头的data stream或者索引。
 
 ```text
 GET /my-index-*/_search
@@ -16697,7 +16697,7 @@ GET /my-index-000001/_search?preference=_local
 
 &emsp;&emsp;你也可以使用`preference`参数并基于提供的值将查询路由到指定的分片。如果集群状态（cluster state）和选择的分片没有发生变更，查询会使用相同的`preference`的值以相同的顺序被路由到相同的分片。
 
-&emsp;&emsp;我们建议使用一个独一无二的`preference`值，例如用户的名字或者web session ID。这个值不能以`_`开头。
+&emsp;&emsp;我们建议使用一个独一无二的`preference`值，例如用户的名称或者web session ID。这个值不能以`_`开头。
 
 > TIP：你可以使用这个方法为频繁的以及资源密集（resource-intensive）的查询使用缓存结果。如果分片没有发生变更，使用相同`preference`值的重复的查询会从相同的[shard request cache](####Shard request cache settings)中检索到结果。对于时序用例，比如说日志，旧的索引中的数据几乎不会更新，就可以从这个cache中直接返回结果
 
@@ -20730,7 +20730,7 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;聚合的名字avg_grade作为一个key，我们可以从返回的响应中读取这个字段的值获取聚合结果。
+&emsp;&emsp;聚合的名称avg_grade作为一个key，我们可以从返回的响应中读取这个字段的值获取聚合结果。
 
 ##### Script
 
@@ -21032,7 +21032,7 @@ GET /exams/_search
 }
 ```
 
-&emsp;&emsp;聚合的名字（上文中的`grades_stats`）可以作为key，使得返回的响应中作为key来检索聚合结果。
+&emsp;&emsp;聚合的名称（上文中的`grades_stats`）可以作为key，使得返回的响应中作为key来检索聚合结果。
 
 ##### Standard Deviation Bounds
 
@@ -21140,7 +21140,7 @@ POST /sales/_search?size=0
   }
 }
 ```
-&emsp;&emsp;由此可见，上文中聚合的名字`max_price`可以作为一个key，用于在返回的响应中检索聚合结果。
+&emsp;&emsp;由此可见，上文中聚合的名称`max_price`可以作为一个key，用于在返回的响应中检索聚合结果。
 
 ##### Script
 
@@ -21572,7 +21572,7 @@ PUT _ilm/policy/timeseries_policy
 
 &emsp;&emsp;例如，你可能创建一个名为`timeseries_template`的模板用于一个名为`timeseries`的data stream。
 
-- `index.lifecycle.name`指定生命周期策略的名字，并应用到data stream中。
+- `index.lifecycle.name`指定生命周期策略的名称，并应用到data stream中。
 
 &emsp;&emsp;你可以使用Kibana创建模板向导程序来添加模板。在Kibana中，打开菜单并进入**Stack Management > Index Management**。在**Index Templates**页，点击**Create template**。
 
@@ -21599,11 +21599,11 @@ PUT _index_template/timeseries_template
 
 &emsp;&emsp;第3行，当文档索引到`timeseries`中时应用这个模板
 
-&emsp;&emsp;第8行，使用ILM策略的名字来管理data stream
+&emsp;&emsp;第8行，使用ILM策略的名称来管理data stream
 
 #### Create the data stream
 
-&emsp;&emsp;索引一篇文档到[index template](##Index templates)中定义的名字或定义在`index_patterns`中的wildcard pattern中。只要现有的data stream，索引或者index alias没有使用这个名字，那么索引请求会自动的创建单个backing index和其对应的data stream。Elasticsearch自动的将请求的文档索引到backing index中，这个backing index作为这个流的[write index](####Write index)。
+&emsp;&emsp;索引一篇文档到[index template](##Index templates)中定义的名称或定义在`index_patterns`中的wildcard pattern中。只要现有的data stream，索引或者index alias没有使用这个名称，那么索引请求会自动的创建单个backing index和其对应的data stream。Elasticsearch自动的将请求的文档索引到backing index中，这个backing index作为这个流的[write index](####Write index)。
 
 &emsp;&emsp;例如，下面的请求创建了名为`timeseries`的data stream并且首先创建了first generation名为`.ds-timeseries-2099.03.08-000001`的backing index。
 
@@ -21676,7 +21676,7 @@ GET .ds-timeseries-*/_ilm/explain
 
 &emsp;&emsp;第6行，age of the index，用于跟`max_age`计算出rollover的时间
 
-&emsp;&emsp;第8行，管理这个索引的策略名字
+&emsp;&emsp;第8行，管理这个索引的策略名称
 
 &emsp;&emsp;第10行，age of the indexed，用于转移到下一个阶段（在这个例子中跟age of the index一样）
 
@@ -21705,7 +21705,7 @@ GET .ds-timeseries-*/_ilm/explain
 
 &emsp;&emsp;若要自动的rollover，那么在模板中配置两个ILM设置：
 
-- `index.lifecycle.name`指定生命周期策略的名字，该策略作用到匹配了index pattern的新的索引上
+- `index.lifecycle.name`指定生命周期策略的名称，该策略作用到匹配了index pattern的新的索引上
 - `index.lifecycle.rollover_alias`指定了index alias，当rollover动作出发后，它将被roll over
 
 &emsp;&emsp;你可以使用Kibana创建模板向导程序来添加模板。若要访问向导程序，打开菜单并且进入**Stack Management > Index Management**。在**Index Templates**页面，点击**Create template**。
@@ -21731,13 +21731,13 @@ PUT _index_template/timeseries_template
 
 &emsp;&emsp;第3行，模板将作用到索引名以`timeseries-`开头的索引上
 
-&emsp;&emsp;第8行，生命周期策略的名字，将作用到每一个新的索引上
+&emsp;&emsp;第8行，生命周期策略的名称，将作用到每一个新的索引上
 
-&emsp;&emsp;第9行，alias的名字用于引用这些索引，要求策略使用rollover动作。
+&emsp;&emsp;第9行，alias的名称用于引用这些索引，要求策略使用rollover动作。
 
 #### Bootstrap the initial time series index with a write index alias
 
-&emsp;&emsp;你需要引导一个最开始的索引并且为你模板中的rollover alias将这个索引指为write index。这个索引的名字必须匹配模板中的index pattern并且以数字结尾。在转存时，这个数字会递增用于生成新的索引的名字。
+&emsp;&emsp;你需要引导一个最开始的索引并且为你模板中的rollover alias将这个索引指为write index。这个索引的名称必须匹配模板中的index pattern并且以数字结尾。在转存时，这个数字会递增用于生成新的索引的名称。
 
 &emsp;&emsp;例如，下面的请求创建了一个名为`timeseries-000001`的索引，并且让它作为名为 `timeseries` 的alias的write index。
 
@@ -21754,7 +21754,7 @@ PUT timeseries-000001
 
 &emsp;&emsp;当满足了rollover的条件，`rollover`动作就会：
 
-- 创建一个名为`timeseries-000002`的新的索引。这个名字匹配了`timeseries-*` pattern，所以`timeseries_template`模板中的设置会作用到这个新的索引上
+- 创建一个名为`timeseries-000002`的新的索引。这个名称匹配了`timeseries-*` pattern，所以`timeseries_template`模板中的设置会作用到这个新的索引上
 - 将这个新的索引指为write index并且让引导索引（`timeseries-000001`）变成只读
 
 #### Check lifecycle progress(index)
@@ -21815,7 +21815,7 @@ GET timeseries-*/_ilm/explain
 
 &emsp;&emsp;**Data Streams**视图中列出了你的data steams并且能让你测试或者删除它们。
 
-&emsp;&emsp;若要查看data stream的更多的信息，比如它当前的generation或者当前的索引生命周期策略，那么点击流的名字。
+&emsp;&emsp;若要查看data stream的更多的信息，比如它当前的generation或者当前的索引生命周期策略，那么点击流的名称。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/management_index_data_stream_stats.png">
 
@@ -22059,7 +22059,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;每一个data stream要求一个[index template](##Index templates)，模板中包括：
 
-- 用于data stream的名字或者通配符（`*`)
+- 用于data stream的名称或者通配符（`*`)
 - data stream的timestamp域。这个域必须是[date](####Date field typec)或者[date_nanos](####Date nanoseconds field type)的date类型，每一篇索引到data stream的文档都要包含这个域
 - mappings和settings要应用到每一个创建的[backing index](####Backing indices)_上
 
@@ -22449,7 +22449,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;要转存一个index alias，alias和它的的write index必须满足下面的条件：
 
-- 索引名字必须满足这个pattern `^.*-\d+$`，例如（my-index-00001）
+- 索引名称必须满足这个pattern `^.*-\d+$`，例如（my-index-00001）
 - `index.lifecycle.rollover_alias`必须配置为alias进行转存
 - 索引必须是alias的[write index](####Write index（Alias）)
 
@@ -22750,7 +22750,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;可以在hot、warm阶段使用该动作。
 
-&emsp;&emsp;将源索引（source index）设置为[read-only](#####index.blocks.read_only)并且收缩（shrink）到一个新的索引中，这个索引有很少的主分片（fewer primary shards）。生成的索引名字为`shrink-<random-uuid>-<original-index-name>`。这个动作对应于 [shrink API](####Shrink index API)。
+&emsp;&emsp;将源索引（source index）设置为[read-only](#####index.blocks.read_only)并且收缩（shrink）到一个新的索引中，这个索引有很少的主分片（fewer primary shards）。生成的索引名称为`shrink-<random-uuid>-<original-index-name>`。这个动作对应于 [shrink API](####Shrink index API)。
 
 &emsp;&emsp;在`shrink`动作执行后，那些指向源索引的aliases会指向收缩后的索引（shrunken index）。如果ILM在一个数据流（data stream）的[backing index](###Backing indices)上执行收缩操作时，收缩后的索引会替代流中的源索引。你不能在一个写索引（write index）上执行`shrink`动作。
 
@@ -22879,7 +22879,7 @@ PUT _ilm/policy/my_policy
 
 ###### policy
 
-&emsp;&emsp;（必选，字符串）SLM策略的名字，delete动作执行前需要等待执行这个策略。
+&emsp;&emsp;（必选，字符串）SLM策略的名称，delete动作执行前需要等待执行这个策略。
 
 ##### Example
 
@@ -22909,7 +22909,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;若要使用策略来管理一个不进行roll over的索引，你可以在创建索引的时候指定一个生命周期策略，或者将一个策略应用到已存在的索引上。
 
-&emsp;&emsp;ILM 策略存储在全局cluster state中，当你[take the snapshot](###Create a snapshot)时，你可以将`include_global_state`设置为`true`，使得在snapshot中包含策略。当存储snapshot后，会存储全局state中的所有策略并且任意相同名字的本地策略会被覆盖。
+&emsp;&emsp;ILM 策略存储在全局cluster state中，当你[take the snapshot](###Create a snapshot)时，你可以将`include_global_state`设置为`true`，使得在snapshot中包含策略。当存储snapshot后，会存储全局state中的所有策略并且任意相同名称的本地策略会被覆盖。
 
 > IMPORTANT：
 When you enable index lifecycle management for Beats or the Logstash Elasticsearch output plugin, the necessary policies and configuration changes are applied automatically. You can modify the default policies, but you do not need to explicitly configure a policy or bootstrap an initial index.
@@ -22953,7 +22953,7 @@ PUT _ilm/policy/my_policy
 
 #### Apply lifecycle policy with an index template
 
-&emsp;&emsp;若要使用策略来触发rollover动作，你需要在index template中配置策略用于创建每一个新的索引。你指定策略的名字和alias用于引用rolling indices。
+&emsp;&emsp;若要使用策略来触发rollover动作，你需要在index template中配置策略用于创建每一个新的索引。你指定策略的名称和alias用于引用rolling indices。
 
 &emsp;&emsp;你可以使用Kibana创建模板向导程序来创建一个模板。若要访问向导程序，打开菜单并且进入**Stack Management > Index Management**。在**Index Template**页面，点击**Create template**
 
@@ -22989,7 +22989,7 @@ PUT _index_template/my_template
 > IMPORTANT：
 When you enable index lifecycle management for Beats or the Logstash Elasticsearch output plugin, the necessary policies and configuration changes are applied automatically. You can modify the default policies, but you do not need to explicitly configure a policy or bootstrap an initial index.
 
-&emsp;&emsp;索引的名字必须匹配定义在index template中的pattern并且以数字结尾。递增这个数字来生成由rollover动作创建的索引的名字。
+&emsp;&emsp;索引的名称必须匹配定义在index template中的pattern并且以数字结尾。递增这个数字来生成由rollover动作创建的索引的名称。
 
 &emsp;&emsp;例如，下面的请求创建了一个名为`test-00001`的索引。因为它匹配到了`my_template`中的index pattern，Elasticsearch自动的从这个应用这个模板中的设置。
 
@@ -23386,7 +23386,7 @@ Problems with rollover aliases are a common cause of errors. Consider using [dat
 
 &emsp;&emsp;为了rollover动作可以工作，索引名必须匹配regex pattern "^.\*-\d+"。最常见的问题是索引名不包含尾随数字（trailing digits）。例如，`my-index`不匹配pattern要求。
 
-&emsp;&emsp;索引名字尾部追加一个数值，例如`my-index-000001`。
+&emsp;&emsp;索引名称尾部追加一个数值，例如`my-index-000001`。
 
 ##### CircuitBreakingException: [x] data too large, data for [y]
 
@@ -23560,7 +23560,7 @@ PUT _cluster/settings
 
 > IMPORTANT：当`index.lifecycle.indexing_complete`设置为`true`，ILM会核实（verify）这个索引不再是`index.lifecycle.rollover_alias`中指定的write index。如果索引仍然是write index或者rollover alias没有设置，这个索引就被移动到[ERROR step](###Troubleshooting index lifecycle management errors)。
 
-&emsp;&emsp;例如，如果你需要在一个series中更改新索引的名字同时还要保留根据配置的策略生成的之前的索引的数据，你可以：
+&emsp;&emsp;例如，如果你需要在一个series中更改新索引的名称同时还要保留根据配置的策略生成的之前的索引的数据，你可以：
 
 1. 为新的index pattern创建一个新的模板并且使用新的策略
 2. 引导最初的索引（bootstrap the initial index）
@@ -24070,7 +24070,7 @@ GET /sensor_rollup/_rollup_search
 
 &emsp;&emsp;这里唯一需要注意的是Rollup的查询结果中是没有`hits`结果的，因为我们不再从原始的，live data中进行查询。其他部分都是相同的语法结构。
 
-&emsp;&emsp;There are a few interesting takeaways here。首先，尽管数据按小时的间隔（hourly interval）并按照node的名字进行分组，但是这个query我们只计算了所有文档中temperature的最大值。job中配置的`groups`在查询不是必要的元素（mandatory element），他们只是你可以用于分组的额外的维度。其次，这个查询和响应跟普通的DSL是一模一样的，使得更容易集成与dashboard和应用中。
+&emsp;&emsp;There are a few interesting takeaways here。首先，尽管数据按小时的间隔（hourly interval）并按照node的名称进行分组，但是这个query我们只计算了所有文档中temperature的最大值。job中配置的`groups`在查询不是必要的元素（mandatory element），他们只是你可以用于分组的额外的维度。其次，这个查询和响应跟普通的DSL是一模一样的，使得更容易集成与dashboard和应用中。
 
 &emsp;&emsp;最后，我们可以使用分组的字段来构造一个更加复杂的查询：
 
@@ -24533,7 +24533,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 &emsp;&emsp;transform会分页处理source index query对应的数据并且对此执行一个composite aggregation。聚合的输出会存储到一个destination index中。transform每次查询source index时，都会创建一个checkpoint。你可以决定是否希望transform执行一次还是连续执行。一个batch transform属于单个操作并且只有一个checkpoint。连续的transforms会不断的增加以及处理（increment and process）新提取的（ingest）source data的checkpoint。
 
-&emsp;&emsp;比如你正在运行一个售卖衣服的网上商城（webshop）。每个订单会创建一个文档，文档中包含一个唯一的订单ID、订单名字和订单中产品的分类、价格、数量，订单的准确时间和一些客户的信息（名字，性别，地址等等）。你的数据集中包含了过去一年的交易。
+&emsp;&emsp;比如你正在运行一个售卖衣服的网上商城（webshop）。每个订单会创建一个文档，文档中包含一个唯一的订单ID、订单名称和订单中产品的分类、价格、数量，订单的准确时间和一些客户的信息（名称，性别，地址等等）。你的数据集中包含了过去一年的交易。
 
 &emsp;&emsp;如果你想查看上一财年不同类别的销售额，那么定义一个transform，这个transform根据产品分类（女鞋、男鞋等等）和订单时间进行分组。使用过去一年的时间作为订单时间的时间间隔（interval），然后根据订单数量增加一个sum aggregation。输入结果是一个entity-centric index，这个index中显示了过去一年每一类产品卖出的商品的数量。
 
@@ -24631,7 +24631,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 &emsp;&emsp;你可以在**Stack Management > Rules and Connectors**下创建transforms的规则。
 
-&emsp;&emsp;在**Create rule**的窗口中，给规则起一个名字并且提供一个可选的tag。指定检查transforms运行状态是否发生变化的时间间隔。你也通过选择`Notify`来指定一个通知选项。只要在检查间隔期间满足配置的条件，alert就会保持活动状态。当在下一个interval中没有满足条件，`Recovered` action group会被调用并且告警状态改为`OK`。参考[general rule details](https://www.elastic.co/guide/en/kibana/8.2/create-and-manage-rules.html#defining-rules-general-details)了解更多的内容细节。
+&emsp;&emsp;在**Create rule**的窗口中，给规则起一个名称并且提供一个可选的tag。指定检查transforms运行状态是否发生变化的时间间隔。你也通过选择`Notify`来指定一个通知选项。只要在检查间隔期间满足配置的条件，alert就会保持活动状态。当在下一个interval中没有满足条件，`Recovered` action group会被调用并且告警状态改为`OK`。参考[general rule details](https://www.elastic.co/guide/en/kibana/8.2/create-and-manage-rules.html#defining-rules-general-details)了解更多的内容细节。
 
 &emsp;&emsp;在Stack Monitoring下选择Transform health rule type：
 
@@ -24661,7 +24661,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 &emsp;&emsp;在保存完配置后，你可以在`Rules and Connectors`列表中看到这条规则，你可以检查其状态并且概览其配置信息。
 
-&emsp;&emsp;告警的名字总是跟关联的触发的transforms的ID是一样的。你可以在列出各个警报的规则页面上关闭特定的transforms的通知。你可以在**Rules and Connectors**中根据规则的名字打开通知。
+&emsp;&emsp;告警的名称总是跟关联的触发的transforms的ID是一样的。你可以在列出各个警报的规则页面上关闭特定的transforms的通知。你可以在**Rules and Connectors**中根据规则的名称打开通知。
 
 #### Working with transforms at scale
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-scale.html)
@@ -24864,7 +24864,7 @@ POST _transform/_preview
 ```
 
 4. 如果你满意这个预览数据，那么就可以创建这个transform了。
-   a. 提供一个transform ID，destination index的名字以及描述信息（可选）。如果destination index不存在，则会在transform启动的时候创建。
+   a. 提供一个transform ID，destination index的名称以及描述信息（可选）。如果destination index不存在，则会在transform启动的时候创建。
    b. 先确定好transform要运行一次还是一直运行（once or continuous）。由于样例数据是不会发生变更，那就让transform运行一次。If you want to try it out, however, go ahead and click on **Continuous mode**。你必须选择一个域，transform就可以根据这个域检查是否发生了变更。一般情况下，使用ingest timestamp域是个不错的主意。在这个例子中，你可以使用`order_filed`域。
    c. 获取你可以配置一个retention policy来应用到你的transform中。选择一个date域用于明确destination index中的旧文档并且提供一个最大的寿命（age）。destination index中超过这个寿命的文档会被移除。
 
@@ -25198,7 +25198,7 @@ POST _transform/_preview
 
 &emsp;&emsp;第13行，transform中的destination index，在`_preview`中可以忽略
 
-&emsp;&emsp;第17行，根据`Carrier`域进行分组，这个域的域值是航空公司的名字
+&emsp;&emsp;第17行，根据`Carrier`域进行分组，这个域的域值是航空公司的名称
 
 &emsp;&emsp;第24行，这个`bucket_script`会对聚合返回的结果进行计算。在这个特定的例子中，它会计算出延误占飞行时间的比例。
 
@@ -25566,7 +25566,7 @@ POST _transform/_preview
 
 ##### Getting customer name and email address by customer ID
 
-&emsp;&emsp;这个例子使用电子商务样例数据集，基于客户ID创建一个entity-centric index，并通过`top_metrics aggregation`获取客户名字、email地址。
+&emsp;&emsp;这个例子使用电子商务样例数据集，基于客户ID创建一个entity-centric index，并通过`top_metrics aggregation`获取客户名称、email地址。
 
 &emsp;&emsp;根据`customer_id`进行分组，在`top_metrics aggregation`中添加`metirc`，包括`email`，`ustomer_first_name.keyword`，以及`customer_last_name.keyword`。用`order_date`域对`top_metrics`进行降序排序。API大致如下：
 
@@ -25610,7 +25610,7 @@ POST _transform/_preview
 
 &emsp;&emsp;第7行，在`customer_id`域上使用`terms aggregation`对数据进行分组
 
-&emsp;&emsp;第16行，根据时间降序排序返回指定的域（email和名字）
+&emsp;&emsp;第16行，根据时间降序排序返回指定的域（email和名称）
 
 &emsp;&emsp;API返回结果大致如下：
 
@@ -25758,7 +25758,7 @@ POST _transform/_preview
 }
 ```
 
-&emsp;&emsp;第2行，aggregation的名字
+&emsp;&emsp;第2行，aggregation的名称
 
 &emsp;&emsp;第4行，包含了一个painless脚本，该脚本将返回小时
 
@@ -25766,7 +25766,7 @@ POST _transform/_preview
 
 &emsp;&emsp;第7行，从`date`中返回小时
 
-&emsp;&emsp;第12行，aggregation的名字
+&emsp;&emsp;第12行，aggregation的名称
 
 &emsp;&emsp;第14行，包含了一个painless脚本，该脚本将返回月份
 
@@ -26717,8 +26717,8 @@ POST /_security/user/cross-cluster-user
 
 1. 侧边导航栏选择**Cross-Cluster Replication**，然后选择**Follower Indices**
 2. 选择你想要复制（replicate）的包含leader index的cluster（Cluster A）
-3. 输入leader index的名字，如果你按照的是以下的教程，那么就填入`kibana_sample_data_ecommerce`
-4. 为你的follower index输入一个名字，比如`follower-kibana-sample-data`
+3. 输入leader index的名称，如果你按照的是以下的教程，那么就填入`kibana_sample_data_ecommerce`
+4. 为你的follower index输入一个名称，比如`follower-kibana-sample-data`
 
 &emsp;&emsp;Elasticsearch使用[remote recovery process](#####Initializing followers using remote recovery)来初始化follower，即将leader index中的Lucene段文件传输到follower index中。索引状态被更改为**Paused**。在remote recovery process结束，follower index开始使用并且状态更改为**Active**。
 
@@ -26742,17 +26742,17 @@ PUT /server-metrics-follower/_ccr/follow?wait_for_active_shards=1
 
 ##### Create an auto-follow pattern to replicate time series indices
 
-&emsp;&emsp;你可以使用[auto-follow patterns](####Manage auto-follow patterns)自动的为rolling time series indices创建新的follower。只要remote cluster上的新的索引名字匹配到了auto-follow pattern，对应的follower index就会添加到local cluster中。
+&emsp;&emsp;你可以使用[auto-follow patterns](####Manage auto-follow patterns)自动的为rolling time series indices创建新的follower。只要remote cluster上的新的索引名称匹配到了auto-follow pattern，对应的follower index就会添加到local cluster中。
 
 &emsp;&emsp;auto-follow pattern用于指定你想要从remote cluster中复制的索引，可以指定一个或者多个。
 
 &emsp;&emsp;若要在Kibana的Stack Management中创建一个auto-follow pattern：
 
 1. 侧边导航栏选择**Cross Cluster Replication **，然后选择**Auto-follow patterns**
-2. 为auto-follow pattern输入一个名字，比如`beats`
+2. 为auto-follow pattern输入一个名称，比如`beats`
 3. 选择你想要复制（replicate）的包含leader index的remote cluster，例子中的场景是Cluster A
 4. 输入一个或者多个index pattern来确认你想要从remote cluster中复制的索引。例如输入`metricbeat-* packetbeat-*`会为Metricbeat和Packetbeat自动创建follower
-5. 输入以**Follower**作为follower index名字的前缀，这样能让你更容易区分出复制的索引
+5. 输入以**Follower**作为follower index名称的前缀，这样能让你更容易区分出复制的索引
 
 &emsp;&emsp;匹配pattern的新索引在remote cluster中创建，Elasticsearch会自动的将它们复制到本地follower index中。
 
@@ -26777,7 +26777,7 @@ PUT /_ccr/auto_follow/beats
 
 &emsp;&emsp;第7行，自动follow新的Packetbeat索引
 
-&emsp;&emsp;第9行，follower index的名字继承于leader index 并且添加了`copy`后缀
+&emsp;&emsp;第9行，follower index的名称继承于leader index 并且添加了`copy`后缀
 
 #### Manage cross-cluster replication
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-managing.html#ccr-pause-replication)
@@ -26790,9 +26790,9 @@ PUT /_ccr/auto_follow/beats
 
 &emsp;&emsp;若要查看某个follower index的复制过程以及详细的分片统计数据（shard statistics）。根据上文中的内容进入**Cross-Cluster Replication**然后选择**Follower indices**。
 
-&emsp;&emsp;选择你想要查看的follower index详情的名字，滑出（slide out）的面板会先显示follower index的设置和replication statistics，包括follower shard的读写操作。
+&emsp;&emsp;选择你想要查看的follower index详情的名称，滑出（slide out）的面板会先显示follower index的设置和replication statistics，包括follower shard的读写操作。
 
-&emsp;&emsp;若要显示更多的详细的统计数据，点击**View in Index Management**，在index management中选择follower index的名字，查看follower index的详细统计数据。
+&emsp;&emsp;若要显示更多的详细的统计数据，点击**View in Index Management**，在index management中选择follower index的名称，查看follower index的详细统计数据。
 
 &emsp;&emsp;API example：
 
@@ -26863,11 +26863,11 @@ PUT /follower_index/_ccr/follow?wait_for_active_shards=1
 #### Manage auto-follow patterns
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-auto-follow.html)
 
-&emsp;&emsp;若要复制（replication）时序索引，你可以配置一个auto-follow pattern，使得新创建的索引被自动复制。只要remote cluster上新的索引名字匹配到auto-follow pattern，对应的follower index就会添加到本地集群（local cluster）中。
+&emsp;&emsp;若要复制（replication）时序索引，你可以配置一个auto-follow pattern，使得新创建的索引被自动复制。只要remote cluster上新的索引名称匹配到auto-follow pattern，对应的follower index就会添加到本地集群（local cluster）中。
 
 > NOTE：Auto-follow patterns只会匹配remote cluster上打开的索引（open index），并且索引的所有的主分片都已经启动（start）。Auto-follow patterns不会匹配[closed indices](####Open index API)和[searchable snapshots](###Searchable snapshots)来用于CCR。避免使用auto-follow pattern匹配带有[read or write block](####Index block settings)的索引，这些block会阻止follower index执行复制操作。
 
-&emsp;&emsp;你也可以为data streams创建auto-follow pattern。当remote cluster上创建了一个新的backing index并且auto-follow pattern匹配到了data stream的名字，那index和data stream会被自动的follow。如果你在创建auto-follow pattern之后再创建data stream，那么所有的backing index都会被follow。
+&emsp;&emsp;你也可以为data streams创建auto-follow pattern。当remote cluster上创建了一个新的backing index并且auto-follow pattern匹配到了data stream的名称，那index和data stream会被自动的follow。如果你在创建auto-follow pattern之后再创建data stream，那么所有的backing index都会被follow。
 
 &emsp;&emsp;通过CCR从remote cluster复制过来的data streams受到local rollovers的保护，可以使用[promote data stream API](####Promote data stream API)来将这些data streams变成regular data streams。
 
@@ -27097,7 +27097,7 @@ Cluster A
 
 #### Considerations
 
-- 仓库中快照名字必须是唯一的。尝试创建一个仓库中同名的快照会失败
+- 仓库中快照名称必须是唯一的。尝试创建一个仓库中同名的快照会失败
 - 快照自动删除重复的数据（deduplicated）。你可以频繁创建快照，对存储开销只有很小的影响
 - 每个快照逻辑上是独立的。你可以删除一个快照，不会影响其他的快照
 - 创建一个快照会临时暂停分片的分配。见[Snapshots and shard allocation](#####Snapshots and shard allocation)
@@ -27193,7 +27193,7 @@ PUT _slm/policy/nightly-snapshots
 
 &emsp;&emsp;第3行，使用[Cron syntax](#####Watcher cron schedule)定义创建快照的时间
 
-&emsp;&emsp;第4行，快照的名字，支持[date math](####Date math support in index and index alias names)。为了防止命名冲突，这个策略在每个名字后面追加了一个UUID
+&emsp;&emsp;第4行，快照的名称，支持[date math](####Date math support in index and index alias names)。为了防止命名冲突，这个策略在每个名称后面追加了一个UUID
 
 &emsp;&emsp;第5行，[Registered snapshot repository](###Register a snapshot repository)用于存储这个策略的快照
 
@@ -27245,7 +27245,7 @@ POST _slm/_execute_retention
 
 #### Manually create a snapshot
 
-&emsp;&emsp;若不使用SLM策略创建一个快照，则使用[create snapshot API](####Create snapshot API)，快照的名字支持[date math](####Date math support in index and index alias names)。
+&emsp;&emsp;若不使用SLM策略创建一个快照，则使用[create snapshot API](####Create snapshot API)，快照的名称支持[date math](####Date math support in index and index alias names)。
 
 ```text
 # PUT _snapshot/my_repository/<my_snapshot_{now/d}>
@@ -27371,7 +27371,7 @@ PUT _slm/policy/nightly-snapshots
 
 #### Dedicated cluster state snapshots
 
-&emsp;&emsp;一些feature states包含敏感数据。例如`security` feature state包含的系统索引包含了用户名字和加密后的密码。因为密码使用[cryptographic hashes](######User cache and password hash algorithms)存储，快照的泄露（disclosure）不会让第三方授权作为其中的一个用户或者使用API keys。然而，如果第三方可以更改快照，它们可以安装一个后门，则会丢失机密信息。
+&emsp;&emsp;一些feature states包含敏感数据。例如`security` feature state包含的系统索引包含了用户名称和加密后的密码。因为密码使用[cryptographic hashes](######User cache and password hash algorithms)存储，快照的泄露（disclosure）不会让第三方授权作为其中的一个用户或者使用API keys。然而，如果第三方可以更改快照，它们可以安装一个后门，则会丢失机密信息。
 
 &emsp;&emsp;若要更好的保护数据，考虑为集群状态的快照创建一个专用的仓库SLM策略。这能让你严格限制以及审计仓库的访问。
 
@@ -28108,7 +28108,7 @@ GET _search
 
 ##### Search as few fields as possible
 
-&emsp;&emsp;[query_string](####Query string query)或者[multi_match](####Multi-match query)查询的域越多，查询越慢。一个常用的用于提高查询速度的技术就是在索引阶段将多个域的值索引到单个域，然后只查询这个域。可以通过[copy_to](####copy_to)实现自动的映射并且不需要更改源文档。下面的例子是一个包含电影的索引，该例子通过将电影的名字跟情节索引到`name_and_plot`域来优化查询。
+&emsp;&emsp;[query_string](####Query string query)或者[multi_match](####Multi-match query)查询的域越多，查询越慢。一个常用的用于提高查询速度的技术就是在索引阶段将多个域的值索引到单个域，然后只查询这个域。可以通过[copy_to](####copy_to)实现自动的映射并且不需要更改源文档。下面的例子是一个包含电影的索引，该例子通过将电影的名称跟情节索引到`name_and_plot`域来优化查询。
 
 ```text
 PUT movies
@@ -28706,7 +28706,7 @@ POST _cache/clear?fielddata=true
 GET _cat/nodes?v=true&s=cpu:desc
 ```
 
-&emsp;&emsp;响应中`cpu`这一列包含了当前CPU使用量的百分比，`node`这一列包含了节点的名字。
+&emsp;&emsp;响应中`cpu`这一列包含了当前CPU使用量的百分比，`node`这一列包含了节点的名称。
 
 - Self-managed
   - 你可以使用[cat nodes API](####cat nodes API)获取每一个节点当前的CPU使用量
@@ -28715,7 +28715,7 @@ GET _cat/nodes?v=true&s=cpu:desc
 GET _cat/nodes?v=true&s=cpu:desc
 ```
 
-&emsp;&emsp;响应中`cpu`这一列包含了当前CPU使用量的百分比，`node`这一列包含了节点的名字。
+&emsp;&emsp;响应中`cpu`这一列包含了当前CPU使用量的百分比，`node`这一列包含了节点的名称。
 
 ###### Check hot threads
 
@@ -29602,7 +29602,7 @@ PUT _component_template/my-settings
 
 &emsp;&emsp;使用你的component templates来创建一个index template：
 
-- 一个或多个index pattern满足data stream的名字，我们建议你使用我们的[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
+- 一个或多个index pattern满足data stream的名称，我们建议你使用我们的[data stream naming scheme](https://www.elastic.co/guide/en/fleet/8.2/data-streams.html#data-streams-naming-scheme)
 - 这个模版是data stream可以使用的（用`data_stream`字段表示该模版可以用于数据流）
 - 包含你mapping跟索引设置Index settings的组件模版
 - 优先级大于`200`，以避免与内置模板发生冲突。见[Avoid index pattern collisions](#####Avoid index pattern collisions))
@@ -29629,7 +29629,7 @@ PUT _index_template/my-index-template
 
 &emsp;&emsp;[Indexing requests](####Add documents to a data stream)将添加文档到data stream中。这些请求必须是使用`create`的`op_type`。文档中必须包含一个`@timestamp`域。
 
-&emsp;&emsp;若要自动的创建你的data stream，指定stream的名字并提交一个索引请求。这个名字必须匹配你的index template的index patterns中的一个。
+&emsp;&emsp;若要自动的创建你的data stream，指定stream的名称并提交一个索引请求。这个名称必须匹配你的index template的index patterns中的一个。
 
 ```text
 PUT my-data-stream/_bulk
@@ -29840,7 +29840,7 @@ POST my-data-stream/_async_search
     - master、m：（default）节点是否为elected master node。返回的值有
       - `*`（elected master）
       - `-`（not elected master）
-    - name、n：（default）节点名字，比如`I8hydUG`
+    - name、n：（default）节点名称，比如`I8hydUG`
     - id、nodeId：节点的ID，比如`k0zy`
     - pid、p：进程ID、比如`13061`
     - port、po：绑定的transport port、比如`9300`
@@ -29995,8 +29995,8 @@ veJR 127.0.0.1 59938 8.2.3 *
 - h：（Optional，string）需要展示的列名，使用逗号分隔。
   - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
   - 可选的列包括：
-    - index、i、idx：（default）索引的名字
-    - shard、s、sh：（default）分片的名字
+    - index、i、idx：（default）索引的名称
+    - shard、s、sh：（default）分片的名称
     - prirep、p、pr、primaryOrReplica：（default）分片类型，返回值为`primary`或者`replica`
     - state、st：（default）分片状态。返回的值有：
       - `INITIALIZING`：分片正在从对等节点（peer shard）或者gateway中恢复
@@ -30007,7 +30007,7 @@ veJR 127.0.0.1 59938 8.2.3 *
     - store、sto：（default）分片的磁盘使用量，比如`5kb`
     - ip：（default）节点的IP地址，比如`127.0.1.1`
     - id：（default）节点的ID，比如`k0zy`
-    - node、n：（default）节点的名字，比如`I8hydUG`
+    - node、n：（default）节点的名称，比如`I8hydUG`
     - completion.size、cs、completionSize：Size of completion, such as 0b.
     - fielddata.memory_size、fm、fielddataMemory：[fielddata cache](####Field data cache settings)的内存占用量，比如`0b`
     - fielddata.evictions、fe、fielddataEvictions：清除掉的fielddata cache的内存量，比如`0`
@@ -30181,9 +30181,9 @@ my-index-000001 0 r UNASSIGNED ALLOCATION_FAILED
 - `_all`，所有的节点添加到子集中（sbuset）
 - `_local`，本地节点（local node）添加到子集中
 - `_master`，当前被选为master的节点添加到子集中
-- node id或者节点名字添加到子集中
+- node id或者节点名称添加到子集中
 - IP地址或者hostname，匹配到的所有节点添加到子集中
-- 使用`*`通配符，满足pattern的节点名字，hostname或者地址的节点添加到子集中
+- 使用`*`通配符，满足pattern的节点名称，hostname或者地址的节点添加到子集中
 - `master:true`，`data:true`，`ingest:true`，`voting_only:true`，`ml:true`，`coordinating_only:true`这些过滤项分别将 master-eligible、所有的数据节点（data node），所有的ingest node，所有的voting-only node、所有的machine learning node和所有的coordinating-only node 添加到子集中
 - `master:false`，`data:false`，`ingest:false`，`voting_only:false`，`ml:false`，或者`coordinating_only:false`这些过滤项分别从节点集合中移除master-eligible、所有的数据节点（data node），所有的ingest node，所有的voting-only node、所有的machine learning node和所有的coordinating-only node 
 - a pair of patterns，使用`*`通配符或者`attrname:attrvalue`这种格式。将自定义的节点属性满足这种pattern的节点添加到子集中。自定义的节点属性是在配置文件中按照`node.attr.attrname: attrvalue`这种格式设置
@@ -30255,8 +30255,8 @@ GET _cluster/allocation/explain
 
 ##### Request body
 
-- current_node：（Optional，string）指定节点的ID或者名字，只返回在指定节点上的分片的分配信息。
-- index：（Optional，string）指定你想要了解的索引的名字。
+- current_node：（Optional，string）指定节点的ID或者名称，只返回在指定节点上的分片的分配信息。
+- index：（Optional，string）指定你想要了解的索引的名称。
 - primary：（Optional，Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
 - shard：（Optional，integer）指定你要了解的分片ID。
 
@@ -30563,7 +30563,7 @@ GET /_cluster/settings
 
 ##### Response body
 
-- cluster_name：(string) 集群名字
+- cluster_name：(string) 集群名称
 - status：(string) 集群状态。基于主分片跟副本分片的状态，有以下的几个状态：
   - green：所有的分片都已经分配
   - yellow：所有的主分片已经分配，但是一个或者多个副本分片没有分配。如果集群中的某个节点发生故障，一些数据可能不可见直到节点恢复
@@ -30663,9 +30663,9 @@ GET /_cluster/health/my-index-000001?level=shards
 ##### Request body
 
 - commands：(Required, array of objects) 定义了执行的命令，支持以下的命令：
-  - move：将一个Started Shard（对应还有Initializing Shards、Unassigned Shards、Relocating Shards）从一个节点移动到另一个节点。使用`index`跟`shard`描述索引名字跟分配编号，以及`from_node`跟`to_node`描述节点移动前后的两个节点。
-  - cancel：取消某个分片的分配（或者恢复）。使用`index`跟`shard`描述索引名字跟分配编号。以及`node`描述被取消的分片所在的节点。通过取消副本分片的分配来强制从主分片的重新同步并通过标准的恢复处理来重新初始化副本分片。默认情况下只能取消副本分片的分配。如果需要取消主分片的分配，那么需要在请求中通过`allow_primary`指定
-  - allocate_replica：将未分配的副本分片分配到一个节点。使用`index`跟`shard`描述索引名字跟分配编号。以及`node`描述待分配的目标节点。遵循[allocation deciders](####Cluster-level shard allocation and routing settings)。
+  - move：将一个Started Shard（对应还有Initializing Shards、Unassigned Shards、Relocating Shards）从一个节点移动到另一个节点。使用`index`跟`shard`描述索引名称跟分配编号，以及`from_node`跟`to_node`描述节点移动前后的两个节点。
+  - cancel：取消某个分片的分配（或者恢复）。使用`index`跟`shard`描述索引名称跟分配编号。以及`node`描述被取消的分片所在的节点。通过取消副本分片的分配来强制从主分片的重新同步并通过标准的恢复处理来重新初始化副本分片。默认情况下只能取消副本分片的分配。如果需要取消主分片的分配，那么需要在请求中通过`allow_primary`指定
+  - allocate_replica：将未分配的副本分片分配到一个节点。使用`index`跟`shard`描述索引名称跟分配编号。以及`node`描述待分配的目标节点。遵循[allocation deciders](####Cluster-level shard allocation and routing settings)。
 
 另外两个命令可以允许将一个主分片分配给节点。然而，这些命令应该非常小心地使用，因为主分片的分配通常完全由Elasticsearch自动处理。主分片不能自动分配的原因包括以下几点：
 - 新创建了一个索引，但没有节点满足allocation deciders的要求。
@@ -30673,8 +30673,8 @@ GET /_cluster/health/my-index-000001?level=shards
 
 下面两个命令是危险的，可能导致数据丢失。原始数据无法恢复并且集群管理员允许数据丢失的前提下可以使用。如果你遇到了一个可以修复的临时问题，见上文中的`retry_failed`。这里需要强调的是：如果执行了这些命令，然后一个持有受影响分片副本的节点加入集群，那么新加入节点上的副本将会被删除或覆盖。
 
-  - allocate_stale_primary：将一个主分片分配给持有陈旧副本的节点。使用`index`跟`shard`描述索引名字跟分配编号，以及要分配分片的`node`。使用这个命令可能会导致所提供的分片ID的数据丢失。如果一个拥有良好数据副本的节点后来重新加入集群，那么该数据将被删除或用这个命令强制分配的陈旧副本的数据覆盖。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
-  - allocate_empty_primary：将一个空的主分片分配给节点。使用`index`跟`shard`描述索引名字跟分配编号，以及要分配分片的`node`。使用这个命令会导致此分片中索引的所有数据的完全丢失，如果它之前已经启动。如果一个拥有数据副本的节点后来重新加入集群，那么该数据将被删除。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
+  - allocate_stale_primary：将一个主分片分配给持有陈旧副本的节点。使用`index`跟`shard`描述索引名称跟分配编号，以及要分配分片的`node`。使用这个命令可能会导致所提供的分片ID的数据丢失。如果一个拥有良好数据副本的节点后来重新加入集群，那么该数据将被删除或用这个命令强制分配的陈旧副本的数据覆盖。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
+  - allocate_empty_primary：将一个空的主分片分配给节点。使用`index`跟`shard`描述索引名称跟分配编号，以及要分配分片的`node`。使用这个命令会导致此分片中索引的所有数据的完全丢失，如果它之前已经启动。如果一个拥有数据副本的节点后来重新加入集群，那么该数据将被删除。为确保充分理解这些后果，这个命令要求显式地将标志 `accept_data_loss` 设置为 true。
 
 ##### Examples
 
@@ -30915,7 +30915,7 @@ PUT /_cluster/settings
 - `<metric>`：（Optional, string）限制指定的指标返回的信息
   - `_all`：返回所有的统计
   - `rest_actions`：返回REST actions（接口操作）的类名以及一个统计值，即这个节点上的调用次数
-- `<node_id>`：（Optional, string）逗号分隔的node id或者名字来限制返回的信息
+- `<node_id>`：（Optional, string）逗号分隔的node id或者名称来限制返回的信息
 
 ##### Query parameters
 
@@ -30985,7 +30985,7 @@ GET _nodes/usage
 
 ##### Path parameters
 
-- `<node_id>`：（Optional, string）逗号分隔的node id或者名字来限制返回的信息
+- `<node_id>`：（Optional, string）逗号分隔的node id或者名称来限制返回的信息
 
 ##### Query parameters
 
@@ -31034,10 +31034,10 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
   - indices：节点级别（node level）的跟indexing相关的配置
     - total_indexing_buffer：该节点上indexing buffer的最大值
   - ingest：ingest pipeline和其processor的信息
-  - jvm：JVM信息，包括名字、版本、以及它的配置
-  - os：操作系统信息，包括名字和版本
+  - jvm：JVM信息，包括名称、版本、以及它的配置
+  - os：操作系统信息，包括名称和版本
   - plugins：每一个节点中已安装的插件和模块的详细信息，如下所示：
-    - name：插件名字
+    - name：插件名称
     - version：插件适用的Elasticsearch版本
     - description：插件的使用目的的简要描述
     - classname：插件入口点的完全限定类名（fully-qualified）
@@ -31056,7 +31056,7 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 - build_hash：这次发布的git commit的short hash值
 - host：节点的host name
 - ip：节点的IP地址
-- name：节点的名字
+- name：节点的名称
 - total_indexing_buffer：最近索引的文档被写入到磁盘前，允许的内存使用量。这个值是节点上所有分片共享的，通过[Indexing Buffer settings](####Indexing buffer settings)控制
 - total_indexing_buffer_in_bytes：同`total_indexing_buffer`，只是用字节表示
 - transport_address：transport HTTP连接要求的host跟port
@@ -31065,8 +31065,8 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 &emsp;&emsp;`os`系列的配置用来获取操作系统的信息：
 
 - os.refresh_interval_in_millis：刷新统计OS信息的间隔时间
-- os.name：操作系统的名字（ex：Linux，WIndows，Mac OS X）
-- os.arch：JVM架构的名字（ex：adm64，x86）
+- os.name：操作系统的名称（ex：Linux，WIndows，Mac OS X）
+- os.arch：JVM架构的名称（ex：adm64，x86）
 - os.version：操作系统的版本
 - os.available_processors：JVM中可用处理器的数量
 - os.allocated_processors：处理器的数量，可以用来计算线程池大小。该值可以通过节点的设置[node.processors](#####Allocated processors setting)配置，默认值操作系统提供的处理器数量。
@@ -31356,7 +31356,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - `store`
   - `translog`
   - `warmer`
-- `<node_id>`：（Optional, string）用逗号隔开的节点列表或者节点名字来限制返回的信息
+- `<node_id>`：（Optional, string）用逗号隔开的节点列表或者节点名称来限制返回的信息
 
 ##### Query parameters
 
@@ -31380,7 +31380,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - total：（integer）请求中选择的节点数量总数
   - successful：（integer）成功响应的节点数量
   - failed：（integer）拒绝请求或者请求失败的节点数量。如果这个值不是`0`，拒绝或者失败的原因会包含在响应中
-- cluster_name：（string）集群的名字。基于这里的设置[Cluster name setting](#####Cluster name setting)
+- cluster_name：（string）集群的名称。基于这里的设置[Cluster name setting](#####Cluster name setting)
 - nodes：（object）请求中指定的节点的统计信息
   - timestamp：（integer）对于这次响应收集节点统计信息的时间。毫秒级别，since [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time)
   - name：（string）可读的节点标识、基于[Node name setting](#####Advanced transport settings)这个设置
@@ -31786,7 +31786,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
   - nodes：（Default）节点ID
   - parents：父级任务ID
   - none：不对任务进行分组
-- node_id：（Optional, string）用逗号隔开的节点ID或节点名字列表，用来限制返回的信息
+- node_id：（Optional, string）用逗号隔开的节点ID或节点名称列表，用来限制返回的信息
 - parent_task_id：（Optional, string）父级任务ID，用来限制返回的信息。若要返回所有的任务，不使用这个参数或者另该值为`-1`
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
@@ -32038,8 +32038,8 @@ content-length: 831
 
 ##### Query parameters
 
-- node_names：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名字，你可能无法指定`?node_ids`
-- node_ids：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名字，你可能无法指定`?node_names`
+- node_names：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名称，你可能无法指定`?node_ids`
+- node_ids：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名称，你可能无法指定`?node_names`
 - timeout：(Optional, [time units](###API conventions)) 在添加一个voting configuration exclusion时，请求会等待指定的节点从voting configuration中移除后再返回。通过`?timeout`指定时超时时间。如果在满足条件之前超时，请求将失败并返回错误。默认值为 30 秒。
 - wait_for_removal：（Optional, Boolean）它指定在清除voting configuration 排除列表之前是否等待所有被排除的节点从集群中移除。默认值为 true，这意味着在 API 采取任何行动之前，所有被排除的节点必须从集群中移除。如果设置为 false，则即使一些被排除的节点仍在集群中，voting configuration 排除列表也会被清除。简而言之，这个参数控制了在清除排除列表之前是否需要等待所有标记为排除的节点实际离开集群
 
@@ -32266,7 +32266,7 @@ PUT /_data_stream/<data-stream>
 
 ##### Path parameters
 
-- `<data-stream>`：（Required, string）待创建的data stream的名字。名字必须满足下面的标准：
+- `<data-stream>`：（Required, string）待创建的data stream的名称。名称必须满足下面的标准：
   - 只能是小写
   - 不能包含`\, /, *, ?, ", <, >, |, ,, #, :`以及空格
   - 不能以` -, _, +, 或者 .ds-`开头
@@ -32322,7 +32322,7 @@ GET /_data_stream/my-data-stream
 
 ##### Path parameters
 
-- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名字列表来限制请求量。支持通配符（`*`）。如果忽略这个参数，则返回所有的data stream。
+- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名称列表来限制请求量。支持通配符（`*`）。如果忽略这个参数，则返回所有的data stream。
 
 ##### Query parameters
 
@@ -32336,11 +32336,11 @@ GET /_data_stream/my-data-stream
 ##### Response body
 
 - data-streams：（array of objects）获取到的data stream信息
-  - name：（string）data stream的名字
+  - name：（string）data stream的名称
   - timestamp_field：（object）data stream中`@timestamp`字段的信息
-    - name：（string）data stream中时间戳字段的名字，必须是`@timestamp`。添加到data stream中的文档中必须包含`@timestamp`字段
+    - name：（string）data stream中时间戳字段的名称，必须是`@timestamp`。添加到data stream中的文档中必须包含`@timestamp`字段
   - indices：（array of objects）data stream中的backing indices的信息，用数组表示。数组中最后一个backing index是当前data stream的[write index](####Write index)
-    - index_name：（string）backing index的名字，对于名字的一些约定，见[Generation](####Generation)
+    - index_name：（string）backing index的名称，对于名称的一些约定，见[Generation](####Generation)
     - index_uuid：（string）索引的唯一标识符
   - generation：（integer）data stream当前的[generation](####Generation)。这个数值表示rollover的统计值，从1开始计数
   - `_meta`：（object）自定义的元数据，从匹配到的[index template](####Create an index template)中的`_meta`拷贝而来。如果为空，响应中就不展示这个属性
@@ -32348,9 +32348,9 @@ GET /_data_stream/my-data-stream
     - green：所有分片都被分配
     - yellow：所有的主分片已经分配，但是一个或多个副本分片没有被分配
     - red：一个或多个主分片没有被分配，意味着有些数据是不可见的
-  - template：（string）用来创建data stream的backing indices的索引模板名字
-    - 模版中的`index_patterns`必须能匹配data stream的名字。见[create an index template](####Create an index template)
-  - ilm_policy：（string）data stream匹配的索引模板中的ILM生命周期策略名字。这个生命周期策略设置于`index.lifecycle.name`中。
+  - template：（string）用来创建data stream的backing indices的索引模板名称
+    - 模版中的`index_patterns`必须能匹配data stream的名称。见[create an index template](####Create an index template)
+  - ilm_policy：（string）data stream匹配的索引模板中的ILM生命周期策略名称。这个生命周期策略设置于`index.lifecycle.name`中。
     - 如果模版中没有生命周期策略，响应中就不会显示这个属性
     > NOTE：data stream中的backing indices可能被分配了不同的生命周期策略，若要查看某个单独backing indices的生命周期策略，见[get index settings API](####Get index settings API)
   
@@ -32452,7 +32452,7 @@ POST /_data_stream/_migrate/<alias>
   - 必须不能有任何的[filter](####Filter an alias)
   - 必须没有使用[custom routing](####Routing)
 
-&emsp;&emsp;成功后，该请求会移除别名并且创建一个名字相同的data stream。别名的索引变成这个流的backing indices。别名的writer index变成流的writer index。
+&emsp;&emsp;成功后，该请求会移除别名并且创建一个名称相同的data stream。别名的索引变成这个流的backing indices。别名的writer index变成流的writer index。
 
 #### Data stream stats API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-stats-api.html)
@@ -32475,7 +32475,7 @@ GET /_data_stream/<data-stream>/_stats
 
 ##### Path parameters
 
-- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名字来限制请求。支持通配符（`*`）
+- `<data-stream>`：（Optional, string）用逗号隔开的data stream的名称来限制请求。支持通配符（`*`）
   - 若要获取集群中所有data stream，使用`*`或者忽略这个参数
 
 ##### Query parameters
@@ -32500,7 +32500,7 @@ GET /_data_stream/<data-stream>/_stats
 - total_store_sizes：[byte value](####Byte size units) 选择的data stream中分片大小总量。只有设置请求参数`human`后才展示这个字段
 - total_store_size_bytes：（integer）选择的data stream中分片大小总量，单位是字节
 - data_streams：（array of objects）选择的data stream的统计信息
-  - data_stream：（string）data stream的名字
+  - data_stream：（string）data stream的名称
   - backing_indices：（integer）data stream中的backing indices
   - store_size：[byte value](####Byte size units) data stream中所有分片的大小总量。只有请求参数`human`为`true`才会返回
   - store_size_bytes：（integer） data stream中所有分片的大小总量，单位是字节
@@ -32571,7 +32571,7 @@ POST /_data_stream/_promote/<data-stream>
 
 ##### Path parameters
 
-- `<data-stream>`：（Required, string）待提升的data stream的名字
+- `<data-stream>`：（Required, string）待提升的data stream的名称
 
 #### Modify data streams API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modify-data-streams-api.html)
@@ -32643,7 +32643,7 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;Elasticsearch中的每一个索引操作首先基于文档编号（document ID）通过[routing](######Routing(REST APIs))解析（resolve）replication group。一旦检测到replication group，这个操作会在内部转发到组中当前的主分片中。这个索引阶段称为`coordinating stage`。
 
-&emsp;&emsp;索引阶段的下一个阶段就是`primary stage`，在主分片上执行。主分片负责对索引操作进行验证并转发到其他副本分片。由于副本分片可能处于离线状态，主分片不要求一定要转发到所有的副本分片。Elasticsearch维护了副本分片的列表，这些副本会收到主分片的转发。这个列表称为`in-sync copies` 并且master node负责维护。正如in-sync这个名字一样，列表中的都是"good" 副本分片并且他们已经处理好了所有的索引和删除操作并且响应给了用户。主分片负责维护这个列表因此会复制操作给列表中的每一个副本分片。
+&emsp;&emsp;索引阶段的下一个阶段就是`primary stage`，在主分片上执行。主分片负责对索引操作进行验证并转发到其他副本分片。由于副本分片可能处于离线状态，主分片不要求一定要转发到所有的副本分片。Elasticsearch维护了副本分片的列表，这些副本会收到主分片的转发。这个列表称为`in-sync copies` 并且master node负责维护。正如in-sync这个名称一样，列表中的都是"good" 副本分片并且他们已经处理好了所有的索引和删除操作并且响应给了用户。主分片负责维护这个列表因此会复制操作给列表中的每一个副本分片。
 
 &emsp;&emsp;主分片遵循下面基本的步骤：
 
@@ -32815,6 +32815,63 @@ POST /_data_stream/_modify
 #### Create or update component template API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
 
+&emsp;&emsp;创建或个新一个组件模版（component template）。组件模版是构造索引模板（[index template](##Index templates)）的块，指定了[mappings](##Mapping)、[settings](####Index Settings)、[aliases](##Aliases)。
+
+```text
+PUT _component_template/template_1
+{
+  "template": {
+    "settings": {
+      "number_of_shards": 1
+    },
+    "mappings": {
+      "_source": {
+        "enabled": false
+      },
+      "properties": {
+        "host_name": {
+          "type": "keyword"
+        },
+        "created_at": {
+          "type": "date",
+          "format": "EEE MMM dd HH:mm:ss Z yyyy"
+        }
+      }
+    }
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /_component_template/<component-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;一个索引模板可以由多个组件模版组成。若要使用一个组件模版，只需要在索引模板中的`composed_of`字段中指定即可。组件模板只有作为满足匹配的索引模板的一部分才能用于data stream和indices上。
+
+&emsp;&emsp;在索引模板中或者[create index]()请求中直接指定的settings和mappings会覆盖组件模版中的定义。
+
+&emsp;&emsp;组件模版只在索引创建时使用，对于data streams，包括data stream创建时以及流中backing indices创建时。对组件模版的修改不会影响已有的索引，包括流中的backing indices。
+
+###### Comments in component templates
+
+&emsp;&emsp;你可以使用C风格的`/**/`在索引模板中添加注释。在请求体的任何位置都可以包含注释，但JSON开头的大括号之前除外。
+
+##### Path parameters
+
+- `<component-template>`：（Required, string）待创建的组件模版名称
+- 
+##### Query parameters
+##### Response body
+##### Example
+
 #### Create or update index template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-template.html)
 
@@ -32845,7 +32902,7 @@ PUT /_index_template/<index-template>
 
 ##### Description
 
-&emsp;&emsp;Elasticsearch基于通配模式匹配索引名字将索引模板作用到新的索引上。
+&emsp;&emsp;Elasticsearch基于通配模式匹配索引名称将索引模板作用到新的索引上。
 
 &emsp;&emsp;在创建data stream或者index时应用索引模板。对于data stream，当流中的backing index创建时应用settings和mappings。
 
@@ -32859,7 +32916,7 @@ PUT /_index_template/<index-template>
 
 ##### Path parameters
 
-- `<index-template>`：（Required, string）待创建的索引模板名字
+- `<index-template>`：（Required, string）待创建的索引模板名称
 
 ##### Query parameters
 
@@ -32880,7 +32937,7 @@ PUT /_index_template/<index-template>
 - template：（Optional, object）待作用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
     - aliases：（Optional, object of objects）待添加的别名
       - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
-        - `<alias>`：（Required, object）别名的名字，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+        - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
           - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
           - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
           - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
@@ -32922,7 +32979,7 @@ PUT _index_template/template_1
 }
 ```
 
-&emsp;&emsp;第16行，在别名中，`{index}`占位符将在索引创建时替代真正的索引名字。
+&emsp;&emsp;第16行，在别名中，`{index}`占位符将在索引创建时替代真正的索引名称。
 
 ###### Multiple matching templates
 
@@ -33105,7 +33162,7 @@ PUT _template/template_1
 
 ##### Description
 
-&emsp;&emsp;index template定义了[settings](####Index Settings)和[mappings](##Mapping)并且自动应用到新建的索引上。Elastic search基于index pattern匹配索引名字来应用到新的索引上。
+&emsp;&emsp;index template定义了[settings](####Index Settings)和[mappings](##Mapping)并且自动应用到新建的索引上。Elastic search基于index pattern匹配索引名称来应用到新的索引上。
 
 >NOTE：可组合的索引（composable templates）总是优先于（take precedence）legacy templates。如果composable templates没有匹配到新的索引，则根据其顺序应用匹配的旧模板
 
@@ -33120,7 +33177,7 @@ PUT _template/template_1
 &emsp;&emsp;见[Get index template (legacy)](####Get index template API)。
 
 ##### Path parameters
-- `<index-template>`：（必选，字符串）用于创建index template的名字。
+- `<index-template>`：（必选，字符串）用于创建index template的名称。
 
 ##### Query parameters
 
@@ -33199,15 +33256,19 @@ DELETE /_index_template/my-index-template
 DELETE /_index_template/<index-template>
 ```
 
-&emsp;&emsp;`<index-template>`可以是用逗号隔开的多个模版，如果指定了多个模板名字并且没有使用通配符，那么提供的模版名字必须准确匹配现有的模板。
+&emsp;&emsp;`<index-template>`可以是用逗号隔开的多个模版，如果指定了多个模板名称并且没有使用通配符，那么提供的模版名称必须准确匹配现有的模板。
 
 ##### Prerequisites
 
 - 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
 
+##### Description
+
+&emsp;&emsp;使用该接口来删除一个或多个索引模板。索引模板中定义的[settings](####Index Settings)、[mappings](##Mapping)和[aliases](##Aliases)会自动作用到新的索引上。
+
 ##### Path parameters
 
-`<index-template>`：（Required, string）用逗号隔开的索引模板名字用来限制请求。可以使用通配符（`*`）表达式
+`<index-template>`：（Required, string）用逗号隔开的索引模板名称用来限制请求。可以使用通配符（`*`）表达式
 
 ##### Query parameters
 
@@ -33247,7 +33308,7 @@ GET /_index_template/<index-template>
 
 ##### Path parameters
 
-&emsp;&emsp;（Optional, string）待返回的模板名字。接受通配符表达式。如果忽略这个参数则返回所有的模板。
+&emsp;&emsp;（Optional, string）待返回的模板名称。接受通配符表达式。如果忽略这个参数则返回所有的模板。
 
 ##### Query parameters
 
@@ -33492,13 +33553,13 @@ POST /my_source_index/_split/my_target_index
 
 ###### \<index\>
 
-&emsp;&emsp;(Required, string)待切分的源索引名字。
+&emsp;&emsp;(Required, string)待切分的源索引名称。
 
 ###### \<target-index\>
 
-&emsp;&emsp;(Required, string)目标索引的名字。
+&emsp;&emsp;(Required, string)目标索引的名称。
 
-&emsp;&emsp;索引名字必须满足下面的规范：
+&emsp;&emsp;索引名称必须满足下面的规范：
 
 - 只允许小写
 - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
@@ -33866,12 +33927,12 @@ POST _ilm/move/<index>
 ##### Request body
 
 - current_step：（Required, object）
-  - phase：（Required, string）当前阶段的名字，必须匹配这个阶段，通过[explain](###Explain lifecycle API)获取
-  - action：（Required, string）当前动作的名字，必须匹配这个动作，通过[explain](###Explain lifecycle API)获取
-  - name：（Required, string）当前步骤的名字。必须匹配这个步骤，通过[explain](###Explain lifecycle API)获取。如果ILM执行动作时遇到了问题，则会暂定策略的执行，然后转到`ERROR`步骤。如果解决了问题并且尝试让策略继续下去，你必须将`ERROR`指定为当前步骤。更多信息见[ILM error handling](###Troubleshooting index lifecycle management errors)
+  - phase：（Required, string）当前阶段的名称，必须匹配这个阶段，通过[explain](###Explain lifecycle API)获取
+  - action：（Required, string）当前动作的名称，必须匹配这个动作，通过[explain](###Explain lifecycle API)获取
+  - name：（Required, string）当前步骤的名称。必须匹配这个步骤，通过[explain](###Explain lifecycle API)获取。如果ILM执行动作时遇到了问题，则会暂定策略的执行，然后转到`ERROR`步骤。如果解决了问题并且尝试让策略继续下去，你必须将`ERROR`指定为当前步骤。更多信息见[ILM error handling](###Troubleshooting index lifecycle management errors)
 - next_step（Required, boject）
-  - phase：（Required, string）你想要执行/恢复的包含动作的阶段名字
-  - action：（Required, string）你要执行/恢复的动作名字
+  - phase：（Required, string）你想要执行/恢复的包含动作的阶段名称
+  - action：（Required, string）你要执行/恢复的动作名称
   - name：（Required, string）你想要移动并且执行的步骤
 
 ##### Examples
@@ -33934,7 +33995,7 @@ POST <target>/_ilm/remove
 
 ##### Path parameters
 
-- `<target>`：（Required, string）用逗号隔开的indices、data stream、aliases的目标名字。支持通配符（`*`）。若要全部的data stream和indices，使用`*`或者`_all`
+- `<target>`：（Required, string）用逗号隔开的indices、data stream、aliases的目标名称。支持通配符（`*`）。若要全部的data stream和indices，使用`*`或者`_all`
 
 ##### Query parameters
 
@@ -34114,7 +34175,7 @@ GET my-index-000001/_ilm/explain
 &emsp;&emsp;第5行，当索引创建后，这个时间戳用来决定什么时候开始rollover
 &emsp;&emsp;第6行，索引创建后到现在的时间（通过`max_mag`计算什么时候开始rollover）
 &emsp;&emsp;第7行，显示索引是否被ILM管理。如果没有被管理，其他字段将不会显示
-&emsp;&emsp;第8行，正用于管理这个索引的ILM的策略名字
+&emsp;&emsp;第8行，正用于管理这个索引的ILM的策略名称
 &emsp;&emsp;第9行，用于`min_age`的时间戳
 &emsp;&emsp;第10行，索引的年龄（用来计算什么时候进入下一阶段）
 &emsp;&emsp;第12行，当前阶段是什么时候进入的
@@ -34687,7 +34748,7 @@ POST /_snapshot/<repository>
 
 ##### Path parameters
 
-- `<repository>`：（Required, string）注册或更新的快照仓库名字
+- `<repository>`：（Required, string）注册或更新的快照仓库名称
 
 ##### Query parameter
 
@@ -34755,7 +34816,7 @@ POST /_snapshot/<repository>/_verify
 
 - nodes：（object）
   - `node_id`：（object）某个节点连接到快照仓库的信息。对象中的key是node的ID
-    - name（string）：节点的名字（Human-readable）。你可以在`elasticsearch.yml`中使用[node.name](#####Node name setting)属性定义节点的名字。默认是机器的hostname
+    - name（string）：节点的名称（Human-readable）。你可以在`elasticsearch.yml`中使用[node.name](#####Node name setting)属性定义节点的名称。默认是机器的hostname
 
 #### Repository analysis API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repo-analysis-api.html)
@@ -34778,7 +34839,7 @@ GET /_snapsho
 
 ##### Path parameters
 
-- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+- `<repository>`：（Optional, string）快照仓库名称用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
   - 若要获取集群中所有注册的快照仓库，移除这个参数或者使用`*`或`_all`
 
 ##### Query parameters
@@ -34788,7 +34849,7 @@ GET /_snapsho
 
 ##### Response body
 
-- `<repository>`：（object）包含快照仓库的信息。object中的key是快照仓库的名字。
+- `<repository>`：（object）包含快照仓库的信息。object中的key是快照仓库的名称。
   - type：仓库类型，type的值可以有：
     - fs：Shared file system repository. See [Shared file system repository](####Shared file system repository)
     - source：Source-only repository. See [Source-only repository](####Source-only repositor).
@@ -34839,7 +34900,7 @@ DELETE /_snapshot/my_repository
 
 ##### Path parameters
 
-- `<repository>`：（Required, string）待注销的快照仓库的名字。可以使用通配符`*`
+- `<repository>`：（Required, string）待注销的快照仓库的名称。可以使用通配符`*`
 
 ##### Query parameters
 
@@ -34917,8 +34978,8 @@ POST /_snapshot/<repository>/<snapshot>
 
 ##### Path parameters
 
-- `<repository>`：（Required, string）快照仓库的名字
-- `<snapshot>`：（Required, string）快照的名字。支持[date math](####Date math support in index and index alias names)。在快照仓库中必须名字唯一
+- `<repository>`：（Required, string）快照仓库的名称
+- `<snapshot>`：（Required, string）快照的名称。支持[date math](####Date math support in index and index alias names)。在快照仓库中必须名称唯一
 
 ##### Query parameters
 
@@ -35021,9 +35082,9 @@ GET /_snapshot/<repository>/<snapshot>
 
 ##### Path parameters
 
-- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+- `<repository>`：（Optional, string）快照仓库名称用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
   - 若要获取集群中所有注册的快照仓库，移除这个参数或者使用`*`或`_all`
-- `<Snapshot>`：（Required,string）快照名字用逗号隔开。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+- `<Snapshot>`：（Required,string）快照名称用逗号隔开。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
   - 若要获取某个已注册的仓库中的所有快照，使用通配符（`*`）或者`_all`
   - 使用`_current`获取当前正在运行的快照
 
@@ -35036,19 +35097,19 @@ GET /_snapshot/<repository>/<snapshot>
 - verbose：（Optional, Boolean）如果为`true`，返回每一个快照额外的信息，比如生成快照的Elasticsearch版本，快照的开始结束时间，快照中的分片数量。默认是`true`。如果为`false`。则省略这些额外的信息
 - index_details：（Optional, Boolean）如果为`true`，返回快照中每一个索引的额外信息，例如索引中的分片数量，索引的大小（单位字节），索引中每一个分片中的段的树林。默认是`false`，意味着这些信息会被省略
 - sort：（Optional, string）对结果进行排序。默认是`start_time`。比如根据快照处理的开始时间进行排序
-  - start_time：根据快照处理的开始时间排序，如果相同则继续使用快照名字排序
-  - duration：根据创建快照花费的时间排序，如果相同则继续使用快照名字排序
-  - name：根据快照名字排序
-  - repository：根据仓库名字排序，如果相同则继续使用快照名字排序
-  - index_count：根据快照中包含的索引数量排序，如果相同则继续使用快照名字排序
-  - shard_count：根据快照中包含的分片数量排序，如果相同则继续使用快照名字排序
-  - failed_shard_count：根据没能写进快照的分片数量排序，如果相同则继续使用快照名字排序
+  - start_time：根据快照处理的开始时间排序，如果相同则继续使用快照名称排序
+  - duration：根据创建快照花费的时间排序，如果相同则继续使用快照名称排序
+  - name：根据快照名称排序
+  - repository：根据仓库名称排序，如果相同则继续使用快照名称排序
+  - index_count：根据快照中包含的索引数量排序，如果相同则继续使用快照名称排序
+  - shard_count：根据快照中包含的分片数量排序，如果相同则继续使用快照名称排序
+  - failed_shard_count：根据没能写进快照的分片数量排序，如果相同则继续使用快照名称排序
 - size：（Optional, integer）返回的最大快照数量。默认值为`0`意味着没有限制
 - order：（Optional, string）排序方式。合法值为`asc`即升序或者`desc`即降序。默认值为`asc`。即默认是升序
-- from_sort_value：（Optional, string）从一个有序的字段中的某个值开始检索。当根据快照或仓库名字排序时，该值可以是一个string类型，当根据索引或分片数量排序时，该值可以是一个数值或者毫秒
+- from_sort_value：（Optional, string）从一个有序的字段中的某个值开始检索。当根据快照或仓库名称排序时，该值可以是一个string类型，当根据索引或分片数量排序时，该值可以是一个数值或者毫秒
 - after：（Optional, string）该值是一个偏移标识符用于分页查询，它来源于上一次分页查询的响应中`next`字段的值。使用这个参数跟`from_sort_value`是互斥的
 - offset：（Optional, integer）该值是一个数值偏移，描述分页查询中的开始位置。使用一个non-zero值，它与`after`参数是互斥的
-- slm_policy_filter：（Optional, string）根据快照所属SLM策略的名字，一个或者多个，用逗号隔开来过滤快照。支持通配符(`\*`)包括使用以`-`开头进行排除的组合通配符。例如`*,-policy-a-\*`将会返回所有的快照，以`policy-a-`开头的SLM策略名创建的快照除外。注意的是通配符`*`匹配了所有的由SLM策略创建的快照，不会匹配不是由SLM策略创建的快照。若要包含不是由SLM策略创建的快照，你可以使用特殊的`_none`，那么将会匹配所有不是由SLM策略创建的快照
+- slm_policy_filter：（Optional, string）根据快照所属SLM策略的名称，一个或者多个，用逗号隔开来过滤快照。支持通配符(`\*`)包括使用以`-`开头进行排除的组合通配符。例如`*,-policy-a-\*`将会返回所有的快照，以`policy-a-`开头的SLM策略名创建的快照除外。注意的是通配符`*`匹配了所有的由SLM策略创建的快照，不会匹配不是由SLM策略创建的快照。若要包含不是由SLM策略创建的快照，你可以使用特殊的`_none`，那么将会匹配所有不是由SLM策略创建的快照
 
 > NOTE：`after`参数和`next`字段允许在迭代快照时提供一些关于快照的并发创建或删除的一致性保证。它保证了任何在迭代开始时存在且未被并发删除的快照将在迭代过程中被看到。在迭代过程中可能会看到并发创建的快照。
 
@@ -35056,7 +35117,7 @@ GET /_snapshot/<repository>/<snapshot>
 
 ##### Response body
 
-- snapshot：（string）快照的名字
+- snapshot：（string）快照的名称
 - uuid：（string）快照的UUID
 - version_id：（int）用来创建快照的Elasticsearch的构建ID
 - version：（float）用来创建快照的Elasticsearch的版本号
@@ -35069,7 +35130,7 @@ GET /_snapshot/<repository>/<snapshot>
 - data_streams：（array of strings）快照中包含的[data streams](##Data streams)列表
 - include_global_state：（Boolean）快照中是否包含当前的集群状态
 - feature_states：（array of objects）快照中的[feature states](####Feature states)。只有当快照中包含一个或者多个feature states时才展示
-  - feature_name：（string）feature的名字，通过[get features API](####Get Features API)返回
+  - feature_name：（string）feature的名称，通过[get features API](####Get Features API)返回
   - indices：（array of strings）feature state中的索引
 - start_time：（string）快照处理的开始时间（Date timestamp）
 - start_time_in_millis：（long）快照处理的开始时间（时间戳）
@@ -35342,7 +35403,7 @@ GET /_snapshot/my_repository/snapshot*,-snapshot_3?sort=name
 }
 ```
 
-&emsp;&emsp;当使用默认的升序，并且按照快照名字排序，下面的请求返回了在`snapshot_2`之后的所有快照：
+&emsp;&emsp;当使用默认的升序，并且按照快照名称排序，下面的请求返回了在`snapshot_2`之后的所有快照：
 
 ```text
 GET /_snapshot/my_repository/*?sort=name&from_sort_value=snapshot_2
@@ -35526,8 +35587,8 @@ GET _snapshot/<repository>/<snapshot>/_status
 
 ##### Path parameters
 
-- `<repository>`：（Optional, string）快照仓库名字用逗号隔开来限制请求量。如果未指定`<snapshot>`，可以支持通配符`*`。
-- `<Snapshot>`：（Required,string）快照名字用逗号隔开用于获取其状态。默认是当前运行中的快照。不支持通配符（`*`）
+- `<repository>`：（Optional, string）快照仓库名称用逗号隔开来限制请求量。如果未指定`<snapshot>`，可以支持通配符`*`。
+- `<Snapshot>`：（Required,string）快照名称用逗号隔开用于获取其状态。默认是当前运行中的快照。不支持通配符（`*`）
 
 ##### Query parameters
 
@@ -35537,8 +35598,8 @@ GET _snapshot/<repository>/<snapshot>/_status
 
 ##### Response body
 
-- repository：（string）包含快照的仓库名字
-- snapshot：（string）快照的名字
+- repository：（string）包含快照的仓库名称
+- snapshot：（string）快照的名称
 - uuid：（string）快照的uuid
 - state：（string）快照的当前状态
   - FAILED：快照已经完成但是出现了错误并且没能存储任何数据
@@ -35690,8 +35751,8 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 
 ##### Path parameters
 
-- `<repository>`：（Optional, string）仓库的名字用来读取待恢复的快照
-- `<Snapshot>`：（Required,string）待恢复的快照名字
+- `<repository>`：（Optional, string）仓库的名称用来读取待恢复的快照
+- `<Snapshot>`：（Required,string）待恢复的快照名称
 
 ##### Query parameters
 
@@ -35843,7 +35904,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
     - 注意的是指定一个空数组会产生默认行为。若要排除素有的feature states，并且不用关心`include_global_state`是何值，则可以指定一个只有`none`值的数组（`["none"]`）
   - metadata：（Optional, object）任意的附加快照的一些元数据。比如记录哪个人生成了快照，为什么要生成快照，或者其他有用的数据。元数据大小必须小于1024个字节
   - partial：（Optional, Boolean）如果为`false`，那么当一个或者多个索引的所有主分片不是都可用，那么整个快照会失败。默认值为`false`。否则允许对可用的分片进行快照并且得到一个不完整的快照
-- name：（Required, string）通过策略创建的快照会被自动分配一个名字。支持[Date math](###Date math support in system and index alias names-1)。若要防止出现快照名字冲突，UUID会被自动的添加到每一个快照名字的后面
+- name：（Required, string）通过策略创建的快照会被自动分配一个名称。支持[Date math](###Date math support in system and index alias names-1)。若要防止出现快照名称冲突，UUID会被自动的添加到每一个快照名称的后面
 - repository：（Required, string）用来存储通过策略创建的快照的仓库。这个仓库必须在创建策略之前就已存在。你可以使用[snapshot repository API](###Snapshot module-1)创建一个仓库
 - retention：（Optional, object）保留规则（retention rule）用来保留以及删除策略创建的快照
   - expire_after：（Optional, [time units](####Time units)）某个时间段后的快照会被认为是过期的并且可以删除。SLM基于[slm.retention_schedule](######slm.retention_schedule)删除过期的快照
@@ -35876,7 +35937,7 @@ PUT /_slm/policy/daily-snapshots
 
 &emsp;&emsp;第3行，生成快照的时间，在这个例子中是每天的1:30am
 
-&emsp;&emsp;第4行，每一个快照给定的名字
+&emsp;&emsp;第4行，每一个快照给定的名称
 
 &emsp;&emsp;第5行，存储快照的仓库
 
