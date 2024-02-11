@@ -44,7 +44,7 @@
 
 &emsp;&emsp;基于不同的目的，用不同的方式索引同一个域通常是很有用的。例如你可能想要将一个string field索引为text field用于全文检索以及keyword域用于排序、聚合。或者你可能会选择使用多个语言分词器来处理包含用户输入的内容。
 
-&emsp;&emsp;在索引期间作用到full-text field的analysis chain在查询期间同样需要使用。当你查询一个full-text field，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
+&emsp;&emsp;在索引期间应用到full-text field的analysis chain在查询期间同样需要使用。当你查询一个full-text field，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
 
 ### Information out: search and analyze
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-analyze.html)
@@ -922,7 +922,7 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;Shard allocation说的是分配分片到节点的过程。该过程会在initial recovery、副本（replica）分配、rebalancing或者增加或者移除节点时发生。
 
-&emsp;&emsp;master node的其中一个作用是决定如何分配分片到节点，何时在节点之间移动分片来平衡集群。
+&emsp;&emsp;master node的其中一个应用是决定如何分配分片到节点，何时在节点之间移动分片来平衡集群。
 
 &emsp;&emsp;以下的一些设置用来控制分配分片的过程：
 
@@ -966,7 +966,7 @@ POST _nodes/reload_secure_settings
 
 ###### cluster.routing.allocation.same_shard.host
 
-&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该值允许执行一个检查，防止在单个主机上上分配多个相同的分片，通过主机名以及主机地址来描述一台主机。默认值是false。意味着默认不会进行检查。只有在同一台机器上的多个节点启动后，该值才会作用（apply）。
+&emsp;&emsp;（[Dynamic](######Dynamic（settings）)）该值允许执行一个检查，防止在单个主机上上分配多个相同的分片，通过主机名以及主机地址来描述一台主机。默认值是false。意味着默认不会进行检查。只有在同一台机器上的多个节点启动后，该值才会应用（apply）。
 
 ##### Shard rebalancing settings
 
@@ -1329,7 +1329,7 @@ PUT /_cluster/settings
 
 ###### ccr.indices.recovery.max_bytes_per_sec ([Dynamic](######Dynamic（settings）))
 
-&emsp;&emsp;用来限制每一个节点上inbound和outbound remote recovery traffic。由于这个设置是作用到每一个节点上，但是可能存在许多的节点并发的执行remote recoveries，remote recovery占用的流量可能比这个限制高。如果这个值设置的太高，那么会存在这么一种风险，即正在进行中的recoveries会过度消费带宽 ，使得集群变得不稳定。这个设置应该同时被leader和follower clusters使用。例如，如果在leader上设置了`20mb`，leader将只能发送`20mb/s`到follower，即使follower可以达到`60mb/s`。默认值为`40mb`。
+&emsp;&emsp;用来限制每一个节点上inbound和outbound remote recovery traffic。由于这个设置是应用到每一个节点上，但是可能存在许多的节点并发的执行remote recoveries，remote recovery占用的流量可能比这个限制高。如果这个值设置的太高，那么会存在这么一种风险，即正在进行中的recoveries会过度消费带宽 ，使得集群变得不稳定。这个设置应该同时被leader和follower clusters使用。例如，如果在leader上设置了`20mb`，leader将只能发送`20mb/s`到follower，即使follower可以达到`60mb/s`。默认值为`40mb`。
 
 ##### Advanced remote recovery settings
 
@@ -1831,7 +1831,7 @@ path.data:  /var/elasticsearch/data
 
 &emsp;&emsp;（[Static](######Static（settings） ) integer）一个查询能包含的clause的最大数量。默认值为`4096`。
 
-&emsp;&emsp;这个设置限制了一颗query tree能包含的clause的最大数量。4096这个默认值已经是非常高了，通常来说该值是够用的。这个限制会作用于重写query（rewrite query），所以不仅仅是`bool` query，所有会重写为bool query的query，例如`fuzzy` query，都会有较高数量的clause。这个限制的目的是防止查询的范围变得很大，占用过多的CPU和内存。如果你一定要提高这个值，保证你已经竭尽全力尝试了所有其他的选项，否则就不要这么做。较高的值会导致性能降低以及内存问题，特别是在负载高或者资源较少的集群上。
+&emsp;&emsp;这个设置限制了一颗query tree能包含的clause的最大数量。4096这个默认值已经是非常高了，通常来说该值是够用的。这个限制会应用于重写query（rewrite query），所以不仅仅是`bool` query，所有会重写为bool query的query，例如`fuzzy` query，都会有较高数量的clause。这个限制的目的是防止查询的范围变得很大，占用过多的CPU和内存。如果你一定要提高这个值，保证你已经竭尽全力尝试了所有其他的选项，否则就不要这么做。较高的值会导致性能降低以及内存问题，特别是在负载高或者资源较少的集群上。
 
 &emsp;&emsp;Elasticsearch提供了一些工具来防止遇到这个clause数量上限的问题，例如在[terms](####Terms query) query中，它允许查询许多不一样的值，但是它只作为一个clause。或者是带有[index_prefixes](####index_prefixes)选项的[text](####Text type family)域，它会执行prefix query，这个query会膨胀为较高数量的term，但是只作为一个term query。
 
@@ -4461,9 +4461,9 @@ GET /events/_search
 
 &emsp;&emsp;当未完成的coordinating, primary和 replica的索引占用字节超过配置的值后，节点会在coordinating或者primary阶段reject这个新的索引请求。
 
-&emsp;&emsp;当未完成的replica阶段的索引字节超过配置限制的1.5倍后，节点会在replicate阶段reject这个索引请求。这种设计意味着由于indexing pressure作用于节点，它会天然的在发生未完成的replica工作时会停止coordinating和primary工作。
+&emsp;&emsp;当未完成的replica阶段的索引字节超过配置限制的1.5倍后，节点会在replicate阶段reject这个索引请求。这种设计意味着由于indexing pressure应用于节点，它会天然的在发生未完成的replica工作时会停止coordinating和primary工作。
 
-&emsp;&emsp;`indexing_pressure.memory.limit`的默认为`10%`。你应该深思熟虑后再去修改它。这个设置只作用于索引请求。这意味着其他的索引开销（buffers，listener，等等）同样需要堆内存。Elasticsearch的其他组件同样需要内存，这个值设置的太高会影响其他有内存操作（memory operation）的操作和组件。
+&emsp;&emsp;`indexing_pressure.memory.limit`的默认为`10%`。你应该深思熟虑后再去修改它。这个设置只应用于索引请求。这意味着其他的索引开销（buffers，listener，等等）同样需要堆内存。Elasticsearch的其他组件同样需要内存，这个值设置的太高会影响其他有内存操作（memory operation）的操作和组件。
 
 #### Monitoring
 
@@ -4647,7 +4647,7 @@ PUT my-index-000001/_doc/1
 #### Dynamic templates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dynamic-templates.html)
 
-&emsp;&emsp;Dynamic template能让你在默认的[dynamic field mapping rules](####Dynamic field mapping)之外，更好的控制Elasticsearch如何映射你的数据。通过设置[dynamic](####dynamic(mapping parameter))参数的值为`true`或者`runtime`来开启dynamic mapping。然后你就可以基于下面的匹配条件使用dynamic template来自定义mapping，动态的作用（apply）到域：
+&emsp;&emsp;Dynamic template能让你在默认的[dynamic field mapping rules](####Dynamic field mapping)之外，更好的控制Elasticsearch如何映射你的数据。通过设置[dynamic](####dynamic(mapping parameter))参数的值为`true`或者`runtime`来开启dynamic mapping。然后你就可以基于下面的匹配条件使用dynamic template来自定义mapping，动态的应用（apply）到域：
 
 - [match_mapping_type](#####match_mapping_type)对Elasticsearch检测到的数据类型进行操作
 - [match and unmatch ](#####match and unmatch)使用一个pattern对域名进行匹配
@@ -4656,7 +4656,7 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;使用`{name}`和`{dynamic_type}`这些[template variables](#####Template variables)作为mapping中的占位符。
 
-> IMPORTANT：只有当某个域包含一个具体的值才能添加Dynamic field mappings。当域中包含`null`或者空的数组时，Elasticsearch不会添加一个dynamic field mapping。如果在`dynamic_template`中使用了`null_value`选项，只有在一篇有具体的值的文档索引后才能作用这个选项。 
+> IMPORTANT：只有当某个域包含一个具体的值才能添加Dynamic field mappings。当域中包含`null`或者空的数组时，Elasticsearch不会添加一个dynamic field mapping。如果在`dynamic_template`中使用了`null_value`选项，只有在一篇有具体的值的文档索引后才能应用这个选项。 
 
 &emsp;&emsp;Dynamic template由一组带名称的object数组组成：
 
@@ -4831,7 +4831,7 @@ PUT my-index-000001/_doc/1
 
 ##### path_match and path_unmatch
 
-&emsp;&emsp;`path_match`和`path_unmatch`参数的工作方式跟`match`和`unmatch`是一样的，不同的是，它们是作用在full dotted path上，而不是final name，比如：`some_object.*.some_filed`。
+&emsp;&emsp;`path_match`和`path_unmatch`参数的工作方式跟`match`和`unmatch`是一样的，不同的是，它们是应用在full dotted path上，而不是final name，比如：`some_object.*.some_filed`。
 
 &emsp;&emsp;下面的例子将`object`类型的域`name`中的除了`middle`的所有字段都`copy to`顶层的full_name中：
 
@@ -7489,7 +7489,7 @@ POST /my-index-000001/_bulk?refresh
 - depth_limit：flattened域允许嵌套的最大深度（nested Inner object）。如果超过限制，则会抛出错误。默认值为`20`。注意的是可以通过[update mapping](####Update mapping API)更新`depth_limit`。
 - [doc_values](####doc_values)：- 该域值是否在磁盘上使用列式存储，使得可以用来进行聚合、排序或者脚本。可选值`true`或者`false`
 - [eager_global_ordinals](####eager_global_ordinals) ：是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
-- [ignore_above](####ignore_above)：leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只作用与flattened的leaf values，而不是整个域的长度
+- [ignore_above](####ignore_above)：leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只应用与flattened的leaf values，而不是整个域的长度
 - [index](####index(mapping parameter))：是否该域需要被快速的搜索到？可选值`true`或者`false`。
 - [index_options](####index_options)：在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
 - [null_value](####null_value)：flattened域中`null`值会被替换为一个string value。默认是`null`。意味着null值被认为是缺失值
@@ -8348,7 +8348,7 @@ PUT my-index-000001
 
 ##### Parameters for object fields
 
-&emsp;&emsp;下面的参数可以作用于`object`域
+&emsp;&emsp;下面的参数可以应用于`object`域
 
 - [dynamic](####dynamic(mapping parameter))：是否将新的域写入到已存在的object域中，可选值为`true` (default)， `runtime`， `false` and `strict`
 - [enabled](####enabled)：object域的域值是否要进行解析并且写入到索引中（`true`），或者完全忽略(`false`)
@@ -9813,7 +9813,7 @@ PUT my-index-000001/_mapping
 
 &emsp;&emsp;Elasticsearch会尝试索引你提供的所有的域，但有时候你只是想保存某些域而不想索引它们。例如你想要使用Elasticsearch来存储web session，你也许要索引session ID和 last update time，但是你不想对session data进行查询或者聚合操作。
 
-&emsp;&emsp;`enabled`参数只能在mapping的顶层top-level定义并且只能作用[object](####Object field type)类型的域，这会使得Elasticsearch不再解析object域下所有内容，JSON内容仍然可以从[\_source](####\_source field)中检索到，无法通过其他方式查询或者进行存储：
+&emsp;&emsp;`enabled`参数只能在mapping的顶层top-level定义并且只能应用[object](####Object field type)类型的域，这会使得Elasticsearch不再解析object域下所有内容，JSON内容仍然可以从[\_source](####\_source field)中检索到，无法通过其他方式查询或者进行存储：
 
 ```text
 UT my-index-000001
@@ -9885,7 +9885,7 @@ GET my-index-000001/_doc/session_1
 GET my-index-000001/_mapping 
 ```
 
-&emsp;&emsp;第4行，`enable`参数将作用mapping中的所有域
+&emsp;&emsp;第4行，`enable`参数将应用mapping中的所有域
 
 &emsp;&emsp;第19行，文档可以被检索到
 
@@ -10158,7 +10158,7 @@ PUT my-index-000001
 #### ignore_above
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ignore-above.html)
 
-&emsp;&emsp;字符串长度超过`ignore_above`中设置的值不会被索引或者存储，对于字符串数组，`ignore_above`会作用apply到数组中每一个字符串，并且超过`ignore_above`中设置的值不会被索引或者存储。
+&emsp;&emsp;字符串长度超过`ignore_above`中设置的值不会被索引或者存储，对于字符串数组，`ignore_above`会应用（apply）到数组中每一个字符串，并且超过`ignore_above`中设置的值不会被索引或者存储。
 
 > NOTE：All strings/array elements will still be present in the `_source` field, if the latter is enabled which is the default in Elasticsearch.
 
@@ -10571,7 +10571,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;[keyword](####Keyword type family)的属性`normalizer`类似与[analyzer](####analyzer(mapping parameter))，只是它能保证分析链（analysis chain）只会生成单个token。
 
-&emsp;&emsp;`normalizer`先作用到keyword然后再进行索引，同样的在查询期间，查询`kewword`域时会执行一个query parser，例如[match](####Match query) query或者term-level query例如[term](####Term query) query。
+&emsp;&emsp;`normalizer`先应用到keyword然后再进行索引，同样的在查询期间，查询`kewword`域时会执行一个query parser，例如[match](####Match query) query或者term-level query例如[term](####Term query) query。
 
 &emsp;&emsp;可以使用一个简单的elasticsearch自带的（ship with）名为`lowercase`的normalizer，自定义的normalizer可以在analysis中定义：
 
@@ -13004,7 +13004,7 @@ PUT index
 
 &emsp;&emsp;在创建一个索引时，index template告诉Elasticsearch如何进行创建。对于[data streams](##Data streams)，index template用于创建流的[backing](####Backing indices)索引。Template先于索引的创建。手动或者通过索引一篇文档创建一个索引后，template setting会作为创建索引的一个基本要素（ basis）。
 
-&emsp;&emsp;一共有索引模板index template和组件模版[component template](####Create or update component template API)两种类型的模板。component template构建配置了mapping，settings，alias这几块并可以复用。你可以使用一个或多个component template来构造index template，但不能直接作用到（apply）索引集合（a set of indices）。index templates 可以包含一个component template集合，直接指定settings，mappings和aliases。
+&emsp;&emsp;一共有索引模板index template和组件模版[component template](####Create or update component template API)两种类型的模板。component template构建配置了mapping，settings，alias这几块并可以复用。你可以使用一个或多个component template来构造index template，但不能直接应用到（apply）索引集合（a set of indices）。index templates 可以包含一个component template集合，直接指定settings，mappings和aliases。
 
 &emsp;&emsp;应用（apply）index template的几个条件：
 
@@ -13022,7 +13022,7 @@ PUT index
 
 &emsp;&emsp;[Elastic Agent](https://www.elastic.co/guide/en/fleet/8.2/fleet-overview.html)使用这些模板来创建data streams。Fleet integration创建的index template使用类似的overlapping index patterns并且优先级是`200`。
 
-&emsp;&emsp;如果你使用Fleet或者Elastic Agent， 那么你的index template的优先级要小于`100`来防止覆盖掉这些模板。若要避免意外的作用了这些内置模板，采取下面一个或者多个方法：
+&emsp;&emsp;如果你使用Fleet或者Elastic Agent， 那么你的index template的优先级要小于`100`来防止覆盖掉这些模板。若要避免意外的应用了这些内置模板，采取下面一个或者多个方法：
 
 - 若要关闭内置的index template和component template，使用[cluster update settings API](####Cluster update settings API)将[stack.templates.enabled](#####stack.templates.enabled)设置为`false`。
 - 使用一个不会被 覆盖的index pattern
@@ -13107,7 +13107,7 @@ PUT _index_template/template_1
 ### Simulate multi-component templates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-multi-component-templates.html)
 
-&emsp;&emsp;模板不仅仅由多个component template进行组合，也可以由index template自身。有两个simulation APIs用来查看最终的索引设置（index settings）。（当你指定了一个新的模板后，由于现有的模板可能跟这个新的模板有相同的index patter，由于优先级问题导致新的模板无法作用到新创建的索引，那么可以通过simulate来查看某个索引对应的index template，或者查看某个模板设置，见[Simulate index template API](####Simulate index template API)和[ Simulate index API](####Simulate index API)）
+&emsp;&emsp;模板不仅仅由多个component template进行组合，也可以由index template自身。有两个simulation APIs用来查看最终的索引设置（index settings）。（当你指定了一个新的模板后，由于现有的模板可能跟这个新的模板有相同的index patter，由于优先级问题导致新的模板无法应用到新创建的索引，那么可以通过simulate来查看某个索引对应的index template，或者查看某个模板设置，见[Simulate index template API](####Simulate index template API)和[ Simulate index API](####Simulate index API)）
 
 &emsp;&emsp;若要模拟（[simulate](####Simulate index API)）出将要应用到某个指定的索引的索引设置，可以通过以下请求获取。 
 
@@ -13724,7 +13724,7 @@ PUT /_bulk?refresh
 - [Change a dynamic index setting for a data stream](####Change a dynamic index setting for a data stream)
 - [Change a static index setting for a data stream](####Change a static index setting for a data stream)
 
-> TIP：如果你的更改中包含对现有的field mappings或[static index settings](##Index modules)做更改，通常需要reindex来作用到data stream的backing index 中。如果你已经执行了reindex，你可以使用相同的过程来添加新的field mappings以及更改[dynamic index settings](##Index modules)。见[Use reindex to change mappings or settings](####Use reindex to change mappings or settings)。
+> TIP：如果你的更改中包含对现有的field mappings或[static index settings](##Index modules)做更改，通常需要reindex来应用到data stream的backing index 中。如果你已经执行了reindex，你可以使用相同的过程来添加新的field mappings以及更改[dynamic index settings](##Index modules)。见[Use reindex to change mappings or settings](####Use reindex to change mappings or settings)。
 
 #### Add a new field mapping to a data stream
 
@@ -13843,7 +13843,7 @@ PUT /my-data-stream/_mapping
 
 &emsp;&emsp;若只向stream中的write index添加mapping，在更新mapping API中添加请求参数`write_index_only`为`true`。
 
-&emsp;&emsp;下面的更新mapping请求只对`my-data-stream`的write index中的`host.ip`域变更。这个更改不会作用到stream的其他backing index。
+&emsp;&emsp;下面的更新mapping请求只对`my-data-stream`的write index中的`host.ip`域变更。这个更改不会应用到stream的其他backing index。
 
 ```text
 PUT /my-data-stream/_mapping?write_index_only=true
@@ -14823,7 +14823,7 @@ PUT _ingest/pipeline/my-pipeline
 
 #### Conditionally apply pipelines
 
-&emsp;&emsp;基于你的规则，在[pipeline](####Pipeline processor)中使用`if` 条件来为你的文档作用pipeline。你可以在[index template](##Index templates)中使用这个pipeline作为[default pipeline](####Set a default pipeline)。
+&emsp;&emsp;基于你的规则，在[pipeline](####Pipeline processor)中使用`if` 条件来为你的文档应用pipeline。你可以在[index template](##Index templates)中使用这个pipeline作为[default pipeline](####Set a default pipeline)。
 
 ```text
 PUT _ingest/pipeline/one-pipeline-to-rule-them-all
@@ -18204,7 +18204,7 @@ GET /_search
 
 &emsp;&emsp;基于匹配到的terms的顺序以及接近度（proximity。term之间在文档中的物理距离或位置接近程度）返回文档。
 
-&emsp;&emsp;`intervals`使用由一小组**matching rules**定义组成。这些规则会作用到指定的一个域的域值中。
+&emsp;&emsp;`intervals`使用由一小组**matching rules**定义组成。这些规则会应用到指定的一个域的域值中。
 
 &emsp;&emsp;定义的规则会生成文本内容中term之间的最小间隔序列（也就是term的顺序跟接近度），并且还可以进一步跟父级中的定义进行组合
 
@@ -18733,7 +18733,7 @@ GET /_search
 
 &emsp;&emsp;`match_bool_prefix` query支持[match query](######How the match query works)中提到的[minimum_should_match](###minimum_should_match parameter)以及`operator`参数。构造出来的`bool` query中的clause的数量大多数情况下和分词器对输入解析后生成的term的数量一样。
 
-&emsp;&emsp;[fuzziness](######Fuzziness in the match query), `prefix_length`, `max_expansions`, `fuzzy_transpositions`, and `fuzzy_rewrite`这些参数都可以作用到所有term对应的 `term` query中，除了最后一个term。这些参数不会对最后一个term对应的prefix query有任何的作用。
+&emsp;&emsp;[fuzziness](######Fuzziness in the match query), `prefix_length`, `max_expansions`, `fuzzy_transpositions`, and `fuzzy_rewrite`这些参数都可以应用到所有term对应的 `term` query中，除了最后一个term。这些参数不会对最后一个term对应的prefix query有任何的应用。
 
 #### Match phrase query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-query-phrase.html)
@@ -18905,7 +18905,7 @@ GET /_search
 
 &emsp;&emsp;如果你的某个查询要在不同类型的域上进行，那么[multi_match](####Multi-match query)比较合适。他同时支持text和非text类型的域，并且接受在不同的text域上可以有不同的分词器。
 
-&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种"以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`作用在每一个term上，而不是每个域上。比如有这样的query：
+&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种"以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`应用在每一个term上，而不是每个域上。比如有这样的query：
 
 ```text
 GET /_search
@@ -18929,7 +18929,7 @@ GET /_search
 
 &emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配（换句话说，一篇文档中只要有database，system就满足匹配，这两个term可以分布在不同的域上，最好的情况是这两个term在同一个域上）。
 
-&emsp;&emsp;`cross_fields` `multi_match`模式同样是"以term为中心"的方法并且`operator`和`minimum_should_match`作用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
+&emsp;&emsp;`cross_fields` `multi_match`模式同样是"以term为中心"的方法并且`operator`和`minimum_should_match`应用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
 
 > NOTE：Custom similarities
 > `combined_fields`只支持BM25，他是默认的Similarity，可以通过[custom similarity](###Similarity module)配置。同样也不允许[Per-field similarities](####similarity)。否则使用`combined_fields`时报错。
@@ -19051,7 +19051,7 @@ GET /_search
 &emsp;&emsp;同样支持这些参数：`analyzer`, `boost`, `operator`, `minimum_should_match`, `fuzziness`, `lenient`, `prefix_length`, `max_expansions`, `fuzzy_rewrite`, `zero_terms_query`, `auto_generate_synonyms_phrase_query` 以及 `fuzzy_transpositions`，见[match query](####Match query)中的介绍。
 
 > IMPORTANT：operator and minimum_should_match
-> `best_fields`和`most_fields`这两个类型是以域为中心，每一个域都生成了一个`match query`。意味着`operator`和`minimum_should_match`参数是作用到域之间，可能不是你期望的那样。例如下面的query：
+> `best_fields`和`most_fields`这两个类型是以域为中心，每一个域都生成了一个`match query`。意味着`operator`和`minimum_should_match`参数是应用到域之间，可能不是你期望的那样。例如下面的query：
 > GET /\_search
 >{
 >  "query": {
@@ -19068,7 +19068,7 @@ GET /_search
 >`(+first_name:will +first_name:smith)| (+last_name:will +last_name:smith)`
 >换句话说，对于匹配到的文档，单个域中必须出现所有的term
 >
->[combined_fields](####Combined fields)提供了"以term为中心"的视角，`operator`和`minimum_should_match`作用到每一个term之间。其他的`multi-match`模式[cross_fields](#####cross_fields)同样能解决这个问题
+>[combined_fields](####Combined fields)提供了"以term为中心"的视角，`operator`和`minimum_should_match`应用到每一个term之间。其他的`multi-match`模式[cross_fields](#####cross_fields)同样能解决这个问题
 
 ##### most_fields
 
@@ -19152,7 +19152,7 @@ GET /_search
 
 &emsp;&emsp;`cross_fields`类型对于在结构化的文档中期望在多个域中进行匹配这种场景就特别的有用。例如，当在`first_name`和`last_name`中查找`Will Smith`，最好的匹配结果应该是`Will`在上面两个域中的一个，并且`Smith`在另一个域中。
 
-- 这看起来好像使用[most_fields](#####most_fields)就可以完成，但是这种方法有两个问题。第一个问题是`operator`跟`minimum_should_match`是作用在每一个域上，而不是每一个term上（见[explanation above](#####best_fields)）
+- 这看起来好像使用[most_fields](#####most_fields)就可以完成，但是这种方法有两个问题。第一个问题是`operator`跟`minimum_should_match`是应用在每一个域上，而不是每一个term上（见[explanation above](#####best_fields)）
 - 第二个问题是相关性问题：`first_name`跟`last_name`域中相同term的词频不同会产生非期望的结果
 - 比如说，我们有两个人：`Will Smith`和`Smith Jones`。`Smith`作为last name是非常常见的（因此重要性较低）但是`Smith`作为first name是不常见的（因此重要性高）
 - 如果我们查询`Will Smith`，包含`Smith Jones`的文档应该优于包含`Will Smith`的文档，因为`first_name:Smith`的打分会高于`first_name:will`和`last_name:smith`的打分值和值，这不是我们期望的结果。
@@ -19240,7 +19240,7 @@ GET /_search
 
 &emsp;&emsp;存在多个组是没有问题的，但当使用了`operator`或`minimum_should_match`就会出现上文中提到使用`most_field`和`best_field`的问题。
 
-&emsp;&emsp;你可以很容易的使用`dis_max`query来组合两个`cross_field`类型的查询，并且只将`minimum_should_match`作用到其中一个就行了 ：
+&emsp;&emsp;你可以很容易的使用`dis_max`query来组合两个`cross_field`类型的查询，并且只将`minimum_should_match`应用到其中一个就行了 ：
 
 ```text
 GET /_search
@@ -19580,7 +19580,7 @@ name:/joh?n(ath[oa]n)/
 
 &emsp;&emsp;正则表达式的语法支持见[Regular expression syntax](###Regular expression syntax)。
 
-> WARNING：`allow_leading_wildcard`参数不会作用于正则表达式。query string中包含下面的内容将会让Elasticsearch访问索引中的每一个term：`/.*n/`。请小心使用。
+> WARNING：`allow_leading_wildcard`参数不会应用于正则表达式。query string中包含下面的内容将会让Elasticsearch访问索引中的每一个term：`/.*n/`。请小心使用。
 
 ###### Fuzziness（query string）
 
@@ -19680,7 +19680,7 @@ quick^2 fox
 
 &emsp;&emsp;`boost`的默认值为 `1`，它可以是任意的正浮点数。0到1之间的boost值会降低相关性。
 
-&emsp;&emsp;boost同样可以作用在短语或者组：
+&emsp;&emsp;boost同样可以应用在短语或者组：
 
 ```text
 "john smith"^2   (foo bar)^4
@@ -19728,7 +19728,7 @@ quick brown +fox -news
 (quick OR brown) AND fox
 ```
 
-&emsp;&emsp;分组还可以用于作用到某个特定的域上，或者boost这个子query的打分：
+&emsp;&emsp;分组还可以用于应用到某个特定的域上，或者boost这个子query的打分：
 
 ```text
 status:(active OR pending) title:(full text search)^2
@@ -21617,7 +21617,7 @@ POST timeseries/_doc
 
 &emsp;&emsp;当生命周期策略中的rollover条件满足后，`rollover`动作就会：
 
-- 创建名为`.ds-timeseries-2099.03.08-000002`的second generation的backing index。因为它是名为`timeseries` 的data stream中的backing index，名为`timeseries_template`的模板会将配置作用到这个新的索引
+- 创建名为`.ds-timeseries-2099.03.08-000002`的second generation的backing index。因为它是名为`timeseries` 的data stream中的backing index，名为`timeseries_template`的模板会将配置应用到这个新的索引
 - 由于它是名为`timeseries`  的data stream中最新的索引，最新创建的backing index `.ds-timeseries-2099.03.08-000002`成为data stream的write index
 
 &emsp;&emsp;每次rollover 条件满足后就重复上面的处理过程。你可以跨data stream中所有的backing indices进行查询。由名为`timeseries`的data steam，名为`timeseries_policy`的策略管理。写操作被路由到当前的write index。读操作由所有的backing indices处理。
@@ -21701,11 +21701,11 @@ GET .ds-timeseries-*/_ilm/explain
 
 &emsp;&emsp;若要在rollover上自动的将生命周期策略应用到新的write index上，那么在用于创建新索引的index template中指定策略。
 
-&emsp;&emsp;例如，你可能创建了一个`timeseries_template`的模板，它将作用到索引名匹配了`timeseries-*`index pattern的索引。
+&emsp;&emsp;例如，你可能创建了一个`timeseries_template`的模板，它将应用到索引名匹配了`timeseries-*`index pattern的索引。
 
 &emsp;&emsp;若要自动的rollover，那么在模板中配置两个ILM设置：
 
-- `index.lifecycle.name`指定生命周期策略的名称，该策略作用到匹配了index pattern的新的索引上
+- `index.lifecycle.name`指定生命周期策略的名称，该策略应用到匹配了index pattern的新的索引上
 - `index.lifecycle.rollover_alias`指定了index alias，当rollover动作出发后，它将被roll over
 
 &emsp;&emsp;你可以使用Kibana创建模板向导程序来添加模板。若要访问向导程序，打开菜单并且进入**Stack Management > Index Management**。在**Index Templates**页面，点击**Create template**。
@@ -21729,9 +21729,9 @@ PUT _index_template/timeseries_template
 }
 ```
 
-&emsp;&emsp;第3行，模板将作用到索引名以`timeseries-`开头的索引上
+&emsp;&emsp;第3行，模板将应用到索引名以`timeseries-`开头的索引上
 
-&emsp;&emsp;第8行，生命周期策略的名称，将作用到每一个新的索引上
+&emsp;&emsp;第8行，生命周期策略的名称，将应用到每一个新的索引上
 
 &emsp;&emsp;第9行，alias的名称用于引用这些索引，要求策略使用rollover动作。
 
@@ -21754,7 +21754,7 @@ PUT timeseries-000001
 
 &emsp;&emsp;当满足了rollover的条件，`rollover`动作就会：
 
-- 创建一个名为`timeseries-000002`的新的索引。这个名称匹配了`timeseries-*` pattern，所以`timeseries_template`模板中的设置会作用到这个新的索引上
+- 创建一个名为`timeseries-000002`的新的索引。这个名称匹配了`timeseries-*` pattern，所以`timeseries_template`模板中的设置会应用到这个新的索引上
 - 将这个新的索引指为write index并且让引导索引（`timeseries-000001`）变成只读
 
 #### Check lifecycle progress(index)
@@ -22443,7 +22443,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;当现有的索引满足一个或者多个转存（rollover）条件后转存到一个新的索引。
 
-> IMPORTANT：如果rollover动作作用在一个[follower index](####Create follower API)，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](###Skip rollover)），然后通过[unfollow](####Unfollow)动作将follower index转化为一个普通索引（regular index）。
+> IMPORTANT：如果rollover动作应用在一个[follower index](####Create follower API)，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](###Skip rollover)），然后通过[unfollow](####Unfollow)动作将follower index转化为一个普通索引（regular index）。
 
 &emsp;&emsp;转存对象可以是[data stream](###Data Streams)或者[index alias](##Aliases)。当转存对象是数据流（data stream）时，新的索引会变成数据流的write index并且提高它的generation。
 
@@ -22833,7 +22833,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;将一个[CCR](###Cross-cluster replication APIs) follower index转变为普通索引（regular index），使得shrink、rollover、以及searchable snapshot动作可以在follower index上安全的执行。你可以在生命周期中移动follower index时直接使用unfollow。该动作不会对非follower index产生影响，阶段中执行该动作只是继续做下一个动作。
 
-> NOTE：如果是作用在follower index上，这个动作会被[rollover](####Rollover)、[shrink](####Shrink)以及[searchable snapshot](####Searchable snapshot)动作自动触发。
+> NOTE：如果是应用在follower index上，这个动作会被[rollover](####Rollover)、[shrink](####Shrink)以及[searchable snapshot](####Searchable snapshot)动作自动触发。
 
 &emsp;&emsp;这个动作会一直等到安全的将一个follower index转化为普通索引才会执行，必须满足下面的条件：
 
@@ -26152,7 +26152,7 @@ POST _transform/_preview
 
 &emsp;&emsp;你可以使用[preview transform API预览推测出的mapping。见API response中`generated_dest_index`对象。
 
-&emsp;&emsp;如果有必要的话，你可以在transform启动前，使用[create index API](####Create index API)先创建一个自定义的destination index使得可以自定义mapping。由于推测的mapping不能被index template overwrite，所以就使用create index API来自定义mapping。index template只能作用于（apply to）脚本中使用dynamic mapping衍生出的域。
+&emsp;&emsp;如果有必要的话，你可以在transform启动前，使用[create index API](####Create index API)先创建一个自定义的destination index使得可以自定义mapping。由于推测的mapping不能被index template overwrite，所以就使用create index API来自定义mapping。index template只能应用于（apply to）脚本中使用dynamic mapping衍生出的域。
 
 ###### Batch transforms may not account for changed documents
 
@@ -27235,7 +27235,7 @@ PUT _cluster/settings
 POST _slm/_execute_retention
 ```
 
-&emsp;&emsp;SLM策略中的保留规则（retention rule）只会作用到使用这个策略创建的快照。其他快照不会受到（not count toward）这个策略的保留限制。
+&emsp;&emsp;SLM策略中的保留规则（retention rule）只会应用到使用这个策略创建的快照。其他快照不会受到（not count toward）这个策略的保留限制。
 
 ##### Snapshot retention limits
 
@@ -32813,7 +32813,7 @@ POST /_data_stream/_modify
 ###### Mappings
 
 #### Create or update component template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
+（8.1）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
 
 &emsp;&emsp;创建或个新一个组件模版（component template）。组件模版是构造索引模板（[index template](##Index templates)）的块，指定了[mappings](##Mapping)、[settings](####Index Settings)、[aliases](##Aliases)。
 
@@ -32867,15 +32867,125 @@ PUT /_component_template/<component-template>
 ##### Path parameters
 
 - `<component-template>`：（Required, string）待创建的组件模版名称
-- 
+  > IMPORTANT：Elasticsearch中包含了下面内置的组件模版：
+  > - logs-mappings
+  > - logs-settings
+  > - metrics-mappings
+  > - metrics-settings
+  > - synthetics-mapping
+  > - synthetics-settings
+  > [Elastic Agent](https://www.elastic.co/guide/en/fleet/8.2/fleet-overview.html) 使用这些模板来配置data streams的backing indices。如果你要使用Elastic Agent并且想要重写（overwrite）这些模板，只要将你的模板中的`version`设置为一个更高的值
+  > 如果你不想使用Elastic Agent并且禁用内置的组件模板和索引模板，可以使用[cluster update  settings API](####Cluster update settings API)将[stack.templates.enabled](#####stack.templates.enabled)设置为`false`
+
 ##### Query parameters
+
+- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
 ##### Response body
+
+- template：（Required, object）待应用的模板。模板中可能包含`mappings`、`settings`、`aliases`配置
+  - aliases：（Optional, object of objects）待添加的别名
+    - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+      - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+        - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+        - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+        - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+        - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+        - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+        - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+  - mappings：（Optional, [mapping object](##Mapping)）
+    - Field names
+    - [Field data types](###Field data types)
+    - [Mapping parameters](###Mapping parameters)
+  - settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+- version：（Optional,  integer）用来管理索引模板版本信息。这个值不会由Elasticsearch自动生成
+- allow_auto_create：（Optional, Boolean）这个设置覆盖了集群设置中的[action.auto_create_index](######Automatically create data streams and indices)。如果在模板中设置为`true`，即使`actions.auto_create_index`被禁用了，也会使用这个模板自动创建索引。如果为`false`，匹配模版的indices或data stream必须显示的创建，并且可能永不会自动创建
+- \_meta：（Optional, object）跟索引模板相关的，可选的用户自定义的元数据。可能有许多内容。这个字段不是由Elasticsearch自动生成的
+
 ##### Example
+
+###### Component template with index aliases
+
+&emsp;&emsp;你可以在组件模版中包含[index aliases](##Aliases)。
+
+```text
+PUT _component_template/template_1
+{
+  "template": {
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "aliases" : {
+        "alias1" : {},
+        "alias2" : {
+            "filter" : {
+                "term" : {"user.id" : "kimchy" }
+            },
+            "routing" : "shard-1"
+        },
+        "{index}-alias" : {} 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第16行，在别名中，`{index}`占位符将在索引创建时替代真正的索引名称。
+
+###### Applying component templates
+
+&emsp;&emsp;你可以使用`version`字段像索引模板中添加版本号。内部系统能通过这个版本号简单的管理模板。
+
+&emsp;&emsp;`version`字段是可选的，Elasticsearch不会自动生成该字段。
+
+&emsp;&emsp;若要unset这个`version`，用未定义该字段的模板替换。
+
+```text
+PUT /_component_template/template_1
+{
+  "template": {
+    "settings" : {
+        "number_of_shards" : 1
+    }
+  },
+  "version": 123
+}
+```
+
+&emsp;&emsp;你可以通过[get component template API](####Get component template API)检查这个`verison`字段。
+
+###### Component template metadata
+
+&emsp;&emsp;你可以使用`_meta`字段来添加任意的元数据到索引模板中。这个用户定义的对象存储在集群中，因此最好简短些。
+
+&emsp;&emsp;`_meta`字段是可选的，Elasticsearch不会自动生成该字段。
+
+&emsp;&emsp;若要unset这个`_meta`，用未定义该字段的模板替换。
+
+```text
+PUT /_component_template/template_1
+{
+  "template": {
+    "settings" : {
+        "number_of_shards" : 1
+    }
+  },
+  "_meta": {
+    "description": "set number of shards to one",
+    "serialization": {
+      "class": "MyComponentTemplate",
+      "id": 10
+    }
+  }
+}
+```
+
+&emsp;&emsp;你可以使用[get component template](####Get component template API)查看`_meta`字段。
 
 #### Create or update index template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-template.html)
 
-&emsp;&emsp;创建/更新一个索引模板（index template）。索引模板中定义了[settings](####Index Settings)，[mappings](##Mapping)和[aliases ](##Aliases)，使得自动的作用到新的索引上。
+&emsp;&emsp;创建/更新一个索引模板（index template）。索引模板中定义了[settings](####Index Settings)，[mappings](##Mapping)和[aliases ](##Aliases)，使得自动的应用到新的索引上。
 
 ```text
 PUT /_index_template/template_1
@@ -32908,7 +33018,7 @@ PUT /_index_template/<index-template>
 
 &emsp;&emsp;在[create index](####Create index API)请求中定义的settings和mappings会覆盖某个索引模板中的settings和mapping。
 
-&emsp;&emsp;索引模板的变更不会作用到现有的索引，包括data stream中现有的backing indices。
+&emsp;&emsp;索引模板的变更不会应用到现有的索引，包括data stream中现有的backing indices。
 
 ###### Comments in index templates
 
@@ -32934,7 +33044,7 @@ PUT /_index_template/<index-template>
   - Elasticsearch中有一些内置的索引模板。若要防止跟这些模板发生冲突（被这些模板匹配），见[Avoid index pattern collisions](##Index templates)
 - \_meta：（Optional, object）跟索引模板相关的，可选的用户自定义的元数据。可能有许多内容。这个字段不是由Elasticsearch自动生成的
 - priority：（Optional, integer）当data stream或者index创建时，决定了优先匹配哪些索引。总是选择优先级最高的模版。如果索引模板中没有指定优先级，即默认为优先级为`0`（最低的优先级）。Elasticsearch不会自动生成这个字段
-- template：（Optional, object）待作用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
+- template：（Optional, object）待应用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
     - aliases：（Optional, object of objects）待添加的别名
       - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
         - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
@@ -32948,7 +33058,7 @@ PUT /_index_template/<index-template>
       - Field names
       - [Field data types](###Field data types)
       - [Mapping parameters](###Mapping parameters)
-    - settings：（Optional, [index setting object](####Index Settings)）
+    - settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
 - version：（Optional,  integer）用来管理索引模板版本信息。这个值不会由Elasticsearch自动生成
 
 ##### Example
@@ -33016,7 +33126,7 @@ PUT /_index_template/template_2
 }
 ```
 
-&emsp;&emsp;对于以`te*`开头的索引，它将启动`_source`、2个主分片以及1个副本分片，因为只有`template_2`作用到以`te*`开头的索引。
+&emsp;&emsp;对于以`te*`开头的索引，它将启动`_source`、2个主分片以及1个副本分片，因为只有`template_2`应用到以`te*`开头的索引。
 
 > NOTE：拥有相同优先级且索引模式重叠的多个模板是不允许的，当尝试创建一个与现有相同优先级的索引模板匹配的模板时，系统会抛出错误。
 
@@ -33264,7 +33374,7 @@ DELETE /_index_template/<index-template>
 
 ##### Description
 
-&emsp;&emsp;使用该接口来删除一个或多个索引模板。索引模板中定义的[settings](####Index Settings)、[mappings](##Mapping)和[aliases](##Aliases)会自动作用到新的索引上。
+&emsp;&emsp;使用该接口来删除一个或多个索引模板。索引模板中定义的[settings](####Index Settings)、[mappings](##Mapping)和[aliases](##Aliases)会自动应用到新的索引上。
 
 ##### Path parameters
 
@@ -33547,7 +33657,7 @@ POST /my_source_index/_split/my_target_index
 
 ##### Wait for active shards
 
-&emsp;&emsp;因为切分操作会创建一个新的索引用于对分片的切分，索引创建中的[`wait for active shards`](####Create index API)这个设置同样作用于索引的切分。
+&emsp;&emsp;因为切分操作会创建一个新的索引用于对分片的切分，索引创建中的[`wait for active shards`](####Create index API)这个设置同样应用于索引的切分。
 
 ##### Path parameters
 
@@ -35764,7 +35874,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 
 - ignore_unavailable：（Optional, Boolean）如果为`true`，并且快照中没有`indices`参数中定义的index或者data stream，那么恢复操作会忽略这些。如果为`false`，则会在遇到任意缺失的index或 data stream之后返回一个错误。默认值为`false`
 - ignore_index_settings：（Optional, string or array of strings）从快照中恢复的索引设置（Index settings）。你不能使用这个选项来忽略[index.number_of_shards]()
- - 对于data streams，这个选项只能作用于恢复backing indices。新的backing indices使用data streams匹配到的索引模板中的配置
+ - 对于data streams，这个选项只能应用于恢复backing indices。新的backing indices使用data streams匹配到的索引模板中的配置
 - include_aliases：（Optional, Boolean）如果为`true`，请求恢复data streams和indices的别名（Alias）。如果为`false`，则不会恢复别名。默认为`true`
 - include_global_state：（Optional, Boolean）如果为`true`，则恢复集群状态。默认是`false`。集群状态包括：
     - [Persistent cluster settings](####Cluster and node setting types)
@@ -36123,7 +36233,7 @@ POST /_slm/_execute_retention
 
 ##### Description
 
-&emsp;&emsp;手动作用保留策略来强制立即移除过期的快照。保留策略通常根据定时计划时间执行。
+&emsp;&emsp;手动应用保留策略来强制立即移除过期的快照。保留策略通常根据定时计划时间执行。
 
 ##### Examples
 
