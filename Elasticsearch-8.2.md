@@ -33197,7 +33197,47 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
 
 #### Get index template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
+
+&emsp;&emsp;返回一个或多个索引模板的信息。
+
+```text
+GET /_index_template/template_1
+```
+
+##### Request
+
+```text
+GET /_index_template/<index-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+&emsp;&emsp;（Optional, string）待返回的模板名字。接受通配符表达式。如果忽略这个参数则返回所有的模板。
+
+##### Query parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Example
+
+###### Get index templates using a wildcard expression
+
+```text
+GET /_index_template/temp*
+```
+
+###### Get all index templates
+
+```text
+GET /_index_template
+```
 
 #### Get mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
