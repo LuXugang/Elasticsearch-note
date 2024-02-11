@@ -33184,6 +33184,36 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 #### Delete index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
 
+#### Delete index template API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-template.html)
+
+&emsp;&emsp;删除一个[index template](##Index templates)。
+
+```text
+DELETE /_index_template/my-index-template
+```
+
+##### Request
+
+```text
+DELETE /_index_template/<index-template>
+```
+
+&emsp;&emsp;`<index-template>`可以是用逗号隔开的多个模版，如果指定了多个模板名字并且没有使用通配符，那么提供的模版名字必须准确匹配现有的模板。
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+`<index-template>`：（Required, string）用逗号隔开的索引模板名字用来限制请求。可以使用通配符（`*`）表达式
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 #### Field usage stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/field-usage-stats.html)
 
