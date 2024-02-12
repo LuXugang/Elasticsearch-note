@@ -33303,17 +33303,37 @@ PUT _template/template_1
 
 ###### aliases(1)
 
-#### Delete component template
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-component-template.html)
+#### Delete component template API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-component-template.html)
+
+&emsp;&emsp;删除一个已有的的组件模版。
+
+```text
+DELETE _component_template/template_1
+```
 
 ##### Request
-##### Prerequisites
-##### Description
-##### Path parameters
-##### Query parameters
-##### Response body
-##### Example
 
+```text
+DELETE /_component_template/<component-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;这个接口用来 删除一个或多个组件模版，组件模版用于构造索引模板[index template](##Index templates)，来指定mappings、settings以及aliases。
+
+##### Path parameters
+
+- `<component-template>`：（Required,string）用逗号隔开的，可以是通配符表达式的组件模版名称来限制请求
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete dangling index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
@@ -33387,6 +33407,15 @@ DELETE /_index_template/<index-template>
 
 #### Field usage stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/field-usage-stats.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Flush API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-flush.html)
