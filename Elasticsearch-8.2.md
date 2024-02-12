@@ -33582,7 +33582,7 @@ OST /_dangling/zmM4e0JtBkeUjiHD-MihPQ?accept_data_loss=true
 
 > WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
 
-&emsp;&emsp;返回索引的配置，这些配置从匹配到的[Index template]()索引模板中获得。
+&emsp;&emsp;返回索引的配置，这些配置从匹配到的[Index template](##Index templates)索引模板中获得。
 
 ```text
 POST /_index_template/_simulate_index/my-index-000001
@@ -33716,18 +33716,222 @@ POST /_index_template/_simulate_index/my-index-000001
 ```
 
 #### Simulate index template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-simulate-template.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-simulate-template.html)
 
-&emsp;&emsp;
+&emsp;&emsp;返回将被某个索引模板（[index template](##Index templates)）应用的索引配置信息。
+
+```text
+POST /_index_template/_simulate/template_1
+```
+
 ##### Request
+
+```text
+POST /_index_template/_simulate/<index-template>
+```
 
 ##### Prerequisites
 
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+- `<index-template>`：（Optional, string）待模拟的索引模板名称。将一个模板配置添加到集群之前先进下测试，忽略这个参数并且在请求内容中指定模版配置
+
 ##### Query parameters
 
-##### Description
+- create：（可选项，布尔值）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`
 
-##### Examples
+##### Request body
+
+- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及他们的backing indices。支持空的对象（即`data_stream: {}`）
+  - Data stream要求满足匹配的模板中要有一个`data_stream`字段。见[create an index template](####Create an index template)
+    - hidden：（Boolean）如果为`true`，data stream是[hidden](####Hidden data streams and indices-1)
+    - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据允许自定义写请求([custom routing](####\_routing field))
+- index_patterns：（Required, array of strings）通配符（`*`）数组，用于对创建中的data streams和indices进行匹配
+  - Elasticsearch中有一些内置的索引模板。若要防止跟这些模板发生冲突（被这些模板匹配），见[Avoid index pattern collisions](##Index templates)
+- \_meta：（Optional, object）跟索引模板相关的，可选的用户自定义的元数据。可能有许多内容。这个字段不是由Elasticsearch自动生成的
+- priority：（Optional, integer）当data stream或者index创建时，决定了优先匹配哪些索引。总是选择优先级最高的模版。如果索引模板中没有指定优先级，即默认为优先级为`0`（最低的优先级）。Elasticsearch不会自动生成这个字段
+- template：（Optional, object）待应用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
+    - aliases：（Optional, object of objects）待添加的别名
+      - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+        - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+          - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+          - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+          - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+          - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+          - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+          - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - mappings：（Optional, [mapping object](##Mapping)）
+      - Field names
+      - [Field data types](###Field data types)
+      - [Mapping parameters](###Mapping parameters)
+    - settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+- version：（Optional,  integer）用来管理索引模板版本信息。这个值不会由Elasticsearch自动生成
+
+##### Response body
+
+- overlapping：（array）同样匹配了索引名称，但是被优先级更高的模板替代。如果没有模板被替代那么这个字段是一个空的数组
+  - name：（string）被替代的模板的名称
+  - index_patterns：（array）被替代的模板中定义的`index_pattern`内容
+- template：（object）应用到索引的settings、mappings以及aliases
+  - aliases：（Optional, object of objects）待添加的别名
+    - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+      - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+        - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+        - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+        - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+        - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+        - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+        - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+  - mappings：（Optional, [mapping object](##Mapping)）
+    - Field names
+    - [Field data types](###Field data types)
+    - [Mapping parameters](###Mapping parameters)
+  - settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+
+##### Example
+
+###### Simulating an existing template
+
+&emsp;&emsp;下面的例子中创建并且模拟了一个组件模版：
+
+```text
+PUT /_component_template/ct1                   
+{
+  "template": {
+    "settings": {
+      "index.number_of_shards": 2
+    }
+  }
+}
+
+PUT /_component_template/ct2                    
+{
+  "template": {
+    "settings": {
+      "index.number_of_replicas": 0
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}
+
+PUT /_index_template/final-template            
+{
+  "index_patterns": ["my-index-*"],
+  "composed_of": ["ct1", "ct2"],
+  "priority": 5
+}
+
+POST /_index_template/_simulate/final-template 
+```
+
+&emsp;&emsp;第1行，创建一个组件模版（`ct1`），定义主分片数量为2。
+
+&emsp;&emsp;第10行，创建第二个组件模版（`ct2`）定义0个副本分片以及一个mapping
+
+&emsp;&emsp;第26行，创建一个索引模板（final-template）并且使用了两个组件模版
+
+&emsp;&emsp;第33行，展示了由`final-template`应用后的配置
+
+&emsp;&emsp;响应中展示了由`final-template`应用的settings、mappings以及aliases：
+
+```text
+{
+  "template" : {
+    "settings" : {
+      "index" : {
+        "number_of_shards" : "2",  
+        "number_of_replicas" : "0", 
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        }
+      }
+    },
+    "mappings" : {                 
+      "properties" : {
+        "@timestamp" : {
+          "type" : "date"
+        }
+      }
+    },
+    "aliases" : { }
+  },
+  "overlapping" : [ ]
+}
+```
+
+&emsp;&emsp;第5行，来自`ct1`中主分片的数量
+
+&emsp;&emsp;第6行，来自`ct2`中副本分片的数量
+
+&emsp;&emsp;第16行，来自`ct1`中的mappings
+
+###### Simulating an arbitrary template configuration
+
+&emsp;&emsp;若要将模板添加到集群之前，先看下它里面的设置，你可以在请求中测试模板配置。如果存在更高等级的模版，那么则使用现有的模板而不是使用请求体中指定的。
+
+```text
+POST /_index_template/_simulate
+{
+  "index_patterns": ["my-index-*"],
+  "composed_of": ["ct2"],
+  "priority": 10,
+  "template": {
+    "settings": {
+      "index.number_of_replicas": 1
+    }
+  }
+}
+```
+
+&emsp;&emsp;会在响应中的`overlapping`中有相同的`index_patterns`但是优先级低的模版。
+
+```text
+{
+  "template" : {
+    "settings" : {
+      "index" : {
+        "number_of_replicas" : "1",
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        }
+      }
+    },
+    "mappings" : {
+      "properties" : {
+        "@timestamp" : {
+          "type" : "date"
+        }
+      }
+    },
+    "aliases" : { }
+  },
+  "overlapping" : [
+    {
+      "name" : "final-template",
+      "index_patterns" : [
+        "my-index-*"
+      ]
+    }
+  ]
+}
+```
 
 #### Split index API
 (8.2) [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html)
@@ -33981,6 +34185,15 @@ GET /_dangling
 
 #### Update mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-mapping.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 ### Ingest APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-apis.html)
