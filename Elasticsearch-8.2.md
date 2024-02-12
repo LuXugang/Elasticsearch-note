@@ -33397,6 +33397,50 @@ DELETE /_index_template/<index-template>
 #### Get field mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
 
+#### Get component template API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/getting-component-templates.html)
+
+&emsp;&emsp;获取一个或多个组件模版（component template）的信息。
+
+```text
+GET /_component_template/template_1
+```
+
+##### Request
+
+```text
+GET /_component_template/<component-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+- `<component-template>`：（Optional, string）用逗号隔开的组件模版的名称用来限制查询。支持使用通配符（`*`）表达式
+
+##### Query parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Example
+
+###### Get component templates using a wildcard expression
+
+```text
+GET /_component_template/temp*
+```
+
+###### Get all component templates
+
+```text
+GET /_component_template
+```
+
+
 #### Get index template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
 
