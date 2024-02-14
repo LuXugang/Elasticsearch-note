@@ -33377,7 +33377,7 @@ PUT /_template/template_2
 &emsp;&emsp;上面会关闭对`_source`的存储，但对于以`tes*`开头的索引的`_source`则是开启的。对于mappings，是所谓的深度合并，意味着mappings中的object/property可以在更高优先级的模式进下添加/覆盖，并且低等级的模板提供部分配置
 
 > NOTE：有相同优先级并且匹配到相同的索引会导致无法确定的合并顺序
- 
+
 ###### Template versioning
 
 &emsp;&emsp;你可以使用`version`参数像索引模板中添加一个可选的版本号。系统内部可以使用这个版本号对模板进行简单管理
@@ -34238,6 +34238,49 @@ POST /my_source_index/_split/my_target_index
 ###### settings
 
 &emsp;&emsp;(Optional, [index setting object](##Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](##Index Modules)。
+
+#### Index template exists API（legacy）
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-template-exists-v1.html)
+
+>IMPORTANT：这篇文档介绍legacy index templates。在Elasticsearch7.8中legacy index templates已被弃用并且使用可组合的模板（composable  template）代替。更多关于composable templates的信息见[Index templates](##Index templates)。
+
+&emsp;&emsp;查看某个[legacy](####Create or update index template API（legacy）)索引模板是否存在：
+
+```text
+HEAD /_template/template_1
+```
+
+##### Request
+
+```text
+HEAD /_template/<index-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Description
+
+&emsp;&emsp;使用这个接口判断一个或多个索引模板是否存在。
+
+&emsp;&emsp;索引模板定义了 [settings](####Index Settings)、[mappings](##Mapping)、[aliases](##Aliases)，可以自动应用到新创建的索引上。
+
+##### Path parameters
+
+- `<index-template>`：（Required, string）用逗号隔开的索引模板的名称来限制请求。支持使用通配符（`*`）表达式
+
+##### Query parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Response codes
+
+- 200：说明指定的索引模板都存在
+- 404：说明有一个或多个索引模版不存在
+
 
 #### List dangling indices API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-indices-list.html#dangling-indices-list-api-example)
