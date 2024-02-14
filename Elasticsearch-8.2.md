@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/06）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/12）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -33232,7 +33232,7 @@ PUT /_index_template/template_1
 &emsp;&emsp;这种递归合并策略不仅适用于字段mappings，也适用于像`dynamic_templates`和`meta`这样的根选项。如果前面的组件包含一个`dynamic_templates`块，那么默认情况下新的`dynamic_templates`会被添加到末尾。如果已经存在一个具有相同键的key，那么它将被新定义覆盖。
 
 #### Create or update index template API（legacy）
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-templates-v1.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-templates-v1.html)
 
 >IMPORTANT：这篇文档介绍legacy index templates。在Elasticsearch7.8中legacy index templates已被弃用并且使用可组合的模板（composable  template）代替。更多关于composable templates的信息见[Index templates](##Index templates)。
 
@@ -33299,9 +33299,120 @@ PUT _template/template_1
 
 ##### Request body
 
-###### index_patterns
+- index_patterns：（array）被替代的模板中定义的`index_pattern`内容
+- aliases：（Optional, object of objects）待添加的别名
+  - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+    - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+      - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+      - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+      - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+      - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+      - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+      - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+- mappings：（Optional, [mapping object](##Mapping)）
+  - Field names
+  - [Field data types](###Field data types)
+  - [Mapping parameters](###Mapping parameters)
+- settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+- version：（Optional,  integer）用来管理索引模板版本信息。这个值不会由Elasticsearch自动生成
 
-###### aliases(1)
+##### Example
+
+###### Index template with index aliases
+
+&emsp;&emsp;你可以在索引模板中包含[index aliases](##Aliases)。
+
+```text
+PUT _template/template_1
+{
+  "index_patterns" : ["te*"],
+  "settings" : {
+    "number_of_shards" : 1
+  },
+  "aliases" : {
+    "alias1" : {},
+    "alias2" : {
+      "filter" : {
+        "term" : {"user.id" : "kimchy" }
+      },
+      "routing" : "shard-1"
+    },
+    "{index}-alias" : {} 
+  }
+}
+```
+
+&emsp;&emsp;第15行，在别名中，`{index}`占位符将在索引创建时替代真正的索引名称。
+
+###### Indices matching multiple templates
+
+&emsp;&emsp;多个索引模板可能匹配同一个索引，因此，settings和mappings会被合并到最终的索引配置中。通过参数`order`控制合并顺序，优先级低的优先应用，随后优先级高的覆盖它们。例如：
+
+```text
+PUT /_template/template_1
+{
+  "index_patterns" : ["te*"],
+  "order" : 0,
+  "settings" : {
+    "number_of_shards" : 1
+  },
+  "mappings" : {
+    "_source" : { "enabled" : false }
+  }
+}
+
+PUT /_template/template_2
+{
+  "index_patterns" : ["tes*"],
+  "order" : 1,
+  "settings" : {
+    "number_of_shards" : 1
+  },
+  "mappings" : {
+    "_source" : { "enabled" : true }
+  }
+}
+```
+
+&emsp;&emsp;上面会关闭对`_source`的存储，但对于以`tes*`开头的索引的`_source`则是开启的。对于mappings，是所谓的深度合并，意味着mappings中的object/property可以在更高优先级的模式进下添加/覆盖，并且低等级的模板提供部分配置
+
+> NOTE：有相同优先级并且匹配到相同的索引会导致无法确定的合并顺序
+ 
+###### Template versioning
+
+&emsp;&emsp;你可以使用`version`参数像索引模板中添加一个可选的版本号。系统内部可以使用这个版本号对模板进行简单管理
+
+&emsp;&emsp;`version`参数是可选的，不会由Elasticsearch自动生成。
+
+&emsp;&emsp;若要移除`version`，那么就不指定这个参数并且重新替换这个模板：
+
+```text
+PUT /_template/template_1
+{
+  "index_patterns" : ["my-index-*"],
+  "order" : 0,
+  "settings" : {
+    "number_of_shards" : 1
+  },
+  "version": 123
+}
+```
+
+&emsp;&emsp;你可以通过[get index template](####Get index template API)查看`version`，并且使用请求参数[filter_path](####Response Filtering)使得只返回版本号。
+
+```text
+GET /_template/template_1?filter_path=*.version
+```
+
+&emsp;&emsp;返回下面的响应：
+
+```text
+{
+  "template_1" : {
+    "version" : 123
+  }
+}
+```
 
 #### Delete component template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-component-template.html)
