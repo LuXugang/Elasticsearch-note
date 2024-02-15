@@ -34626,9 +34626,134 @@ GET /_dangling
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-refresh.html)
 
 #### Update index settings API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-update-settings.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-update-settings.html)
+
+&emsp;&emsp;实时更新一个[dynamic index setting](####Index Settings)。
+
+&emsp;&emsp;对于data stream，索引设置（Index setting）默认应用到所有的backing indices上。
+
+```text
+PUT /my-index-000001/_settings
+{
+  "index" : {
+    "number_of_replicas" : 2
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /<target>/_settings
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有data stream、Index或者别名上的`manage`的管理权限[ index privilege](####Security privileges)。
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream或indices的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`false`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- preserve_existing：（Optional, Boolean）如果为`true`，现有的索引设置不会发生变更。默认为`false`
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- settings：（Optional, [Index setting object](####Index Settings)）索引的配置选项。见[Index Settings](####Index Settings)。
+
+##### Example
+
+##### Reset an index setting
+
+&emsp;&emsp;若要将设置还原为默认值，使用`null`，例如：
+
+```text
+PUT /my-index-000001/_settings
+{
+  "index" : {
+    "refresh_interval" : null
+  }
+}
+```
+
+&emsp;&emsp;可以通过[Index modules](####Index Settings)查看所有live Index可以更新的动态设置。若不想要现有的设置被更改，可以将请求参数`preserve_existing`设置为`true`。
 
 ##### Bulk indexing usage
+
+&emsp;&emsp;这个Update index settings API可以用来动态更改索引设置使得bulk indexing性能更高，然后将回到实时索引状态。在bulk indexing之前，使用：
+
+```text
+PUT /my-index-000001/_settings
+{
+  "index" : {
+    "refresh_interval" : "-1"
+  }
+}
+```
+
+&emsp;&emsp;(另一个优化选项就是不开启副本分片，写入后再开启，不过这种方式取决于用户场景)
+
+&emsp;&emsp;随后一旦bulk indexing完成，再更新设置（恢复到默认值）：
+
+```text
+PUT /my-index-000001/_settings
+{
+  "index" : {
+    "refresh_interval" : "1s"
+  }
+}
+```
+
+&emsp;&emsp;并且应该调用一次force merge：
+
+```text
+POST /my-index-000001/_forcemerge?max_num_segments=5
+```
+
+###### Update index analysis
+
+&emsp;&emsp;你只在在关闭的索引上定义新的analyzer。
+
+&emsp;&emsp;若要添加一个analyzer，你必须关闭索引，定义好analyzer然后重新打开索引。
+
+> NOTE：你不能关闭data stream的writer Index
+> 索要更新data stream的write Index的analyzer以及以后的backing indices，可以通过[index template used by the stream](####Create an index template)更新analyzer。然后通过[roll over the data stream](####Manually roll over a data stream)将新的analyzer应用到流中的write Index以及以后的backing indices上。在rollover后，将会影响查询以及新添加到流中的数据。然而，它不会影响data stream中的backing indices或现有的数据。
+> 
+> 若要为现有的backing indices更改analyzer，你必须创建一个新的data stream然后reindex你的数据。见[Use reindex to change mappings or settings](####Use reindex to change mappings or settings)
+
+&emsp;&emsp;例如，下面的命令将名为`content`的analyzer添加到`my-index-000001`索引中：
+
+```text
+POST /my-index-000001/_close
+
+PUT /my-index-000001/_settings
+{
+  "analysis" : {
+    "analyzer":{
+      "content":{
+        "type":"custom",
+        "tokenizer":"whitespace"
+      }
+    }
+  }
+}
+
+POST /my-index-000001/_open
+```
 
 #### Update mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-mapping.html)
