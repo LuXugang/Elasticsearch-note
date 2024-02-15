@@ -32781,6 +32781,8 @@ POST /_data_stream/_modify
 ### Index APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices.html)
 
+&emsp;&emsp;Index APIs用来管理索引的settings、aliases（别名）、mappings和索引模板（Index Template）。
+
 ##### Alias management
 
 - [Aliases](####Aliases API)
@@ -32788,6 +32790,19 @@ POST /_data_stream/_modify
 - [Get alias](####Get alias API)
 - [Alias exists](####Alias exists API)
 - [Delete alias](####Delete alias API)
+
+##### Index templates
+
+&emsp;&emsp;索引模板自动将settings、mappings、aliases应用到新的索引上。它们通常用于时序数据中rolling indices时使用，使得新的索引跟之前的有相同的配置。data stream中关联的索引模板会配置backing indices。更信息见[Index Template](##Index templates)。
+
+- [Create or update index template](####Create or update index template API)
+- [Get index template](####Get index template API)
+- [Delete index template](####Delete index template API)
+- [Create or update component template](####Create or update component template API)
+- [Get component template](####Get component template API)
+- [Delete component template](####Delete component template API)
+- [Simulate index](####Simulate index API)
+- [Simulate template](####Simulate index template API)
 
 ##### Dangling indices API
 
