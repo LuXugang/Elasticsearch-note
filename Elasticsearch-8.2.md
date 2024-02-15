@@ -33821,6 +33821,63 @@ GET /_component_template
 #### Get field mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
 
+#### Get index settings API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-settings.html)
+
+&emsp;&emsp;从一个或多个索引中返回设置信息（setting information）。对于data stream，返回的时backing indices的设置信息
+
+##### Request
+
+```text
+GET /<target>/_settings
+GET /<target>/_settings/<setting>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream、Index或alias的`view_index_metadata`、`monitor`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices以及aliases的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+- `<setting>`：（Optional, string）用逗号隔开的、也可以是通配符表达式的设置名称来限制请求
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`false`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+
+##### Example
+
+###### Multiple data streams and indices
+
+&emsp;&emsp;这个接口使得通过单次调用获取多个data stream或index的设置。若要获取集群中所有索引的设置，你可以使用在`<targer>`中使用`_all`或`*`。支持通配符表达式。例如：
+
+```text
+GET /my-index-000001,my-index-000002/_settings
+GET /_all/_settings
+GET /log_2099_*/_settings
+```
+
+###### Filtering settings by name
+
+&emsp;&emsp;通过通配符对设置进下过滤：
+
+```text
+GET /log_2099_-*/_settings/index.number_*
+```
+
 #### Get index template API（legacy）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
 
