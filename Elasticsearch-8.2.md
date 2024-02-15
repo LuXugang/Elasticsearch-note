@@ -32787,6 +32787,49 @@ POST /_data_stream/_modify
 - [Import dangling index](####Import dangling index API)
 - [Delete dangling index](####Delete dangling index API)
 
+#### Alias exists API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
+
+&emsp;&emsp;检查某个[alias](##Aliases)是否存在。
+
+```text
+HEAD _alias/my-alias
+```
+
+##### Request
+
+```text
+HEAD _alias/<alias>
+HEAD <target>/_alias/<alias>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口。如果你指定了目标，你同样需要有该目标上的`view_index_metadata`或者`manage`的index privilege
+
+##### Path parameters
+
+- `<alias>`：（Optional, string）用逗号隔开、待检查的别名名称。支持通配符（`*`）
+- `<target>`：（Optional, string）用逗号隔开的data stream或indices的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+
+##### Response codes
+
+- 200：指定的别名都存在
+- 400：一个或多个指定的别名不存在
+
+
 #### Aliases API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
 
@@ -33679,10 +33722,6 @@ GET <target>/_alias/<alias>
   默认值为`all`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-
-##### Response body
-##### Example
-
 
 #### Get component template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/getting-component-templates.html)
