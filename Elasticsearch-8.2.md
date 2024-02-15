@@ -33580,11 +33580,63 @@ GET /_component_template/temp*
 GET /_component_template
 ```
 
-
-#### Get index template API
+#### Get index template API（legacy）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
 
-&emsp;&emsp;返回一个或多个索引模板的信息。
+>IMPORTANT：这篇文档介绍legacy index templates。在Elasticsearch7.8中legacy index templates已被弃用并且使用可组合的模板（composable  template）代替。更多关于composable templates的信息见[Index templates](##Index templates)。
+
+&emsp;&emsp;获取一个或多个索引模板的信息。
+
+```text
+GET /_template/template_1
+```
+
+##### Request
+
+```text
+GET /_template/<index-template>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage_index_templates`或者`manage` [cluster privilege](#####Cluster privileges)来使用这个API。
+
+##### Path parameters
+
+- `<index-template>`：（Optional, string）待返回的模板名称。接受通配符表达式。
+ - 若要返回所有的索引模板，则忽略这个参数或者使用`_all`、`*`
+
+##### Query parameters
+
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+
+##### Example
+
+###### Get multiple index templates
+
+```text
+GET /_template/template_1,template_2
+```
+
+###### Get index templates using a wildcard expression
+
+```text
+GET /_template/temp*
+```
+
+###### Get all index templates
+
+```text
+GET /_template
+```
+
+
+#### Get index template API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template.html)
+
+&emsp;&emsp;获取一个或多个索引模板的信息。
 
 ```text
 GET /_index_template/template_1
