@@ -32781,6 +32781,14 @@ POST /_data_stream/_modify
 ### Index APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices.html)
 
+##### Alias management
+
+- [Aliases](####Aliases API)
+- [Create or update alias](####Create or update alias API)
+- [Get alias](####Get alias API)
+- [Alias exists](####Alias exists API)
+- [Delete alias](####Delete alias API)
+
 ##### Dangling indices API
 
 - [List dangling indices](####List dangling indices API)
@@ -33633,7 +33641,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 #### Delete alias API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
 
-&emsp;&emsp;从一个[alias]()中移除一个data stream或index。
+&emsp;&emsp;从一个[alias](##Aliases)中移除一个data stream或index。
 
 ```text
 DELETE my-data-stream/_alias/my-alias
