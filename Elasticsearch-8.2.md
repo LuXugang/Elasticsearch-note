@@ -33642,8 +33642,47 @@ DELETE /_index_template/<index-template>
 #### Force merge API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-forcemerge.html)
 
-#### Get field mapping API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
+#### Get alias API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-alias.html)
+
+&emsp;&emsp;获取一个或多个[aliases](##Aliases)。
+
+```text
+GET my-data-stream/_alias/my-alias
+```
+
+##### Request
+
+```text
+GET _alias/<alias>
+GET _alias
+GET <target>/_alias/<alias>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口。如果你指定了目标，你同样需要有该目标上的`view_index_metadata`或者`manage`的index privilege
+
+##### Path parameters
+
+- `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+
+##### Query parameters
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+
+##### Response body
+##### Example
+
 
 #### Get component template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/getting-component-templates.html)
@@ -33687,6 +33726,9 @@ GET /_component_template/temp*
 ```text
 GET /_component_template
 ```
+
+#### Get field mapping API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
 
 #### Get index template API（legacy）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-template-v1.html)
