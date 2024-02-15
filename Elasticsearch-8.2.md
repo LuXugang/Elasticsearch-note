@@ -32790,7 +32790,7 @@ POST /_data_stream/_modify
 #### Aliases API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
 
-&emsp;&emsp;在一个原子操作内执行一个或多个[alias]()动作
+&emsp;&emsp;在一个原子操作内执行一个或多个[alias](##Aliases)动作
 
 ```text
 POST _aliases
@@ -32836,31 +32836,21 @@ POST _aliases
       >  object中包含一些alias的可选字段，可以是一个空的object。
     
     - alias：（Required\*, string）动作的别名。索引别名（index alias）支持[date math](###Date math support in system and index alias names-1)，如果`aliases`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
-    
     - aliases：（Required\*, array of strings）动作的别名。索引别名（index alias）支持[date math](###Date math support in system and index alias names-1)。如果`alias`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
-    
     - filter：(Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
       - 只有`add`动作支持这个参数
-      
     - index：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`indices`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
-    
     - indices：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`index`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
-    
     - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
       - 只有`add`动作支持这个参数
-      
     - is_hidden：(Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
       - 只有`add`动作支持这个参数
-      
     - is_write_index： (Optional, Boolean) 如果为true，则为别名设置writer index或data stream
       - 如果别名指向了多个indices或data stream，并且`is_write_index`未设置，那么会拒绝写请求。如果一个索引别名只向某个索引并且`is_write_index`未指定，那么该索引自动成为writer index。data stream不支持自动设置一个writer data stream。即使别名只指向了一个data stream
-      - 只有`add`动作支持这个参数
-      
+      - 只有`add`动作支持这个参数 
     - must_exist：（Optional, Boolean）如果为`true`，别名必须存在才能执行动作。默认是`false`。只有`remove`动作支持这个参数
-    
     - routing：(Optional, string) 用来索引阶段或查询阶段路由到指定分片
       - 只有`add`动作支持这个参数
-      
     - search_routing：(Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
       - 只有`add`动作支持这个参数
 
@@ -32886,8 +32876,52 @@ POST _aliases
 
 ###### Mappings
 
+#### Create or update alias API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-add-alias.html)
+
+&emsp;&emsp;像某个[alias](##Aliases)中添加一个data stream或index。
+
+```text
+PUT my-data-stream/_alias/my-alias
+```
+
+##### Request
+
+```text
+POST <target>/_alias/<alias>
+POST <target>/_aliases/<alias>
+PUT <target>/_alias/<alias>
+PUT <target>/_aliases/<alias>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须在data stream或indices上有`manage`[index privilege](#####Indices privileges)来使用这个API。
+
+##### Path parameters
+
+- `<alias>`：（Required, string）待更新的别名。如果别名不存在，这个请求则会创建。索引别名支持[date math]()
+- `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- filter：(Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+- index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
+- is_hidden：(Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+- is_write_index： (Optional, Boolean) 如果为true，则为别名设置writer index或data stream
+  - 如果别名指向了多个indices或data stream，并且`is_write_index`未设置，那么会拒绝写请求。如果一个索引别名只向某个索引并且`is_write_index`未指定，那么该索引自动成为writer index。data stream不支持自动设置一个writer data stream。即使别名只指向了一个data stream
+- routing：(Optional, string) 用来索引阶段或查询阶段路由到指定分片
+- search_routing：(Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
+
+##### Example
+
 #### Create or update component template API
-（8.1）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-component-template.html)
 
 &emsp;&emsp;创建或个新一个组件模版（component template）。组件模版是构造索引模板（[index template](##Index templates)）的块，指定了[mappings](##Mapping)、[settings](####Index Settings)、[aliases](##Aliases)。
 
@@ -34354,12 +34388,12 @@ POST /my_source_index/_split/my_target_index
 
 &emsp;&emsp;\<alias\>的属性：
 
-- **filter**: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
-- **index_routing**（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-- **is_hidden**: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-- **is_write_index**: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
-- **routing**: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-- **search_routing**: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+- filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+- index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+- is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+- is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+- routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+- search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 
 ###### settings
 
