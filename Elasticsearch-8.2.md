@@ -32788,7 +32788,81 @@ POST /_data_stream/_modify
 - [Delete dangling index](####Delete dangling index API)
 
 #### Aliases API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-aliases.html)
+
+&emsp;&emsp;在一个原子操作内执行一个或多个[alias]()动作
+
+```text
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "my-data-stream",
+        "alias": "my-alias"
+      }
+    }
+  ]
+}
+```
+
+##### Request
+
+```text
+POST _aliases
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有以下的[manage index privilege](####Security privileges)。
+  - 若要使用`add`或者`remove`动作，你必须要在data streams或者indices上有`manage`的的Index privilege
+  - 若要使用`remove_index`动作，你必须要在索引上有`manage`的Index privilege
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Response body
+
+- actions（Required, array of objects）执行的动作
+  - `<action>`：（Required, object）动作类型对应的key。只要要求有一个动作
+    - add：将一个data stream或index添加到alias中。如果alias不存在，`add`动作会创建它
+    
+    - remove：从alias中移除一个data stream或index
+    
+    - remove_index：删除一个index。你不能对data stream执行这个动作
+    
+      >  object中包含一些alias的可选字段，可以是一个空的object。
+    
+    - alias：（Required\*, string）动作的别名。索引别名（index alias）支持[date math](###Date math support in system and index alias names-1)，如果`aliases`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
+    
+    - aliases：（Required\*, array of strings）动作的别名。索引别名（index alias）支持[date math](###Date math support in system and index alias names-1)。如果`alias`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
+    
+    - filter：(Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+      - 只有`add`动作支持这个参数
+      
+    - index：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`indices`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
+    
+    - indices：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`index`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
+    
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
+      - 只有`add`动作支持这个参数
+      
+    - is_hidden：(Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+      - 只有`add`动作支持这个参数
+      
+    - is_write_index： (Optional, Boolean) 如果为true，则为别名设置writer index或data stream
+      - 如果别名指向了多个indices或data stream，并且`is_write_index`未设置，那么会拒绝写请求。如果一个索引别名只向某个索引并且`is_write_index`未指定，那么该索引自动成为writer index。data stream不支持自动设置一个writer data stream。即使别名只指向了一个data stream
+      - 只有`add`动作支持这个参数
+      
+    - must_exist：（Optional, Boolean）如果为`true`，别名必须存在才能执行动作。默认是`false`。只有`remove`动作支持这个参数
+    
+    - routing：(Optional, string) 用来索引阶段或查询阶段路由到指定分片
+      - 只有`add`动作支持这个参数
+      
+    - search_routing：(Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
+      - 只有`add`动作支持这个参数
 
 #### Analyze API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-analyze.html)
