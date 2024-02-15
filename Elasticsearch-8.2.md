@@ -33630,6 +33630,35 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
+#### Delete alias API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
+
+&emsp;&emsp;从一个[alias]()中移除一个data stream或index。
+
+```text
+DELETE my-data-stream/_alias/my-alias
+```
+
+##### Request
+
+```text
+DELETE <target>/_alias/<alias>
+DELETE <target>/_aliases/<alias>
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream或indices的`manage`的[index privilege](#####Indices privileges)才能使用这个接口。
+
+##### Path parameters
+
+- `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`
+- `<target>`：（Optional，string）用逗号隔开的data stream、Index来限制请求。支持通配符(`*`)。支持通配符（`*`）
+
+##### Query parameters
+
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 #### Delete index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
 
