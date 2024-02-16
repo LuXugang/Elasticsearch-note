@@ -34234,7 +34234,65 @@ GET /_index_template
 ```
 
 #### Get mapping API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
+
+&emsp;&emsp;获取一个或多个索引的[mapping definitions]()。对于data streams。这个接口获取流中backing indices的mappings。
+
+```text
+GET /my-index-000001/_mapping
+```
+
+##### Request
+
+```text
+GET /_mapping
+GET /<target>/_mapping
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream、index、alias的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices和aliases的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`false`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open`。
+  
+- ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- 
+
+##### Example
+
+###### Multiple data streams and indices
+
+&emsp;&emsp;该接口可以通过单次调用获取一个或多个data stream或index的信息。通常可以按照下面的语法来使用：
+
+- `host:port/<target>/_mapping`：其中`<target>`可以是同逗号隔开的名称
+。若要获取集群中所有的data stream和indices，可以使用`_all`或者`*`或者移除`<target>`。以下是一些例子：
+
+```text
+GET /my-index-000001,my-index-000002/_mapping
+```
+
+&emsp;&emsp;如果你想要获取集群中所有索引的mapping，以下几个请求都是等效的：
+
+```text
+GET /*/_mapping
+GET /_all/_mapping
+GET /_mapping
+```
 
 #### Import dangling index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-import.html)
@@ -35072,7 +35130,7 @@ POST /my-index-000001/_open
 ```
 
 #### Update mapping API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-mapping.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-mapping.html)
 
 &emsp;&emsp;添加新的域到一个现有的data stream或index中。你可以使用这个接口修改现有域（existing field）的查询设置（search setting）。
 
@@ -35125,7 +35183,7 @@ PUT /<target>/_mapping
   - Field names
   - [Field data types](###Field data types)
   - [Mapping parameters](###Mapping parameters)
-&emsp;&emsp;对于现有的域，见[Change the mapping of an existing field](######Change the mapping of an existing field)。
+  &emsp;&emsp;对于现有的域，见[Change the mapping of an existing field](######Change the mapping of an existing field)。
 
 ##### Example
 
