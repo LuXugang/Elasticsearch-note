@@ -32921,7 +32921,260 @@ POST _aliases
       - 只有`add`动作支持这个参数
 
 #### Analyze API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-analyze.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-analyze.html)
+
+&emsp;&emsp;在一个文本上执行[analysis](##Text analysis)并返回生成的tokens。
+
+```text
+GET /_analyze
+{
+  "analyzer" : "standard",
+  "text" : "Quick Brown Foxes!"
+}
+```
+
+##### Request
+
+```text
+GET /_analyze
+POST /_analyze
+GET /<index>/_analyze
+POST /<index>/_analyze
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有索引的`manage`的[index privilege](#####Indices privileges)才能使用这个接口。
+
+##### Path parameters
+
+- `<index>`：（Optional, string）用来获取该索引的analyzer
+  - 如果指定这个参数、请求参数中的`analyzer`或者`<field>`会覆盖这个值
+  - 如果未指定`analyzer`或者`field`，则使用默认的analyzer
+  - 如果未指定`<index>`或者索引不存在默认的analyzer，则使用[standard analyzer](####Standard analyzer)
+
+##### Query parameters
+
+- analyzer：（Optional, string）应用到`text`类型的分词器的名称。可以是一个内置的[analyzer](###Built-in analyzer reference)，或者是索引中配置的分词器
+  - 如果未指定这个参数，这个接口使用域在mappings中定义的分词器
+  - 如果未指定域，该接口使用索引默认的分词器
+  - 如果未指定索引，或者索引没有一个默认的分词器，该接口则使用[standard analyzer](####Standard analyzer)
+- attributes：（Optional, array of strings）token属性列表用来`explain`参数中的输出信息
+- char_filter：（Optional, array of strings）character filter列表，用来在分词之前对文本的字符进下处理。见[Character filters reference](###Character filters reference)
+- explain：（Optional, Boolean）如果为`true`，响应中包含token attribution和额外的详情。默认为`false`
+- field：（Optional, string）用来获取分词器的域。若使用这个参数，你必须指定一个索引
+  - 如果指定该参数，`analyzer`参数会覆盖这个值
+  - 如果未指定域，该接口使用索引默认的分词器
+  - 如果未指定索引，或者索引没有一个默认的分词器，该接口则使用[standard analyzer](####Standard analyzer)
+- filter：（Optional, Array of strings）token filter的列表，在分词之后对token进行处理。见[Token filter reference](###Token filter reference)
+- normalizer：（Optional, string）将文本转化为单个token，见[Normalizers](###Normalizers)
+- text：（Required, string or array of strings）待分词的文本。如果提供了字符串数组，它会被分词为多值域
+- tokenizer：（Optional, string）将文本划分为token。见[Tokenizer reference](###Tokenizer reference)
+
+##### Example
+
+###### No index specified
+
+&emsp;&emsp;你可以对文本字符串应用一个内置的分词而不用指定索引。
+
+```text
+GET /_analyze
+{
+  "analyzer" : "standard",
+  "text" : "this is a test"
+}
+```
+
+###### Array of text strings
+
+&emsp;&emsp;如果`text`参数提供了字符串数组，则按照多值域进下处理
+
+```text
+GET /_analyze
+{
+  "analyzer" : "standard",
+  "text" : ["this is a test", "the second text"]
+}
+```
+
+###### Custom analyzer
+
+&emsp;&emsp;你可以使用这个接口测试自定义的包含tokenizers、token filters以及char filter的分词器。Token filter使用`filter`参数：
+
+```text
+GET /_analyze
+{
+  "tokenizer" : "keyword",
+  "filter" : ["lowercase"],
+  "text" : "this is a test"
+}
+```
+
+```text
+GET /_analyze
+{
+  "tokenizer" : "keyword",
+  "filter" : ["lowercase"],
+  "char_filter" : ["html_strip"],
+  "text" : "this is a <b>test</b>"
+}
+```
+
+&emsp;&emsp;也可以通过下面的方式指定自定义的tokenizers, token filters 以及 character filters：
+
+```text
+GET /_analyze
+{
+  "tokenizer" : "whitespace",
+  "filter" : ["lowercase", {"type": "stop", "stopwords": ["a", "is", "this"]}],
+  "text" : "this is a test"
+}
+```
+
+###### Specific index
+
+&emsp;&emsp;你可以对指定的索引调用这个接口：
+
+```text
+GET /analyze_sample/_analyze
+{
+  "text" : "this is a test"
+}
+```
+
+&emsp;&emsp;上面的例子会对`this is a test`这个文本进行分词，使用名为`analyze_sample`的索引中默认的分词器。可以在`analyzer`参数中指定一个不同的分词器：
+
+```text
+GET /analyze_sample/_analyze
+{
+  "analyzer" : "whitespace",
+  "text" : "this is a test"
+}
+```
+
+###### Derive analyzer from a field mapping
+
+&emsp;&emsp;也可以通过某个域的mappings获取分词器，例如：
+
+```text
+GET /analyze_sample/_analyze
+{
+  "field" : "obj1.field1",
+  "text" : "this is a test"
+}
+```
+
+&emsp;&emsp;将会使用`obj1.fields`在mappings中定义的分词器进下分词（如果没有指定分词器，则使用索引默认分词器）
+
+###### Normalizer（analyzer API）
+
+&emsp;&emsp;可以为名为`analyze_sample`的索引中keyword类型的域，使用`normalizer`参数。
+
+```text
+GET /analyze_sample/_analyze
+{
+  "normalizer" : "my_normalizer",
+  "text" : "BaR"
+}
+```
+
+&emsp;&emsp;或者自定义构建一个没有token filter和char filter的normalizer。
+
+```text
+GET /_analyze
+{
+  "filter" : ["lowercase"],
+  "text" : "BaR"
+}
+```
+
+###### Explain analyze
+
+&emsp;&emsp;若要获取更多的信息，可以将`explain`设置为`true`（默认为`false`），它会为每一个token输出其属性。你可以通过`attributes`参数过滤token属性。
+
+> NOTE：额外的详细信息在Lucene中标记为实验性质的，可能在未来发生变更
+
+```text
+GET /_analyze
+{
+  "tokenizer" : "standard",
+  "filter" : ["snowball"],
+  "text" : "detailed output",
+  "explain" : true,
+  "attributes" : ["keyword"] 
+}
+```
+
+&emsp;&emsp;第7行，设置了`keyword`使得只输出`keyword`属性。
+
+&emsp;&emsp;上面的请求返回以下结果：
+
+```text
+{
+  "detail" : {
+    "custom_analyzer" : true,
+    "charfilters" : [ ],
+    "tokenizer" : {
+      "name" : "standard",
+      "tokens" : [ {
+        "token" : "detailed",
+        "start_offset" : 0,
+        "end_offset" : 8,
+        "type" : "<ALPHANUM>",
+        "position" : 0
+      }, {
+        "token" : "output",
+        "start_offset" : 9,
+        "end_offset" : 15,
+        "type" : "<ALPHANUM>",
+        "position" : 1
+      } ]
+    },
+    "tokenfilters" : [ {
+      "name" : "snowball",
+      "tokens" : [ {
+        "token" : "detail",
+        "start_offset" : 0,
+        "end_offset" : 8,
+        "type" : "<ALPHANUM>",
+        "position" : 0,
+        "keyword" : false 
+      }, {
+        "token" : "output",
+        "start_offset" : 9,
+        "end_offset" : 15,
+        "type" : "<ALPHANUM>",
+        "position" : 1,
+        "keyword" : false 
+      } ]
+    } ]
+  }
+}
+```
+
+&emsp;&emsp;第36行，因为在请求中设置了`attributes`参数，因此只输出了`keyword`属性
+
+###### Setting a token limit
+
+&emsp;&emsp生成过多的token可能导致节点出现OOM。下面的设置可以限制生成的token数量：
+
+- index.analyze.max_token_count：使用该接口可以生成的token数量上限。默认是`10000`。如果超过了这个上限则抛出一个错误。接口的endpoint没有指定索引将总是使用`10000`作为上限值。这个设置允许你控制在某个索引中的生成的token数量：
+
+```text
+PUT /analyze_sample
+{
+  "settings" : {
+    "index.analyze.max_token_count" : 20000
+  }
+}
+```
+
+```text
+GET /analyze_sample/_analyze
+{
+  "text" : "this is a test"
+}
+```
 
 #### Analyze index disk usage API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-disk-usage.html)
