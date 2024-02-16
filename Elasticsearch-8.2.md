@@ -35074,6 +35074,326 @@ POST /my-index-000001/_open
 #### Update mapping API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-put-mapping.html)
 
+&emsp;&emsp;添加新的域到一个现有的data stream或index中。你可以使用这个接口修改现有域（existing field）的查询设置（search setting）。
+
+&emsp;&emsp;对于data stream，这些变更默认应用到backing indices上。
+
+```text
+PUT /my-index-000001/_mapping
+{
+  "properties": {
+    "email": {
+      "type": "keyword"
+    }
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /<target>/_mapping
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在data stream、index、alias上有`manage` [Index privilege](#####Indices privileges)。
+- [7.9] Deprecated in 7.9.If the request targets an index or index alias, you can also update its mapping with the create, create_doc, index, or write index privilege.
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices和aliases的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams、indices和aliases，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`false`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- write_index_only（Optional, Boolean）如果为`true`，mappings只会应用到当前的write index上。默认为`false`
+
+##### Response body
+
+- properties：（Required, [mappings object](##Mapping)）域的mappings。对于新的域，mappings中包括：
+  - Field names
+  - [Field data types](###Field data types)
+  - [Mapping parameters](###Mapping parameters)
+&emsp;&emsp;对于现有的域，见[Change the mapping of an existing field](######Change the mapping of an existing field)。
+
+##### Example
+
+###### Example with single target
+
+&emsp;&emsp;该接口要求一个现有的data stream或index。下面的[create index](####Create index API)请求创建了名为`publications`的索引并且没有mapping。
+
+```text
+PUT /publications
+```
+
+&emsp;&emsp;下面的请求中向索引`publications`中新增了名为`title`，[text](####Text type family)类型的域。
+
+```text
+PUT /publications/_mapping
+{
+  "properties": {
+    "title":  { "type": "text"}
+  }
+}
+```
+
+###### Multiple targets
+
+&emsp;&emsp;该接口可以通过单次请求应用到多个data streams或indices。例如，你可以同一时间向`my-index-000001`跟`my-index-000002`调用该接口：
+
+```text
+# Create the two indices
+PUT /my-index-000001
+PUT /my-index-000002
+
+# Update both mappings
+PUT /my-index-000001,my-index-000002/_mapping
+{
+  "properties": {
+    "user": {
+      "properties": {
+        "name": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+```
+
+###### Add new properties to an existing object field
+
+&emsp;&emsp;你可以使用这个这个接口，将新的属性（properties）添加到现有的[object](####Object field type)域中。若要观察它是如何工作，见下面的例子：
+
+&emsp;&emsp;使用[create index](####Create index API)接口创建一个名为`name`的object类型的域以及`name`下名为`first`的`text`类型的子域。
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "properties": {
+          "first": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用当前接口在`name`下添加一个新的名为`last`的`text`类型的子域。
+
+```text
+PUT /my-index-000001/_mapping
+{
+  "properties": {
+    "name": {
+      "properties": {
+        "last": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+```
+
+###### Add multi-fields to an existing field
+
+&emsp;&emsp;[multi-fields](####fields)可以让你对同一个域定义不同的mappings 类型。你可以使用该接口更新mappings 参数`fields`，为现有的域开启multi-fields。
+
+&emsp;&emsp;若要观察它是如何工作，见下面的例子：
+
+&emsp;&emsp;使用[create index](####Create index API)创建一个索引，索引中定义了名为`city`的`text`类型的域
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "city": {
+        "type": "text"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`text`类型的域用于全文检索，`keyword`类型的域不会被分词但更适合用于排序或聚合。
+
+&emsp;&emsp;使用该接口为`city`域开启multi-filed，下面的请求添加了名为`city.raw`，`keyword`类型的multi-field，他可以用于排序
+
+```text
+PUT /my-index-000001/_mapping
+{
+  "properties": {
+    "city": {
+      "type": "text",
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+```
+
+###### Change supported mapping parameters for an existing field
+
+&emsp;&emsp;[mapping parameter](###Mapping parameters)中的文档指明了是否可以使用当前接口更新这些mapping参数。比如你可以使用这个接口更新[ignore_above](####ignore_above)参数。
+
+&emsp;&emsp;若要观察它是如何工作，见下面的例子：
+
+&emsp;&emsp;使用[create index](####Create index API)接口创建一个索引，它包含名为`user_id`、`keyword`类型的域。`user_id`域有一个`ignore_above`参数，该值为`20`。
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "user_id": {
+        "type": "keyword",
+        "ignore_above": 20
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用该接口将`ignore_above`的值改为`100`。
+
+```text
+PUT /my-index-000001/_mapping
+{
+  "properties": {
+    "user_id": {
+      "type": "keyword",
+      "ignore_above": 100
+    }
+  }
+}
+```
+
+###### Change the mapping of an existing field
+
+&emsp;&emsp;除了支持修改[mapping parameters](###Mapping parameters)，你不能更改现有域的mapping类型。修改现有域的类型可能使已经索引的数据无效。
+
+&emsp;&emsp;如果你需要修改data stream的backing indices中域的类型，见[Change mappings and settings for a data stream](###Change mappings and settings for a data stream)。
+
+&emsp;&emsp;如果你需要修改其他索引中的域的类型，你只能创建一个新的索引，并且使用正确的mapping类型，让通过[reindex](####Reindex API)重新写入数据。
+
+&emsp;&emsp;若要观察它是如何工作，见下面的例子。
+
+&emsp;&emsp;使用[create index](####Create index API)接口创建一个新的索引，它包含名为`user_id`，`long`类型的域。
+
+```text
+PUT /my-index-000001
+{
+  "mappings" : {
+    "properties": {
+      "user_id": {
+        "type": "long"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用[index](####Index API)接口写入一些带有`user_id`字段数据的文档。
+
+```text
+POST /my-index-000001/_doc?refresh=wait_for
+{
+  "user_id" : 12345
+}
+
+POST /my-index-000001/_doc?refresh=wait_for
+{
+  "user_id" : 12346
+}
+```
+
+&emsp;&emsp;若要将`user_id`域修改为`keyword`类型，则使用create index API创建一个新的索引，并且定义正确mapping。
+
+```text
+PUT /my-new-index-000001
+{
+  "mappings" : {
+    "properties": {
+      "user_id": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用[reindex](####Reindex API) API从旧索引中拷贝到新索引中。
+
+```text
+POST /_reindex
+{
+  "source": {
+    "index": "my-index-000001"
+  },
+  "dest": {
+    "index": "my-new-index-000001"
+  }
+}
+```
+
+###### Rename a field
+
+&emsp;&emsp;重命名域的名称会让旧名字的域对应的数据失效。你可以添加一个[alias](####Alias field type)来作为替代方案。
+
+&emsp;&emsp;例如，使用[create index](####Create index API)创建一个索引，它包含了名为`user_identifier`的域。
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "user_identifier": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用该接口向现有的域`user_identifier`中添加名为`user_id`的域的别名（field alias）。
+
+```text
+PUT /my-index-000001/_mapping
+{
+  "properties": {
+    "user_id": {
+      "type": "alias",
+      "path": "user_identifier"
+    }
+  }
+}
+```
+
+
+### Ingest APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-apis.html)
+
 &emsp;&emsp;
 ##### Request
 ##### Prerequisites
@@ -35082,9 +35402,6 @@ POST /my-index-000001/_open
 ##### Query parameters
 ##### Response body
 ##### Example
-
-### Ingest APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-apis.html)
 
 #### Create or update pipeline API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-pipeline-api.html)
