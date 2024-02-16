@@ -32791,6 +32791,12 @@ POST /_data_stream/_modify
 - [Alias exists](####Alias exists API)
 - [Delete alias](####Delete alias API)
 
+##### Index settings
+
+- [Update index settings](####Update index settings API)
+- [Get index settings](####Get index settings API)
+- [Analyze](####Analyze API)
+
 ##### Index templates
 
 &emsp;&emsp;索引模板自动将settings、mappings、aliases应用到新的索引上。它们通常用于时序数据中rolling indices时使用，使得新的索引跟之前的有相同的配置。data stream中关联的索引模板会配置backing indices。更信息见[Index Template](##Index templates)。
@@ -32923,7 +32929,7 @@ POST _aliases
 #### Analyze API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-analyze.html)
 
-&emsp;&emsp;在一个文本上执行[analysis](##Text analysis)并返回生成的tokens。
+&emsp;&emsp;在文本上执行[analysis](##Text analysis)并返回生成的token。
 
 ```text
 GET /_analyze
