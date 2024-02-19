@@ -34236,7 +34236,7 @@ GET /_index_template
 #### Get mapping API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
 
-&emsp;&emsp;获取一个或多个索引的[mapping definitions]()。对于data streams。这个接口获取流中backing indices的mappings。
+&emsp;&emsp;获取一个或多个索引的[mapping definitions](## Mapping)。对于data streams。这个接口获取流中backing indices的mappings。
 
 ```text
 GET /my-index-000001/_mapping
