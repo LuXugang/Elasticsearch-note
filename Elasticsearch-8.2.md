@@ -32783,6 +32783,13 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;Index APIs用来管理索引的settings、aliases（别名）、mappings和索引模板（Index Template）。
 
+##### Mapping management
+
+- [Update mapping](####Update mapping API)
+- [Get mapping](####Get mapping API)
+- [Get field mapping](####Get field mapping API)
+- [Analyze index disk usage](####Analyze index disk usage API)
+
 ##### Alias management
 
 - [Aliases](####Aliases API)
