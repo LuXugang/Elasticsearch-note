@@ -33183,10 +33183,159 @@ GET /analyze_sample/_analyze
 ```
 
 #### Analyze index disk usage API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-disk-usage.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-disk-usage.html)
+
+>WARNING：这个功能属于技术预览（technical preview ），可能在未来的发行版中变更或者移除。
+
+&emsp;&emsp;分析index或data stream中每一个域的磁盘使用情况。这个API可能不支持在旧版本中创建的索引。对于较小的索引，由于 API 可能无法分析索引的某些部分，结果可能不准确。
+
+##### Request
+
+```text
+POST /<target>/_disk_usage
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须在data stream、indices或alias上有`manage`[index privilege](#####Indices privileges)来使用这个API。
+
+##### Path parameters
+
+- `<target>`：（Required, string）用逗号隔开的data streams、indices或aliases用来限制请求。使用该接口时建议只查询单个索引（或者是data stream中的单个backing index），因为该接口的开销是相当可观的
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open`
+- flush：（Optional,Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
+- run_expensive_tasks：（Required, Boolean）分析域的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
+- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
+
+##### Example
+
+```text
+POST /my-index-000001/_disk_usage?run_expensive_tasks=true
+```
+
+&emsp;&emsp;这个API返回：
+
+```text
+{
+    "_shards": {
+        "total": 1,
+        "successful": 1,
+        "failed": 0
+    },
+    "my-index-000001": {
+        "store_size": "929mb", 
+        "store_size_in_bytes": 974192723,
+        "all_fields": {
+            "total": "928.9mb", 
+            "total_in_bytes": 973977084,
+            "inverted_index": {
+                "total": "107.8mb",
+                "total_in_bytes": 113128526
+            },
+            "stored_fields": "623.5mb",
+            "stored_fields_in_bytes": 653819143,
+            "doc_values": "125.7mb",
+            "doc_values_in_bytes": 131885142,
+            "points": "59.9mb",
+            "points_in_bytes": 62885773,
+            "norms": "2.3kb",
+            "norms_in_bytes": 2356,
+            "term_vectors": "2.2kb",
+            "term_vectors_in_bytes": 2310
+        },
+        "fields": {
+            "_id": {
+                "total": "49.3mb",
+                "total_in_bytes": 51709993,
+                "inverted_index": {
+                    "total": "29.7mb",
+                    "total_in_bytes": 31172745
+                },
+                "stored_fields": "19.5mb", 
+                "stored_fields_in_bytes": 20537248,
+                "doc_values": "0b",
+                "doc_values_in_bytes": 0,
+                "points": "0b",
+                "points_in_bytes": 0,
+                "norms": "0b",
+                "norms_in_bytes": 0,
+                "term_vectors": "0b",
+                "term_vectors_in_bytes": 0
+            },
+            "_primary_term": {...},
+            "_seq_no": {...},
+            "_version": {...},
+            "_source": {
+                "total": "603.9mb",
+                "total_in_bytes": 633281895,
+                "inverted_index": {...},
+                "stored_fields": "603.9mb", 
+                "stored_fields_in_bytes": 633281895,
+                "doc_values": "0b",
+                "doc_values_in_bytes": 0,
+                "points": "0b",
+                "points_in_bytes": 0,
+                "norms": "0b",
+                "norms_in_bytes": 0,
+                "term_vectors": "0b",
+                "term_vectors_in_bytes": 0
+            },
+            "context": {
+                "total": "28.6mb",
+                "total_in_bytes": 30060405,
+                "inverted_index": {
+                    "total": "22mb",
+                    "total_in_bytes": 23090908
+                },
+                "stored_fields": "0b",
+                "stored_fields_in_bytes": 0,
+                "doc_values": "0b",
+                "doc_values_in_bytes": 0,
+                "points": "0b",
+                "points_in_bytes": 0,
+                "norms": "2.3kb",
+                "norms_in_bytes": 2356,
+                "term_vectors": "2.2kb",
+                "term_vectors_in_bytes": 2310
+            },
+            "context.keyword": {...},
+            "message": {...},
+            "message.keyword": {...}
+        }
+    }
+}
+```
+
+&emsp;&emsp;第8行，索引中被仅分析的分片的存储大小
+
+&emsp;&emsp;第11行，索引中被分析的分片的存储总量。这个总量通常比第8行中指定的索引大小小，因为一些小型元数据文件被忽略，而 API 可能未扫描数据文件的某些部分。
+
+&emsp;&emsp;第36行，`_id`域的存储大小
+
+&emsp;&emsp;第54行，`_source`域的存储大小。由于存储域使用了压缩格式存储在一起，因此只是尽量估算了存储域的大小。`_id`域的存储大小，可能不太准确。`_id` 字段的存储大小可能被低估，而 `_source`字段可能被高估
 
 #### Clear cache API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-clearcache.html)
+
+
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Clone index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-clone-index.html)
@@ -34078,7 +34227,200 @@ GET /_component_template
 ```
 
 #### Get field mapping API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
+
+&emsp;&emsp;获取一个或多个域的[mapping definitions](##Mapping)。对于data stream，该接口返回流中backing indices的域的mapping。
+
+&emsp;&emsp;当你不需要[完整的mapping](####Get mapping API)，或者当某个索引中包含很多数量的域时，这个接口就非常的有用。
+
+```text
+GET /my-index-000001/_mapping/field/user
+```
+
+##### Request
+
+```text
+GET /_mapping/field/<field>
+GET /<target>/_mapping/field/<field>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices以及aliases的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+- `<field>`：（Optional, string）用逗号隔开的，或者通配符表达式的域
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`false`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
+  - include_defaults：（Optional，Boolean）如果为`true`，响应中包含默认的mapping值。默认值为`false`
+
+##### Examples
+
+###### Example with index setup
+
+&emsp;&emsp;你可以在创建一个新的索引时提供域的mappings。下面[create index](####Create index API) API的请求创建了一个名为`publications`的索引，并且定义了一些域的mappings。
+
+```text
+PUT /publications
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "text" },
+      "title": { "type": "text" },
+      "abstract": { "type": "text" },
+      "author": {
+        "properties": {
+          "id": { "type": "text" },
+          "name": { "type": "text" }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面只返回了`title`的mapping：
+
+```text
+GET publications/_mapping/field/title
+```
+
+&emsp;&emsp;这个API返回以下响应：
+
+```text
+{
+   "publications": {
+      "mappings": {
+          "title": {
+             "full_name": "title",
+             "mapping": {
+                "title": {
+                   "type": "text"
+                }
+             }
+          }
+       }
+   }
+}
+```
+
+###### Specifying fields
+
+&emsp;&emsp;该接口允许你指定用逗号隔开的域的列表。
+
+&emsp;&emsp;例如选择了`author`域的子域`id`，你必须使用全名`author.id`。
+
+```text
+GET publications/_mapping/field/author.id,abstract,name
+```
+
+&emsp;&emsp;返回如下：
+
+```text
+{
+   "publications": {
+      "mappings": {
+        "author.id": {
+           "full_name": "author.id",
+           "mapping": {
+              "id": {
+                 "type": "text"
+              }
+           }
+        },
+        "abstract": {
+           "full_name": "abstract",
+           "mapping": {
+              "abstract": {
+                 "type": "text"
+              }
+           }
+        }
+     }
+   }
+}
+```
+
+&emsp;&emsp;该接口也支持通配符表达式：
+
+```text
+GET publications/_mapping/field/a*
+```
+
+&emsp;&emsp;返回：
+
+```text
+{
+   "publications": {
+      "mappings": {
+         "author.name": {
+            "full_name": "author.name",
+            "mapping": {
+               "name": {
+                 "type": "text"
+               }
+            }
+         },
+         "abstract": {
+            "full_name": "abstract",
+            "mapping": {
+               "abstract": {
+                  "type": "text"
+               }
+            }
+         },
+         "author.id": {
+            "full_name": "author.id",
+            "mapping": {
+               "id": {
+                  "type": "text"
+               }
+            }
+         }
+      }
+   }
+}
+```
+
+
+###### Multiple targets and fields
+
+&emsp;&emsp;该接口可以用来通过单次请求从多个data streams或者indices中获取多个域的mapping。
+
+&emsp;&emsp;`<target>`和`<field>`参数都支持用逗号隔开的列表以及通配符表达式。
+
+&emsp;&emsp;你可以忽略`<target>`参数或者使用`*`、`_all`来获取集群中所有的data streams和indices。
+
+&emsp;&emsp;同样的，你可以忽略`<field>`参数或者使用`*`来获取目标data stream或者index中所有域的mapping。然而，`<field>`参数不支持`_all`。
+
+&emsp;&emsp;比如，下面的请求从名为`my-index-000001`或`my-index-000002`的data stream或index中获取名为`message`的域的mapping。
+
+```text
+GET /my-index-000001,my-index-000002/_mapping/field/message
+```
+
+&emsp;&emsp;下面的请求获取集群中data  stream 或者index中名为`message`以及`user.id`的mapping。
+
+```text
+GET /_all/_mapping/field/message
+```
+
+&emsp;&emsp;下面的请求获取集群中data  stream 或者index中有`id`属性的所有域的mapping。
+
+```text
+GET /_all/_mapping/field/*.id
+```
 
 #### Get index settings API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-settings.html)
