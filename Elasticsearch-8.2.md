@@ -35070,7 +35070,150 @@ OST /_dangling/zmM4e0JtBkeUjiHD-MihPQ?accept_data_loss=true
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-rollover-index.html)
 
 #### Shrink index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-shrink-index.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-shrink-index.html)
+
+&emsp;&emsp;将现有的索引收缩为一个拥有更少主分片的新索引。
+
+```text
+POST /my-index-000001/_shrink/shrunk-my-index-000001
+```
+##### Request
+
+```text
+POST /<index>/_shrink/<target-index>
+PUT /<index>/_shrink/<target-index>
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，对于这个索引，你必须要有管理权限[manage index privilege](####Security privileges)。
+- 在你可以收缩索引之前，必须：
+  - 索引必须是只读的
+  - 索引的每一个分片的拷贝都必须位于同一个节点上
+  - 索引的[集群健康](####Cluster health API)必须是`green`
+
+&emsp;&emsp;为了让分片分配更简单，我们建议你移除索引的副本分片。你可以最后重新添加副本分片，并且这个操作作为收缩操作的一部分。
+
+&emsp;&emsp;你可以通过[update index settings API](####Update index settings API)移除索引的副本分片，将剩余的分片重新分配到同一个节点，并且让索引为只读。
+
+```text
+PUT /my_source_index/_settings
+{
+  "settings": {
+    "index.number_of_replicas": 0,                                
+    "index.routing.allocation.require._name": "shrink_node_name", 
+    "index.blocks.write": true                                    
+  }
+}
+```
+
+&emsp;&emsp;第4行，移除索引的副本分片
+&emsp;&emsp;第5行，将索引的分片重新分配到名为`shrink_node_name`上，见[Index-level shard allocation filtering](####Index-level shard allocation filtering)
+&emsp;&emsp;第6行，阻止索引的写操作。但元数据的变更，比如删除索引，仍然是允许的
+
+&emsp;&emsp;重新分配索引需要花费一定的时间。处理进度可以通过[\_cat recovery ](####cat recovery API) API查看，或者可以调用[cluster health API](####Cluster health API)以及参数`wait_for_no_relocating_shards`等待所有的分片重新分配结束。
+
+##### Description
+
+&emsp;&emsp;该接口将现有的索引收缩为一个拥有更少主分片的新索引。目标索引中请求的主分片数量必须是源索引中分片数量的因子（factor）。例如，具有 8 个主分片的索引可以收缩为具有 4、2 或 1 个主分片，而具有 15 个主分片的索引可以收缩为具有 5、3 或 1 个主分片。如果索引中的分片数是质数（prime number），则只能收缩为单个主分片。在收缩之前，索引中每个分片（主分片或副本）必须存在于同一节点上。
+
+&emsp;&emsp;data stream当前的write index不能收缩。若要收缩当前的write index，data  stream必须先[rolled over](####Rollover)，这样新的write Index会被创建，那么之前的write index就可以收缩了。
+
+###### How shrinking works
+
+&emsp;&emsp;收缩操作：
+
+1. 创建一个跟源索引有相同定义的目标索引，但是有更少的主分片
+2. 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且他们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
+3. 恢复后的目标索引就像是一个被关闭的索引，并且刚刚被打开
+
+###### Shrink an index
+
+&emsp;&emsp;若要将源索引`my_source_index`收缩到名为`my_target_index`的目标索引中，可以发起下面的请求：
+
+```text
+POST /my_source_index/_shrink/my_target_index
+{
+  "settings": {
+    "index.routing.allocation.require._name": null, 
+    "index.blocks.write": null 
+  }
+}
+```
+
+&emsp;&emsp;第4行，清除目标索引中来自源索引的索引设置`allocation requirement`
+&emsp;&emsp;第5行，清除目标索引中来自源索引的索引设置`index wrtie block`
+
+&emsp;&emsp;一旦目标索引添加到集群状态，上面的请求就会马上返回。他不会等待收缩操作开始。
+
+> IMPORTANT：只有满足以下的要求，索引才可以被收缩：
+> - 目标索引必须不存在
+> - 源索引必须比目标索引有更多的主分片
+> - 目标索引中的主分片数量必须是源索引的因子。源索引必须比目标索引有更多的主分片
+> - 如果目标索引是单个分片，那么源索引中所有分片的文档数量总和不能超过2,147,483,519，因为这是单个分片能处理的最大文档数量
+> - 处理收缩操作的节点必须要有足够多空闲磁盘来容纳现有索引的第二个副本
+
+&emsp;&emsp;`_shrink`操作类似[create index API](####Create index API)，接受对目标索引提供`settings`和`aliases`参数：
+
+```text
+POST /my_source_index/_shrink/my_target_index
+{
+  "settings": {
+    "index.number_of_replicas": 1,
+    "index.number_of_shards": 1, 
+    "index.codec": "best_compression" 
+  },
+  "aliases": {
+    "my_search_indices": {}
+  }
+}
+```
+
+&emsp;&emsp;第5行，目标索引的主分片数量。必须是源索引的因子
+&emsp;&emsp;第6行，`best compression`只有对新写入到目标索引的数据生效，比如通过[force-merging](####Force merge APIs)将分片合并为单个段。
+
+###### Monitor the shrink process
+
+&emsp;&emsp;收缩处理进度可以通过[\_cat recovery ](####cat recovery API) API查看，或者可以调用[cluster health API](####Cluster health API)以及参数`wait_for_status`设置为`yellow`来等待所有的主分片分配结束。
+
+&emsp;&emsp;只要目标索引被添加到集群状态中，在分片分配结束之前，该接口就会马上返回。在这个时间点，所有的分片处于`unassigned`状态。如果因为任何原因导致目标索引不能分配到收缩节点上，索引的主分片仍然会处于`unassigned`状态直到可以被分配到那个节点上。
+
+&emsp;&emsp;一旦主分片分配结束，就切换成`initializing`状态，然后收缩处理就开始了。当收缩操作完成，就切换成`active`状态。在这个时间点，Elasticsearch会尽量分配副本分片并且可能决策出将主分片重新分配到其他节点。
+
+###### Wait for active shards
+
+&emsp;&emsp;由于收缩操作创建一个新的索引来收缩分片，因此在索引创建时的[wait for active shards](####Create index API)设置也适用于收缩索引操作。
+
+##### Path parameters
+
+- `<index>`：（Required, string）待收缩的源索引名称
+- `<target-index>`：（Required, string）待创建的目标索引名称
+  - 索引名称必须满足下面的规则：
+    - 只允许小写
+    - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
+    - 在7.0之前允许包含`:`，7.0之后不被支持
+    - 不能以`-`, `_`, `+`开头
+    - 不能有 `.` 或者`..`
+    - 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
+    - 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
+
+##### Query parameters
+
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Response body
+
+- aliases：（Optional, object of objects）索引的别名
+  - `<alias>`：（Required, object）别名的key，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+    - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+- settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+- max_primary_shard_size：（Optional,[byte units](####Byte size units)）目标索引的最大主分片大小。用于找到目标索引的最佳分片数。当设置了此参数时，目标索引中每个分片的存储大小不会超过该参数。目标索引的分片数仍将是源索引分片数的因子，但如果该参数小于源索引中的单个分片大小，则目标索引的分片数将等于源索引的分片数。例如，当将此参数设置为50GB时，如果源索引有60个主分片，总计为100GB，则目标索引将具有2个主分片，每个分片大小为50GB；如果源索引有60个主分片，总计为1000GB，则目标索引将有20个主分片；如果源索引有60个主分片，总计为4000GB，则目标索引仍将有60个主分片。该参数与设置中的 number_of_shards 冲突，只能设置其中一个。
 
 #### Simulate index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-simulate-index.html)
