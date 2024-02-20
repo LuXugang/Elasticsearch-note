@@ -37108,29 +37108,38 @@ DELETE /_ingest/pipeline/*
 ```
 
 #### GeoIP stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-stats-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-stats-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取用于[geoip processor](####GeoIP processor)的 GeoIP2 数据库的下载统计信息。
+
+```text
+GET _ingest/geoip/stats
+```
+
 ##### Request
+
+```text
+GET _ingest/geoip/stats
+```
+
 ##### Prerequisites
-##### Description
-##### Path parameters
-##### Query parameters
+
+- 如果开启了Elasticsearch security功能，你必须有`monitor`、`manage` [cluster privilege](#####Cluster privileges)来使用这个API>
+- 如果[ingest.geoip.downloader.enabled]()禁用了，该接口返回zero values以及空的`nodes`对象
+
 ##### Response body
-##### Example
 
-#### Get pipeline API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-pipeline-api.html)
-
-&emsp;&emsp;
-##### Request
-##### Prerequisites
-##### Description
-##### Path parameters
-##### Query parameters
-##### Response body
-##### Example
-
+- stats：（object）下载的GeoIP数据库的统计信息
+  - successful_downloads：（integer）成功下载数据库的总次数
+  - failed_downloads：（integer）下载数据库失败的总次数
+  - total_download_time：（integer）下载数据库所花费的总毫秒数
+  - database_count：（integer）当前可用于使用的数据库数量
+  - skipped_updates：（integer）跳过的数据库更新的总次数
+- nodes：（object）下载的每一个节点的GeoIP2数据库信息
+  - `<node_id>`：（object）节点上下载的数据库。key就是节点ID
+    - databases：（array of object）
+      - name：（string）数据库的名称
+    - files_in_temp：（array of strings）下载的数据库文件，包括相关的许可证文件。Elasticsearch将这些内容存储在节点的[temporary directory:]()：`$ES_TMPDIR/geoip-databases/<node_id>`
 
 #### Simulate pipeline API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
@@ -37176,7 +37185,7 @@ GET /_ingest/pipeline/_simulate
 ##### Description
 
 &emsp;&emsp;这个接口对请求体中提供的文档集合执行指定的pipeline。
-&emsp;&emsp;你可以对提供的文档执行一个现有的pipeline或者在请求体中定义一个pipeline
+&emsp;&emsp;你可以对提供的文档执行一个现有的pipeline或者在请求体中定义一个pipeline。
 
 ##### Path parameters
 
@@ -37188,7 +37197,7 @@ GET /_ingest/pipeline/_simulate
 
 ##### Response body
 
-- pipeline：（Required\*, object）待测试的pipeline。如果你不在请求体中指定一个`pipeline`，那这个参数是必须要提供的。如果你同时在请求参数跟请求体汇总指定了，那么接口只使用请求参数中的值
+- pipeline：（Required\*, object）待测试的pipeline。如果你不在请求体中指定一个`pipeline`，那这个参数是必须要提供的。如果你同时在请求参数跟请求体中指定了，那么接口只使用请求参数中的值
   - description：（Optional, string）ingest pipeline的描述
   - on_failure：（Optional, array of [processor](###Ingest processor reference) objects）某个processor失败后立即运行的processors
     - 每一个processor支持一个processor-level的`on_failure`值。如果某个processor没有`on_failure`值并且运行失败，Elasticsearch会使用pipeline-level作为一个fallback。这个参数中的processor会按照制定顺序有序运行。Elasticsearch不会尝试运行pipeline中剩余的processor。
@@ -37197,7 +37206,7 @@ GET /_ingest/pipeline/_simulate
     - 见请求参数`if_version`查看如何使用该参数
   - `_meta`：（Optional, object）可选的关于ingest pipeline的元数据。可以是任何内容。不会由Elasticsearch自动生成
 - docs：（Required, array of objects）样例文档用来在pipeline中测试
-  - `_id`：（Optional, string）文档的唯一标示。这个ID在`_index`中必须是唯一的
+  - `_id`：（Optional, string）文档的唯一标示。这个ID在`_index`中必须是唯一的（相同的`_index`的文档，这个`_id`要唯一）
   - `_index`：（Optional, string）包含文档的索引名称
   - `_routing`：（Optional, string）用来将文档发送到指定主分片的值，见[\_routing](####\_routing field)
   - `_source`：(Required, object)文档JSON类型的内容
