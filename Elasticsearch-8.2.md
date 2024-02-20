@@ -33348,7 +33348,78 @@ POST /my-index-000001/_disk_usage?run_expensive_tasks=true
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-clone-index.html)
 
 #### Close index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-close.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-close.html)
+
+&emsp;&emsp;关闭一个索引。
+
+```text
+POST /my-index-000001/_close
+```
+
+##### Request
+
+```text
+POST /<index>/_close
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有索引或者索引别名的`manage`的[index privilege](#####Indices privileges)才能使用这个接口。
+
+##### Description
+
+&emsp;&emsp;你可以使用这个接口关闭打开中的索引。
+
+&emsp;&emsp;关闭后的索引不能执行打开中的索引允许的读/写操作。不能向关闭后的索引写入/查询文档。这样不需要为写入/查询文档维护内部的数据结构，使得对集群有较小的开销。
+
+&emsp;&emsp;当打开或者关闭一个索引时，对于重启索引分片，master要负责反应索引新的状态。分片才能进行正常的恢复操作。集群会对打开/关闭的索引自动进行replicate，保证总是有足够的shard  copies。
+
+&emsp;&emsp;你可以打开/关闭多个索引。如果请求中显示引用了缺失的索引则会抛出错误。当然可以通过`ignore_unavailable=true`来关闭这个行为。
+
+&emsp;&emsp;你可以显示指定要打开/关闭的索引名称。若要使用`_all`、`*`或者其他通配符表达式打开/关闭索引，需要将`action.destructive_requires_name`修改为`false`。可以通过cluster update settings API更新这个参数。
+
+&emsp;&emsp;关闭的索引会消耗大量的磁盘空间，这可能在受控环境中引发问题。可以通过cluster settings API，将 `cluster.indices.close.enable` 设置为 `false` 来禁用关闭索引的功能。默认值为 `true`。
+
+##### Path parameters
+
+- `<index>`：（Optional, string）用逗号隔开的，或者是通配符表达式的索引名称列表用来限制请求
+  - 索要关闭所有的索引，可以使用`_all`或`*`。默认你必须显示指定需要关闭的索引名称。索要使用`_all`或者`*`或者通配符表达式，你必须通过[cluster update settings](####Cluster update settings API)API或者`elasticsearch.yml`将`action.destructive_requires_name`修改为`false`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open`
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+&emsp;&emsp;下面的例子中展示了如果关闭一个索引：
+
+```text
+POST /my-index-000001/_close
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "indices": {
+    "my-index-000001": {
+      "closed": true
+    }
+  }
+}
+```
 
 #### Create index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-index.html)
