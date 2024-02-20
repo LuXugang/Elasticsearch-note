@@ -36325,6 +36325,35 @@ POST /my-index-000001/_open
 #### Refresh API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-refresh.html)
 
+#### Unfreeze index API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-update-settings.html)
+
+> WARNING：**Deprecated in 7.14**
+> 在8.0中，我们移除了冻结索引的能力。在之前的版本中，冻结索引能降低内存开销。然而由于[recent improvements in heap memory usage](https://www.elastic.co/cn/blog/significantly-decrease-your-elasticsearch-heap-memory-usage)使得冻结索引不再有用了。你可以使用这个API解冻那些在7.x中冻结的索引，并且这些索引没有关联frozen data tier。
+
+&emsp;&emsp;解冻一个索引。
+
+##### Request
+
+```text
+POST /<index>/_unfreeze
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有index alias、Index或者别名上的`manage`的管理权限[ index privilege](####Security privileges)。
+
+##### Path parameters
+
+- `<index>`：（Required, string）索引的标识符
+
+##### Example
+
+&emsp;&emsp;下面的请求解冻了一个索引：
+
+```text
+POST /my-index-000001/_unfreeze
+```
+
 #### Update index settings API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-update-settings.html)
 
