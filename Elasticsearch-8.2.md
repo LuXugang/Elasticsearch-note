@@ -18087,11 +18087,11 @@ GET /_search
 
 ###### positive
 
-&emsp;&emsp;（必选值，query object）你想要执行的query。所有的文档都必须匹配这个query。
+&emsp;&emsp;（Required,query object）你想要执行的query。所有的文档都必须匹配这个query。
 
 ###### negative
 
-&emsp;&emsp;（必选值，query object）用来降低匹配到的文档的[relevance score](####Relevance scores)。
+&emsp;&emsp;（Required,query object）用来降低匹配到的文档的[relevance score](####Relevance scores)。
 
 &emsp;&emsp;如果返回的文档匹配了`positive`并且`negative` query，`boosting` query会按照下面的方式来计算[relevance score](####Relevance scores)：
 
@@ -18100,7 +18100,7 @@ GET /_search
 
 ###### negative_boost
 
-&emsp;&emsp;（必选值，float）该值0~1.0范围内的浮点数。用来降低匹配了`negative` query 的文档的[relevance score](####Relevance scores)。
+&emsp;&emsp;（Required,float）该值0~1.0范围内的浮点数。用来降低匹配了`negative` query 的文档的[relevance score](####Relevance scores)。
 
 #### Constant score query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-constant-score-query.html)
@@ -22105,7 +22105,7 @@ GET /my-index-000001,my-index-000002
 | [Force Merge](####Force merge(1)) | 减少索引中段的数量并且清楚（purge）被删除的文档。索引被置为只读 |
 | [Migrate](####Migrate) | 将索引的分片迁移到当前ILM阶段对应的数据层（[data tier](###Data tiers)）中 |
 | [Read-Only](####Read only) | 阻塞索引的写入操作 |
-| [Rollover](####Rollover) | 为rollover alias移除作为write index的索引，并开始为新索引建立索引 |
+| [Rollover](####Rollover（action）) | 为rollover alias移除作为write index的索引，并开始为新索引建立索引 |
 | [Searchable Snapshot](####Searchable snapshot) | 在配置好的仓库中添加一个被管理的索引的快照，挂载这个快照使其成为一个可以用于搜索的快照。 |
 | [Set Priority](####Set priority) | 降低索引在生命周期中的优先级，以确保首先恢复hot索引 |
 | [Shrink](####Shrink) | 收缩到新的索引中并减少主分片的数量 |
@@ -22133,23 +22133,23 @@ GET /my-index-000001,my-index-000002
 
 ###### number_of_replicas
 
-&emsp;&emsp;（可选项，整数）索引的副本分片数量。
+&emsp;&emsp;（Optional，integer）索引的副本分片数量。
 
 ###### total_shards_per_node
 
-&emsp;&emsp;（可选项，整数）在单个Elasticsearch节点上索引的分片数量最大值
+&emsp;&emsp;（Optional，integer）在单个Elasticsearch节点上索引的分片数量最大值
 
 ###### include
 
-&emsp;&emsp;（可选项，object）分配一个索引到一些节点，这些节点至少包含一个指定的自定义的属性。
+&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点至少包含一个指定的自定义的属性。
 
 ###### exclude
 
-&emsp;&emsp;（可选项，object）分配一个索引到一些节点，这些节点不包含任何自定义的属性。
+&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点不包含任何自定义的属性。
 
 ###### require
 
-&emsp;&emsp;（可选项，object）分配一个索引到一些节点，这些节点包含所有自定义的属性。
+&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点包含所有自定义的属性。
 
 ##### Example
 
@@ -22259,7 +22259,7 @@ PUT _ilm/policy/my_policy
 
 ###### delete_searchable_snapshot
 
-&emsp;&emsp;（可选值，布尔值）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](####Searchable snapshot)这个动作。
+&emsp;&emsp;（Optional，布尔值）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](####Searchable snapshot)这个动作。
 
 ##### Example
 
@@ -22304,11 +22304,11 @@ PUT _ilm/policy/my_policy
 
 ###### max_num_segemnts
 
-&emsp;&emsp;（必选，整数）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
+&emsp;&emsp;（必选，integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
 
 ###### inde_codec
 
-&emsp;&emsp;（可选值，字符串）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
+&emsp;&emsp;（Optional，字符串）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
 
 >WARNING：如果使用`best_compression`，ILM将在force merge之前先[close](####Close index API)并且[re-open](####Open index API)。当关闭后，索引的读写操作将不可见。
 
@@ -22353,7 +22353,7 @@ PUT _ilm/policy/my_policy
 
 ###### enabled
 
-&emsp;&emsp;（可选值，布尔）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
+&emsp;&emsp;（Optional，布尔）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
 
 ##### Example
 
@@ -22436,7 +22436,7 @@ PUT _ilm/policy/my_policy
 }
 ```
 
-#### Rollover
+#### Rollover（action）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-rollover.html)
 
 &emsp;&emsp;可以在hot阶段使用该动作。
@@ -22476,27 +22476,27 @@ PUT my-index-000001
 
 ###### max_age
 
-&emsp;&emsp;（可选项，[time units](####Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](######index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](######index.lifecycle.origination_date)。
+&emsp;&emsp;（Optional，[time units](####Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](######index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](######index.lifecycle.origination_date)。
 
 ###### max_docs
 
-&emsp;&emsp;（可选值，整数）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+&emsp;&emsp;（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
 
 ###### max_size
 
-&emsp;&emsp;（可选值，[byte units](####Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
+&emsp;&emsp;（Optional，[byte units](####Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
 
 > TIP：可以通过[\_cat indices API](####cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
 
 ###### max_primary_shard_size
 
-&emsp;&emsp;（可选值，[byte units](####Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
+&emsp;&emsp;（Optional，[byte units](####Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
 
 > TIP：可以通过[\_cat shard API](####cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
 
 ###### max_primary_shard_docs
 
-&emsp;&emsp;（可选值，整数）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
+&emsp;&emsp;（Optional，integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
 
 > TIP：可以通过[\_cat shard API](####cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
 
@@ -22686,7 +22686,7 @@ PUT /_ilm/policy/rollover_policy
 
 ##### force_merge_index
 
-&emsp;&emsp;（可选值，布尔）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](####Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
+&emsp;&emsp;（Optional，布尔）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](####Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
 
 >NOTE：forcemerge这个动作属于best effort。这个动作有可能在一些分片正在分配时执行，在这种情况下这些分片不会进行合并。如果不是所有的分片都执行了forcemerge，那么searchable_snapshot动作会继续执行。
 
@@ -22724,7 +22724,7 @@ PUT _ilm/policy/my_policy
 
 ###### priority
 
-&emsp;&emsp;（必选，整数）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
+&emsp;&emsp;（必选，integer）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
 
 ##### Example
 
@@ -22764,11 +22764,11 @@ PUT _ilm/policy/my_policy
 
 ###### number_of_shards
 
-&emsp;&emsp;（可选值，整数）收缩后分片的数量。必须是源索引的分片数量的因子值（factor）。这个参数跟下文的`max_primary_shard_size`冲突，只能设置一个值。
+&emsp;&emsp;（Optional，integer）收缩后分片的数量。必须是源索引的分片数量的因子值（factor）。这个参数跟下文的`max_primary_shard_size`冲突，只能设置一个值。
 
 ###### max_primary_shard_size
 
-&emsp;&emsp;（可选值，[byte units](####Byte size units)）目标索引（target index）的主分片大小的最大值。用来找到目标索引的最适宜的（optimum）分片大小。当设置了这个参数后，目标索引中每一个分片大小（shard's storage）不会超过这个参数值。目标索引的分片数量将仍然是源索引（source index）的因子值（factor）。如果这个参数值比源索引中的分片大小还要小，那么目标索引中的分片数量将和源索引中的分片数量相等。比如说参数设置为50gb，如果源索引有60个主分片，一共100gb，那么目标索引将有2个主分片，每个分片的大小为50gb；如果源索引有60个主分片，一共1000gb，那么目标索引将有20个主分片，每个分片的大小为50gb，如果源索引有60个主分片，一共4000gb，那么目标索引仍然有60个主分片。这个参数跟上文中的`number_of_shards`存在冲突，只能选择一个对其设置。
+&emsp;&emsp;（Optional，[byte units](####Byte size units)）目标索引（target index）的主分片大小的最大值。用来找到目标索引的最适宜的（optimum）分片大小。当设置了这个参数后，目标索引中每一个分片大小（shard's storage）不会超过这个参数值。目标索引的分片数量将仍然是源索引（source index）的因子值（factor）。如果这个参数值比源索引中的分片大小还要小，那么目标索引中的分片数量将和源索引中的分片数量相等。比如说参数设置为50gb，如果源索引有60个主分片，一共100gb，那么目标索引将有2个主分片，每个分片的大小为50gb；如果源索引有60个主分片，一共1000gb，那么目标索引将有20个主分片，每个分片的大小为50gb，如果源索引有60个主分片，一共4000gb，那么目标索引仍然有60个主分片。这个参数跟上文中的`number_of_shards`存在冲突，只能选择一个对其设置。
 
 ##### Example
 
@@ -28975,7 +28975,7 @@ PUT _settings
 GET _cat/allocation?v=true&h=node,shards,disk.*
 ```
 
-&emsp;&emsp;如果节点的磁盘空间不足，你有下面的可选项：
+&emsp;&emsp;如果节点的磁盘空间不足，你有下面的Optional：
 
 - 增加节点上的磁盘空间
 - 删除不需要的索引来释放磁盘空间。如果你使用了ILM，你可以更新策略，使用[searchable snapshots](####Searchable snapshot)或者添加一个delete phase。如果你不再需要搜索这些数据，你可以使用[snapshot](##Snapshot and restore)存储并脱离于集群。
@@ -30747,7 +30747,7 @@ POST /_cluster/reroute
 
 ##### Query parameters
 - allow_no_indices：（Optional, Boolean）如果为`true`。如果通配符索引表达式没有解析为任何具体的索引，这种情况将被忽略（不会报错）。这包括使用`\_all` 字符串或没有指定任何索引的情况。默认值为`true`
-- expand_wildcards：（Optional, string）通配符索引表达式解析为具体的索引可以是open、closed或者全部。可选项为：`open`、`closed`、`none`、`all`
+- expand_wildcards：（Optional, string）通配符索引表达式解析为具体的索引可以是open、closed或者全部。Optional为：`open`、`closed`、`none`、`all`
 - flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
@@ -30908,7 +30908,7 @@ PUT /_cluster/settings
 
 ##### Description
 
-&emsp;&emsp;这个API允许你查看每个节点上的功能使用情况的信息。所有节点上的可选项见[Node specification](#####Node specification)。
+&emsp;&emsp;这个API允许你查看每个节点上的功能使用情况的信息。所有节点上的Optional见[Node specification](#####Node specification)。
 
 ##### Path parameters
 
@@ -30995,7 +30995,7 @@ GET _nodes/usage
 - threads：（Optional, integer）提供信息的热线程数量，默认为 `3`。用于故障排除时，可以将此参数设置为较大数值（如 9999）以获取系统中所有线程的信息。
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- type：（Optional, string）采样的类型，可选项包括 `block`、`cpu` 和 `wait`。默认为 cpu
+- type：（Optional, string）采样的类型，Optional包括 `block`、`cpu` 和 `wait`。默认为 cpu
 
 ##### Examples
 
@@ -31022,7 +31022,7 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 
 ##### Description
 
-&emsp;&emsp;该接口能让你获取集群中一个或者多个（全部）的节点信息。所有节点可选项见[这里](####Node specification)。
+&emsp;&emsp;该接口能让你获取集群中一个或者多个（全部）的节点信息。所有节点Optional见[这里](####Node specification)。
 
 &emsp;&emsp;默认情况下对于每一个节点，会返回其所有的属性和核心设置。
 
@@ -31256,7 +31256,7 @@ GET /_nodes/ingest
 
 ##### Path Parameters
 
-- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的可选项，见[Node specification]()。
+- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的Optional，见[Node specification]()。
 
 > NOTE：Elasticsearch要求集群节点的安全设置一致性，但是这个一致性不是强制的。因此，重新加载指定节点不是标准做法。通常用于重载操作失败后使用这种方法比较合理
 
@@ -31319,7 +31319,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
 
 &emsp;&emsp;你可以使用这个API获取集群中节点的统计信息。
 
-&emsp;&emsp;节点的可选项见[Node specification](#####Node specification)。
+&emsp;&emsp;节点的Optional见[Node specification](#####Node specification)。
 
 &emsp;&emsp;默认返回所有的统计信息。你可以通过使用指标`<metric>`限制返回的内容。
 
@@ -33837,7 +33837,7 @@ PUT /_component_template/<component-template>
 
 ##### Query parameters
 
-- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
+- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
@@ -33988,7 +33988,7 @@ PUT /_index_template/<index-template>
 
 ##### Query parameters
 
-- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
@@ -34249,8 +34249,8 @@ PUT _template/template_1
 
 ##### Query parameters
 
-- create：（可选项，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
-- order：（可选项，整数）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
+- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- order：（Optional，integer）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 &emsp;&emsp;（未完成）
@@ -35191,7 +35191,294 @@ OST /_dangling/zmM4e0JtBkeUjiHD-MihPQ?accept_data_loss=true
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-segments.html)
 
 #### Rollover API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-rollover-index.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-rollover-index.html)
+
+&emsp;&emsp;为[data stream](##Data streams)或者[index aliases](##Aliases)创建一个新的索引。
+
+```text
+POST my-data-stream/_rollover
+```
+
+##### Request
+
+```text
+POST /<rollover-target>/_rollover/
+POST /<rollover-target>/_rollover/<target-index>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，对于这个索引，你必须要有管理权限[manage index privilege](####Security privileges)。
+
+##### Description
+
+> TIP：我们建议使用ILM的[rollover](####Rollover)动作来自动执行rollover。见[Index lifecycle](####Index lifecycle)。
+
+&emsp;&emsp;该接口为data stream或index aliases创建一个新的索引。这个接口的行为取决于rollover目标。
+
+###### Roll over a data stream
+
+&emsp;&emsp;如果你要roll over一个 data stream，该接口会为这个流创建一个新的write index。这个流之前的write index会成为一个普通的backing index。rollover同样会提高data  stream的generation。见[Rollover](####Rollover)。
+
+###### Roll over an index alias with a write index
+
+> TIP：在Elasticsearch7.9之前，你通常使用[index alias with a write index ](####Manage time series data without data streams)来管理时序数据。Data stream替代了这个功能，要求更少的维护成本，自动跟[data tiers](###Data tiers)集成。
+> 见[Convert an index alias to a data stream](####Convert an index alias to a data stream)。
+
+&emsp;&emsp;如果索引别名指向多个索引，其中一个索引肯定是[write index](####Write index)。该接口会为这个别名创建一个新的write index，把`is_write_index`设置为`true`。API同样会将之前的write index的`is_write_index`设置为`false`。
+
+###### Roll over an index alias with one index
+
+&emsp;&emsp;如果rollover一个索引别名，并且它只指向一个索引，那该接口会为别名创建一个新的索引并且移除别名中原来的索引。
+
+###### Increment index names for an alias
+
+&emsp;&emsp;当你rollover一个索引别名，你可以为新的索引指定一个名称。如果你不指定，那么当前的索引会以`-`以及一个数字结尾，比如`my-index-000001`或`my-index-3`，新的索引名会提高结尾的数字。例如你roll over一个别名，并且当前的索引名称为`my-index-000001`，那么创建出的新索引会命名为`my-index-000002`。无论之前的索引名称是什么，这个数值总是6个字符并且`0`作为填充值。
+
+> **Use date math with index alias rollovers**
+> 如果你使用索引别名用于时序数据，你可以在索引名称中使用[date math](###Date math support in system and index alias names-1)来追踪rollover的日期。比如你可以创建一个别名，他指向名为`<my-index-{now/d}-000001>`的索引。如果你在2099年5月6日创建了索引，那索引名称就是`my-index-2099.05.06-000001`。如果你在2099年5月7日rollover了这个别名，那索引名称就是`my-index-2099.05.07-000002`。见[Roll over an index alias with a write index](######Roll over an index alias with a write index)中的例子
+
+###### Wait for active shards
+
+&emsp;&emsp;rollover会创建新的索引并且受限于[wait_for_active_shards](####Create index API)设置。
+
+##### Path parameters
+
+- `<rollover-target>`：（Required, string）待rollover的data stream或index aliases的名称
+- `<target-index>`：（Optional, string）待创建的索引名称。支持[date math](###Date math support in system and index alias names-1)，Data  stream不支持这个参数
+  - 如果别名当前的write index的名称不是以`-`和数字结尾，比如`my-index-000001`或者`my-index-3`，这个参数必须提供。
+  - 索引名称必须满足下面的规则：
+  - 只允许小写
+    - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
+    - 在7.0之前允许包含`:`，7.0之后不被支持
+    - 不能以`-`, `_`, `+`开头
+    - 不能有 `.` 或者`..`
+    - 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
+    - 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
+
+##### Query parameters
+
+- dry_run：（Optional, Boolean）如果为`true`，请求只是模拟操作并返回产生的状态
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](####Index API)。
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- aliases：（Optional, object of objects）索引的别名
+  - `<alias>`：（Required, object）别名的key，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+    - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+
+- condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
+  > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](####Rollover（action）)
+
+  - max_age：(Optional，[time units](####Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](######index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](######index.lifecycle.origination_date)。
+  - max_docs：（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+  - max_size：（Optional，[byte units](####Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
+  > TIP：可以通过[\_cat indices API](####cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
+
+  - max_primary_shard_size：（Optional，[byte units](####Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
+
+  > TIP：可以通过[\_cat shard API](####cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
+
+  - max_primary_shard_docs：（Optional，integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
+
+  > TIP：可以通过[\_cat shard API](####cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
+
+- mappings：（Optional, [mapping object](##Mapping)）
+  - Field names
+  - [Field data types](###Field data types)
+  - [Mapping parameters](###Mapping parameters)
+  - Data streams不支持该参数
+- settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+  - Data streams不支持该参数
+
+##### Response body
+
+- acknowledged：（Boolean）如果为`true`，请求在`timeout`时间内从master node收到了响应
+- shards_acknowledged：（Boolean）如果为`true`，在`master_timeout`时间内从[active shards](####Index API)收到了响应
+- old_index：（string）data stream或alias中之前的write index。对于有write index的data stream或aliase，该值就是之前的write index
+- new_index：（string）rollover创建出的索引名称。对于有write index的data stream或aliase，该值就是先在的write index
+- rolled_over：（Boolean）如果为`true`，data stream或索引别名执行了rolled over
+- dry_run：（Boolean）如果为`true`，Elasticsearch没有执行rollover
+- condition：（object）请求中的`conditions`指定的每一个条件。如果没有制定条件，这个字段是一个空对象。
+  - `<condition>`：（Boolean）key就是每一个条件。value就是执行结果。如果为`true`，说明索引在rollover中满足了这个条件
+
+##### Example
+
+###### Roll over a data stream
+
+&emsp;&emsp;下面的请求无条件 的rollover一个data stream。
+
+```text
+POST my-data-stream/_rollover
+```
+
+&emsp;&emsp;下面的请求只有在当前write index满足下面的条件才会rollover：
+
+- 索引创建于7天或更久之前
+- 索引中包含1000或更多的文档
+- 索引最大的主分片大小达到50GB或者更大
+
+```text
+POST my-data-stream/_rollover
+{
+  "conditions": {
+    "max_age": "7d",
+    "max_docs": 1000,
+    "max_primary_shard_size": "50gb",
+    "max_primary_shard_docs": "2000"
+  }
+}
+```
+
+&emsp;&emsp;这个API返回：
+
+```text
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "old_index": ".ds-my-data-stream-2099.05.06-000001",
+  "new_index": ".ds-my-data-stream-2099.05.07-000002",
+  "rolled_over": true,
+  "dry_run": false,
+  "conditions": {
+    "[max_age: 7d]": false,
+    "[max_docs: 1000]": true,
+    "[max_primary_shard_size: 50gb]": false,
+    "[max_primary_shard_docs: 2000]": false
+  }
+}
+```
+
+###### Roll over an index alias with a write index
+
+&emsp;&emsp;下面的请求创建了`<my-index-{now/d}-000001>`并且让其作为`my-alias`的write index。
+
+```text
+# PUT <my-index-{now/d}-000001>
+PUT %3Cmy-index-%7Bnow%2Fd%7D-000001%3E
+{
+  "aliases": {
+    "my-alias": {
+      "is_write_index": true
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面的请求只有在当前write index满足下面的条件才会rollover：
+
+- 索引创建于7天或更久之前
+- 索引中包含1000或更多的文档
+- 索引最大的主分片大小达到50GB或者更大
+
+```text
+POST my-alias/_rollover
+{
+  "conditions": {
+    "max_age": "7d",
+    "max_docs": 1000,
+    "max_primary_shard_size": "50gb",
+    "max_primary_shard_docs": "2000"
+  }
+}
+```
+
+&emsp;&emsp;这个API返回：
+
+```text
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "old_index": "my-index-2099.05.06-000001",
+  "new_index": "my-index-2099.05.07-000002",
+  "rolled_over": true,
+  "dry_run": false,
+  "conditions": {
+    "[max_age: 7d]": false,
+    "[max_docs: 1000]": true,
+    "[max_primary_shard_size: 50gb]": false,
+    "[max_primary_shard_docs: 2000]": false
+  }
+}
+```
+
+&emsp;&emsp;如果别名的索引名称使用来date math并且按照一定的间隔规律进下rollover，你可以使用data math来缩小查询范围。例如，下面的查询目标是最近三天的数据。
+
+```text
+# GET /<my-index-{now/d}-*>,<my-index-{now/d-1d}-*>,<my-index-{now/d-2d}-*>/_search
+GET /%3Cmy-index-%7Bnow%2Fd%7D-*%3E%2C%3Cmy-index-%7Bnow%2Fd-1d%7D-*%3E%2C%3Cmy-index-%7Bnow%2Fd-2d%7D-*%3E/_search
+```
+
+###### Roll over an index alias with one index
+
+&emsp;&emsp;下面的请求创建了`<my-index-{now/d}-000001>`以及他的别名`my-write-alias`。
+
+```text
+# PUT <my-index-{now/d}-000001>
+PUT %3Cmy-index-%7Bnow%2Fd%7D-000001%3E
+{
+  "aliases": {
+    "my-write-alias": { }
+  }
+}
+```
+
+&emsp;&emsp;下面的请求只有在当前write index满足下面的条件才会rollover：
+
+- 索引创建于7天或更久之前
+- 索引中包含1000或更多的文档
+- 索引最大的主分片大小达到50GB或者更大
+
+```text
+POST my-write-alias/_rollover
+{
+  "conditions": {
+    "max_age": "7d",
+    "max_docs": 1000,
+    "max_primary_shard_size": "50gb",
+    "max_primary_shard_docs": "2000"
+  }
+}
+```
+
+&emsp;&emsp;这个API返回：
+
+```text
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "old_index": "my-index-2099.05.06-000001",
+  "new_index": "my-index-2099.05.07-000002",
+  "rolled_over": true,
+  "dry_run": false,
+  "conditions": {
+    "[max_age: 7d]": false,
+    "[max_docs: 1000]": true,
+    "[max_primary_shard_size: 50gb]": false,
+    "[max_primary_shard_docs: 2000]": false
+  }
+}
+```
+
+###### Specify settings during a rollover
+
+&emsp;&emsp;通常你可以使用[index template](##Index templates)在rollover时自动配置索引。如果你rollover一个索引别名，你可以在接口添加额外的index settings或者覆盖模板中的settings。Data stream中不支持`settings`参数。
+
+```text
+POST my-alias/_rollover
+{
+  "settings": {
+    "index.number_of_shards": 2
+  }
+}
+```
 
 #### Shrink index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-shrink-index.html)
@@ -35502,7 +35789,7 @@ POST /_index_template/_simulate/<index-template>
 
 ##### Query parameters
 
-- create：（可选项，布尔值）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
+- create：（Optional，布尔值）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
 - master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`
 
 ##### Request body
