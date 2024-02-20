@@ -33382,7 +33382,7 @@ POST /<index>/_close
 ##### Path parameters
 
 - `<index>`：（Optional, string）用逗号隔开的，或者是通配符表达式的索引名称列表用来限制请求
-  - 索要关闭所有的索引，可以使用`_all`或`*`。默认你必须显示指定需要关闭的索引名称。索要使用`_all`或者`*`或者通配符表达式，你必须通过[cluster update settings](####Cluster update settings API)API或者`elasticsearch.yml`将`action.destructive_requires_name`修改为`false`
+  - 若要关闭所有的索引，可以使用`_all`或`*`。默认你必须显示指定需要关闭的索引名称。若要使用`_all`或者`*`或者通配符表达式，你必须通过[cluster update settings](####Cluster update settings API)API或者`elasticsearch.yml`将`action.destructive_requires_name`修改为`false`
 
 ##### Query parameters
 
@@ -33395,7 +33395,7 @@ POST /<index>/_close
   - none：不展开通配符模式
   默认值为`open`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](####Index API)。
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](####Index API)。
 - master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -35708,7 +35708,77 @@ GET /_dangling
 
 
 #### Open index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-open-close.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-open-close.html)
+
+&emsp;&emsp;打开一个关闭的索引。对于data streams，这个接口打开所有关闭的backing indices。
+
+```text
+POST /my-index-000001/_open
+```
+
+##### Request
+
+```text
+POST /<target>/_open
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有data stream、Index或者别名上的`manage`的管理权限[ index privilege](####Security privileges)。
+
+##### Description
+
+&emsp;&emsp;你可以使用这个接口重新打开一个关闭的索引。如果请求目标是一个data  stream，则会打开流中所有的关闭的backing indices。
+
+&emsp;&emsp;当打开或者关闭一个索引时，对于重启索引分片，master要负责反应索引新的状态。分片才能进行正常的恢复操作。集群会对打开/关闭的索引自动进行replicate，保证总是有足够的shard  copies。
+
+&emsp;&emsp;你可以打开/关闭多个索引。如果请求中显示引用了缺失的索引则会抛出错误。当然可以通过`ignore_unavailable=true`来关闭这个行为。
+
+&emsp;&emsp;你可以显示指定要打开/关闭的索引名称。若要使用`_all`、`*`或者其他通配符表达式打开/关闭索引，需要将`action.destructive_requires_name`修改为`false`。可以通过cluster update settings API更新这个参数。
+
+&emsp;&emsp;关闭的索引会消耗大量的磁盘空间，这可能在受控环境中引发问题。可以通过cluster settings API，将 `cluster.indices.close.enable` 设置为 `false` 来禁用关闭索引的功能。默认值为 `true`。
+
+###### Wait for active shards
+
+&emsp;&emsp;由于打开/关闭索引都会分配分片，创建索引时使用的[wait_for_active_shards]()也会应用到`_open`和`_close`的索引动作上。
+
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的，或者是通配符表达式的索引名称列表用来限制请求
+  - 默认你必须显示指定索引名称来限制请求。若要使用`_all`或者`*`或者通配符表达式，你必须通过[cluster update settings](####Cluster update settings API)API或者`elasticsearch.yml`将`action.destructive_requires_name`修改为`false`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open`
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+&emsp;&emsp;下面的例子重新打开了一个名为`my-index-000001`的索引。
+
+```text
+POST /my-index-000001/_open
+```
+
+&emsp;&emsp;这个接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true
+}
+```
 
 #### Resolve index API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-resolve-index-api.html)
@@ -35822,7 +35892,7 @@ POST /my-index-000001/_forcemerge?max_num_segments=5
 &emsp;&emsp;若要添加一个analyzer，你必须关闭索引，定义好analyzer然后重新打开索引。
 
 > NOTE：你不能关闭data stream的writer Index
-> 索要更新data stream的write Index的analyzer以及以后的backing indices，可以通过[index template used by the stream](####Create an index template)更新analyzer。然后通过[roll over the data stream](####Manually roll over a data stream)将新的analyzer应用到流中的write Index以及以后的backing indices上。在rollover后，将会影响查询以及新添加到流中的数据。然而，它不会影响data stream中的backing indices或现有的数据。
+> 若要更新data stream的write Index的analyzer以及以后的backing indices，可以通过[index template used by the stream](####Create an index template)更新analyzer。然后通过[roll over the data stream](####Manually roll over a data stream)将新的analyzer应用到流中的write Index以及以后的backing indices上。在rollover后，将会影响查询以及新添加到流中的数据。然而，它不会影响data stream中的backing indices或现有的数据。
 > 
 > 若要为现有的backing indices更改analyzer，你必须创建一个新的data stream然后reindex你的数据。见[Use reindex to change mappings or settings](####Use reindex to change mappings or settings)
 
