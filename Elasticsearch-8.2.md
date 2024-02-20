@@ -37058,6 +37058,55 @@ GET /_ingest/pipeline/my-pipeline-id
 }
 ```
 
+#### Delete pipeline API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-pipeline-api.html)
+
+&emsp;&emsp;删除一个或多个ingest pipeline。
+
+```text
+DELETE /_ingest/pipeline/my-pipeline-id
+```
+
+##### Request
+
+```text
+DELETE /_ingest/pipeline/<pipeline>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security feature，你必须有`manage_pipeline`、`manage_ingest_pipelines`、`manage`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。
+
+##### Path parameters
+
+- `<pipeline>`：（Optional, string）用逗号隔开的pipeline的ID列表来限制请求。
+  - 若要删除集群中所有的ingest pipeline，使用`*`
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+###### Delete a specific ingest pipeline
+
+```text
+DELETE /_ingest/pipeline/pipeline-one
+```
+
+###### Delete ingest pipelines using a wildcard expression
+
+```text
+DELETE /_ingest/pipeline/pipeline-*
+```
+
+###### Delete all ingest pipelines
+
+```text
+DELETE /_ingest/pipeline/*
+```
+
 #### Simulate pipeline API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
 
