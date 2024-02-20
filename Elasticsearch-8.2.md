@@ -34272,7 +34272,48 @@ DELETE <target>/_aliases/<alias>
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
+
+&emsp;&emsp;删除一个或多个索引。
+
+```text
+DELETE /my-index-000001
+```
+
+##### Request
+
+```t
+DELETE /<index>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个索引的`delete_index`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
+##### Description
+
+&emsp;&emsp;删除某个索引会删除它的文档、分片以及元数据。他不会删除相关的Kibana组件，比如Data views、visualizations或者dashboards。
+
+&emsp;&emsp;你不能删除某个data  stream 中当前的write index。若要删除它，你必须[roll over](####Rollover)data stream，使得可以生成一个新的write index。随后你就可以使用这个接口删除它。
+
+##### Path parameters
+
+- `<index>`：（Required, string）待删除的用逗号隔开的索引名称。你不能指定[索引别名](##Aliases)
+  - 默认不支持通配符（`*`）或者`_all`。若要使用通配符或者`_all`，需要将集群设置[action.destructive_requires_name](#####action.destructive_requires_name)设置为`false`
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open, closed`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
+- master_timeout：（Optional，[time units](####Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 
 #### Delete index template API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-template.html)
@@ -34602,6 +34643,46 @@ GET /_all/_mapping/field/message
 ```text
 GET /_all/_mapping/field/*.id
 ```
+
+#### Get index API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-index.html)
+
+&emsp;&emsp;返回一个或多个索引信息。对于data stream，该接口返回流中的backing indices。
+
+```text
+GET /my-index-000001
+```
+
+##### Request
+
+```text
+GET /<target>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream、index、alias的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](##Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- expand_wildcards：（Optional, string）决定在`<target>`参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如`open, hidden`。默认是`all`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的data streams和indices
+  - closed：匹配关闭的data streams和indices
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`open`。
+- feature：（Optional, string）返回索引的指定特性。支持用逗号隔开。可选值为`aliases`、`mappings`以及`settings`。默认是`aliases`，`mappings`，`settings`
+- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
+- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
 #### Get index settings API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-settings.html)
