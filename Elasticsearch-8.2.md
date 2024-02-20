@@ -36909,16 +36909,24 @@ PUT /my-index-000001/_mapping
 
 
 ### Ingest APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-apis.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-apis.html)
 
-&emsp;&emsp;
-##### Request
-##### Prerequisites
-##### Description
-##### Path parameters
-##### Query parameters
-##### Response body
-##### Example
+&emsp;&emsp;使用ingest API来管理[ingest pipeline](##Ingest pipelines)和processor的相关的任务以及资源。
+
+#### Ingest pipeline APIs
+
+&emsp;&emsp;使用下面的接口来创建。管理以及测试ingest pipeline：
+
+- [Create or update pipeline](####Create or update pipeline API) 创建或更新一个pipeline
+- [Get pipeline](####Get pipeline API) 来获取pipeline的配置
+- [Delete pipeline](####Delete pipeline API) 来删除一个pipeline
+- [Simulate pipeline](####Simulate pipeline API) 来测试一个pipeline
+
+#### Stat APIs
+
+&emsp;&emsp;使用下面的接口获取ingest 处理的统计信息：
+
+- [GeoIP stats](####GeoIP stats API)用来下载用于[geoip processor](####GeoIP processor)的GeoIP数据库的统计信息
 
 #### Create or update pipeline API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-pipeline-api.html)
@@ -37125,7 +37133,7 @@ GET _ingest/geoip/stats
 ##### Prerequisites
 
 - 如果开启了Elasticsearch security功能，你必须有`monitor`、`manage` [cluster privilege](#####Cluster privileges)来使用这个API>
-- 如果[ingest.geoip.downloader.enabled]()禁用了，该接口返回zero values以及空的`nodes`对象
+- 如果[ingest.geoip.downloader.enabled](####GeoIP processor)禁用了，该接口返回zero values以及空的`nodes`对象
 
 ##### Response body
 
@@ -37139,7 +37147,7 @@ GET _ingest/geoip/stats
   - `<node_id>`：（object）节点上下载的数据库。key就是节点ID
     - databases：（array of object）
       - name：（string）数据库的名称
-    - files_in_temp：（array of strings）下载的数据库文件，包括相关的许可证文件。Elasticsearch将这些内容存储在节点的[temporary directory:]()：`$ES_TMPDIR/geoip-databases/<node_id>`
+    - files_in_temp：（array of strings）下载的数据库文件，包括相关的许可证文件。Elasticsearch将这些内容存储在节点的[temporary directory:](####Important Elasticsearch configuration)：`$ES_TMPDIR/geoip-databases/<node_id>`
 
 #### Simulate pipeline API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
@@ -40125,6 +40133,15 @@ POST _slm/stop
 
 #### Create or update roles API 
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api-put-role.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Get transform statistics API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-transform-stats.html)
