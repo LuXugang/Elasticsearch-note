@@ -14861,7 +14861,7 @@ PUT _ingest/pipeline/one-pipeline-to-rule-them-all
 ### Example: Parse logs in the Common Log Format
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/common-log-format-example.html)
 
-&emsp;&emsp;在这个教程中，你将使用[ingest pipeline](##Ingest pipelines)以及[common log format](https://en.wikipedia.org/wiki/Common_Log_Format)，在索引前对服务器日志进行解析。在开始之前，先查看使用ingest pipeline前的[prerequisite](#### Prerequisites(ingest pipeline))。
+&emsp;&emsp;在这个教程中，你将使用[ingest pipeline](##Ingest pipelines)以及[common log format](https://en.wikipedia.org/wiki/Common_Log_Format)，在索引前对服务器日志进行解析。在开始之前，先查看使用ingest pipeline前的[prerequisite](####Prerequisites(ingest pipeline))。
 
 &emsp;&emsp;你要解析的日志如下所示：
 
