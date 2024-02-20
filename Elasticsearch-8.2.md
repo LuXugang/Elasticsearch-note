@@ -14210,7 +14210,7 @@ PUT _ingest/pipeline/my-pipeline
 
 #### Manage pipeline versions
 
-&emsp;&emsp;当你创建或者更新一个pipeline时，你可以指定一个可选的`version`的整数值。你可以使用version以及参数[if_version](#####Query parameters(Create or update pipeline API))来有条件的更新pipeline。一次成功的更新操作会提高pipeline的版本号。
+&emsp;&emsp;当你创建或者更新一个pipeline时，你可以指定一个可选的`version`的整数值。你可以使用version以及参数[if_version](####Create or update pipeline API)来有条件的更新pipeline。一次成功的更新操作会提高pipeline的版本号。
 
 ```text
 PUT _ingest/pipeline/my-pipeline-id
@@ -36921,9 +36921,89 @@ PUT /my-index-000001/_mapping
 ##### Example
 
 #### Create or update pipeline API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-pipeline-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-pipeline-api.html)
 
-##### Query parameters(Create or update pipeline API)
+&emsp;&emsp;创建或者更新一个[ingest pipeline](##Ingest pipelines)。使用这个接口做出的变更能立即生效。
+
+```text
+PUT _ingest/pipeline/my-pipeline-id
+{
+  "description" : "My optional pipeline description",
+  "processors" : [
+    {
+      "set" : {
+        "description" : "My optional processor description",
+        "field": "my-keyword-field",
+        "value": "foo"
+      }
+    }
+  ]
+}
+```
+
+##### Request
+
+```text
+PUT /_ingest/pipeline/<pipeline>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security feature，你必须有`manage_pipeline`、`manage_ingest_pipelines`、`manage`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。
+
+##### Path parameters
+
+- `<pipeline>`：（Required, string）待创建/更新的ingest pipeline的ID
+
+##### Query parameters
+
+- if_version：（Optional, integer）只有pipeline是这个版本号才会执行操作。如果指定了该值并且更新生成，pipeline的版本号会增加
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Response body
+
+- description：（Optional, string）ingest pipeline的描述
+- on_failure：（Optional, array of [processor](###Ingest processor reference) objects）某个processor失败后立即运行的processors
+  - 每一个processor支持一个processor-level的`on_failure`值。如果某个processor没有`on_failure`值并且运行失败，Elasticsearch会使用pipeline-level作为一个fallback。这个参数中的processor会按照制定顺序有序运行。Elasticsearch不会尝试运行pipeline中剩余的processor。
+- processors：（Required,array of [processor](###Ingest processor reference) objects）用来在写入索引前对文档执行转化的processor。按照指定的顺序有序执行
+- version：（Optional,integer）外部系统用来追踪ingest pipeline的版本号
+  - 见请求参数`if_version`查看如何使用该参数
+- `_meta`：（Optional, object）可选的关于ingest pipeline的元数据。可以是任何内容。不会由Elasticsearch自动生成
+
+##### Example
+
+###### Pipeline metadata
+
+&emsp;&emsp;你可以使用`_meta`参数添加任意的元数据到某个pipeline中。这是用户定义的对象，存储在集群状态中，因此尽量简短些。
+
+&emsp;&emsp;`_meta`参数是可选的并且不会由Elasticsearch自动生成
+
+&emsp;&emsp;若要移除`_meta`，更新pipeline并且不指定该值。
+
+```text
+PUT /_ingest/pipeline/my-pipeline-id
+{
+  "description" : "My optional pipeline description",
+  "processors" : [
+    {
+      "set" : {
+        "description" : "My optional processor description",
+        "field": "my-keyword-field",
+        "value": "foo"
+      }
+    }
+  ],
+  "_meta": {
+    "reason": "set my-keyword-field to foo",
+    "serialization": {
+      "class": "MyPipeline",
+      "id": 10
+    }
+  }
+}
+```
+
 
 #### Simulate pipeline API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
