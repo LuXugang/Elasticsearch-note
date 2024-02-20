@@ -36320,7 +36320,96 @@ POST /my-index-000001/_open
 ```
 
 #### Resolve index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-resolve-index-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-resolve-index-api.html)
+
+&emsp;&emsp;解析指定的indices、aliases、data streams的Index pattern或者名称。支持多个pattern以及远端集群
+
+```text
+GET /_resolve/index/my-index-*
+```
+
+##### Request
+
+```text
+GET /_resolve/index/<name>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有这个data stream、index、alias的`view_index_metadata`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口。
+
+##### Path parameters
+
+- `<name>`：（Required,string）用逗号隔开的indices、aliases、data streams的Index pattern或者名称。在[remote clusters](###Remote clusters)上的资源可以使用`<cluster>:<name>`语法来指定
+
+##### Query parameters
+
+- expand_wildcards：（Optional, string）通配符模式可以匹配的索引类型。如果请求目标是data stream，还会检测通配符表达式是否会匹配隐藏的data streams。支持多值，例如`open`, `hidden`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](###Multi-target syntax-1)
+  - open：匹配打开的，非隐藏的索引。同样匹配非隐藏的data stream
+  - closed：匹配关闭的，非隐藏的索引。同样匹配非隐藏的data stream。Data stream不能关闭
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+
+##### Example
+
+```text
+GET /_resolve/index/f*,remoteCluster1:bar*?expand_wildcards=all
+```
+
+&emsp;&emsp;这个接口返回以下响应：
+
+```text
+{
+  "indices": [                                 
+    {
+      "name": "foo_closed",
+      "attributes": [
+        "closed"                               
+      ]
+    },
+    {
+      "name": "freeze-index",
+      "aliases": [
+        "f-alias"
+      ],
+      "attributes": [
+        "open"
+      ]
+    },
+    {
+      "name": "remoteCluster1:bar-01",
+      "attributes": [
+        "open"
+      ]
+    }
+  ],
+  "aliases": [                                 
+    {
+      "name": "f-alias",
+      "indices": [
+        "freeze-index",
+        "my-index-000001"
+      ]
+    }
+  ],
+  "data_streams": [                            
+    {
+      "name": "foo",
+      "backing_indices": [
+        ".ds-foo-2099.03.07-000001"
+      ],
+      "timestamp_field": "@timestamp"
+    }
+  ]
+}
+```
+
+&emsp;&emsp;第2行，所有匹配了提供的名字或者表达式的索引
+&emsp;&emsp;第6行，index attribute可以是`open, closed, hidden, system, frozen`
+&emsp;&emsp;第25行，所有匹配了提供的名字或者表达式的别名
+&emsp;&emsp;第34行，所有匹配了提供的名字或者表达式的data stream
 
 #### Refresh API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-refresh.html)
