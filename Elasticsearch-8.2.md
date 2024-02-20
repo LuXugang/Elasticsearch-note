@@ -33222,7 +33222,7 @@ POST /<target>/_disk_usage
 - flush：（Optional,Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
 - run_expensive_tasks：（Required, Boolean）分析域的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
-- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](####Index API)。
 
 ##### Example
 
@@ -33391,7 +33391,7 @@ PUT /<index>
 
 ##### Query parameters
 
-- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](####Index API)。
 - master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -33446,7 +33446,7 @@ PUT /my-index-000001
 ```
 
 > NOTE：你不需要再`settings`字段下显示的指定`index`字段
- 
+
 &emsp;&emsp;更多关于在创建索引时，不需要关心的索引层设置（index level settings）的内容见[index modules](##Index modules)。
 
 ###### Mappings（create index api）
@@ -33509,7 +33509,7 @@ PUT /logs
 }
 ```
 
-&emsp;&emsp;`acknowledged`描述的是否索引在集群中成功创建，`shards_acknowledged`描述的是在超时之前，索引中每一个分片要求的分片数量是否都已经启用（started）。注意的是有可能索引创建成功了，但是`acknowledged`或`shards_acknowledged`的值为`false`。这些值简单的描述了是否在超时之前完成了操作。如果`acknowledged`为`false`，超时之前，集群状态都未包含新创建的索引，但可能稍后就创建成功了。如果`shards_acknowledged`为`false`，超时之前，已启用的分片数量未达到要求（默认只需要主分片都已经启用）。即使集群状态已经成功包含了新创建的索引（比如`acknowledged=true`）。
+&emsp;&emsp;`acknowledged`描述的是否索引在集群中成功创建，`shards_acknowledged`描述的是在超时之前，索引中每一个分片要求的分片数量（shard copies，包含主分片跟副本分片）是否都已经启用（started）。注意的是有可能索引创建成功了，但是`acknowledged`或`shards_acknowledged`的值为`false`。这些值简单的描述了是否在超时之前完成了操作。如果`acknowledged`为`false`，超时之前，集群状态都未包含新创建的索引，但可能稍后就创建成功了。如果`shards_acknowledged`为`false`，超时之前，已启用的分片数量未达到要求（默认只需要主分片都已经启用）。即使集群状态已经成功包含了新创建的索引（比如`acknowledged=true`）。
 
 &emsp;&emsp;我们可以通过索引设置`index.write.wait_for_active_shards`使得只要求主分片都已经启用（注意的是修改这个设置同样会影响接下俩的写操作的`wait_for_active_shards`）：
 
