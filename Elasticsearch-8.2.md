@@ -37107,8 +37107,8 @@ DELETE /_ingest/pipeline/pipeline-*
 DELETE /_ingest/pipeline/*
 ```
 
-#### Simulate pipeline API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
+#### GeoIP stats API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-stats-api.html)
 
 &emsp;&emsp;
 ##### Request
@@ -37119,6 +37119,347 @@ DELETE /_ingest/pipeline/*
 ##### Response body
 ##### Example
 
+#### Get pipeline API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-pipeline-api.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
+
+#### Simulate pipeline API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
+
+&emsp;&emsp;对提供的文档集合执行一个ingest pipeline。
+
+```text
+POST /_ingest/pipeline/my-pipeline-id/_simulate
+{
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "bar"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "rab"
+      }
+    }
+  ]
+}
+
+```
+
+##### Request
+
+```text
+POST /_ingest/pipeline/<pipeline>/_simulate
+GET /_ingest/pipeline/<pipeline>/_simulate
+POST /_ingest/pipeline/_simulate
+GET /_ingest/pipeline/_simulate
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security feature，你必须有`read_pipeline`、`manage_pipeline`、`manage_ingest_pipelines`、`manage`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。
+
+##### Description
+
+&emsp;&emsp;这个接口对请求体中提供的文档集合执行指定的pipeline。
+&emsp;&emsp;你可以对提供的文档执行一个现有的pipeline或者在请求体中定义一个pipeline
+
+##### Path parameters
+
+- `<pipeline>`：（Required\*, string）待测试的pipeline。如果你不在请求体中指定一个`pipeline`，那这个参数是必须要提供的
+
+##### Query parameters
+
+- verbose：（Optional, Boolean）如果为`true`，响应中包含pipeline执行的每一个processor的输出数据
+
+##### Response body
+
+- pipeline：（Required\*, object）待测试的pipeline。如果你不在请求体中指定一个`pipeline`，那这个参数是必须要提供的。如果你同时在请求参数跟请求体汇总指定了，那么接口只使用请求参数中的值
+  - description：（Optional, string）ingest pipeline的描述
+  - on_failure：（Optional, array of [processor](###Ingest processor reference) objects）某个processor失败后立即运行的processors
+    - 每一个processor支持一个processor-level的`on_failure`值。如果某个processor没有`on_failure`值并且运行失败，Elasticsearch会使用pipeline-level作为一个fallback。这个参数中的processor会按照制定顺序有序运行。Elasticsearch不会尝试运行pipeline中剩余的processor。
+  - processors：（Required,array of [processor](###Ingest processor reference) objects）用来在写入索引前对文档执行转化的processor。按照指定的顺序有序执行
+  - version：（Optional,integer）外部系统用来追踪ingest pipeline的版本号
+    - 见请求参数`if_version`查看如何使用该参数
+  - `_meta`：（Optional, object）可选的关于ingest pipeline的元数据。可以是任何内容。不会由Elasticsearch自动生成
+- docs：（Required, array of objects）样例文档用来在pipeline中测试
+  - `_id`：（Optional, string）文档的唯一标示。这个ID在`_index`中必须是唯一的
+  - `_index`：（Optional, string）包含文档的索引名称
+  - `_routing`：（Optional, string）用来将文档发送到指定主分片的值，见[\_routing](####\_routing field)
+  - `_source`：(Required, object)文档JSON类型的内容
+
+##### Example
+
+###### Specify a pipeline as a path parameter
+
+```text
+POST /_ingest/pipeline/my-pipeline-id/_simulate
+{
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "bar"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "rab"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;该接口返回下面内容：
+
+```text
+{
+   "docs": [
+      {
+         "doc": {
+            "_id": "id",
+            "_index": "index",
+            "_source": {
+               "field2": "_value",
+               "foo": "bar"
+            },
+            "_ingest": {
+               "timestamp": "2017-05-04T22:30:03.187Z"
+            }
+         }
+      },
+      {
+         "doc": {
+            "_id": "id",
+            "_index": "index",
+            "_source": {
+               "field2": "_value",
+               "foo": "rab"
+            },
+            "_ingest": {
+               "timestamp": "2017-05-04T22:30:03.188Z"
+            }
+         }
+      }
+   ]
+}
+```
+
+###### Specify a pipeline in the request body
+
+```text
+POST /_ingest/pipeline/_simulate
+{
+  "pipeline" :
+  {
+    "description": "_description",
+    "processors": [
+      {
+        "set" : {
+          "field" : "field2",
+          "value" : "_value"
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "bar"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "rab"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;该接口返回下面内容：
+
+```text
+{
+   "docs": [
+      {
+         "doc": {
+            "_id": "id",
+            "_index": "index",
+            "_source": {
+               "field2": "_value",
+               "foo": "bar"
+            },
+            "_ingest": {
+               "timestamp": "2017-05-04T22:30:03.187Z"
+            }
+         }
+      },
+      {
+         "doc": {
+            "_id": "id",
+            "_index": "index",
+            "_source": {
+               "field2": "_value",
+               "foo": "rab"
+            },
+            "_ingest": {
+               "timestamp": "2017-05-04T22:30:03.188Z"
+            }
+         }
+      }
+   ]
+}
+```
+
+###### View verbose results
+
+&emsp;&emsp;你可以使用该接口查看pipeline中每一个processor是如何影响被提取（ingest）的文档的。若要查看在模拟请求中每一个processor的中间结果，你可以在请求中添加`verbose` 参数。
+
+```text
+POST /_ingest/pipeline/_simulate?verbose=true
+{
+  "pipeline" :
+  {
+    "description": "_description",
+    "processors": [
+      {
+        "set" : {
+          "field" : "field2",
+          "value" : "_value2"
+        }
+      },
+      {
+        "set" : {
+          "field" : "field3",
+          "value" : "_value3"
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "bar"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "rab"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;该接口返回下面内容：
+
+```text
+{
+  "docs" : [
+    {
+      "processor_results" : [
+        {
+          "processor_type" : "set",
+          "status" : "success",
+          "doc" : {
+            "_index" : "index",
+            "_id" : "id",
+            "_source" : {
+              "field2" : "_value2",
+              "foo" : "bar"
+            },
+            "_ingest" : {
+              "pipeline" : "_simulate_pipeline",
+              "timestamp" : "2020-07-30T01:21:24.251836Z"
+            }
+          }
+        },
+        {
+          "processor_type" : "set",
+          "status" : "success",
+          "doc" : {
+            "_index" : "index",
+            "_id" : "id",
+            "_source" : {
+              "field3" : "_value3",
+              "field2" : "_value2",
+              "foo" : "bar"
+            },
+            "_ingest" : {
+              "pipeline" : "_simulate_pipeline",
+              "timestamp" : "2020-07-30T01:21:24.251836Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "processor_results" : [
+        {
+          "processor_type" : "set",
+          "status" : "success",
+          "doc" : {
+            "_index" : "index",
+            "_id" : "id",
+            "_source" : {
+              "field2" : "_value2",
+              "foo" : "rab"
+            },
+            "_ingest" : {
+              "pipeline" : "_simulate_pipeline",
+              "timestamp" : "2020-07-30T01:21:24.251863Z"
+            }
+          }
+        },
+        {
+          "processor_type" : "set",
+          "status" : "success",
+          "doc" : {
+            "_index" : "index",
+            "_id" : "id",
+            "_source" : {
+              "field3" : "_value3",
+              "field2" : "_value2",
+              "foo" : "rab"
+            },
+            "_ingest" : {
+              "pipeline" : "_simulate_pipeline",
+              "timestamp" : "2020-07-30T01:21:24.251863Z"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### Index lifecycle management APIs
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
