@@ -33345,7 +33345,131 @@ POST /my-index-000001/_disk_usage?run_expensive_tasks=true
 ##### Example
 
 #### Clone index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-clone-index.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-clone-index.html)
+
+&emsp;&emsp;克隆一个现有的索引。
+
+```text
+POST /my-index-000001/_clone/cloned-my-index-000001
+```
+
+##### Request
+
+```text
+POST /<index>/_clone/<target-index>
+PUT /<index>/_clone/<target-index>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有索引或者索引别名的`manage`的[index privilege](#####Indices privileges)才能使用这个接口。
+- 若要克隆一个索引，索引必须被标记为只读并且[cluster health](####Cluster health API)的状态是`green`
+
+&emsp;&emsp;比如说，下面的请求禁止了`my_source_index`索引的写操作，因此它可以被克隆。像删除索引这种元数据更改仍然是允许的。
+
+```text
+PUT /my_source_index/_settings
+{
+  "settings": {
+    "index.blocks.write": true
+  }
+}
+```
+
+&emsp;&emsp;Data  stream当前的write index不能被克隆。若要克隆当前的write index，data stream必须先执行[roolled over](####Rollover)，使得创建一个新的write index，那么之前的write index就可以被克隆了。
+
+##### Description
+
+&emsp;&emsp;使用该接口将现有的索引克隆到一个新的索引中，每一个源主分片会被克隆到新索引的新的主分片中。
+
+> IMPORTANT：Elasticsearch不会将索引模板应用到生成的索引中。该接口同样不会从源索引中拷贝索引元数据。索引元数据包括aliases，ILM阶段定义以及CCR follower信息。例如，如果你克隆一个CCR follower index，生成的克隆索引不会成为一个follower index。
+> 这个接口会从源索引中拷贝索引设置到生成的索引中，除了`index.number_of_replicas`和`index.auto_expand_replicas`。若要在生成的索引中设置副本分片的数量，需要在请求该接口时指定
+
+###### How cloning works
+
+&emsp;&emsp;克隆工作方式如下：
+
+- 首先创建一个跟源索引相同定义的目标索引
+- 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且他们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
+- 最后，恢复后的目标索引就像是一个被关闭的索引，并且刚刚被打开
+
+###### Clone an index
+
+&emsp;&emsp;若要克隆`my_srouce_index`到一个名为`my_target_index`的新索引中，可以发起下面的请求：
+
+```text
+POST /my_source_index/_clone/my_target_index
+```
+
+&emsp;&emsp;目标索引添加到集群状态后，该接口就会马上返回，它不需要等待克隆操作开始。
+
+> IMPORTANT：只有满足以下的要求，索引才可以被克隆：
+> - 目标索引必须不存在
+> - 源索引必须跟目标索引有相同的主分片
+> - 目标索引中的主分片数量必须是源索引的因子。源索引必须比目标索引有更多的主分片
+> - 处理克隆操作的节点必须要有足够多空闲磁盘来容纳现有索引的第二个副本
+
+&emsp;&emsp;该接口类似[create index API](####Create index API)，因此目标索引接受`settings`和`aliases`：
+
+```text
+POST /my_source_index/_clone/my_target_index
+{
+  "settings": {
+    "index.number_of_shards": 5 
+  },
+  "aliases": {
+    "my_search_indices": {}
+  }
+}
+```
+
+&emsp;&emsp;第4行，目标索引的分片数量。必须跟源索引中的分片数量一致。
+
+> NOTE：Mapping不需要在`_clone`请求中指定，源索引中的mapping将用于目标索引。
+
+###### Monitor the cloning process
+
+&emsp;&emsp;克隆处理进度可以通过[\_cat recovery ](####cat recovery API) API查看，或者可以调用[cluster health API](####Cluster health API)以及参数`wait_for_status`设置为`yellow`来等待所有的主分片分配结束。
+
+&emsp;&emsp;只要目标索引被添加到集群状态中，在分片分配结束之前，该接口就会马上返回。在这个时间点，所有的分片处于`unassigned`状态。如果因为任何原因导致目标索引不能分配到收缩节点上，索引的主分片仍然会处于`unassigned`状态直到可以被分配到那个节点上。
+
+&emsp;&emsp;一旦主分片分配结束，就切换成`initializing`状态，然后克隆处理就开始了。当克隆操作完成，就切换成`active`状态。在这个时间点，Elasticsearch会尽量分配副本分片并且可能决策出将主分片重新分配到其他节点。
+
+###### Wait for active shards
+
+&emsp;&emsp;由于克隆操作创建一个新的索引来克隆分片，因此在索引创建时的[wait for active shards](####Create index API)设置也适用于克隆索引操作。
+
+##### Path parameters
+
+- `<index>`：（Required, string）待克隆的源索引名称
+- `<target-index>`：（Required, string）待创建的目标索引名称
+  - 索引名称必须满足下面的规则：
+    - 只允许小写
+    - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
+    - 在7.0之前允许包含`:`，7.0之后不被支持
+    - 不能以`-`, `_`, `+`开头
+    - 不能有 `.` 或者`..`
+    - 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
+    - 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
+
+##### Query parameters
+
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Response body
+
+- aliases：（Optional, object of objects）索引的别名
+  - `<alias>`：（Required, object）别名的key，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+    - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+- settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+
 
 #### Close index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-close.html)
