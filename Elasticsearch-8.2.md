@@ -37003,10 +37003,73 @@ PUT /_ingest/pipeline/my-pipeline-id
   }
 }
 ```
+#### Get pipeline API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-pipeline-api.html)
 
+&emsp;&emsp;返回一个或多个ingest pipeline的信息。则个API返回pipeline的本地引用。
+
+```text
+GET /_ingest/pipeline/my-pipeline-id
+```
+##### Request
+
+```text
+GET /_ingest/pipeline/<pipeline>
+GET /_ingest/pipeline
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security feature，你必须有`read_pipeline`、`manage_pipeline`、`manage_ingest_pipelines`、`manage`的[cluster privilege](#####Cluster privileges)才能管理ingest pipeline。
+
+##### Path parameters
+
+- `<pipeline>`：（Optional, string）用逗号隔开的pipeline的ID列表。支持使用通配符表达式
+  - 若要获取所有的ingest pipeline，忽略这个参数或者使用`*`
+
+##### Query parameters
+
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Example
+
+###### Get information for a specific ingest pipeline
+
+```text
+GET /_ingest/pipeline/my-pipeline-id
+```
+
+&emsp;&emsp;这个接口返回下面的响应：
+
+```text
+{
+  "my-pipeline-id" : {
+    "description" : "describe pipeline",
+    "version" : 123,
+    "processors" : [
+      {
+        "set" : {
+          "field" : "foo",
+          "value" : "bar"
+        }
+      }
+    ]
+  }
+}
+```
 
 #### Simulate pipeline API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/simulate-pipeline-api.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 
 ### Index lifecycle management APIs
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
