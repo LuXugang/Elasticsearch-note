@@ -28469,7 +28469,7 @@ GET bicycles,other_cycles/_search
 
 #### Disable the features you do not need
 
-&emsp;&emsp;默认情况下，Elasticsearch对大部分的域同时进行索引（倒排、bkd）和添加doc value（正排），使得这些域默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的域，并且你需要在这个域上进行histogram并且从来不会应用于filter，那你可以在[mappings](######Mappings)中安全的关闭索引（只使用bkd存储，不用倒排）：
+&emsp;&emsp;默认情况下，Elasticsearch对大部分的域同时进行索引（倒排、bkd）和添加doc value（正排），使得这些域默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的域，并且你需要在这个域上进行histogram并且从来不会应用于filter，那你可以在[mappings](######Mappings（create index api）)中安全的关闭索引（只使用bkd存储，不用倒排）：
 
 ```text
 PUT index
@@ -32641,7 +32641,7 @@ POST /_data_stream/_modify
 
 ##### Basic write model
 
-&emsp;&emsp;Elasticsearch中的每一个索引操作首先基于文档编号（document ID）通过[routing](######Routing(REST APIs))解析（resolve）replication group。一旦检测到replication group，这个操作会在内部转发到组中当前的主分片中。这个索引阶段称为`coordinating stage`。
+&emsp;&emsp;Elasticsearch中的每一个索引操作首先基于文档编号（document ID）通过[routing](######Routing(Index API))解析（resolve）replication group。一旦检测到replication group，这个操作会在内部转发到组中当前的主分片中。这个索引阶段称为`coordinating stage`。
 
 &emsp;&emsp;索引阶段的下一个阶段就是`primary stage`，在主分片上执行。主分片负责对索引操作进行验证并转发到其他副本分片。由于副本分片可能处于离线状态，主分片不要求一定要转发到所有的副本分片。Elasticsearch维护了副本分片的列表，这些副本会收到主分片的转发。这个列表称为`in-sync copies` 并且master node负责维护。正如in-sync这个名称一样，列表中的都是"good" 副本分片并且他们已经处理好了所有的索引和删除操作并且响应给了用户。主分片负责维护这个列表因此会复制操作给列表中的每一个副本分片。
 
@@ -32730,7 +32730,7 @@ POST /_data_stream/_modify
 
 ###### document IDs automatically
 
-###### Routing(REST APIs)
+###### Routing(Index API)
 
 &emsp;&emsp;
 
@@ -33351,11 +33351,185 @@ POST /my-index-000001/_disk_usage?run_expensive_tasks=true
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-close.html)
 
 #### Create index API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-index.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-create-index.html)
 
-##### Examples
+&emsp;&emsp;创建一个新的索引。
 
-###### Mappings
+```text
+PUT /my-index-000001
+```
+
+##### Request
+
+```text
+PUT /<index>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有索引的`create_index`或者`manage`的[index privilege](#####Indices privileges)才能使用这个接口。若要将这个索引添加到某个别名中，你必须有这个别名的`manage`的index privilege
+
+##### Description
+
+&emsp;&emsp;你可以使用该接口将一个新索引添加到集群中。在创建一个索引时，你可以指定下面的内容：
+
+- 定义索引的settings
+- 定义索引中域的mapping
+- 定义索引别名
+
+##### Path parameters
+
+&emsp;&emsp;索引名称必须满足下面的规范：
+
+- 只允许小写
+- 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
+- 在7.0之前允许包含`:`，7.0之后不被支持
+- 不能以`-`, `_`, `+`开头
+- 不能有 `.` 或者`..`
+- 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
+- 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
+
+##### Query parameters
+
+- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](####Index API)。
+- master_timeout：(Optional, [time units](###API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](###API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Response body
+
+- aliases：（Optional, object of objects）索引的别名
+  - `<alias>`：（Required, object）别名的key，索引别名支持[date math](###Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
+    - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+- mappings：（Optional, [mapping object](##Mapping)）
+  - Field names
+  - [Field data types](###Field data types)
+  - [Mapping parameters](###Mapping parameters)
+- settings：（Optional, [index setting object](####Index Settings)）索引的配置，见[Index Settings](##Index modules)
+
+##### Example
+
+###### Index settings（create index api）
+
+&emsp;&emsp;每一个创建的索引都可以有关联settings，在请求体中定义：
+
+```text
+PUT /my-index-000001
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 3,  
+      "number_of_replicas": 2 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第5行，`number_of_shards`的值为1。
+
+&emsp;&emsp;第6行，`number_of_replicas`的值为1（一个主分片有一个副本分片）。
+
+&emsp;&emsp;或者可以更简单一点：
+
+```text
+PUT /my-index-000001
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 2
+  }
+}
+```
+
+> NOTE：你不需要再`settings`字段下显示的指定`index`字段
+ 
+&emsp;&emsp;更多关于在创建索引时，不需要关心的索引层设置（index level settings）的内容见[index modules](##Index modules)。
+
+###### Mappings（create index api）
+
+&emsp;&emsp;该接口提供了mapping定义：
+
+```text
+PUT /test
+{
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings": {
+    "properties": {
+      "field1": { "type": "text" }
+    }
+  }
+}
+```
+
+###### Aliases（create index api）
+
+&emsp;&emsp;该接口同样可以提供[别名](##Aliases)的集合：
+
+```text
+PUT /test
+{
+  "aliases": {
+    "alias_1": {},
+    "alias_2": {
+      "filter": {
+        "term": { "user.id": "kimchy" }
+      },
+      "routing": "shard-1"
+    }
+  }
+}
+```
+
+&emsp;&emsp;索引别名同样支持[date math](###Date math support in system and index alias names-1)。
+
+```text
+PUT /logs
+{
+  "aliases": {
+    "<logs_{now/M}>": {}
+  }
+}
+```
+
+###### Wait for active shards
+
+&emsp;&emsp;默认情况下，索引操作（Index operation）只有在每一个分片的主分片启用后才会返回一个响应，或者请求超时。索引操作的响应中告知发生了哪些事情：
+
+```text
+{
+  "acknowledged": true,
+  "shards_acknowledged": true,
+  "index": "logs"
+}
+```
+
+&emsp;&emsp;`acknowledged`描述的是否索引在集群中成功创建，`shards_acknowledged`描述的是在超时之前，索引中每一个分片要求的分片数量是否都已经启用（started）。注意的是有可能索引创建成功了，但是`acknowledged`或`shards_acknowledged`的值为`false`。这些值简单的描述了是否在超时之前完成了操作。如果`acknowledged`为`false`，超时之前，集群状态都未包含新创建的索引，但可能稍后就创建成功了。如果`shards_acknowledged`为`false`，超时之前，已启用的分片数量未达到要求（默认只需要主分片都已经启用）。即使集群状态已经成功包含了新创建的索引（比如`acknowledged=true`）。
+
+&emsp;&emsp;我们可以通过索引设置`index.write.wait_for_active_shards`使得只要求主分片都已经启用（注意的是修改这个设置同样会影响接下俩的写操作的`wait_for_active_shards`）：
+
+```text
+PUT /test
+{
+  "settings": {
+    "index.write.wait_for_active_shards": "2"
+  }
+}
+```
+
+&emsp;&emsp;或者通过请求参数`wait_for_active_shards`修改：
+
+```text
+PUT /test?wait_for_active_shards=2
+```
+
+&emsp;&emsp;关于`wait_for_active_shards`的详细介绍以及可选的配置值见Index API中的[Active shards](####Index API)。
+
 
 #### Create or update alias API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-add-alias.html)
@@ -35204,7 +35378,7 @@ POST /my_source_index/_split/my_target_index
 
 ##### Wait for active shards
 
-&emsp;&emsp;因为切分操作会创建一个新的索引用于对分片的切分，索引创建中的[`wait for active shards`](####Create index API)这个设置同样应用于索引的切分。
+&emsp;&emsp;因为切分操作会创建一个新的索引用于对分片的切分，索引创建中的[wait for active shards](####Create index API)这个设置同样应用于索引的切分。
 
 ##### Path parameters
 
