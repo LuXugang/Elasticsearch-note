@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/12）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/20）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -35652,9 +35652,9 @@ PUT /my-index-000001
 &emsp;&emsp;切分操作：
 
 1. 创建一个跟源索引（source index）定义相同的目标索引（target index），但是目标索引拥有更多主分片数量。
-1. 建立源索引到目标索引的硬链接（hard-linking）（如果操作系统不支持硬链接，那么所有的段会被复制到新的索引中，这是一个开销较大的过程）。
-1. 对所有的文档进行hash操作，在low level files都创建后，删除那些属于不同的分片的文档
-1. 恢复目标索引，就像是一个关闭的索引刚刚被重新打开那样
+2. 建立源索引到目标索引的硬链接（hard-linking）（如果操作系统不支持硬链接，那么所有的段会被复制到新的索引中，这是一个开销较大的过程）。
+3. 对所有的文档进行hash操作，在low level files都创建后，删除那些属于不同的分片的文档
+4. 恢复目标索引，就像是一个关闭的索引刚刚被重新打开那样
 
 ##### Why doesn’t Elasticsearch support incremental resharding?
 
@@ -35719,23 +35719,17 @@ POST /my_source_index/_split/my_target_index
 
 ##### Path parameters
 
-###### \<index\>
+- `<index>`：(Required, string)待切分的源索引名称。
 
-&emsp;&emsp;(Required, string)待切分的源索引名称。
-
-###### \<target-index\>
-
-&emsp;&emsp;(Required, string)目标索引的名称。
-
-&emsp;&emsp;索引名称必须满足下面的规范：
-
-- 只允许小写
-- 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
-- 在7.0之前允许包含`:`，7.0之后不被支持
-- 不能以`-`, `_`, `+`开头
-- 不能有 `.` 或者`..`
-- 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
-- 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
+- `<target-index>：(Required, string)目标索引的名称。
+  - 索引名称必须满足下面的规范：
+    - 只允许小写
+    - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
+    - 在7.0之前允许包含`:`，7.0之后不被支持
+    - 不能以`-`, `_`, `+`开头
+    - 不能有 `.` 或者`..`
+    - 不能超过255个字节，有些字符用多个字节表示，所以更容易超过255个字节的限制
+    - 以`.`开头的索引名被弃用了，除了 [hidden indices](##Index Modules) 以及被插件使用的内部的索引名
 
 ##### Query parameters
 
@@ -35745,26 +35739,17 @@ POST /my_source_index/_split/my_target_index
 
 ##### Request body
 
-###### aliases(1)
+- aliases：(Optional, object of objects) 该参数用于生成的索引。
+  - `<alias>`：(Required, object) 这个字段用来描述索引别名，索引别名支持 [date math](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-math-index-names.html)。
 
-&emsp;&emsp;(Optional, object of objects) 该参数用于生成的索引。
+    - filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
+    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
+    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 
-&emsp;&emsp;\<alias\>
-
-&emsp;&emsp;&emsp;&emsp;(Required, object) 这个字段用来描述索引别名，索引别名支持 [date math](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-math-index-names.html)。
-
-&emsp;&emsp;\<alias\>的属性：
-
-- filter: (Optional, [Query DSL object](##Query DSL)) 用来限制文档访问的DSL语句。
-- index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-- is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-- is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](##Aliases)，默认为false。
-- routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-- search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
-
-###### settings
-
-&emsp;&emsp;(Optional, [index setting object](##Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](##Index Modules)。
+- settings：(Optional, [index setting object](##Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](##Index Modules)。
 
 #### Index template exists API（legacy）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-template-exists-v1.html)
