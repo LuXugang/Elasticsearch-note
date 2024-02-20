@@ -32783,6 +32783,21 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;Index APIs用来管理索引的settings、aliases（别名）、mappings和索引模板（Index Template）。
 
+##### Index management
+
+- [Create index](####Create index API)
+- [Delete index](####Delete index API)
+- [Get index](####Get index API)
+- [Exists](####Exists API)
+- [Close index](####Close index API)
+- [Open index](####Open index API)
+- [Shrink index](####Shrink index API)
+- [Split index](####Split index API)
+- [Clone index](####Clone index API)
+- [Rollover](####Rollover API)
+- [Unfreeze index](####Unfreeze index API)
+- [Resolve index](####Resolve index API)
+
 ##### Mapping management
 
 - [Update mapping](####Update mapping API)
