@@ -3660,11 +3660,11 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 
 ##### index.default_pipeline
 
-&emsp;&emsp;用于索引的默认的[ingest pipeline](#Ingest pipelines)。如果设置了默认的pipeline但pipeline不存在，索引请求则会失败。可以使用`pipeline`参数覆盖默认的pipeline。特定的pipeline名称`none`意味着不允许任何pipeline 。
+&emsp;&emsp;用于索引的默认的[ingest pipeline](#Ingest-pipelines)。如果设置了默认的pipeline但pipeline不存在，索引请求则会失败。可以使用`pipeline`参数覆盖默认的pipeline。特定的pipeline名称`none`意味着不允许任何pipeline 。
 
 ##### index.final_pipeline
 
-&emsp;&emsp;索引的final [ingest pipeline]()。如果设置了final pipeline并且该pipeline不存在，索引请求则会失败。 final pipeline总是在请求中指定的pipeline以及默认的pipeline之后运行。特定的pipeline名称`none`意味着不允许任何pipeline 。
+&emsp;&emsp;索引的final [ingest pipeline](#Ingest-pipelines)。如果设置了final pipeline并且该pipeline不存在，索引请求则会失败。 final pipeline总是在请求中指定的pipeline以及默认的pipeline之后运行。特定的pipeline名称`none`意味着不允许任何pipeline 。
 
 > NOTE：你不能使用一个final pipeline修改`_index`域，如果pipeline尝试进行修改，索引请求则会失败。
 
@@ -6210,7 +6210,7 @@ GET /my-index-000001
 
 ##### Define a runtime field with a grok pattern
 
-&emsp;&emsp;如果你想要检索结果中包含`clientip`，你可以在mapping中添加这个域并且作为runtime field。下面的runtime script定义了一个[grok pattern]()，它从单个文本（single text）的文档中提取出结构化的域。grok pattern类似与正则表达式支持aliased expressions。
+&emsp;&emsp;如果你想要检索结果中包含`clientip`，你可以在mapping中添加这个域并且作为runtime field。下面的runtime script定义了一个[grok pattern](#Grokking-grok)，它从单个文本（single text）的文档中提取出结构化的域。grok pattern类似与正则表达式支持aliased expressions。
 
 &emsp;&emsp;脚本会匹配`%{COMMONAPACHELOG}` log pattern，它能处理Apache日志结构。如果pattern匹配到(`clientip != null`)，脚本会emit匹配到的IP地址。如果没有匹配到，脚本直接退出而不是报错。
 
@@ -7651,7 +7651,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;下面的[index]() API请求为两个直方图：`histogram_1`和`histogram_2`存储预先聚合的数据。
+&emsp;&emsp;下面的[index](#Index-API) API请求为两个直方图：`histogram_1`和`histogram_2`存储预先聚合的数据。
 
 ```text
 PUT my-index-000001/_doc/1
@@ -13575,7 +13575,7 @@ GET /my-data-stream/_search
 &emsp;&emsp;第20行，文档目前的序号
 &emsp;&emsp;第21行，文档的primary term
 
-&emsp;&emsp;若要更新文档，使用[index API]()并且携带合法的`if_seq_no`和`if_primary_term`参数  ：
+&emsp;&emsp;若要更新文档，使用[index API](#Index-API)并且携带合法的`if_seq_no`和`if_primary_term`参数  ：
 
 ```text
 PUT /.ds-my-data-stream-2099-03-08-000003/_doc/bfspvnIBr7VVZlfp2lqX?if_seq_no=0&if_primary_term=1
@@ -18245,7 +18245,7 @@ POST _search
 
 ##### prefix rule parameters
 
-&emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes]()选项避免这种限制。
+&emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
 - prefix：（Required，string）你想要从顶层的`<field>`中以这个参数为前缀的term
 - analyzer：（Optional，string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
@@ -19173,7 +19173,7 @@ GET /_search
 
 &emsp;&emsp;接受这些参数：`analyzer`, `boost`, `operator`, `minimum_should_match`, `lenient` 以及 `zero_terms_query`。
 
-> WARNING：`cross_fields`类型的查询在混合字段统计时可能不总是产生合理的评分（例如评分可能变为负数）。作为替代，Ni可以考虑使用[combined_fields]()查询，这种查询同样"以term为中心"，但以更稳健的方式结合字段统计。这是针对跨字段查询的一种改进方法。
+> WARNING：`cross_fields`类型的查询在混合字段统计时可能不总是产生合理的评分（例如评分可能变为负数）。作为替代，Ni可以考虑使用[combined_fields](#Combined-fields)查询，这种查询同样"以term为中心"，但以更稳健的方式结合字段统计。这是针对跨字段查询的一种改进方法。
 
 ###### cross_field and analysis
 
@@ -19365,9 +19365,9 @@ GET /_search
 
 &emsp;&emsp;（Optional, Boolean）如果为`true`，[match phrase](#Match phrase query)会自动的创建同义词的查询。默认值为`true`。见[Synonyms and the query_string query](#Synonyms and the query_string query)。
 
-###### bootst
+###### boost
 
-&emsp;&emsp;（Optional, float）浮点值，用于提高或者降低query的[relevance scores]()。默认值为`1.0`。
+&emsp;&emsp;（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
 
 &emsp;&emsp;boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
 
@@ -19530,7 +19530,7 @@ qu?ck bro*
 
 &emsp;&emsp;注意的是通配符查询会使用大量的内存，并且性能很差。你可以想象下匹配`a* b* c*`这个query string会有多少个term？
 
-> WARNING：如果你只使用了`*`，那么会被重写为[exists query]()。因此，`field:*`将会匹配空值（不是null）：
+> WARNING：如果你只使用了`*`，那么会被重写为[exists query](#Exists-query)。因此，`field:*`将会匹配空值（不是null）：
 {
   "field": ""
 }
@@ -31140,7 +31140,7 @@ GET /_nodes/ingest
 
 ##### Path Parameters
 
-- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的Optional，见[Node specification]()。
+- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的Optional，见[Node specification](#Node-specification)。
 
 > NOTE：Elasticsearch要求集群节点的安全设置一致性，但是这个一致性不是强制的。因此，重新加载指定节点不是标准做法。通常用于重载操作失败后使用这种方法比较合理
 
@@ -31611,7 +31611,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
 #### Remote cluster info API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-remote-info.html)
 
-&emsp;&emsp;返回远程集群（remote cluster）的配置信息：的
+&emsp;&emsp;返回远程集群（remote cluster）的配置信息
 
 ##### Request
 
@@ -31630,7 +31630,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
 - mode：远程集群的连接模式。返回`sniff`或`proxy`
 - connected：如果至少连接了一个远程集群则该值为`true`
 - initial_connect_timeout：连接远程集群的初始超时时间
-- skip_unavailable：跨集群搜索（CCS，cross-cluster search）在查询时是否跳过不可用的节点。如果为`true`，CCS会忽略这些集群返回的相关错误。参考[]()
+- skip_unavailable：跨集群搜索（CCS，cross-cluster search）在查询时是否跳过不可用的节点。如果为`true`，CCS会忽略这些集群返回的相关错误。参考[Optional remote clusters](#Optional-remote-clusters)
 - seeds：当配置sniff后，远程集群中初始化的seed transport addresses
 - num_nodes_connected：当配置sniff后，连接的远程集群的节点数量
 - max_connections_per_cluster：当配置sniff模式时，为远程集群维护的最大连接数
@@ -32188,7 +32188,7 @@ DELETE /_data_stream/<data-stream>
 #### Get data stream API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-data-stream.html)
 
-&emsp;&emsp;获取一个或多个[data stream]()的信息。见[Get information about a data stream]()。
+&emsp;&emsp;获取一个或多个[data stream](#Data-streams)的信息。见[Get information about a data stream](#Get-information-about-a-data-stream)。
 
 ##### Request
 
@@ -33641,7 +33641,7 @@ PUT <target>/_aliases/<alias>
 
 ##### Path parameters
 
-- `<alias>`：（Required, string）待更新的别名。如果别名不存在，这个请求则会创建。索引别名支持[date math]()
+- `<alias>`：（Required, string）待更新的别名。如果别名不存在，这个请求则会创建。索引别名支持[date math](#Date-math-support-in-system-and-index-alias-names-1)
 - `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
 
 ##### Query parameters
@@ -33705,7 +33705,7 @@ PUT /_component_template/<component-template>
 
 &emsp;&emsp;一个索引模板可以由多个组件模版组成。若要使用一个组件模版，只需要在索引模板中的`composed_of`字段中指定即可。组件模板只有作为满足匹配的索引模板的一部分才能用于data stream和indices上。
 
-&emsp;&emsp;在索引模板中或者[create index]()请求中直接指定的settings和mappings会覆盖组件模版中的定义。
+&emsp;&emsp;在索引模板中或者[create index](#Create-index-API)请求中直接指定的settings和mappings会覆盖组件模版中的定义。
 
 &emsp;&emsp;组件模版只在索引创建时使用，对于data streams，包括data stream创建时以及流中backing indices创建时。对组件模版的修改不会影响已有的索引，包括流中的backing indices。
 
@@ -36162,7 +36162,7 @@ POST /<target>/_open
 
 ###### Wait for active shards
 
-&emsp;&emsp;由于打开/关闭索引都会分配分片，创建索引时使用的[wait_for_active_shards]()也会应用到`_open`和`_close`的索引动作上。
+&emsp;&emsp;由于打开/关闭索引都会分配分片，创建索引时使用的[wait_for_active_shards](#Create-index-API)也会应用到`_open`和`_close`的索引动作上。
 
 
 ##### Path parameters
@@ -39617,7 +39617,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 ##### Request body
 
 - ignore_unavailable：（Optional, Boolean）如果为`true`，并且快照中没有`indices`参数中定义的index或者data stream，那么恢复操作会忽略这些。如果为`false`，则会在遇到任意缺失的index或 data stream之后返回一个错误。默认值为`false`
-- ignore_index_settings：（Optional, string or array of strings）从快照中恢复的索引设置（Index settings）。你不能使用这个选项来忽略[index.number_of_shards]()
+- ignore_index_settings：（Optional, string or array of strings）从快照中恢复的索引设置（Index settings）。你不能使用这个选项来忽略[index.number_of_shards](#indexnumber_of_shards)
  - 对于data streams，这个选项只能应用于恢复backing indices。新的backing indices使用data streams匹配到的索引模板中的配置
 - include_aliases：（Optional, Boolean）如果为`true`，请求恢复data streams和indices的别名（Alias）。如果为`false`，则不会恢复别名。默认为`true`
 - include_global_state：（Optional, Boolean）如果为`true`，则恢复集群状态。默认是`false`。集群状态包括：
