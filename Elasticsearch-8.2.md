@@ -26,7 +26,7 @@
 
 &emsp;&emsp;Elasticsearch是一个分布式的文档存储。Elasticsearch 存储已序列化为 JSON 文档的复杂数据结构，而不是将信息存储为列式数据行。当你的集群中有多个Elasticsearch节点，存储的文档跨集群分布并能立即从任何节点访问。
 
-&emsp;&emsp;文档在存储之后，它会被索引（index）并且在能在[near real-time]()--一秒内完全的用于搜索。Elasticsearch使用了称为倒排表（inverted index）的数据结构，它能够用于快速的全文检索。inverted index列出了出现在所有文档中的每一个unique word并识别出每一个单词所在的所有文档。
+&emsp;&emsp;文档在存储之后，它会被索引（index）并且在能在[near real time](#Near-real-time-search)--一秒内完全的用于搜索。Elasticsearch使用了称为倒排表（inverted index）的数据结构，它能够用于快速的全文检索。inverted index列出了出现在所有文档中的每一个unique word并识别出每一个单词所在的所有文档。
 
 &emsp;&emsp;索引（index）可以认为是一个优化后的文档集合，每一篇文档是一个域（field）的集合，每一个域是包含数据的一个键值对（key-value pair）。默认情况下，Elasticsearch会索引所有域中的数据并且每一种索引域（indexed field）都有专门的优化后的数据结构。例如，text field存储在倒排索引（inverted index）中，numeric和geo field存储在[BKD](https://www.amazingkoala.com.cn/Lucene/gongjulei/2019/0422/Bkd-Tree)树中。使用每一种域的数据结构进行组合（assemble）和返回查询结果的能力使得Elasticsearch特别的快。
 
@@ -61,11 +61,12 @@
 
 &emsp;&emsp;想要查询地理位置或者其他数值类型的数据的话，Elasticsearch将这类非文本的数据索引到一个优化后的数据结构（BKD）使得支持高性能的地址位置和数值查询。
 
-&emsp;&emsp;你可以使用Elasticsearch中JSON风格的查询语言（[Query DSL](##Query DSL)）来访问所有的查询能力。你也可以构造[SQL-style query]()查询/聚合数据，以及使用JDBC和ODBC驱动使得更多的第三方应用通过SQL使用Elasticsearch。
+&emsp;&emsp;你可以使用Elasticsearch中JSON风格的查询语言（[Query DSL](#Query-DSL)）来访问所有的查询能力。你也可以构造[SQL-style query](#Overview（SQL）)查询/聚合数据，以及使用JDBC和ODBC驱动使得更多的第三方应用通过SQL使用Elasticsearch。
 
 #### Analyzing your data
 
 &emsp;&emsp;Elasticsearch的聚合（aggregation）能让你构建复杂的数据汇总并获得关键指标的洞见（insight），模式（pattern）以及趋势（trend）。聚合能让你回答下面的问题，而不是仅仅如谚语中所说的needle in a haystack：
+Near real-time search
 
 - haystack中有多少个needle？
 - needle的平均长度
@@ -123,7 +124,7 @@
 
 #### Care and feeding
 
-&emsp;&emsp;与任何企业系统一样，你需要工具来secure，manage，以及monitor你的Elasticsearch 集群。Security，monitoring，以及administrative features都集成到了Elasticsearch，使得你可以使用[Kibana](https://www.elastic.co/guide/en/kibana/8.2/introduction.html)作为控制中心来管理集群。比如[data rollups](###Rolling up historical data)、[index lifecycle management](###ILM: Manage the index lifecycle)这些功能能帮助你根据时间来管理你的数据。
+&emsp;&emsp;与任何企业系统一样，你需要工具来secure，manage，以及monitor你的Elasticsearch 集群。Security，monitoring，以及administrative features都集成到了Elasticsearch，使得你可以使用[Kibana](https://www.elastic.co/guide/en/kibana/8.2/introduction.html)作为控制中心来管理集群。比如[data rollups](#Rolling-up-historical-data)、[index lifecycle management](#ILM-Manage-the-index-lifecycle)这些功能能帮助你根据时间来管理你的数据。
 
 ## Set up Elasticsearch
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/setup.html)
