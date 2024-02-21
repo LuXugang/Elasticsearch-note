@@ -61,7 +61,7 @@
 
 &emsp;&emsp;想要查询地理位置或者其他数值类型的数据的话，Elasticsearch将这类非文本的数据索引到一个优化后的数据结构（BKD）使得支持高性能的地址位置和数值查询。
 
-&emsp;&emsp;你可以使用Elasticsearch中JSON风格的查询语言（[Query DSL](#Query-DSL)）来访问所有的查询能力。你也可以构造[SQL-style query](#Overview（SQL）)查询/聚合数据，以及使用JDBC和ODBC驱动使得更多的第三方应用通过SQL使用Elasticsearch。
+&emsp;&emsp;你可以使用Elasticsearch中JSON风格的查询语言（[Query DSL](#Query-DSL)）来访问所有的查询能力。你也可以构造[SQL-style query](#OverviewSQL)查询/聚合数据，以及使用JDBC和ODBC驱动使得更多的第三方应用通过SQL使用Elasticsearch。
 
 #### Analyzing your data
 
@@ -241,13 +241,13 @@ action.auto_create_index: .monitoring*,.watches,.triggered_watches,.watcher-hist
 
 &emsp;&emsp;你能通过HTTP请求访问localhost:9200来测试Elasticsearch节点是否在运行中：
 
-```java
+```text
 GET /
 ```
 
 &emsp;&emsp;你应该能收到类似下面的回应（response）
 
-```java
+```text
 {
   "name" : "Cp8oag6",
   "cluster_name" : "elasticsearch",
@@ -6574,7 +6574,7 @@ GET my-index-000001/_search
 
 ##### Arrays
 
-&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](#Arrays（field Type）)。
+&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](#Arraysfield Type)。
 
 ##### Multi-fields
 
@@ -12893,7 +12893,7 @@ PUT index
 ## Index templates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-templates.html)
 
->这个主题介绍了在Elasticsearch 7.8引入的composable index template。关于之前版本的index template是如何工作的见[legacy template documentation](#Create or update index template API（legacy）)。
+>这个主题介绍了在Elasticsearch 7.8引入的composable index template。关于之前版本的index template是如何工作的见[legacy template documentation](#Create or update index template APIlegacy)。
 >
 
 &emsp;&emsp;在创建一个索引时，index template告诉Elasticsearch如何进行创建。对于[data streams](#Data streams)，index template用于创建流的[backing](#Backing indices)索引。Template先于索引的创建。手动或者通过索引一篇文档创建一个索引后，template setting会作为创建索引的一个基本要素（ basis）。
@@ -18269,7 +18269,7 @@ POST _search
 
 ##### fuzzy rule parameters
 
-&emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](#Fuzziness（Common options）)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
+&emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](#FuzzinessCommon options)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
 
 - term：（Required，string）待匹配的term
 - prefix_length：（Optional，integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
@@ -18492,7 +18492,7 @@ GET /_search
 
 ###### fuzziness
 
-&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](#Fuzziness（Common options）)了解更多信息。见[Fuzziness in the match query](#Fuzziness in the match query)给出的例子。
+&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](#FuzzinessCommon options)了解更多信息。见[Fuzziness in the match query](#Fuzziness in the match query)给出的例子。
 
 ###### max_expansions
 
@@ -19388,11 +19388,11 @@ GET /_search
 
 &emsp;&emsp;（Optional, array of strings）待查询的域的列表。支持通配符（`*`）。
 
-&emsp;&emsp;你可以使用这个参数跨多个域进行查询。见[Search multiple fields](#Search multiple fields（query string）)。
+&emsp;&emsp;你可以使用这个参数跨多个域进行查询。见[Search multiple fields](#Search multiple fieldsquery string)。
 
 ###### fuzziness
 
-&emsp;&emsp;（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](#Fuzziness（query string）)了解fuzzy语法。
+&emsp;&emsp;（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](#Fuzzinessquery string)了解fuzzy语法。
 
 ###### fuzzy_max_expansions
 
@@ -19574,7 +19574,7 @@ quikc~1
 ```
 
 > WARNING：Avoid mixing fuzziness with wildcards
-> 不支持混合使用[fuzzy](#Fuzziness（Common options）)和[wildcard](#Wildcards（query string）)操作符。如果出现了混合使用，其中一种操作不会被应用（apply）。例如，你可以查询`app~1（fuzzy）`或者`app*`（wildcard），但对于`app~1`，不会应用fuzzy中的操作符`~`
+> 不支持混合使用[fuzzy](#FuzzinessCommon options)和[wildcard](#Wildcardsquery-string)操作符。如果出现了混合使用，其中一种操作不会被应用（apply）。例如，你可以查询`app~1（fuzzy）`或者`app*`（wildcard），但对于`app~1`，不会应用fuzzy中的操作符`~`
 
 ###### Proximity searches
 
@@ -19990,7 +19990,7 @@ GET /_search
 
 ###### Allow expensive queries（Query string query）
 
-&emsp;&emsp;`query_string` query会被自动的转化为一个[prefix query](#Prefix query)，意味着如果禁用了prefix query（见[这里](#Allow expensive queries（Prefix query）)的说明）。那么这个query就不会被执行并且会抛出一个异常。
+&emsp;&emsp;`query_string` query会被自动的转化为一个[prefix query](#Prefix query)，意味着如果禁用了prefix query（见[这里](#Allow expensive queriesPrefix query)的说明）。那么这个query就不会被执行并且会抛出一个异常。
 
 #### Simple query string query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-simple-query-string-query.html)
@@ -20050,7 +20050,7 @@ GET /_search
 
 ###### auto_generate_synonyms_phrase_query
 
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会为每一个[multi-position token](#Multi-position tokens)创建一个[match_phrase](#Match phrase query) query。见[Multi-position tokens](#Multi-position tokens（Simple query string query）)。
+&emsp;&emsp;（Optional, Boolean）如果为`true`，会为每一个[multi-position token](#Multi-position tokens)创建一个[match_phrase](#Match phrase query) query。见[Multi-position tokens](#Multi-position tokensSimple query string query)。
 
 ###### flags
 
@@ -20158,7 +20158,7 @@ GET /_search
 - ALL (Default)：启动所有的可用的操作
 - AND：启用`+` AND操作符
 - ESCAPE：`\`作为一个反斜杠字符
-- FUZZY：启用`~N`操作符，它位于一个word后时表示匹配word时允许的最大编辑距离是`N`。见[Fuzziness](#Fuzziness（Common options）)
+- FUZZY：启用`~N`操作符，它位于一个word后时表示匹配word时允许的最大编辑距离是`N`。见[Fuzziness](#FuzzinessCommon options)
 - NEAR：启用`~N`操作符，它位于一个短语后时表示匹配到的token之间的距离最远是`N`。同`SLOP`
 - NONE：禁用所有操作符
 - NOT：启用`-` NOT操作符
@@ -22067,7 +22067,7 @@ GET /my-index-000001,my-index-000002
 | [Force Merge](#Force merge(1)) | 减少索引中段的数量并且清楚（purge）被删除的文档。索引被置为只读 |
 | [Migrate](#Migrate) | 将索引的分片迁移到当前ILM阶段对应的数据层（[data tier](#Data tiers)）中 |
 | [Read-Only](#Read only) | 阻塞索引的写入操作 |
-| [Rollover](#Rollover（action）) | 为rollover alias移除作为write index的索引，并开始为新索引建立索引 |
+| [Rollover](#Rolloveraction) | 为rollover alias移除作为write index的索引，并开始为新索引建立索引 |
 | [Searchable Snapshot](#Searchable snapshot) | 在配置好的仓库中添加一个被管理的索引的快照，挂载这个快照使其成为一个可以用于搜索的快照。 |
 | [Set Priority](#Set priority) | 降低索引在生命周期中的优先级，以确保首先恢复hot索引 |
 | [Shrink](#Shrink) | 收缩到新的索引中并减少主分片的数量 |
@@ -22413,7 +22413,7 @@ PUT _ilm/policy/my_policy
 
 - 索引名称必须满足这个pattern `^.*-\d+$`，例如（my-index-00001）
 - `index.lifecycle.rollover_alias`必须配置为alias进行转存
-- 索引必须是alias的[write index](#Write index（Alias）)
+- 索引必须是alias的[write index](#Write indexAlias)
 
 &emsp;&emsp;例如如果`my-index-000001`是名为`my_data`的alias。那么必须配置下面的设置：
 
@@ -25663,7 +25663,7 @@ POST _transform/_preview
 
 &emsp;&emsp;下面的这个片段（snippet）用来展示如何在transform中使用Painless提取time的功能。片段中使用的`@timestamp`域被定义为了date类型。
 
-```java
+```text
 "aggregations": {
   "avg_hour_of_day": { 
     "avg":{
@@ -26402,7 +26402,7 @@ POST _transform/_preview
 
 &emsp;&emsp;当一个follower shard发送一个读请求，leader shard会根据在创建follower index时候配置的read parameter来响应每一个新的操作。如果没有新的操作，leader shard会根据配置的超时时间等待新的操作的发生，等待超时后，leader shard会响应follower shard没有新的操作。follower shard在更新shard statistics后会马上再发一个读请求给leader shard。这种通信模型确保远程集群和本地集群之间的网络连接持续使用，避免被防火墙等外部源强行终止。
 
-&emsp;&emsp;如果读请求失败了，则会检查（inspect）失败的原因。如果失败的原因认为是可以恢复的（比如说网络问题），那么 follower shard会进行循环重试。否则follower shard会暂停[until you resume it](#Pause and resume replication（manage）)。
+&emsp;&emsp;如果读请求失败了，则会检查（inspect）失败的原因。如果失败的原因认为是可以恢复的（比如说网络问题），那么 follower shard会进行循环重试。否则follower shard会暂停[until you resume it](#Pause and resume replicationmanage)。
 
 ###### Processing updates
 
@@ -26878,7 +26878,7 @@ Cluster A
 
 - [Persistent cluster settings](#Cluster and node setting types)
 - [Index templates](#Index templates)
-- [Legacy index templates](#Create or update index template API（legacy）)
+- [Legacy index templates](#Create or update index template APIlegacy)
 - [Ingest pipelines](#Ingest pipelines)
 - [ILM policies](#ILM: Manage the index lifecycle)
 - For snapshots taken after 7.12.0, [feature states](#Feature states)
@@ -28366,7 +28366,7 @@ GET bicycles,other_cycles/_search
 
 #### Disable the features you do not need
 
-&emsp;&emsp;默认情况下，Elasticsearch对大部分的域同时进行索引（倒排、bkd）和添加doc value（正排），使得这些域默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的域，并且你需要在这个域上进行histogram并且从来不会应用于filter，那你可以在[mappings](#Mappings（create index api）)中安全的关闭索引（只使用bkd存储，不用倒排）：
+&emsp;&emsp;默认情况下，Elasticsearch对大部分的域同时进行索引（倒排、bkd）和添加doc value（正排），使得这些域默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的域，并且你需要在这个域上进行histogram并且从来不会应用于filter，那你可以在[mappings](#Mappingscreate index api)中安全的关闭索引（只使用bkd存储，不用倒排）：
 
 ```text
 PUT index
@@ -28730,11 +28730,11 @@ GET _nodes/stats?filter_path=nodes.*.jvm.mem.pools.old
 
 &emsp;&emsp;Expensive searches会使用大量的内存。可以开启[show logs](#Slow Log)来更好的追踪集群上的expensive searches。
 
-&emsp;&emsp;Expensive searches可能是因为使用了非常大的[size argument](#Paginate search results)，使用了大量分桶的聚合，或者包含了[expensive queries](#Allow expensive queries（Query DSL）)。若要防止expensive searches，考虑进行更改下面的设置：
+&emsp;&emsp;Expensive searches可能是因为使用了非常大的[size argument](#Paginate search results)，使用了大量分桶的聚合，或者包含了[expensive queries](#Allow expensive queriesQuery DSL)。若要防止expensive searches，考虑进行更改下面的设置：
 
 - 使用索引设置[index.max_result_window](#index.max_result_window)来降低`size`的上限
 - 使用集群设置[search.max_buckets](#search.max_buckets)降低允许分桶的数量
-- 使用集群设置[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)关闭expensive query
+- 使用集群设置[search.allow_expensive_queries](#Allow expensive queriesQuery DSL)关闭expensive query
 
 ```text
 PUT _settings
@@ -32327,7 +32327,7 @@ POST /_data_stream/_migrate/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）转化为data stream的索引别名名称。这个别名必须满足下面的要求：
-  - 别名必须要有一个[write index](#Write_index（Alias）)
+  - 别名必须要有一个[write index](#Write_indexAlias)
   - 别名对应的所有索引必须要有一个`date`或者`date_nanos`类型的`@timestamp`
   - 必须不能有任何的[filter](#Filter an alias)
   - 必须没有使用[custom routing](#Routing)
@@ -35166,7 +35166,7 @@ POST /<rollover-target>/_rollover/<target-index>
     - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 
 - condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
-  > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rollover（action）)
+  > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rolloveraction)
 
   - max_age：(Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
   - max_docs：（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
@@ -36050,7 +36050,7 @@ POST /my_source_index/_split/my_target_index
 
 >IMPORTANT：这篇文档介绍legacy index templates。在Elasticsearch7.8中legacy index templates已被弃用并且使用可组合的模板（composable  template）代替。更多关于composable templates的信息见[Index templates](#Index templates)。
 
-&emsp;&emsp;查看某个[legacy](#Create or update index template API（legacy）)索引模板是否存在：
+&emsp;&emsp;查看某个[legacy](#Create or update index template APIlegacy)索引模板是否存在：
 
 ```text
 HEAD /_template/template_1
@@ -38852,7 +38852,7 @@ POST /_snapshot/<repository>/<snapshot>
 - include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
   - [Persistent cluster settings](#Cluster and node setting types)
   - [Index templates](#Index templates)
-  - [Legacy index templates](#Create or update index template API（legacy）)
+  - [Legacy index templates](#Create or update index template APIlegacy)
   - [Ingest pipelines](#Ingest pipelines)
   - [ILM policies](#ILM: Manage the index lifecycle)
   - For snapshots taken after 7.12.0, [feature states](#Feature states)
@@ -39623,7 +39623,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 - include_global_state：（Optional, Boolean）如果为`true`，则恢复集群状态。默认是`false`。集群状态包括：
     - [Persistent cluster settings](#Cluster and node setting types)
     - [Index templates](#Index templates)
-    - [Legacy index templates](#Create or update index template API（legacy）)
+    - [Legacy index templates](#Create or update index template APIlegacy)
     - [Ingest pipelines](#Ingest pipelines)
     - [ILM policies](#ILM: Manage the index lifecycle)
     - For snapshots taken after 7.12.0, [feature states](#Feature states)
@@ -39747,7 +39747,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
   - include_global_state：（Optional, Boolean）如果为`true`，快照中会包含集群状态。默认为`true`。集群状态包括：
     - [Persistent cluster settings](#Cluster and node setting types)
     - [Index templates](#Index templates)
-    - [Legacy index templates](#Create or update index template API（legacy）)
+    - [Legacy index templates](#Create or update index template APIlegacy)
     - [Ingest pipelines](#Ingest pipelines)
     - [ILM policies](#ILM: Manage the index lifecycle)
     - For snapshots taken after 7.12.0, [feature states](#Feature states)
