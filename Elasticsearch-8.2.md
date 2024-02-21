@@ -38077,7 +38077,7 @@ POST _ilm/stop
 ###### search_type
 
 #### Async search
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search.html#submit-async-search)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search.html#submit-async-search)
 
 &emsp;&emsp;该接口可以让你执行异步的查询请求，监视查询的过程，并且当可用时获取部分结果。
 
@@ -38208,9 +38208,64 @@ GET /_async_search/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsd
 &emsp;&emsp;第13行，执行这个Query的分片数量。注意的是为了分片的结果能包含在查询响应中，它们首先会被归并（reduce）
 &emsp;&emsp;第25行，部分聚合结果，来自那些已经完成Query的分片的结果
 
-&emsp;&emsp;的
+&emsp;&emsp;在调用 Get Async Search API 时，也可以提供 `wait_for_completion_timeout` 参数，以便等待搜索完成直到提供的超时时间。如果在超时到期之前可用，将返回最终结果，否则一旦超时到期，将返回当前可用的结果。默认情况下没有设置超时，这意味着将返回当前可用的结果，无需任何额外等待。
+
+&emsp;&emsp;`keep_alive` 参数指定异步搜索在集群中应该保持可用的时间长短。未指定时，将使用对应的提交异步请求时设置的 `keep_alive`。否则，可以覆盖此值并延长请求的有效性。当此期限到期时，如果搜索仍在进行中，则会被取消。如果搜索已完成，其保存的结果将被删除。
+
+##### Get async search status
+
+&emsp;&emsp;该接口不会获取查询结果，而是根据ID只显示之前提交的异步查询的状态。如果开启了Elasticsearch security features，访问该接口受限于[monitoring_user role](####Built-in roles)。
+
+```text
+GET /_async_search/status/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=
+```
+
+```text
+{
+  "id" : "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+  "is_running" : true,
+  "is_partial" : true,
+  "start_time_in_millis" : 1583945890986,
+  "expiration_time_in_millis" : 1584377890986,
+  "_shards" : {
+      "total" : 562,
+      "successful" : 188, 
+      "skipped" : 0,
+      "failed" : 0
+  }
+}
+```
+
+&emsp;&emsp;第9行，表示目前执行了Query的分片数量
+
+```text
+{
+  "id" : "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+  "is_running" : false,
+  "is_partial" : true,
+  "start_time_in_millis" : 1583945890986,
+  "expiration_time_in_millis" : 1584377890986,
+  "_shards" : {
+      "total" : 562,
+      "successful" : 450,
+      "skipped" : 0,
+      "failed" : 112
+  },
+ "completion_status" : 503 
+}
+```
+
+&emsp;&emsp;第13行，表示异步查询完成但是出错了。
 
 ##### Delete async search
+
+&emsp;&emsp;你可以使用这个接口根据ID手动删除一个异步查询。如果查询在运行中，那么它会被取消。否则，已保存的查询结果会被删除。
+
+```text
+DELETE /_async_search/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=
+```
+
+&emsp;&emsp;如果开启了Elasticsearch security features，删除异步操作受限于：The authenticated user that submitted the original search request. * Users that have the cancel_task cluster privilege。
 
 #### Point in time API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/point-in-time-api.html)
