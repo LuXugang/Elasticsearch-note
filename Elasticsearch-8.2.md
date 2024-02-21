@@ -39738,7 +39738,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
 
 - config：（Required, object）通过策略创建的每一个快照的配置
   - expand_wildcards：（Optional, string）决定在indices参数中如果有通配符模式时将如何去匹配data streams和indices。支持使用逗号隔开的值，例如open, hidden。默认是all。合法值有：
-    - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target syntax-1)
+    - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target-syntax-1)
     - open：匹配打开的data streams和indices
     - closed：匹配关闭的data streams和indices
     - hidden：匹配隐藏的data streams和indices。必须和open、closed中的一个或全部组合使用
@@ -39750,8 +39750,8 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
     - [Legacy index templates](#Create or update index template API（legacy）)
     - [Ingest pipelines](#Ingest pipelines)
     - [ILM policies](#ILM: Manage the index lifecycle)
-    - For sna  pshots taken after 7.12.0, [feature states](#Feature states)
-  - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
+    - For snapshots taken after 7.12.0, [feature states](#Feature states)
+  - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target-syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
     - 你不能使用这个参数来包含或者排除[system indices or system data streams](#System indices)，可以转而使用下面的feature_states参数
   - feature_states：（Optional, array of strings）将[Feature states ](#Feature states)包含到快照中。若要获取可能的值以及他们的描述，可以使用[get features API](#Get Features API)
     - 如果`include_global_state`为`true`，快照默认包含所有的feature states。否则不包含
