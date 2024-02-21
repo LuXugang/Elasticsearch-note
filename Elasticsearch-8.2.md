@@ -1258,7 +1258,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;超过上限后，Elasticsearch会reject创建更多frozen shard的请求。比如集群的`cluster.max_shards_per_node.frozen`的值是`100`，并且三个frozen data node就有`300`的分片数量限制。如果集群中已经包含了296个分片，Elasticsearch会reject增加5个或者更多frozen shard数量的请求。
 
-> NOTE: These setting do not limit shards for individual nodes. 可以使用设置[cluster.routing.allocation.total_shards_per_node](#cluster.routing.allocation.total_shards_per_node)来限制每一个节点上的分片数量。
+> NOTE: These setting do not limit shards for individual nodes. 可以使用设置[cluster.routing.allocation.total_shards_per_node](#clusterroutingallocationtotal_shards_per_node)来限制每一个节点上的分片数量。
 
 ##### User-defined cluster metadata
 
@@ -1363,7 +1363,7 @@ PUT /_cluster/settings
 1. `transport.profiles.default.port`
 2. `transport.port`
 
-&emsp;&emsp;如果没有设置上面的配置，则`port`的默认值为`9300`。`discovery.seed_hosts`的默认值为`["127.0.0.1", "[::1]"]`。见[discovery.seed_hosts](#discovery.seed_hosts)。
+&emsp;&emsp;如果没有设置上面的配置，则`port`的默认值为`9300`。`discovery.seed_hosts`的默认值为`["127.0.0.1", "[::1]"]`。见[discovery.seed_hosts](#discoveryseed_hosts)。
 
 ###### discovery.seed_providers
 
@@ -1375,7 +1375,7 @@ PUT /_cluster/settings
 
 ###### cluster.initial_master_nodes
 
-&emsp;&emsp;（[Static](#Staticsettings)）在全新的集群中初始化master-eligible node集合。默认情况下是空值，意味着这个节点想要加入到一个引导后（bootstrapped）的集群。集群一旦形成后需要移除这个设置。当重启一个节点或者添加一个新的节点到现有的集群中时不要使用这个设置。见[cluster.initial_master_nodes](#cluster.initial_master_nodes)。
+&emsp;&emsp;（[Static](#Staticsettings)）在全新的集群中初始化master-eligible node集合。默认情况下是空值，意味着这个节点想要加入到一个引导后（bootstrapped）的集群。集群一旦形成后需要移除这个设置。当重启一个节点或者添加一个新的节点到现有的集群中时不要使用这个设置。见[cluster.initial_master_nodes](#clusterinitial_master_nodes)。
 
 ##### Expert settings
 
@@ -1742,7 +1742,7 @@ node.roles: [ transform, remote_cluster_client ]
 - 集群中每一个索引的索引元数据，以及
 - 集群范围（cluster-wide）的元数据，例如settings和index templates
 
-&emsp;&emsp;每一个节点在启动时会检查[数据路径](#path.data)的内容。如果发现了非预期（unexpected）的数据，节点将拒绝启动。这样就可以避免导入会导致红色的集群健康的[unwanted dangling indices](#Dangling indices)。更准确的说，如果在启动时发现磁盘上有分片数据但是这个节点没有`data`角色，那么这个节点不会启动。如果在启动时发现磁盘上有索引元数据但是这个节点没有`data`和`master`角色，那么这个节点不会启动。
+&emsp;&emsp;每一个节点在启动时会检查[数据路径](#pathdata)的内容。如果发现了非预期（unexpected）的数据，节点将拒绝启动。这样就可以避免导入会导致红色的集群健康的[unwanted dangling indices](#Dangling indices)。更准确的说，如果在启动时发现磁盘上有分片数据但是这个节点没有`data`角色，那么这个节点不会启动。如果在启动时发现磁盘上有索引元数据但是这个节点没有`data`和`master`角色，那么这个节点不会启动。
 
 &emsp;&emsp;可以通过更改`elasticsearch.yml`然后重启节点来修改节点的角色。这就是众所周知的 `repurposing`一个节点。为了能满足上文中描述的对非预期的检查，在启动没有`data`或者`master`角色的节点前，你必须执行一些额外的步骤来为repurposing做准备。
 
@@ -2129,7 +2129,7 @@ node.processors: 2
 &emsp;&emsp;当使用`.zip`或者`.tar.gz`的安装包时，可以通过下面的方式配置系统设置：
 
 - 在[ulimit](#ulimit)中临时设置
-- 在[/etc/security/limits.conf](#/etc/security/limits.conf)中永久设置
+- 在[/etc/security/limits.conf](#etcsecuritylimitsconf)中永久设置
 
 &emsp;&emsp;当使用RPM或者Debian发行版时，大多数的系统设置在[system configuration file](#Sysconfig file)中设置，然而在使用systemd的系统中，要求在[systemd configuration file](#Systemd configuration)中指定system limit。
 
@@ -2304,7 +2304,7 @@ sysctl -w vm.max_map_count=262144
 
 &emsp;&emsp;Elasticsearch会使用线程池用于不同类型的操作。重要的是当有需要时就会创建新的线程。保证Elasticsearch能创建的线程数量至少可以有4096个。
 
-&emsp;&emsp;在启动Elasticsearch前切换到root设置[ulimit -u 4096](#ulimit)，或者在[/etc/security/limits.conf](#/etc/security/limits.conf)中将`nproc`设置为4096。
+&emsp;&emsp;在启动Elasticsearch前切换到root设置[ulimit -u 4096](#ulimit)，或者在[/etc/security/limits.conf](#etcsecuritylimitsconf)中将`nproc`设置为4096。
 
 &emsp;&emsp;在`systemd`下运行的service会自动的为Elasticsearch进程设置线程数量。不需要额外的配置。 
 
@@ -2339,7 +2339,7 @@ sysctl -w vm.max_map_count=262144
   - Elasticsearch在节点加入以及离开集群时如何自动的更新voting configuration
 
 - [Bootstrapping a cluster](#Bootstrapping a cluster)
-  - 当Elasticsearch集群第一次启动时Bootstrapping a cluster是必须。在[development node](#Development vs. production mode)中，如果没有配置discovery settings，这将由节点本身自动执行。由于auto-bootstrapping是[inherently unsafe](#Quorum-based decision making)，在[production mode](#Development vs. production mode)中要求节点显示配置（[explicitly configure](#Bootstrapping a cluster)）bootstrappping。
+  - 当Elasticsearch集群第一次启动时Bootstrapping a cluster是必须。在[development node](#Development-vs-production-mode)中，如果没有配置discovery settings，这将由节点本身自动执行。由于auto-bootstrapping是[inherently unsafe](#Quorum-based decision making)，在[production mode](#Development-vs-production-mode)中要求节点显示配置（[explicitly configure](#Bootstrapping a cluster)）bootstrappping。
 
 - [Adding and removing master-eligible nodes](#Adding and removing nodes)
   - 建议在集群中设置一个小规模的并且固定数量的master-eligible node，只通过添加或者移除master-ineligible node来扩大或者缩小集群。然而也有一些情况需要将一些master-eligible node 添加到集群，或者从集群中移除。 这块内容描述的是添加或者移除master-eligible node的过程，包括在同一时间移除超过一半数量的master-eligible node时额外必须要执行的步骤。
@@ -2414,7 +2414,7 @@ sysctl -w vm.max_map_count=262144
 
 &emsp;&emsp;Settings-based seed hosts provider使用了节点设置来配置一个静态的seed nodes的地址列表。这些地址可以是hostname或者是IP地址。使用hostname时会在每一次discovery时去查找对应的IP地址。
 
-&emsp;&emsp;下面使用了[discovery.seed_hosts](#discovery.seed_hosts)静态设置：
+&emsp;&emsp;下面使用了[discovery.seed_hosts](#discoveryseed_hosts)静态设置：
 
 ```text
 discovery.seed_hosts:
@@ -2483,7 +2483,7 @@ discovery.seed_providers: file
 
 ##### Master elections
 
-&emsp;&emsp;Elasticsearch在启动阶段以及当master node发生故障时使用选举的处理方式来达成一致选出master node。任何的master-eligible都可以开始一个选举，通常来说第一次选举都会成功（normally the first election that takes place will succeed）。只有当两个节点碰巧同时开始选举时，选举才会失败，所以每个节点上的选举都是随机安排的，以降低这种情况发生的概率。节点会重试选举，直到选举出master node。backing off on failure，使得选举会最终的成功。The scheduling of master elections are controlled by the [master election settings](#cluster.election.back_off_time)。
+&emsp;&emsp;Elasticsearch在启动阶段以及当master node发生故障时使用选举的处理方式来达成一致选出master node。任何的master-eligible都可以开始一个选举，通常来说第一次选举都会成功（normally the first election that takes place will succeed）。只有当两个节点碰巧同时开始选举时，选举才会失败，所以每个节点上的选举都是随机安排的，以降低这种情况发生的概率。节点会重试选举，直到选举出master node。backing off on failure，使得选举会最终的成功。The scheduling of master elections are controlled by the [master election settings](#clusterelectionback_off_time)。
 
 ##### Cluster maintenance, rolling restarts and migrations
 
@@ -2510,7 +2510,7 @@ GET /_cluster/state?filter_path=metadata.cluster_coordination.last_committed_con
 
 &emsp;&emsp;规模大（large）的voting configuration 通常更具有弹性。所以Elasticsearch更喜欢（prefer to）在master-eligible node加入到集群后把他们添加到voting configuration中。同样的，如果一个在voting configuration中的节点离开了集群并且集群中有另一个不在voting configuration中的master-eligible node，那么会去交换这两个节点。voting configuration的大小没有发生变化但是提高了弹性。
 
-&emsp;&emsp;节点离开集群后，从voting configuration中移除节点不是一件简单的事情。不同的策略有不同的好处跟缺点，所以正确的选择取决于集群如何被使用。你可以通过[cluster.auto_shrink_voting_configuration setting](#cluster.auto_shrink_voting_configuration)来控制voting configuration是否要自动的收缩（shrink）。
+&emsp;&emsp;节点离开集群后，从voting configuration中移除节点不是一件简单的事情。不同的策略有不同的好处跟缺点，所以正确的选择取决于集群如何被使用。你可以通过[cluster.auto_shrink_voting_configuration setting](#clusterauto_shrink_voting_configuration)来控制voting configuration是否要自动的收缩（shrink）。
 
 > NOTE：如果`cluster.auto_shrink_voting_configuration`设置为`true`（默认值，推荐值）。那么集群中会至少有3个master-eligible node。Elasticsearch仍然可以处理集群状态的更新，只要除了其中一个maste-eligible node，其他的所有节点都是健康的。
 
@@ -2541,7 +2541,7 @@ GET /_cluster/state?filter_path=metadata.cluster_coordination.last_committed_con
 
 &emsp;&emsp;最开始启动Elasticsearch时要求一个集群中的一个或者多个初始化的[master-eligible node](#Master-eligible node)集合，需要显示的定义，即`cluster bootstrapping`。仅要求在集群第一次启动时：已经加入到一个集群的节点会将信息存储在它们的数据目录中用于[full cluster restart](#Full cluster restart upgrade)并且新加入到集群的节点会从集群中被选举master的节点上获取信息。
 
-&emsp;&emsp;最初的master-eligible node集合定义在[cluster.initial_master_nodes setting](#cluster.initial_master_nodes)中。配置中要包含每一个master-eligible node的下面其中一个条目：
+&emsp;&emsp;最初的master-eligible node集合定义在[cluster.initial_master_nodes setting](#clusterinitial_master_nodes)中。配置中要包含每一个master-eligible node的下面其中一个条目：
 
 - 节点的[node name](#Node name setting)
 - 如果没有设置`node.name`则要求有节点的hostname。因为`node.name`默认就是节点的hostname。你可以使用fully-qualified hostname或者bare hostname，取决于[depending on your system configuration](#Node name formats must match)。
@@ -2603,14 +2603,14 @@ bootstrap a cluster: have discovered [{master-b.example.com}{...
 &emsp;&emsp;如果你想要添加一个节点到现有的集群中而不是引导出不同的单节点集群，那你必须：
 
 1. 关闭节点
-2. 通过删除[data folder](#path.data)的方式来完全擦除（wipe）节点
+2. 通过删除[data folder](#pathdata)的方式来完全擦除（wipe）节点
 3. 配置`discovery.seed_hosts`或者 `discovery.seed_providers`以及其他相关的discover 设置
 4. 重启节点并且验证下节点是否加入到集群而不是形成自己的单节点集群
 
 &emsp;&emsp;如果你是要形成一个新的多节点集群而不是引导出多个单节点集群，那你必须
 
 1. 关闭所有的节点
-2. 通过删除每一个节点的[data folder](#path.data)的方式来完全擦除（wipe）所有的节点
+2. 通过删除每一个节点的[data folder](#pathdata)的方式来完全擦除（wipe）所有的节点
 3. 按照上文描述的方式来配置`cluster.initial_master_nodes`
 4. 配置`discovery.seed_hosts`或者 `discovery.seed_providers`以及其他相关的discover 设置
 5. 重启所有的节点并验证它们形成了单个集群
@@ -2783,7 +2783,7 @@ logger.org.elasticsearch.cluster.coordination.LagDetector: DEBUG
 1. 启动一个新的Elasticsearch实例
 2. 在`elasticsearch.yml`文件中的`cluster.name`配置中指定集群名称。例如若要将一个节点添加到名为`logging-prod`的集群中，那么在`elasticsearch.yml`中添加一行： cluster.name: "logging-prod" 
 
-&emsp;&emsp;若要添加一个节点到运行在多个机器上的集群，你必须要[set discovery.seed_hosts](#discovery.seed_hosts)，使得新的节点可以发现集群中的其他节点。
+&emsp;&emsp;若要添加一个节点到运行在多个机器上的集群，你必须要[set discovery.seed_hosts](#discoveryseed_hosts)，使得新的节点可以发现集群中的其他节点。
 
 &emsp;&emsp;更多discover和shard allocation的信息见[Discovery and cluster formation](#Discovery and cluster formation)和[Cluster-level shard allocation and routing settings](#Cluster-level shard allocation and routing settings)。
 
@@ -9050,9 +9050,9 @@ routing_factor = num_routing_shards / num_primary_shards
 shard_num = (hash(_routing) % num_routing_shards) / routing_factor
 ```
 
-&emsp;&emsp;num_routing_shards即索引设置中的[index.number_of_routing_shards](#index.number_of_routing_shards)。
+&emsp;&emsp;num_routing_shards即索引设置中的[index.number_of_routing_shards](#indexnumber_of_routing_shards)。
 
-&emsp;&emsp;num_primary_shards即索引设置中的[index.number_of_shards](#index.number_of_shards)。
+&emsp;&emsp;num_primary_shards即索引设置中的[index.number_of_shards](#indexnumber_of_shards)。
 
 &emsp;&emsp;\_routing的默认值是文档的[\_id](#_id field)。自定义的路由模板（routing pattern）可以通过对某个文档指定一个自定义的`routing`值实现。例如：
 
@@ -9131,7 +9131,7 @@ PUT my-index-000002/_doc/1
 
 &emsp;&emsp;使用自定义的路由值来配置索引时，可以路由到一个分片集合中而不是单个分片上。这可以降低集群不平衡导致关闭的风险，同时能降低查询压力。
 
-&emsp;&emsp;在索引创建期间可以通过索引层的设置[index.routing_partition_size](#index.routing_partition_size)来实现。随着分区（partition）的大小的增长，数据将分布的越均匀（evenly），那么每次查询都需要搜索更多的分片。
+&emsp;&emsp;在索引创建期间可以通过索引层的设置[index.routing_partition_size](#indexrouting_partition_size)来实现。随着分区（partition）的大小的增长，数据将分布的越均匀（evenly），那么每次查询都需要搜索更多的分片。
 
 &emsp;&emsp;当提供了这个设置后，计算分片的公式将变成：
 
@@ -9178,7 +9178,7 @@ PUT my-index-000001
 >  - 索引期间通过观察原始文档调试查询或者聚合的能力
 >  - 在未来的版本中可能可以自动修复受损（corruption）索引的能力
 
-> TIP：如果需要关心磁盘空间，可以提高 [compression level](#index.codec)而不是关闭`_source`。
+> TIP：如果需要关心磁盘空间，可以提高 [compression level](#indexcodec)而不是关闭`_source`。
 
 ##### Including / Excluding fields from \_source
 
@@ -12918,7 +12918,7 @@ PUT index
 
 &emsp;&emsp;如果你使用Fleet或者Elastic Agent， 那么你的index template的优先级要小于`100`来防止覆盖掉这些模板。若要避免意外的应用了这些内置模板，采取下面一个或者多个方法：
 
-- 若要关闭内置的index template和component template，使用[cluster update settings API](#Cluster update settings API)将[stack.templates.enabled](#stack.templates.enabled)设置为`false`。
+- 若要关闭内置的index template和component template，使用[cluster update settings API](#Cluster update settings API)将[stack.templates.enabled](#stacktemplatesenabled)设置为`false`。
 - 使用一个不会被 覆盖的index pattern
 - 给overlapping pattern的模板一个`priority`大于`200`的值。例如如果你不想要使用Fleet或者Elastic Agent并且想要为`logs-*`这个index pattern创建一个模板，那么将你的模板的priority的值设置为`500`。这能保证你的模板能被应用于`logs-*`而不是使用内置的模板。
 
@@ -13107,7 +13107,7 @@ POST /_index_template/_simulate
 
 #### Backing indices
 
-&emsp;&emsp;一个数据流由一个或者多个[hidden](#index.hidden)、自动生成的backing indices组成。
+&emsp;&emsp;一个数据流由一个或者多个[hidden](#indexhidden)、自动生成的backing indices组成。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/data-streams-diagram.svg">
 
@@ -14237,7 +14237,7 @@ POST _reindex
 
 #### Set a default pipeline
 
-&emsp;&emsp;使用索引设置[index.default_pipeline](#index.default_pipeline)来设置一个默认的pipeline。如果没有指定`pipeline`参数，Elasticsearch则会应用（apply ）这个默认的pipeline。
+&emsp;&emsp;使用索引设置[index.default_pipeline](#indexdefault_pipeline)来设置一个默认的pipeline。如果没有指定`pipeline`参数，Elasticsearch则会应用（apply ）这个默认的pipeline。
 
 #### Pipelines for Beats
 
@@ -14268,7 +14268,7 @@ PUT _ingest/pipeline/logs-my_app-default
   "processors": [ ... ]
 }
 ```
-2. 创建一个[index template](#Index templates)，包含在index setting中设置的pipeline的[index.default_pipeline](#index.default_pipeline)和[index.final_pipeline](#index.final_pipeline)。保证模板中开启了[data stream](#Create an index template(data stream))。这个模板的index pattern应该匹配`logs-<dataset-name>-*`。
+2. 创建一个[index template](#Index templates)，包含在index setting中设置的pipeline的[index.default_pipeline](#indexdefault_pipeline)和[index.final_pipeline](#indexfinal_pipeline)。保证模板中开启了[data stream](#Create an index template(data stream))。这个模板的index pattern应该匹配`logs-<dataset-name>-*`。
 
 &emsp;&emsp;你可以使用Kibana的[Index Management](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-mgmt.html#manage-index-templates)功能来[create index template API](#Create or update index template API)。
 
@@ -14335,7 +14335,7 @@ PUT _ingest/pipeline/logs-my_app-default
 
 ##### Elastic Agent standalone
 
-&emsp;&emsp;如果你用standalone方式启动Elastic Agent。你可以使用包含[index.default_pipeline](#index.default_pipeline)和[index.final_pipeline](#index.final_pipeline) index setting的[index template](#Index templates)来应用pipeline。或者你可以在`elastic-agent.yml`中指定`pipeline`策略。见[Install standalone Elastic Agents](https://www.elastic.co/guide/en/fleet/8.2/install-standalone-elastic-agent.html)。
+&emsp;&emsp;如果你用standalone方式启动Elastic Agent。你可以使用包含[index.default_pipeline](#indexdefault_pipeline)和[index.final_pipeline](#indexfinal_pipeline) index setting的[index template](#Index templates)来应用pipeline。或者你可以在`elastic-agent.yml`中指定`pipeline`策略。见[Install standalone Elastic Agents](https://www.elastic.co/guide/en/fleet/8.2/install-standalone-elastic-agent.html)。
 
 #### Access source fields in a processor
 
@@ -14628,7 +14628,7 @@ PUT _ingest/pipeline/my-pipeline
 }
 ```
 
-&emsp;&emsp;如果开启了集群设置[script.painless.regex.enabled](#script.painless.regex.enabled)，你可以在`if`条件脚本中使用正则表达式。见[Painless regular expressions](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-regexes.html)了解支持的语法。
+&emsp;&emsp;如果开启了集群设置[script.painless.regex.enabled](#scriptpainlessregexenabled)，你可以在`if`条件脚本中使用正则表达式。见[Painless regular expressions](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-regexes.html)了解支持的语法。
 
 > TIP：如果可以的话，避免在`if`条件中使用复杂或者开销大的脚本。然而你可以使用[Kibana consloe](https://www.elastic.co/guide/en/kibana/8.2/console-kibana.html#configuring-console)的 triple quote syntax来编写以及调试larger script。
 
@@ -15399,7 +15399,7 @@ GET /_search
 
 &emsp;&emsp;避免使用`from + size`来分页太深或一次请求太多结果。查询通常会扫描多个分片，每一个分片会将查询对应的命中的结果以及`from`之前的结果都读取到内存中。所以深度分页或者获取一个很大的结果集这些操作会极大地提高内存跟CPU的使用量，导致节点性能降低或者失败。
 
-&emsp;&emsp;默认情况下，你不能通过`from + size`的方式来获得超过10000条的结果集。通过[index.max_result_window](#index.max_result_window)这个索引配置进行安全的限制。
+&emsp;&emsp;默认情况下，你不能通过`from + size`的方式来获得超过10000条的结果集。通过[index.max_result_window](#indexmax_result_window)这个索引配置进行安全的限制。
 
 &emsp;&emsp;如果你需要通过分页查询来获得超过10000的结果集，那么可以换成[search_after](#Search after)参数来实现。
 
@@ -18836,7 +18836,7 @@ GET /_search
 &emsp;&emsp;`combined_fields` query基于simple BM25F（见[The Probabilistic Relevance Framework: BM25 and Beyond](http://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)）公式这个原则方法进行打分。在对匹配到的文档进行打分时，该query会跨多个域结合term和收集到的统计值，就像是指定的这些域索引到了单个的、组合域中。This scoring is a best attempt。`combined_fields` makes some approximations and scores will not obey the BM25F model perfectly。
 
 > WARNING：Filed number limit
-> 默认情况下，某个query中包含的clause的数量是由限制的。定义在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中。默认值为`4096`。对于combined fields query。clause的数量的计算方式为：域的数量和term的数量的乘积。
+> 默认情况下，某个query中包含的clause的数量是由限制的。定义在[indices.query.bool.max_clause_count](#indicesqueryboolmax_clause_count)中。默认值为`4096`。对于combined fields query。clause的数量的计算方式为：域的数量和term的数量的乘积。
 > 
 
 ##### Per-field boosting
@@ -18965,7 +18965,7 @@ GET /_search
 &emsp;&emsp;如果没有提供`fields`，`multi_match`默认在`index.query.default_field`中指定的域上查询，默认是`*`。`*`会从mapping中提取出所有的合适的域并且过滤掉metadata fields。所有提取出的域随后组合构建成一个query。
 
 > WARNING：Field number limit
-> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
+> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_count](#indicesqueryboolmax_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
 
 ##### Types of multi_match query:
 
@@ -19341,7 +19341,7 @@ GET /_search
 
 &emsp;&emsp;（Required, string）如果没有在query string指定域，那么就使用这个默认域进行查询。支持通配符（\*）。
 
-&emsp;&emsp;默认是index setting中的[index.query.default_field](#index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
+&emsp;&emsp;默认是index setting中的[index.query.default_field](#indexquerydefault_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
 
 &emsp;&emsp;查询会跨所有符合的域但是不包括[nested documents](#Nested field type)，可以使用[nested query](#Nested query)来查询。
 
@@ -22299,13 +22299,13 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;可以在warm、cold阶段使用该动作。
 
-&emsp;&emsp;通过更新索引设置[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)将索引移动到当前阶段对应的[data tier](#Data tiers)中。ILM自动在warm和cold阶段注入（inject）该动作。如果要阻止自动迁移（migration），你可以显示指定migrate动作，并且将enabled参数设置为`false`。
+&emsp;&emsp;通过更新索引设置[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)将索引移动到当前阶段对应的[data tier](#Data tiers)中。ILM自动在warm和cold阶段注入（inject）该动作。如果要阻止自动迁移（migration），你可以显示指定migrate动作，并且将enabled参数设置为`false`。
 
-&emsp;&emsp;If the cold phase defines a searchable snapshot action the migrate action will not be injected automatically in the cold phase because the managed index will be mounted directly on the target tier using the same [\_tier\_preference](#index.routing.allocation.include.\_tier\_preference) infrastructure the migrate actions configures。
+&emsp;&emsp;If the cold phase defines a searchable snapshot action the migrate action will not be injected automatically in the cold phase because the managed index will be mounted directly on the target tier using the same [\_tier\_preference](#indexroutingallocationinclude_tier_preference) infrastructure the migrate actions configures。
 
-&emsp;&emsp;在`warm`阶段，如果[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)设置为`data_warm`，`data_hot`，会将索引移动到[warm tier](#Warm tier)的节点上。如果没有一个节点是warm tier，那么就移动到 [hot tier](#Hot tier)。
+&emsp;&emsp;在`warm`阶段，如果[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)设置为`data_warm`，`data_hot`，会将索引移动到[warm tier](#Warm tier)的节点上。如果没有一个节点是warm tier，那么就移动到 [hot tier](#Hot tier)。
 
-&emsp;&emsp;在`cold`阶段，如果[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)设置为`data_cold`，`data_warm`，`data_hot`，会将索引移动到[Cold tier](#Cold tier)的节点上。如果没有一个节点是cold tier，那么就移动到warm tier，否则移动到hot tier。
+&emsp;&emsp;在`cold`阶段，如果[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)设置为`data_cold`，`data_warm`，`data_hot`，会将索引移动到[Cold tier](#Cold tier)的节点上。如果没有一个节点是cold tier，那么就移动到warm tier，否则移动到hot tier。
 
 &emsp;&emsp;`frozen`阶段不允许执行migrate动作。这个阶段会直接将searchable snapshot挂载到`data_frozen`,`data_cold`,`data_warm`,`data_hot`中的一个。先移动到[frozen tier](#Frozen tier)，如果没有一个节点是frozen tier，则移动到cold tier，否则移动到warm tier，最终移动移到hot tier。
 
@@ -22438,7 +22438,7 @@ PUT my-index-000001
 
 ###### max_age
 
-&emsp;&emsp;（Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+&emsp;&emsp;（Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#indexlifecycleparse_origination_date) 或者 [index.lifecycle.origination_date ](#indexlifecycleorigination_date)。
 
 ###### max_docs
 
@@ -22628,7 +22628,7 @@ PUT /_ilm/policy/rollover_policy
 
 &emsp;&emsp;在配置好的仓库中对被管理的索引（managed index）生成一个快照并且挂载它作为一个[searchable snapshot](#Searchable snapshots)。如果这个索引是[data stream](#Data Streams)的一部分，被挂载的索引将替换流中的原来的索引（original index）。
 
-&emsp;&emsp;`searchable_snapshot`动作需要数据层（[data tiers](#Data tiers)），这个动作使用[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)参数来挂载不同阶段对应的数据层（data tiers）的索引。在frozen阶段，这个动作会挂载到frozen层中前缀为`partial-`的[partially mounted index](#Partially mounted index)。在其他阶段，这个动作会挂载到对应数据层中前缀为`restored-`的[fully mounted index](#Fully mounted index)。
+&emsp;&emsp;`searchable_snapshot`动作需要数据层（[data tiers](#Data tiers)），这个动作使用[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)参数来挂载不同阶段对应的数据层（data tiers）的索引。在frozen阶段，这个动作会挂载到frozen层中前缀为`partial-`的[partially mounted index](#Partially mounted index)。在其他阶段，这个动作会挂载到对应数据层中前缀为`restored-`的[fully mounted index](#Fully mounted index)。
 
 > WARNING：不要同时在hot跟cold阶段包含`searchable_snapshot`动作。这样会导致在cold阶段索引无法自动迁移（migrate）到cold tier。
 
@@ -22712,7 +22712,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;可以在hot、warm阶段使用该动作。
 
-&emsp;&emsp;将源索引（source index）设置为[read-only](#index.blocks.read_only)并且收缩（shrink）到一个新的索引中，这个索引有很少的主分片（fewer primary shards）。生成的索引名称为`shrink-<random-uuid>-<original-index-name>`。这个动作对应于 [shrink API](#Shrink index API)。
+&emsp;&emsp;将源索引（source index）设置为[read-only](#indexblocksread_only)并且收缩（shrink）到一个新的索引中，这个索引有很少的主分片（fewer primary shards）。生成的索引名称为`shrink-<random-uuid>-<original-index-name>`。这个动作对应于 [shrink API](#Shrink index API)。
 
 &emsp;&emsp;在`shrink`动作执行后，那些指向源索引的aliases会指向收缩后的索引（shrunken index）。如果ILM在一个数据流（data stream）的[backing index](#Backing indices)上执行收缩操作时，收缩后的索引会替代流中的源索引。你不能在一个写索引（write index）上执行`shrink`动作。
 
@@ -22784,7 +22784,7 @@ PUT _ilm/policy/my_policy
 - 没有节点有足够的磁盘空间来存放源索引的分片
 - Elasticsearch因为分配规则发生冲突而无法重新分配收缩后的索引
 
-&emsp;&emsp;当分配步骤的其中一步失败后，ILM会等待[index.lifecycle.step.wait_time_threshold](#index.lifecycle.step.wait_time_threshold)，默认值为12小时。这个阈值会周期性让集群去解决任何导致分配失败的问题。
+&emsp;&emsp;当分配步骤的其中一步失败后，ILM会等待[index.lifecycle.step.wait_time_threshold](#indexlifecyclestepwait_time_threshold)，默认值为12小时。这个阈值会周期性让集群去解决任何导致分配失败的问题。
 
 &emsp;&emsp;如果过了这个周期性的域值时间并且ILM还没有收缩完索引，ILM会尝试将源索引的主分片分配到其他节点。如果ILM收缩完索引但是不能在这个周期性的域值时间内重新分配收缩后的索引，ILM会删除收缩后的索引并且重新尝试整个`shink`动作。
 
@@ -23132,7 +23132,7 @@ DELETE _template/.cloud-hot-warm-allocation-0
 &emsp;&emsp;为了能让ILM将现有的索引移动到data tier，更新下面的index settings：
 
 - 通过将设置置为`null`的方式来移除自定义的allocation filter
-- 设置[tier preference](#index.routing.allocation.include.\_tier\_preference)
+- 设置[tier preference](#indexroutingallocationinclude_tier_preference)
 
 &emsp;&emsp;例如，如果在你的旧模板中设置属性`data`的值为`hot`将分片分配到hot tier，那么将属性`data`设置为`null`并且设置`_tier_preference`为`data_hot`。
 
@@ -23428,7 +23428,7 @@ POST _ilm/start
 
 &emsp;&emsp;注意的是对现有的索引应用策略后，每一个阶段的`min_age`会跟索引的创建时间作比较，所以有可能会立即处理多个阶段。如果你的策略属于资源密集型的操作比如force merge，当切换到ILM时你不会想要让很多的索引马上一下子都执行这些操作。
 
-&emsp;&emsp;你可以为现有的索引指定不同的`min_age`，或者设置[index.lifecycle.origination_date](#index.lifecycle.origination_date)来控制索引寿命（age）的计算。
+&emsp;&emsp;你可以为现有的索引指定不同的`min_age`，或者设置[index.lifecycle.origination_date](#indexlifecycleorigination_date)来控制索引寿命（age）的计算。
 
 &emsp;&emsp;Once all pre-ILM indices have been aged out and removed, you can delete the policy you used to manage them。
 
@@ -23593,11 +23593,11 @@ node.roles: ["data_hot", "data_content"]
 
 #### Data tier index allocation
 
-&emsp;&emsp;当你创建一个索引时，Elasticsearch默认设置[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)为`data_content`来自动的在content tier上分配索引分片。
+&emsp;&emsp;当你创建一个索引时，Elasticsearch默认设置[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)为`data_content`来自动的在content tier上分配索引分片。
 
-&emsp;&emsp;当Elasticsearch创建一个索引，该索引作为 data stream的一部分时，Elasticsearch默认设置[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)为`data_hot`来自动的在hot tier上分配索引分片。
+&emsp;&emsp;当Elasticsearch创建一个索引，该索引作为 data stream的一部分时，Elasticsearch默认设置[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)为`data_hot`来自动的在hot tier上分配索引分片。
 
-&emsp;&emsp;你可以显示指定[index.routing.allocation.include.\_tier\_preference](#index.routing.allocation.include.\_tier\_preference)的值，不使用（opt out of）默认的tier-based的分配方式。
+&emsp;&emsp;你可以显示指定[index.routing.allocation.include.\_tier\_preference](#indexroutingallocationinclude_tier_preference)的值，不使用（opt out of）默认的tier-based的分配方式。
 
 #### Automatic data tier migration
 
@@ -26189,7 +26189,7 @@ POST _transform/_preview
 
 &emsp;&emsp;如果你的集群由一个节点组成，这个节点必须做所有的事情。对这种场景的推荐是，Elasticsearch默认将所有的角色给这个节点。
 
-&emsp;&emsp;单个节点的集群是不具备弹性的。如果这个节点发生了故障，集群将停止工作。因为在这个单节点的集群中没有replica，你无法存储冗余数据。然而默认情况下`green` [cluster health](#Cluster health API)状态至少需要一个replica。为了你的集群能显示一个`green`状态，可以对每一个索引通过[index.number_of_replicas](#index.number_of_replicas)设置为`0`。
+&emsp;&emsp;单个节点的集群是不具备弹性的。如果这个节点发生了故障，集群将停止工作。因为在这个单节点的集群中没有replica，你无法存储冗余数据。然而默认情况下`green` [cluster health](#Cluster health API)状态至少需要一个replica。为了你的集群能显示一个`green`状态，可以对每一个索引通过[index.number_of_replicas](#indexnumber_of_replicas)设置为`0`。
 
 &emsp;&emsp;如果节点发生故障，你可能需要从[snapshot](#Snapshot module-1)中恢复会丢失索引数据的较老的拷贝。
 
@@ -26197,8 +26197,8 @@ POST _transform/_preview
 
 ##### Two-node clusters
 
-&emsp;&emsp;如果你有两个节点，我们建议这两个节点都是数据节点。你应该保证在两个节点上都保留着冗余数据，通过在每一个索引上设置[index.number_of_replicas](#index.number_of_replicas)为`1`，这些索引不是一个[ searchable snapshot index](#Searchable snapshots)，以上都是默认的行为但是可以通过[index template](#Index templates
-)覆盖。[Auto-expand relicas](#index.auto_expand_replicas)能达到同样的目的，但是不建议在这种规模的集群上使用这个功能。
+&emsp;&emsp;如果你有两个节点，我们建议这两个节点都是数据节点。你应该保证在两个节点上都保留着冗余数据，通过在每一个索引上设置[index.number_of_replicas](#indexnumber_of_replicas)为`1`，这些索引不是一个[ searchable snapshot index](#Searchable snapshots)，以上都是默认的行为但是可以通过[index template](#Index templates
+)覆盖。[Auto-expand relicas](#indexauto_expand_replicas)能达到同样的目的，但是不建议在这种规模的集群上使用这个功能。
 
 &emsp;&emsp;我们建议在这两个节点的其中一个节点上设置`node.master: false`使得这个节点不是[master-eligible](# Master-eligible node)。这样你可以知道哪个节点会被选为集群的master节点。这个集群容忍不是master-eligible的节点的丢失。如果你不在其中一个节点上设置`node.master:false`，两个节点都是master-eligible。这意味着这两个节点要求master的选举。由于如果任一节点不可用，选举将失败，因此你的集群无法可靠地容忍任一节点的丢失。
 
@@ -26438,7 +26438,7 @@ POST _transform/_preview
 
 &emsp;&emsp;当删除/更新现有的文档时会发生soft delete。保留的soft delete有一定的限制，这个限制是可配置的。操作历史保留在leader shard上并且对follower shard task可见，用于replay历史操作。
 
-&emsp;&emsp;[index.soft_deletes.retention_lease.period](#index.soft_deletes.retention_lease.period)这个设置定义了分片历史的驻留最大时间，这个设置决定了你的follower index可以离线的最长时间，默认12个小时。如果分片拷贝在其保留租约（retention lease）到期后恢复，但是缺失的操作仍然在leader index上可用，那Elasticsearch会建立一个新的租约并拷贝缺失的操作。然而Elasticsearch不能保证retain unleased operations，所以有可能一些缺失的操作被leader丢弃了并且现在完全不可用了。如果发生了这种情况，follower就不能自动恢复，那你必须[recreate it](#Recreate a follower index)。
+&emsp;&emsp;[index.soft_deletes.retention_lease.period](#indexsoft_deletesretention_leaseperiod)这个设置定义了分片历史的驻留最大时间，这个设置决定了你的follower index可以离线的最长时间，默认12个小时。如果分片拷贝在其保留租约（retention lease）到期后恢复，但是缺失的操作仍然在leader index上可用，那Elasticsearch会建立一个新的租约并拷贝缺失的操作。然而Elasticsearch不能保证retain unleased operations，所以有可能一些缺失的操作被leader丢弃了并且现在完全不可用了。如果发生了这种情况，follower就不能自动恢复，那你必须[recreate it](#Recreate a follower index)。
 
 &emsp;&emsp;如果要作为leader index，它必须开启soft delete。在Elasticsearch 7.0.0之后，新创建的索引默认开启soft delete。
 
@@ -26715,7 +26715,7 @@ PUT /_ccr/auto_follow/beats
 
 ##### Recreate a follower index
 
-&emsp;&emsp;当更新/删除一篇文档时，底层操作会在Lucene的索引中保留一段时间，这个时间通过参数[index.soft_deletes.retention_lease.period](#index.soft_deletes.retention_lease.period)定义。你可以在[leader index](#Cross-cluster replication)上配置这个设置。
+&emsp;&emsp;当更新/删除一篇文档时，底层操作会在Lucene的索引中保留一段时间，这个时间通过参数[index.soft_deletes.retention_lease.period](#indexsoft_deletesretention_leaseperiod)定义。你可以在[leader index](#Cross-cluster replication)上配置这个设置。
 
 &emsp;&emsp;当follower index开始后，它会向leader index需求一个retention lease，这个lease要求leader不允许prune一个soft delete，直到follower告知它已经收到了该操作或者lease到期。
 
@@ -27005,7 +27005,7 @@ Cluster A
 - 每个快照逻辑上是独立的。你可以删除一个快照，不会影响其他的快照
 - 创建一个快照会临时暂停分片的分配。见[Snapshots and shard allocation](#Snapshots and shard allocation)
 - 创建快照不会阻塞索引操作获取其他的请求。然而快照不会包含开始备份后的变更
-- 你可以在同一时间创建多个快照。集群设置[snapshot.max_concurrent_operations](#snapshot.max_concurrent_operations)限制的快照操作的数量最大值并发量
+- 你可以在同一时间创建多个快照。集群设置[snapshot.max_concurrent_operations](#snapshotmax_concurrent_operations)限制的快照操作的数量最大值并发量
 - 如果快照中包含了一个data stream，那快照中同样包含了这个流的backing Index和metadata
   - 你可以在快照中包含指定的backing Index。然而就不会包含data stream的metadata或者其他的backing Index
 - 快照可以包含一个data stream但是排除指定的backing Index。当你恢复这样的data stream，就只包含快照中的backing Index。如果流中原先的write Index不在快照中，那快照中最近（most recent）的backing index成为流的write index
@@ -27116,7 +27116,7 @@ POST _slm/policy/nightly-snapshots/_execute
 
 ##### SLM retention
 
-&emsp;&emsp;SLM snapshot retention属于cluster-level的任务，独立于策略中的快照定时计划。若要控制SLM retention任务的运行时间，配置集群设置[slm.retention_schedule](#slm.retention_schedule)。
+&emsp;&emsp;SLM snapshot retention属于cluster-level的任务，独立于策略中的快照定时计划。若要控制SLM retention任务的运行时间，配置集群设置[slm.retention_schedule](#slmretention_schedule)。
 
 ```text
 PUT _cluster/settings
@@ -27608,7 +27608,7 @@ xpack.searchable.snapshot.shared_cache.size: 4TB
 
 #### Avoid large documents
 
-&emsp;&emsp;默认的[http.max_content_length](#http.max_content_length)的值为100M。Elasticsearch会拒绝索引大于该值的文档。你可能想要增加这个特定的设置，但 Lucene 仍然有大约 2GB 的限制。
+&emsp;&emsp;默认的[http.max_content_length](#httpmax_content_length)的值为100M。Elasticsearch会拒绝索引大于该值的文档。你可能想要增加这个特定的设置，但 Lucene 仍然有大约 2GB 的限制。
 
 &emsp;&emsp;即使抛开这些硬性的限制，索引一个large document不是一个很好的实践。large document会对网络、内存使用量和硬盘造成更多的压力。即使查询请求中不要求查询`_source`，Elasticsearch在所有情况下都需要获取文档的`_id`，而获取large document的这个域的开销由于文件系统缓存的原因会更大。索引这个文档可能使用的内存量是文档原始大小的倍数。Proximity search（phrase queries for instance）和[highlighting](#Highlighting)同样会变得开销昂贵，因为它们的开销直接取决于原始文档的大小。
 
@@ -27826,7 +27826,7 @@ GET index/_search
 
 ##### Scores are not reproducible
 
-&emsp;&emsp;比如说同一个用户执行两次相同的列和文档的查询（the same request twice in a row and documents），但是返回的结果是不一样的，这是一种很差的体验对吗？事实上如果你有多个副本时（[index.number_of_replicas](#index.number_of_replicas)大于0）是有可能发生这种情况的。原因是Elasticsearch在选择分片时采用了一种循环（round-robin）的方式，所以两次相同的列和文档的查询会在同一个分片的不同的两个副本上执行。
+&emsp;&emsp;比如说同一个用户执行两次相同的列和文档的查询（the same request twice in a row and documents），但是返回的结果是不一样的，这是一种很差的体验对吗？事实上如果你有多个副本时（[index.number_of_replicas](#indexnumber_of_replicas)大于0）是有可能发生这种情况的。原因是Elasticsearch在选择分片时采用了一种循环（round-robin）的方式，所以两次相同的列和文档的查询会在同一个分片的不同的两个副本上执行。
 
 &emsp;&emsp;那为什么这会产生问题呢？Index statistics是打分的重要的组成部分。由于被删除的文档（deleted documents）的存在使得同一个分片的不同副本上的index statistics可能是不相同的。也许你知道当文档被删除或者更新后，旧的的文档不会从索引中移除，这些旧的文档只是被标记为被删除的（deleted）并且只有在所属的段下次被合并后才会被移除。然而由于生产实践的原因（However for practical reasons），index statistics会包含这些被删除的文档。所以考虑这种情况，当主分片刚刚完成了一次合并并且移除了很多被删除的文档，使得它的index statistic跟分片有很大的不同（分片中依旧有很多被删除的文档）导致打分也是不同的。
 
@@ -27844,7 +27844,7 @@ GET index/_search
 
 &emsp;&emsp;不然很大的可能会让参与查询请求的所有分片有不相同的index statistics使得相关性会很差。
 
-&emsp;&emsp;如果是一个较小的数据集，那么你可以把所有的东西都索引到只有一个副本的分片（[index.number_of_shards](#index.number_of_shards): 1）中来work around这个问题，这是默认的配置。所有的文档有相同的index statistics并且分数是将保持一致。
+&emsp;&emsp;如果是一个较小的数据集，那么你可以把所有的东西都索引到只有一个副本的分片（[index.number_of_shards](#indexnumber_of_shards): 1）中来work around这个问题，这是默认的配置。所有的文档有相同的index statistics并且分数是将保持一致。
 
 &emsp;&emsp;其他推荐的方式就是使用[dfs_query_then_fetch](#search_type)的查询类型来work around这个问题。这使得Elasticsearch会遍历所有涉及的分片，向这些分片索要跟这次请求相关的index statistics，然后coordinating node会合并这些index statistics，伴随着查询将合并后的index statistics发给查询的分片，这样分片就可以使用全局的index statistics而不是自身的index statistics进行打分。
 
@@ -27933,7 +27933,7 @@ GET _search
 
 &emsp;&emsp;这是一个优化配置，如果没有或者有很少的搜索流量（search traffic，5分钟中有一次或者没有查询请求）就可以优化索引的速度。这个做法目的是在没有查询请求时能优化bulk Indexing。可以通过显示的设置refresh的间隔来opt out这种方式。
 
-&emsp;&emsp;另外，如果你的索引用于常规的查询请求（if your index experiences regular search requests），默认的行为意味着Elasticsearch每隔一秒种就会执行一次refresh。如果你能够承受（afford to）文档被索引后和对搜索可见之间的时间间隔，提高[index.refresh_interval](#index.refresh_interval)的值，比如说30s，以此来提高索引速度。
+&emsp;&emsp;另外，如果你的索引用于常规的查询请求（if your index experiences regular search requests），默认的行为意味着Elasticsearch每隔一秒种就会执行一次refresh。如果你能够承受（afford to）文档被索引后和对搜索可见之间的时间间隔，提高[index.refresh_interval](#indexrefresh_interval)的值，比如说30s，以此来提高索引速度。
 
 #### Disable replicas for initial loads
 
@@ -28422,7 +28422,7 @@ PUT index
 
 #### Use best_compression
 
-&emsp;&emsp;`_source`和stored filed很容易占用大量的磁盘空间（can easily take a non negligible amount of disk space）。可以使用`best_compression` [codec](#index.codec)对这些数据进行更加激进的压缩。
+&emsp;&emsp;`_source`和stored filed很容易占用大量的磁盘空间（can easily take a non negligible amount of disk space）。可以使用`best_compression` [codec](#indexcodec)对这些数据进行更加激进的压缩。
 
 #### Force merge
 
@@ -28462,9 +28462,9 @@ PUT index
 
 #### Error: disk usage exceeded flood-stage watermark, index has read-only-allow-delete block
 
-&emsp;&emsp;这个错误指出数据节点的磁盘空间大小已经严重不足（critical low）了并且达到了[flood-stage disk usage watermark](#cluster.routing.allocation.disk.watermark.flood_stage)。为了防止出现full disk，当一个节点达到watermark，Elasticsearch会block在这个节点上写入索引。如果这个block影响到了系统的索引，Kibana和其他Elastic Stack feature可能会不可用。
+&emsp;&emsp;这个错误指出数据节点的磁盘空间大小已经严重不足（critical low）了并且达到了[flood-stage disk usage watermark](#clusterroutingallocationdiskwatermarkflood_stage)。为了防止出现full disk，当一个节点达到watermark，Elasticsearch会block在这个节点上写入索引。如果这个block影响到了系统的索引，Kibana和其他Elastic Stack feature可能会不可用。
 
-&emsp;&emsp;当受到影响的节点的磁盘使用量降到[high disk watermark](#cluster.routing.allocation.disk.watermark.high)以下，Elasticsearch会自动移除write block。Elasticsearch会自动的将受到影响的节点的分配移动到有相同data tier的其他节点上。
+&emsp;&emsp;当受到影响的节点的磁盘使用量降到[high disk watermark](#clusterroutingallocationdiskwatermarkhigh)以下，Elasticsearch会自动移除write block。Elasticsearch会自动的将受到影响的节点的分配移动到有相同data tier的其他节点上。
 
 &emsp;&emsp;若要验证分片已从受到影响的节点上移走，使用[cat shards API](#cat shards API)。
 
@@ -28732,8 +28732,8 @@ GET _nodes/stats?filter_path=nodes.*.jvm.mem.pools.old
 
 &emsp;&emsp;Expensive searches可能是因为使用了非常大的[size argument](#Paginate search results)，使用了大量分桶的聚合，或者包含了[expensive queries](#Allow expensive queriesQuery DSL)。若要防止expensive searches，考虑进行更改下面的设置：
 
-- 使用索引设置[index.max_result_window](#index.max_result_window)来降低`size`的上限
-- 使用集群设置[search.max_buckets](#search.max_buckets)降低允许分桶的数量
+- 使用索引设置[index.max_result_window](#indexmax_result_window)来降低`size`的上限
+- 使用集群设置[search.max_buckets](#searchmax_buckets)降低允许分桶的数量
 - 使用集群设置[search.allow_expensive_queries](#Allow expensive queriesQuery DSL)关闭expensive query
 
 ```text
@@ -29055,7 +29055,7 @@ GET /_tasks?filter_path=nodes.*.tasks
 &emsp;&emsp;ILM可以让你随时轻松更改你的sharding strategy：
 
 - **想要为新的索引降低分片数量？**
-  - 在data stream的[matching index template](#Change mappings and settings for a data stream)中修改[index.number_of_shards ](#index.number_of_shards)
+  - 在data stream的[matching index template](#Change mappings and settings for a data stream)中修改[index.number_of_shards ](#indexnumber_of_shards)
 - **想要更大的分片或者更少的backing索引?**
   - 提高你的ILM策略中的[rollover threshold](#Rollover)
 - **需要让索引之间有更短的时间跨度**
@@ -29117,7 +29117,7 @@ GET _cat/shards?v=true
 
 &emsp;&emsp;如果太多的分片分配到了一个指定的节点，这个节点会成为一个热点（Hotspot）节点。例如，如果单个节点包含一个索引并带有大规模的索引操作，这个索引会有太多的分片，这个节点则很有可能出现问题。
 
-&emsp;&emsp;为了防止出现Hotspot。使用索引设置[index.routing.allocation.total_shards_per_node](#index.routing.allocation.total_shards_per_node)来显示的（explicit）限制单个节点上分片的数量。你可以使用[update index settings API](#Update index settings API)配置`index.routing.allocation.total_shards_per_node`。
+&emsp;&emsp;为了防止出现Hotspot。使用索引设置[index.routing.allocation.total_shards_per_node](#indexroutingallocationtotal_shards_per_node)来显示的（explicit）限制单个节点上分片的数量。你可以使用[update index settings API](#Update index settings API)配置`index.routing.allocation.total_shards_per_node`。
 
 ```text
 PUT my-index-000001/_settings
@@ -29196,7 +29196,7 @@ POST _reindex
 
 ##### this action would add [x] total shards, but this cluster currently has [y]/[z] maximum shards open;
 
-&emsp;&emsp; 集群的设置[cluster.max_shards_per_node](#cluster.max_shards_per_node)限制了集群中可以打开的分片的最大数量。这个错误说的是某个行为会超过这个限制。
+&emsp;&emsp; 集群的设置[cluster.max_shards_per_node](#clustermax_shards_per_node)限制了集群中可以打开的分片的最大数量。这个错误说的是某个行为会超过这个限制。
 
 &emsp;&emsp;如果你有信心保证你的更改不会降低集群的稳定性，你可以通过[cluster update settings API](#Cluster update settings API)临时的提高限制然后重新这个行为。.
 
@@ -33724,7 +33724,7 @@ PUT /_component_template/<component-template>
   > - synthetics-mapping
   > - synthetics-settings
   > [Elastic Agent](https://www.elastic.co/guide/en/fleet/8.2/fleet-overview.html) 使用这些模板来配置data streams的backing indices。如果你要使用Elastic Agent并且想要重写（overwrite）这些模板，只要将你的模板中的`version`设置为一个更高的值
-  > 如果你不想使用Elastic Agent并且禁用内置的组件模板和索引模板，可以使用[cluster update  settings API](#Cluster update settings API)将[stack.templates.enabled](#stack.templates.enabled)设置为`false`
+  > 如果你不想使用Elastic Agent并且禁用内置的组件模板和索引模板，可以使用[cluster update  settings API](#Cluster update settings API)将[stack.templates.enabled](#stacktemplatesenabled)设置为`false`
 
 ##### Query parameters
 
@@ -34385,7 +34385,7 @@ DELETE /<index>
 ##### Path parameters
 
 - `<index>`：（Required, string）待删除的用逗号隔开的索引名称。你不能指定[索引别名](#Aliases)
-  - 默认不支持通配符（`*`）或者`_all`。若要使用通配符或者`_all`，需要将集群设置[action.destructive_requires_name](#action.destructive_requires_name)设置为`false`
+  - 默认不支持通配符（`*`）或者`_all`。若要使用通配符或者`_all`，需要将集群设置[action.destructive_requires_name](#actiondestructive_requires_name)设置为`false`
 ##### Query parameters
 
 - allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
@@ -35168,7 +35168,7 @@ POST /<rollover-target>/_rollover/<target-index>
 - condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
   > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rolloveraction)
 
-  - max_age：(Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+  - max_age：(Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#indexlifecycleparse_origination_date) 或者 [index.lifecycle.origination_date ](#indexlifecycleorigination_date)。
   - max_docs：（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
   - max_size：（Optional，[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
   > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
@@ -39761,7 +39761,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
 - name：（Required, string）通过策略创建的快照会被自动分配一个名称。支持[Date math](#Date math support in system and index alias names-1)。若要防止出现快照名称冲突，UUID会被自动的添加到每一个快照名称的后面
 - repository：（Required, string）用来存储通过策略创建的快照的仓库。这个仓库必须在创建策略之前就已存在。你可以使用[snapshot repository API](#Snapshot module-1)创建一个仓库
 - retention：（Optional, object）保留规则（retention rule）用来保留以及删除策略创建的快照
-  - expire_after：（Optional, [time units](#Time units)）某个时间段后的快照会被认为是过期的并且可以删除。SLM基于[slm.retention_schedule](#slm.retention_schedule)删除过期的快照
+  - expire_after：（Optional, [time units](#Time units)）某个时间段后的快照会被认为是过期的并且可以删除。SLM基于[slm.retention_schedule](#slmretention_schedule)删除过期的快照
   - max_count：（Optional, string）即使快照尚未过期，也要保留的最大快照数量。如果仓库中的快照数量超过此限制，策略将保留最新的快照并删除较旧的快照。这个限制只包括[state](#Get snapshot API)为`SUCCESS`的快照。
   - min_count：（Optional, integer）即使快照已经过期，也要保留的最小快照数量
 - schedule：（Required, [Cron syntax](#Cron expressions-1)）
