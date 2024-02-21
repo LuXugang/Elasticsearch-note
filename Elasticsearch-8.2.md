@@ -530,7 +530,7 @@ PUT _cluster/settings
 ```
 你可以使用[cat allocation API](#cat-allocation-API)来跟踪数据迁移的进度。如果某些分片没有迁移，那么[cluster allocation explain API](#Cluster-allocation-explain-API)会帮助你查明原因。
 
-3. 按照[rolling restart process](#Rolling restart)中的步骤执行，包括关闭目前节点。
+3. 按照[rolling restart process](#Rolling-restart)中的步骤执行，包括关闭目前节点。
 4. 确保你的集群是`yellow`或者`green`，使得你的集群中至少有一个节点有每一个分片的拷贝。
 5. 如果执行了上面的第二步，现在需要移除allocation filter。
 ```text
@@ -544,10 +544,10 @@ PUT _cluster/settings
 6. 通过删除数据路径的方式来丢弃被停掉的节点拥有的数据。
 7. 重新配置你的存储。使用LVM或者Storage Spaces将你的磁盘合并到单个文件系统中。确保你重新配置的存储有足够的空间存储数据
 8. 通过设置`elasticsearch.yml`文件中的`path.data`来重新配置你的节点。如果有需要的话，安装更多的节点，并使用他们自己各自的`path.data`。
-9. 启动新的节点并按照[rolling restart process](#Rolling restart)中的其他步骤执行
+9. 启动新的节点并按照[rolling restart process](#Rolling-restart)中的其他步骤执行
 10. 确保你的集群健康是`green`，使得所有的分片都已经分配结束
 
-&emsp;&emsp;你也可以在你的集群中增加一些单数据路径的节点，使用[allocation filters](#Cluster-level shard allocation filtering)将你的数据迁移到新的节点中，然后将这些旧的节点从集群中移除。这个方法会临时增大集群中的体积，所以只有你的集群有这个膨胀能力才能使用这个方法。
+&emsp;&emsp;你也可以在你的集群中增加一些单数据路径的节点，使用[allocation filters](#Cluster-level-shard allocation filtering)将你的数据迁移到新的节点中，然后将这些旧的节点从集群中移除。这个方法会临时增大集群中的体积，所以只有你的集群有这个膨胀能力才能使用这个方法。
 
 &emsp;&emsp;如果你目前使用多个数据路径，但你的集群并不具备高可用性，则可以通过拍摄快照、创建具有所需配置的新集群并将快照还原到其中来迁移到非废弃配置。
 
@@ -667,7 +667,7 @@ cluster.initial_master_nodes:
 -Xlog:gc*,gc+age=trace,safepoint:file=/opt/my-app/gc.log:utctime,pid,tags:filecount=32,filesize=64m
 ```
 
-&emsp;&emsp;下面的例子中配置一个[Elasticsearch Docker container](# Install Elasticsearch with Docker)，将GC的debug日志输出到`stderr`，让容器编排器处理输出。
+&emsp;&emsp;下面的例子中配置一个[Elasticsearch Docker container](#Install Elasticsearch with Docker)，将GC的debug日志输出到`stderr`，让容器编排器处理输出。
 
 ```text
 MY_OPTS="-Xlog:disable -Xlog:all=warning:stderr:utctime,level,tags -Xlog:gc=debug:stderr:utctime"
@@ -3028,7 +3028,7 @@ PUT _cluster/settings
 
 9. **Restart machine learning jobs** (Optional)
 
-&emsp;&emsp;如果你临时暂停了machine learning jobs相关的任务，使用[set upgrade mode API](# Set upgrade mode API)将它们返回到活跃状态：
+&emsp;&emsp;如果你临时暂停了machine learning jobs相关的任务，使用[set upgrade mode API](#Set upgrade mode API)将它们返回到活跃状态：
 
 ```text
 POST _ml/set_upgrade_mode?enabled=false
@@ -3336,7 +3336,7 @@ POST /_security/role/remote-replication
 }
 ```
 
-&emsp;&emsp;在每一个集群上创建完`remote-replication`的角色后，使用[create or update users API](#Create or update users API)在本地集群上创建一个用户，并赋予`remote-replication`的角色。例如，下面的请求赋予一个名为`cross-cluster-user`的用户`remote-replication`的角色：
+&emsp;&emsp;在每一个集群上创建完`remote-replication`的角色后，使用[create or update users API](#Create-or-update-users-API)在本地集群上创建一个用户，并赋予`remote-replication`的角色。例如，下面的请求赋予一个名为`cross-cluster-user`的用户`remote-replication`的角色：
 
 ```text
 POST /_security/user/cross-cluster-user
@@ -7838,7 +7838,7 @@ PUT my-index-000001
 - [meta](#meta(mapping parameter))：域的元数据信息
 - [norms](#norms(mapping parameter))：打分时是否考虑域值的长度。默认false，可以设置为`true`
 - [null_value](#null_value)：参数值可以是一个该域的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
-- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored-field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
 - script：如果设置了这个参数，这个域的域值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
 - [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
 - [similarity](#similarity)：使用哪一个打分算法。默认值为`BM25`。
@@ -20567,7 +20567,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp; 第13行，见[format pattern](#Date Format/Pattern)
+&emsp;&emsp; 第13行，见[format pattern](#Date-FormatPattern)
 
 - Time Zone
 
@@ -26200,7 +26200,7 @@ POST _transform/_preview
 &emsp;&emsp;如果你有两个节点，我们建议这两个节点都是数据节点。你应该保证在两个节点上都保留着冗余数据，通过在每一个索引上设置[index.number_of_replicas](#indexnumber_of_replicas)为`1`，这些索引不是一个[ searchable snapshot index](#Searchable snapshots)，以上都是默认的行为但是可以通过[index template](#Index templates
 )覆盖。[Auto-expand relicas](#indexauto_expand_replicas)能达到同样的目的，但是不建议在这种规模的集群上使用这个功能。
 
-&emsp;&emsp;我们建议在这两个节点的其中一个节点上设置`node.master: false`使得这个节点不是[master-eligible](# Master-eligible node)。这样你可以知道哪个节点会被选为集群的master节点。这个集群容忍不是master-eligible的节点的丢失。如果你不在其中一个节点上设置`node.master:false`，两个节点都是master-eligible。这意味着这两个节点要求master的选举。由于如果任一节点不可用，选举将失败，因此你的集群无法可靠地容忍任一节点的丢失。
+&emsp;&emsp;我们建议在这两个节点的其中一个节点上设置`node.master: false`使得这个节点不是[master-eligible](#Master-eligible node)。这样你可以知道哪个节点会被选为集群的master节点。这个集群容忍不是master-eligible的节点的丢失。如果你不在其中一个节点上设置`node.master:false`，两个节点都是master-eligible。这意味着这两个节点要求master的选举。由于如果任一节点不可用，选举将失败，因此你的集群无法可靠地容忍任一节点的丢失。
 
 &emsp;&emsp;默认情况下，每一个节点会有一个角色。我们建议你除了master-eligible外给这两个节点赋予所有的角色。如果一个节点发生了故障，另一个节点可以接管任务。
 
@@ -26602,7 +26602,7 @@ POST /_security/role/remote-replication
 }
 ```
 
-&emsp;&emsp;在一个集群上创建`remote-replication`角色后，在本地集群上使用[create or update users API](#Create or update users API)上创建一个用户并且赋予`remote-replication`角色。例如，下面的请求赋予名为`cross-cluster-user`的用户一个`remote-replication`角色：
+&emsp;&emsp;在一个集群上创建`remote-replication`角色后，在本地集群上使用[create or update users API](#Create-or-update-users-API)上创建一个用户并且赋予`remote-replication`角色。例如，下面的请求赋予名为`cross-cluster-user`的用户一个`remote-replication`角色：
 
 ```text
 POST /_security/user/cross-cluster-user
@@ -31280,7 +31280,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
     - store：（object）分配到该节点上的分片大小的统计信息
       - size：（[byte value](#Byte size units)）分配到该结点上所有分片的大小（所有索引数据的物理磁盘占用大小，存储优化后的数据）总量
       - size_in_bytes：（integer）同`size`，单位为字节
-      - total_data_set_size：（[byte value](#Byte size units)）分配到该结点上所有分片中的数据集大小（原始数据在未压缩或未进行Elasticsearch索引处理之前的大小）总数。包括没有完全存储在该结点上的分片大小，比如[partially mounted indices](# Partially mounted index)的缓存
+      - total_data_set_size：（[byte value](#Byte size units)）分配到该结点上所有分片中的数据集大小（原始数据在未压缩或未进行Elasticsearch索引处理之前的大小）总数。包括没有完全存储在该结点上的分片大小，比如[partially mounted indices](#Partially mounted index)的缓存
       - total_data_set_size_in_bytes：（integer）同`total_data_set_size`，单位为字节
       - reserved：（[byte value](#Byte size units)）预计由于正在进行的对等恢复、快照恢复和类似活动，该节点上的分片存储将最终增长多少。如果这个值是-1b，表示这个信息不可用。这个预测有助于管理节点存储空间，确保有足够空间处理这些正在进行的操作
       - reserved_in_bytes：（Integer）同`reserved`，单位为字节
@@ -32568,7 +32568,7 @@ POST /_data_stream/_modify
 
 - [Search](#Search API)
 - [Multi Search](#Multi search API)
-- [Multi Get](#Multi get \(mget\) API)
+- [Multi Get](#Multi-get-mget-API)
 
 
 &emsp;&emsp;包含部分结果的响应仍旧提供一个`200 OK`的HTTP 状态码。Shard failure会在响应头的`timed_out`和`_shards` 中指出。
@@ -34968,7 +34968,7 @@ GET /_index_template
 #### Get mapping API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-mapping.html)
 
-&emsp;&emsp;获取一个或多个索引的[mapping definitions](# Mapping)。对于data streams。这个接口获取流中backing indices的mappings。
+&emsp;&emsp;获取一个或多个索引的[mapping definitions](#Mapping)。对于data streams。这个接口获取流中backing indices的mappings。
 
 ```text
 GET /my-index-000001/_mapping
