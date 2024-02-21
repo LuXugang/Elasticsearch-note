@@ -3747,7 +3747,7 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 
 &emsp;&emsp;你可以使用shard allocation filtering来控制Elasticsearch如何为一个指定的索引进行分片的分配。索引层（index-level）的filtering跟 [cluster-wide allocation filtering](#Cluster-level-shard-allocation-filtering) 和 [allocation awareness](#Shard-allocation-awareness)结合应用。
 
-&emsp;&emsp;Shard allocation filtering可以基于节点上自定义的属性或者内置属性例如`_name`, `_host_ip`, `_publish_ip`, `_ip`, `_host`, `_id`, `_tier` 以及`_tier_preference`。 [Index lifecycle management](#ILM:-Manage-the-index-lifecycle)使用基于自定义的节点属性的filtering来决定在进行阶段转变时如何重新分配分片。
+&emsp;&emsp;Shard allocation filtering可以基于节点上自定义的属性或者内置属性例如`_name`, `_host_ip`, `_publish_ip`, `_ip`, `_host`, `_id`, `_tier` 以及`_tier_preference`。 [Index lifecycle management](#ILM-Manage-the-index-lifecycle)使用基于自定义的节点属性的filtering来决定在进行阶段转变时如何重新分配分片。
 
 &emsp;&emsp;设置（setting）`cluster.routing.allocation`是动态的，使得可以让live index从一些节点移到其他节点。只有在不会破坏其他路由限制（routing constraint）时才会重新分配分片，比如说不会在一台机器上同时分配主分片和副本。
 
@@ -13103,7 +13103,7 @@ POST /_index_template/_simulate
 
 &emsp;&emsp;数据流（data stream）允许你跨多个索引append-only方式存储时间序列数据，同时为你提供单个命名资源用于请求。Data stream非常适合用于logs、events、metrics以及其他源源不断生成的数据。
 
-&emsp;&emsp;你可以直接向一个数据流提交索引和查询请求。数据流可以自动的将请求路由到存储流数据（stream's data）的[backing indices](#Backing-indices)中。你可以使用[index lifecycle management(ILM)](#ILM:-Manage-the-index-lifecycle)实现backing indeices的自动化管理。例如，你可以使用ILM自动将较老的backing indices移到成本更低的硬件上以及删除不再需要的数据。ILM可以帮助你降低随着不断增长的数据带来的开销和成本。
+&emsp;&emsp;你可以直接向一个数据流提交索引和查询请求。数据流可以自动的将请求路由到存储流数据（stream's data）的[backing indices](#Backing-indices)中。你可以使用[index lifecycle management(ILM)](#ILM-Manage-the-index-lifecycle)实现backing indeices的自动化管理。例如，你可以使用ILM自动将较老的backing indices移到成本更低的硬件上以及删除不再需要的数据。ILM可以帮助你降低随着不断增长的数据带来的开销和成本。
 
 #### Backing indices
 
@@ -13142,7 +13142,7 @@ POST /_index_template/_simulate
 
 &emsp;&emsp;[rollover](#Rollover-API)操作会创建一个新的backing index，这个索引成为数据流中新的write index。
 
-&emsp;&emsp;我们建议使用[ILM](#ILM:-Manage-the-index-lifecycle)，它能在write index达到一个指定的寿命（age）或者大小后自动的转存（roll over）数据流。如果有必要的话，你也可以[manually roll over](#Manually-roll-over-a-data-stream)一个数据流。
+&emsp;&emsp;我们建议使用[ILM](#ILM-Manage-the-index-lifecycle)，它能在write index达到一个指定的寿命（age）或者大小后自动的转存（roll over）数据流。如果有必要的话，你也可以[manually roll over](#Manually-roll-over-a-data-stream)一个数据流。
 
 #### Generation
 
@@ -14063,7 +14063,7 @@ DELETE /_data_stream/my-data-stream
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-pipeline-list.png">
 
 
-&emsp;&emsp;若要创建一个pipeline，点击**Create pipeline > New pipeline**。可以查看[Example: Parse logs](#Example:-Parse-logs-in-the-Common-Log-Format)这个示例教程。
+&emsp;&emsp;若要创建一个pipeline，点击**Create pipeline > New pipeline**。可以查看[Example: Parse logs](#Example-Parse-logs-in-the-Common-Log-Format)这个示例教程。
 
 > NOTE：**New pipeline from CSV**可以让你使用一个CSV来创建一个ingest pipeline，它将自定义的数据映射到[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/index.html)。将你的数据映射到ECS使得数据更易于查询并且能让你从其他数据集中复用（reuse）可视化。见[Map custom data to ECS](https://www.elastic.co/guide/en/ecs/8.2/ecs-converting.html)。
 
@@ -15374,7 +15374,7 @@ GET /_search
 &emsp;&emsp;在Elasticsearch中，写入并打开一个新段成为`refresh`。一次refresh操作使得自上一次refresh后在索引上的所有操作对查询可见。你可以通过下面的方式来控制refresh：
 
 - 等待刷新间隔（默认一秒）
-- 设置[?refresh](#?refresh(api))选项
+- 设置[?refresh](#refreshapi)选项
 - 使用[Refresh API](#Refresh-API)显示的完成一次refresh（POST \_refresh）
 
 &emsp;&emsp;默认情况下，Elasticsearch每一秒周期性的执行refresh，但是只在最新30s内收到一次或者多次查询的索引上才会执行。这就是为什么说Elasticsearch是近实时搜索：文档的变化不会马上对搜索可见，但是在这个时间（timeframe）内变成可见。
@@ -21358,7 +21358,7 @@ POST /exams/_search?size=0
 &emsp;&emsp;Elasticsearch可以基于下面的内容帮你管理你的数据：
 
 - 在data node上根据不同的性能属性定义[multiple tiers](#Data-tiers)
-- 根据你的性能要求以及[index lifecycle management](#ILM:-Manage-the-index-lifecycle)的保留策略（retention policy）自动的在不同的data tiers中进行转化。
+- 根据你的性能要求以及[index lifecycle management](#ILM-Manage-the-index-lifecycle)的保留策略（retention policy）自动的在不同的data tiers中进行转化。
 - 利用[searchable snapshots](#Searchable-snapshots)将数据存储在一个remote repository中， 为你的较旧的数据提供弹性。同时降低了操作开销并且保持查询性能。
 - 在较低性能的硬件上执行数据的异步查询[asynchronous searches](#Long-running-searches)
 
@@ -23533,7 +23533,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;当你直接往指定索引中写入文档，这些文档将无期限（indefinitely）的一直保留（remain on）在content ties节点上。
 
-&emsp;&emsp;当你往[data stream](#Data-streams)中写入文档，这些文档最开始会常驻（reside on）在hot tier节点上。你可以根据性能、弹性（resiliency）、数据保留（data retention）的要求，通过配置[index lifecycle management](#ILM:-Manage-the-index-lifecycle) 策略自动的将文档转移到hot ties、warm ties以及cold ties。
+&emsp;&emsp;当你往[data stream](#Data-streams)中写入文档，这些文档最开始会常驻（reside on）在hot tier节点上。你可以根据性能、弹性（resiliency）、数据保留（data retention）的要求，通过配置[index lifecycle management](#ILM-Manage-the-index-lifecycle) 策略自动的将文档转移到hot ties、warm ties以及cold ties。
 
 #### Content tier
 
@@ -26120,7 +26120,7 @@ POST _transform/_preview
 
 ###### ILM as destination index may cause duplicated documents
 
-&emsp;&emsp;不建议[ILM](#ILM:-Manage-the-index-lifecycle)用于作为transform 的destination index。Transform在当前destination index中更新文档，不能删除ILM之前使用过的索引中的文档。在rollover中，使用transform结合ILM可能会导致重复的文档。
+&emsp;&emsp;不建议[ILM](#ILM-Manage-the-index-lifecycle)用于作为transform 的destination index。Transform在当前destination index中更新文档，不能删除ILM之前使用过的索引中的文档。在rollover中，使用transform结合ILM可能会导致重复的文档。
 
 &emsp;&emsp;如果你使用ILM来获得time-based索引，请考虑使用[Date index name](#Date-index-name-processor)。如果你的transform包含基于`date_hisotram`的`group_by`，这个处理工作不会有重复的文档。
 
@@ -26771,7 +26771,7 @@ PUT /follower_index/_ccr/follow?wait_for_active_shards=1
 
 &emsp;&emsp;通过CCR从remote cluster复制过来的data streams受到local rollovers的保护，可以使用[promote data stream API](#Promote-data-stream-API)来将这些data streams变成regular data streams。
 
-&emsp;&emsp;Auto-follow patterns在[Index lifecycle management](#ILM:-Manage-the-index-lifecycle)中特别有用，因为它在包含leader index的集群上会不断的创建新的索引。
+&emsp;&emsp;Auto-follow patterns在[Index lifecycle management](#ILM-Manage-the-index-lifecycle)中特别有用，因为它在包含leader index的集群上会不断的创建新的索引。
 
 &emsp;&emsp;若要在Kibana的Stack Management中使用cross-cluster replication auto-follow patterns，从侧边导航栏选择**Cross-Cluster Replication**然后选择**Auto-follow patterns**。
 
@@ -26877,7 +26877,7 @@ Cluster A
 - [Index templates](#Index-templates)
 - [Legacy index templates](#Create-or-update-index-template-APIlegacy)
 - [Ingest pipelines](#Ingest-pipelines)
-- [ILM policies](#ILM:-Manage-the-index-lifecycle)
+- [ILM policies](#ILM-Manage-the-index-lifecycle)
 - For snapshots taken after 7.12.0, [feature states](#Feature-states)
 
 &emsp;&emsp;你也可以在创建快照时只指定集群中的data stream或者索引。包含data stream或者索引的快照自动会包含它们的alias。当你恢复一个快照，你可以选择是否恢复这些alias。
@@ -29044,7 +29044,7 @@ GET /_tasks?filter_path=nodes.*.tasks
 
 ##### Use data streams and ILM for time series data
 
-&emsp;&emsp;[Data streams](#Data-streams)可以让你在多个基于时间的backing索引中存储时序数据。你可以使用[index lifecycle management](#ILM:-Manage-the-index-lifecycle)来自动的管理这些backing 索引。
+&emsp;&emsp;[Data streams](#Data-streams)可以让你在多个基于时间的backing索引中存储时序数据。你可以使用[index lifecycle management](#ILM-Manage-the-index-lifecycle)来自动的管理这些backing 索引。
 
 &emsp;&emsp;这个设置的其中一个好处就是[automatic rollover](#Tutorial:-Automate-rollover-with-ILM)，它会在满足定义的`max_primary_shard_size`、`max_age`、`max_docs`、`max_size`阈值后创建一个新的write index。当不再需要某个索引时，你可以使用ILM自动的删除它并释放资源。
 
@@ -29229,7 +29229,7 @@ PUT _cluster/settings
 
 #### Set up data tiers
 
-&emsp;&emsp;Elasticsearch的[ILM](#ILM:-Manage-the-index-lifecycle)使用[data tiers](#Data-tiers)根据索引的寿命（age）自动的将旧的数据移动到成本较低的硬件中。这有助于提高性能以及降低存储开销。
+&emsp;&emsp;Elasticsearch的[ILM](#ILM-Manage-the-index-lifecycle)使用[data tiers](#Data-tiers)根据索引的寿命（age）自动的将旧的数据移动到成本较低的硬件中。这有助于提高性能以及降低存储开销。
 
 &emsp;&emsp;hot和content层是必须要有的，而warm，cold以及frozen 层是可选的。
 
@@ -37344,7 +37344,7 @@ POST /_ingest/pipeline/_simulate?verbose=true
 ### Index lifecycle management APIs
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-lifecycle-management-api.html)
 
-&emsp;&emsp;你可以使用下面的API设置策略来自动的管理索引的生命周期。更多关于索引生命周期index lifecycle management (ILM)的信息见[ILM: Manage the index lifecycle](#ILM:-Manage-the-index-lifecycle)
+&emsp;&emsp;你可以使用下面的API设置策略来自动的管理索引的生命周期。更多关于索引生命周期index lifecycle management (ILM)的信息见[ILM: Manage the index lifecycle](#ILM-Manage-the-index-lifecycle)
 
 ##### Policy management APIs
 
@@ -38849,7 +38849,7 @@ POST /_snapshot/<repository>/<snapshot>
   - [Index templates](#Index-templates)
   - [Legacy index templates](#Create-or-update-index-template-APIlegacy)
   - [Ingest pipelines](#Ingest-pipelines)
-  - [ILM policies](#ILM:-Manage-the-index-lifecycle)
+  - [ILM policies](#ILM-Manage-the-index-lifecycle)
   - For snapshots taken after 7.12.0, [feature states](#Feature-states)
 - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target-syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
   - 你不能使用这个参数来包含或者排除[system indices or system data streams](#System-indices)，可以转而使用下面的feature_states参数
@@ -39620,7 +39620,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
     - [Index templates](#Index-templates)
     - [Legacy index templates](#Create-or-update-index-template-APIlegacy)
     - [Ingest pipelines](#Ingest-pipelines)
-    - [ILM policies](#ILM:-Manage-the-index-lifecycle)
+    - [ILM policies](#ILM-Manage-the-index-lifecycle)
     - For snapshots taken after 7.12.0, [feature states](#Feature-states)
   - 如果`include_global_state`为真，则恢复操作会将集群中的旧版索引模板与快照中包含的模板合并，替换掉任何存在的、名称与快照中的某个模板相匹配的现有模板。它会完全移除所有存在于你的集群中的持久设置、非旧版索引模板、摄取管道和ILM生命周期策略，并用快照中的相应项替换它们。
   
@@ -39744,7 +39744,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
     - [Index templates](#Index-templates)
     - [Legacy index templates](#Create-or-update-index-template-APIlegacy)
     - [Ingest pipelines](#Ingest-pipelines)
-    - [ILM policies](#ILM:-Manage-the-index-lifecycle)
+    - [ILM policies](#ILM-Manage-the-index-lifecycle)
     - For snapshots taken after 7.12.0, [feature states](#Feature-states)
   - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target-syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
     - 你不能使用这个参数来包含或者排除[system indices or system data streams](#System-indices)，可以转而使用下面的feature_states参数
