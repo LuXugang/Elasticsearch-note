@@ -15407,7 +15407,7 @@ GET /_search
 
 #### Search after
 
-&emsp;&emsp;你可以使用`search_after`参数和上一页的[sort values](#Sort search results)来检索retrieve下一页的结果。
+&emsp;&emsp;你可以使用`search_after`参数和上一页的[sort values](#Sort search results)来获取下一页的结果。
 
 &emsp;&emsp;使用`search_after`要求每次的查询都要有相同的`query`以及`sort value`。如果在多次的上述请求时发生了[refresh](#Near real-time search)，结果的顺序可能会改变，导致页面之间的结果不一致，为了避免这种情况，可以创建一个[point in time (PIT) ](#Point in time API)来保存搜索的当前索引状态。
 
@@ -15672,7 +15672,7 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 
 #### Sliced scroll
 
-&emsp;&emsp;（未完成）
+&emsp;&emsp;
 
 ### Retrieve selected fields from a search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-fields.html)
@@ -17826,7 +17826,7 @@ GET /_search
 
 &emsp;&emsp;默认情况下，Elasticsearch根据相关性分数（relevance score）对匹配到的结果进行排序。相关性分数衡量每个文档与查询的匹配程度。
 
-&emsp;&emsp;relevance score是一个正浮点数，在[search API](#Request body search) 的` _score`元数据字段中返回。`_score`越高，跟文档越相关。每一个查询类型计算相关性分数是不同的，分数的计算也取决于query clause是在**query**还是**filter**的上下文（context）中运行。
+&emsp;&emsp;relevance score是一个正浮点数，在[search API](#Request body search-1) 的` _score`元数据字段中返回。`_score`越高，跟文档越相关。每一个查询类型计算相关性分数是不同的，分数的计算也取决于query clause是在**query**还是**filter**的上下文（context）中运行。
 
 #### Query context
 
@@ -32629,12 +32629,158 @@ POST /_data_stream/_modify
 #### Update By Query API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-update-by-query.html)
 
+&emsp;&emsp;更新满足满足指定Query的文档。如果没有指定，执行data stream或索引中每一篇文档的更新，但是不修改源数据，用来应用mapping的更改是非常有用的。
+
+```text
+POST my-index-000001/_update_by_query?conflicts=proceed
+```
+
+##### Request
+
+```text
+POST /<target>/_update_by_query
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security feature，你必须要有目标data stream，index或者alias的这些 [index privilege](#####Indices privileges)：
+
+- `raed`
+- `index`或`write`
+
+##### Description
+
+&emsp;&emsp;你在请求URI指定查询规则或者在请求体中使用跟[Search API]()相同的语法。
+
+&emsp;&emsp;当你提交了该接口的请求，Elasticsearch在开始处理请求时会获取数据流或索引的快照，并使用内部版本控制（`internal` versioning）来更新匹配的文档。当版本匹配时，文档会被更新并且提高版本号。如果在获取快照和处理更新操作之间，文档发生了变化，这会导致版本冲突，从而使操作失败。你可以通过将`conflicts`设置为`proceed`，使得接口统计发生版本冲突的数量而不是停止并返回。注意的是如果选择这种方式三，那么这次接口操作会尝试从源中更新更多的文档直到更新了`max_doc`数量的文档，或者覆盖了查询范围内的所有文档。
+
+> NOTE：如果文档的版本号是0，那么就不能通过这个接口更新，因为内部版本控制不支持该值，它不是一个有效的版本号
+
+&emsp;&emsp;在处理通过查询更新（update by query）请求时，Elasticsearch会顺序执行多个搜索请求来找到所有匹配的文档。每批匹配的文档会执行一次批量更新请求。任何查询或更新失败都会导致通过查询更新请求失败，并且失败信息会显示在响应中。已经成功完成的更新请求会保持不变，它们不会被回滚
+
+###### Refreshing shards
+
+&emsp;&emsp;指定`refresh`参数使得在请求完成后对所有的分片执行refresh。不同于[Update API](#Update API)中的`refresh`参数，它只会让收到请求的分片执行refresh。不同于[Update API](#Update API)，该接口不支持`wait_for`。
+
+###### Running update by query asynchronously
+
+&emsp;&emsp;如果请求中包含`wait_for_completion=false`。Elasticsearch会执行一些预检查（preflight check），启动请求，并返回一个[task](#Task management API)，你可以用它来取消任务或获取任务状态。Elasticsearch会在`.tasks/task/${taskId}`处以文档形式记录这个任务。完成任务后，你应该删除任务文档，以便Elasticsearch回收空间。
+
+###### Waiting for active shards
+
+&emsp;&emsp;`wait_for_active_shards`控制在执行这个请求前应该有多少数量的分片是活跃的（active）。见[Active shards](#Index API)查看详情。`timeout`控制写请求等待那些不见用的分片变得可用的时间。这两个设置在批[Bulk API](#Bulk API)中的工作方式完全相同。Update by Query在实现内部使用了滚动搜索（scroll Search），因此你也可以指定`scroll`参数来控制它保持搜索上下文活跃的时间长短，例如`?scroll=10m`。默认值是5分钟。
+
+###### Throttling update requests
+
+&emsp;&emsp;若要控制Update by Query以多快的速率发出一批批更新操作，你可以将`requests_per_second`设置为任何正小数。这会给每批操作添加/填充等待时间，以此来控制速率。将`requests_per_second`设置为-1可以禁用节流。
+
+&emsp;&emsp;节流通过在批次之间填充等待时间来实现，使得内部scroll请求在设置超时时间时要考虑到这个等待时间。即批次大小除以`requests_per_second`与写入花费的时间差值。默认批次大小为`1000`，因此如果`requests_per_second`设置为500：
+
+```text
+target_time = 1000 / 500 per second = 2 seconds
+wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
+```
+
+&emsp;&emsp;因为批量请求（"Update By Query"操作中找到的符合条件的文档集合，这些文档将作为一个批次通过Elasticsearch的\_bulk API进行更新）作为单个的\_bulk请求发出，较大的批量大小会导致Elasticsearch创建许多请求并在开始下一组之前等待。这种方式是“bursty突发”的而不是“smooth平滑”的。
+
+###### Slicing
+
+&emsp;&emsp;该接口支持[sliced scroll ]()以并行化更新过程，这可以提高效率并提供一种将请求分解成更小部分的便捷方式。
+
+&emsp;&emsp;将`slices`设置为`auto`会为大多数data stream和index选择一个合理的数量。如果你手动切片或以其他方式调整自动切片，请记住：
+
+- 当切片数量等于index或backing index中分片的数量时，查询性能最高效。如果分片数量很大（例如，500），选择较低的数字，因为太多切片会损害性能。将切片设置得高于分片数量通常不会提高效率，并增加开销。
+- 更新性能随着切片数量在可用资源中线性扩展。
+
+&emsp;&emsp;查询或更新性能哪个占据运行时间的主导因素取决于被reindex的文档和集群资源。
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开、待查询的data stream或indices列表。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- analyzer：（Optional, string）用于对query string进行解析
+  - 这个参数只有在指定了`q`参数后才会被使用
+- analyze_wildcard（Optional, Boolean）如果为`true`，会对Wildcard和prefix query进行解析。默认是`false`
+  - 这个参数只有在指定了`q`参数后才会被使用
+- conflicts：（Optional, string）在更新时遇到版本冲突时该如何处理室：`abort`或`proceed`。默认是`abort`
+- default_operator：（Optional,string）query string query中的默认操作符：AND or OR。默认是`OR`
+- df：（Optional,string）如果在query string中为给定域名则使用这个默认域名
+  - 这个参数只有在指定了`q`参数后才会被使用
+- expand_wildcards：（Optional, string）通配符模式可以匹配的索引类型。如果请求目标是data stream，还会检测通配符表达式是否会匹配隐藏的data streams。支持多值，例如`open`, `hidden`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target syntax-1)
+  - open：匹配打开的，非隐藏的索引。同样匹配非隐藏的data stream
+  - closed：匹配关闭的，非隐藏的索引。同样匹配非隐藏的data stream。Data stream不能关闭
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+- from：（Optional,integer）这次请求从哪个文档开始，即该文档的偏移值。非负的值，默认值为`0`
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- max_docs：（Optional, integer）最多可以处理的文档数量。默认是所有的文档。当该值设置了一个不大于`scroll_size`的值时，那么就不会使用scroll机制
+- pipeline：（Optional,string）pipeline的ID，用来预先处理待处理的文档
+- preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
+- q：（Optional,string）Query in Lucene query string syntax
+- request_cache：（Optional, Boolean）如果为`true`，会对这个请求使用请求缓存。默认值是index-level的设置
+- refresh：（Optional,string）如果为`true`，Elasticsearch会refresh被更新的分片使得变更可以被搜索到。默认为`false`
+- requests_per_second：每秒可以执行的子请求数量。默认值为-1，表示不进行节流。
+##### Response body
+##### Example
+
 #### Bulk API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-bulk.html)
 
 #### Reindex API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-reindex.html)
 
+&emsp;&emsp;从一个源拷贝文档到目的地。
+
+&emsp;&emsp; 数据源可以是现有的索引、别名、或者data stream。目的地跟源必须是不同的。比如你不能将data stream reindex到自身。
+
+> IMPORTANT：Reindex要求源众的文档开启[\_source](#_source field)。
+> 目的地应该在调用`_reindex`之前进行配置。Reindex不会从源拷贝settings以及相关的模板。
+> Mapping、分片数量、副本分片等等必须提前配置好
+
+```text
+POST _reindex
+{
+  "source": {
+    "index": "my-index-000001"
+  },
+  "dest": {
+    "index": "my-new-index-000001"
+  }
+}
+```
+
+##### Request
+
+```text
+POST /_reindex
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要有以下的安全特权：
+  - 源的data stream、Index、alias的`read` [index privilege](#####Indices privileges)
+  - 目的地的data stream、Index、alias的`write` [index privilege](#####Indices privileges)
+  - 若要自动的通过该接口创建data stream或index，你必须要有目的地的data stream、Index、alias的`auto_configure`, `create_index`或 `manage` [index privilege](#####Indices privileges)
+  - 如果从远端集群进行reindex，`source.remote.user`必须要有`monitor` [cluster privilege](#####Cluster privileges)。以及源的data stream、Index、alias的`read` [index privilege](#####Indices privileges)
+- 如果从远端集群进行reindex，你必须要显示的在`elasticsearch.yml`配置`reindex.remote.whitelist`来允许远端服务器。见[Reindex from remote](######Reindex from remote)
+- 自动创建data stream要求一个能匹配data stream的索引模板。见[Set up a data stream](###Set up a data stream)
+
+##### Description
+
+&emsp;&emsp;从源索引中提取[document Source](#_source field)，然后索引到目标索引中。你可以拷贝所有的文档到目标索引，或者Reindex文档的子集。
+
+&emsp;&emsp;就像[\_update_by_query](#Update By Query API)，`_reindex`获取源的快照
+
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 ##### Reindex from remote
 
 #### Term vectors API
@@ -38371,7 +38517,7 @@ DELETE /_async_search/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWH
 #### Point in time API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/point-in-time-api.html)
 
-&emsp;&emsp;默认在目标索引的最新的可见数据上执行查询请求称为point in time。Elasticsearch PIT是一个轻量级针对于数据状态the state of the data的视图view，在数据初始化后就存在了。在有些场景中，更偏向于使用PIT来执行多次查询。例如，如果[refreshes](#Refresh API)发生在多个search_after请求之间，那么这些请求的结果可能不一致，因为每一次都在最新的PIT上执行查询。
+&emsp;&emsp;默认在目标索引的最新可见数据上执行查询请求称为point in time。Elasticsearch PIT是一个轻量级针对于数据状态the state of the data的视图view，在数据初始化后就存在了。在有些场景中，更偏向于使用PIT来执行多次查询。例如，如果[refreshes](#Refresh API)发生在多个search_after请求之间，那么这些请求的结果可能不一致，因为每一次都在最新的PIT上执行查询。
 
 ##### Prerequisites
 
@@ -38492,7 +38638,7 @@ GET /_search
 
 &emsp;&emsp;第一个请求的结果返回属于第一个片的文档(id: 0)，第二个请求的结果返回属于第二个片的文档。由于切片的最大数量被设置为2，所以这两个请求的结果的并集等价于没有切片的时间点搜索的结果。默认情况下，首先在分片上进行分割，然后在每个分片上进行本地分割。本地分割基于Lucene的文档id将分片划分为连续的范围。
 
-&emsp;&emsp;例如，如果分片的数量等于2，用户请求了4个分片，那么切片0和切片2被分配给第一个分片，切片1和切片3被分配给第二个分片。
+&emsp;&emsp;例如，如果分片的数量等于2，用户请求了4个切片，那么切片0和切片2被分配给第一个分片，切片1和切片3被分配给第二个分片。
 
 >IMPORTANT：应该对所有片使用相同的时间点ID。如果使用不同的PIT id，则片可能会重叠和遗漏文档。这是因为拆分标准是基于Lucene文档id的，这些文档id在索引更改时变的不稳定。
 
@@ -38521,7 +38667,6 @@ GET /_search
 
 #### Profile API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-field-caps.html)
-
 
 #### Field capabilities API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-field-caps.html)
@@ -40273,7 +40418,7 @@ POST _slm/stop
 
 &emsp;&emsp;见[Hidden data streams and indices](#Hidden data streams and indices)。
 
-### Request body search
+### Request body search-1
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-request-body.html)
 
 #### Stored fields-1
