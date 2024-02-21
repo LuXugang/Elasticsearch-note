@@ -15242,7 +15242,107 @@ POST _aliases
 ### Highlighting
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/highlighting.html)
 
+&emsp;&emsp;高亮器允许你从搜索结果中的一个或多个字段中获取高亮片段，以便可以向用户展示查询匹配的位置。当请求高亮显示时，响应中会为每个搜索命中包含一个额外的高亮元素，其中包含高亮字段和高亮片段（Highlighted  fragments）。
 
+> NOTE：高亮器（highlighter）在提取待高亮的术语时，不会考虑查询的布尔逻辑。因此，对于复杂的布尔查询（如嵌套布尔查询、使用`minimum_should_match`等），可能会高亮显示与查询不匹配的文档部分。
+
+&emsp;&emsp;高亮要求域的真实内容。如果这个域没有存储（即mapping中参数`store`设置为`false`），那么就会加载`_source`的内容，并从`_source`中提取出这个域的内容。
+
+&emsp;&emsp;例如使用默认的高亮器从`content`域中获取高亮信息，那么需要再请求体中包含一个`Highlight`对象，在对象中指定`content`域：
+
+```text
+GET /_search
+{
+  "query": {
+    "match": { "content": "kimchy" }
+  },
+  "highlight": {
+    "fields": {
+      "content": {}
+    }
+  }
+}
+```
+
+&emsp;&emsp;Elasticsearch支持三种高亮器：`unified`、`plain`、`fvh`（fast vector highlighter）。你可以为每一个域指定不同的高亮器。
+
+#### Unified highlighter
+
+&emsp;&emsp;`Unified`高亮器使用Lucene Unified Highlighter，它将文本分解成句子，并使用BM25算法为每个句子打分，就像它们是语料库中的文档一样。此外，它还支持准确的短语和多项（模糊、前缀、正则）高亮显示。这是默认的高亮器。
+
+#### Plain highlighter
+
+&emsp;&emsp;`plain`高亮器使用标准的Lucene高亮器。它尝试在理解词语重要性和短语查询中的词语位置标准方面，反映查询匹配逻辑。
+&emsp;&emsp;`plain`高亮器最适合在单个字段中高亮显示简单的查询匹配。为了准确反映查询逻辑，它创建一个小型内存索引，并通过Lucene的查询执行计划再次运行原始查询标准，以获取当前文档的底层匹配信息。这一过程需要为每个字段和每个需要高亮的文档重复。如果想在许多文档中高亮显示许多字段，并且查询复杂，我们推荐使用`Unified`高亮器处理`posting`或`term_vector`字段。
+
+#### Fast vector highlighter
+
+&emsp;&emsp;`fvh`高亮器使用Lucene快速向量高亮器，适用于在mapping中将`term_vector`设置为`with_positions_offsets`的字段。
+
+- 它可以通过[boundary_scanner](#####boundary_scanner)自定义
+- 需要设置`term_vector`为`with_positions_offsets`，这会增加索引大小
+- 它能将多个字段的匹配合并为一个结果。见`matched_fields`
+- 可以为不同位置的匹配分配不同的权重，允许在高亮Boosting Query时，将短语匹配排序在term匹配之上
+
+> WARNING：`fvh`高亮器不支持span query，如果需要span query支持，可以尝试其他高亮器，如`unified`高亮器。
+
+#### Offsets strategy
+
+&emsp;&emsp;若要从被查询的term中找到有意义的查询片段，高亮器需要知道在原始文本中每一个word中字符的开始跟结束偏移信息，这些偏移可以从以下方式获取：
+
+- posting list（倒排信息）。如果在mapping中将`index_options`设置为`offsets`，那么`unified`高亮器就可以利用倒排信息来高亮文档，而不需要重新分析文本。他可以直接在倒排（posting）中重新运行原始的查询然后从索引中获取匹配到的偏移信息，限制了被高亮的文档集合。当你有large field时通过这种方式获取偏移就很重要了，因为它不需要对被高亮的文本重新分析。相比较使用`term_vectors`，它要求更少的磁盘空间
+- term vector。如果通过在mapping中将`term_vector`设置为`with_positions_offsets`使得能提供`term_verctor`信息，那么`unified`高亮器会自动的使用`term_vector`来高亮域（Highlight field）。当为large field（>  `1MB`）以及为例如`prefix`、`wildcard`这类multi-term query高亮时特别快。因为他能访问每一篇文档中term的字典。`fvh`高亮器总是使用term vectors。
+- Plain Highlight。该模式是`unified`高亮器在没有其他选择时使用的模式。它创建一个小型内存索引，并通过Lucene的查询执行规划器重新运行原始查询标准，以获取当前文档的底层匹配信息。这个过程会对每个需要高亮的字段和文档重复执行。`plain`高亮器始终使用plain highlighting 。
+
+> WARNING：Plain Highlight对于大型文本可能要求更多的内存和处理时间。因此文本的字符数量会被限制为1000000来应对这个问题。可以通过[index.highlight.max_analyzed_offset]()为特定的索引修改这个限制
+
+#### Highlighting settings
+
+&emsp;&emsp;高亮设置可以为全局（global-level）并且覆盖域层（field-level）的设置。
+
+##### boundary_chars
+
+&emsp;&emsp;
+
+##### boundary_max_scan
+
+##### boundary_scanner
+
+##### boundary_scanner_locale
+
+##### encoder
+
+##### fields
+
+##### force_source
+
+##### fragmenter
+
+##### fragment_offset
+
+##### fragment_size
+
+##### highlight_query
+
+##### matched_fields
+
+##### no_match_size
+
+##### number_of_fragments
+
+##### order
+
+##### phrase_limit
+
+##### post_tags
+
+##### require_field_match
+
+##### max_analyzed_offset
+
+##### tags_schema
+
+##### type
 
 ### Long-running searches
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search-intro.html)
