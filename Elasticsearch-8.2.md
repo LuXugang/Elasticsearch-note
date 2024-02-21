@@ -2143,13 +2143,9 @@ su elasticsearch
 ```
 
 &emsp;&emsp;第1行，切换到root用户
-
 &emsp;&emsp;第2行，设置打开的文件最大数量（max number of open files）
-
 &emsp;&emsp;第3行，切换到普通用户来启动Elasticsearch
-
 &emsp;&emsp;这个新的限制（new limit）只适用于当前会话（current session）
-
 &emsp;&emsp;你可以通过`ulimit -a`查询（consult）当前目前所有的limit
 
 ##### /etc/security/limits.conf
@@ -2427,7 +2423,6 @@ discovery.seed_hosts:
 ```
 
 &emsp;&emsp;第3行，将默认使用`transport.profiles.default.port`，如果没有配置`transport.profiles.default.port`则使用`transport.port`
-
 &emsp;&emsp;第4行，如果这个hostname对应了多个IP地址，Elasticsearch会尝试连接每一个IP地址
 
 ###### File-based seed hosts provider
@@ -3133,7 +3128,6 @@ PUT /_cluster/settings
 ```
 
 &emsp;&emsp;第6行，这个remote cluster的`cluster alias`是`cluster_one`·
-
 &emsp;&emsp;第8行，指定remote cluster中seed node 的hostname跟transport port
 
 &emsp;&emsp;你可以使用[remote cluster info API ](####Remote cluster info API)来验证本地集群是否于remote cluster连接成功。
@@ -3161,7 +3155,6 @@ GET /_remote/info
 ```
 
 &emsp;&emsp;第7行，在remote cluster中，跟本地集群连接的节点数量
-
 &emsp;&emsp;第10行，如果通过CCS进行查询时节点不可用，是否要跳过这个集群
 
 ##### Dynamically configure remote clusters
@@ -3268,9 +3261,7 @@ cluster:
 ```
 
 &emsp;&emsp;第8行，`cluster_two`中显示的开启了Compression
-
 &emsp;&emsp;第9行，`cluster_two`中失去连接的remote cluster是可选的
-
 &emsp;&emsp;第12行，`cluster_three`中用于连接的代理地址
 
 #### Configure roles and users for remote clusters
@@ -4297,7 +4288,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第5行，根据`date`域排序
-
 &emsp;&emsp;第6行，降序
 
 &emsp;&emsp;也可以使用多个域进行排序：
@@ -4326,7 +4316,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第5行，先根据`username`域排序，再根据`date`域排序 
-
 &emsp;&emsp;第6行，根据`username`域使用升序，根据`date`使用降序
 
 
@@ -4641,7 +4630,6 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第10行，`my_float`被添加为[float](####Numeric field types)域
-
 &emsp;&emsp;第11行，`my_integer`被添加为[integer](####Numeric field types)域
 
 #### Dynamic templates
@@ -4673,9 +4661,7 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第3行，模板的名称可以是任意的string value
-
 &emsp;&emsp;第4行，匹配条件可以包含: `match_mapping_type`, `match`, `match_pattern`, `unmatch`, `path_match`, `path_unmatch`
-
 &emsp;&emsp;第5行，匹配到的域应该使用的mapping
 
 ##### Validating dynamic templates
@@ -4782,7 +4768,6 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第33行，`my_integer`域映射为一个`integer`
-
 &emsp;&emsp;第34行，`my_string`域映射为`text`以及一个`keyword`（见[multi-field](####fields)）
 
 ##### match and unmatch
@@ -4825,7 +4810,6 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第21行，`long_num`域映射为`long`
-
 &emsp;&emsp;第22行，`long_text`使用了默认的`string`映射
 
 
@@ -4920,7 +4904,6 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第30行，因为域名为`english`的域值是`string`类型，那么它的域名将作为anlyzer参数的值
-
 &emsp;&emsp;第31行，因为`count`的域值是个数值，所以它会被动态映射为`long`类型并且关闭`doc_values`
 
 ##### Dynamic template examples
@@ -5126,9 +5109,7 @@ PUT /my-index-000001
 ```
 
 &emsp;&emsp;第5行，创建一个名为`age`，类型为[integer](####Numeric field types)的域
-
 &emsp;&emsp;第6行，创建一个名为`email`，类型为[keyword](####Keyword type family)的域
-
 &emsp;&emsp;第7行，创建一个名为`name`，类型为[text](####Text type family)的域
 
 #### Add a field to an existing mapping
@@ -5872,15 +5853,10 @@ POST logs/_search
 ```
 
 &emsp;&emsp;第24行，定义了类型为`lookup`的runtime field，从目标索引中使用[term](####Term query)查询获得的结果作为runtime field的域值
-
 &emsp;&emsp;第25行，ip_location即目标索引
-
 &emsp;&emsp;第26行，host域的域值将作为term查询条件中的域值
-
 &emsp;&emsp;第27行，ip域的域名将作为term查询条件中的域名
-
 &emsp;&emsp;第28行，要求从目标索引ip_location中返回的域，见[fields](###Retrieve selected fields from a search)
-
 &emsp;&emsp;上述的查询将从ip_location索引中为返回的搜索命中的每个ip地址返回country和city。
 
 ```text
@@ -6929,11 +6905,8 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第4行，`tags`域自动添加为`string`域。
-
 &emsp;&emsp;第5行，`lists`域自动添加为`object`域。
-
 &emsp;&emsp;第17行，第二篇文档没有包含数组，但是会被索引成相同的域。
-
 &emsp;&emsp;第31行，这个query在`tags`域中查找`elasticsearch`，并且匹配到这两篇文档。
 
 #### Binary field type
@@ -7010,7 +6983,6 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第14行，索引了一篇文档，is_published域的域值是一个字符串的true，它会被解释为`true`
-
 &emsp;&emsp;第21行，使用JSON种的`true`查询文档
 
 &emsp;&emsp;[terms aggregation](####Terms aggregation)中使用`1`和`0`用于`key`的值，并且`"true"`和`"false"`用于`key_as_string`的值。在Script中使用Boolean域时，会返回`true`和
@@ -7116,13 +7088,9 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第6行将会使用默认的`format`
-
 &emsp;&emsp;第13行使用纯日期
-
 &emsp;&emsp;第16行包含时间
-
 &emsp;&emsp;第19行使用milliseconds-since-the-epoch
-
 &emsp;&emsp;第23行，返回的`sort`的值将是milliseconds-since-the-epoch
 
 >WARNING：日期将会接受类似`{"date": 1618249875.123456}`的带小数点的数值，但目前我们会丢失一定的精度，见这个[issue](https://github.com/elastic/elasticsearch/issues/70085) 。
@@ -7266,17 +7234,11 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第6行，`date`域使用默认的date format
-
 &emsp;&emsp;第14行，这篇文档使用一个plain Date
-
 &emsp;&emsp;第16行，这篇文档包含一个时间
-
 &emsp;&emsp;第18行，这个文档使用了milliseconds-since-the-epoch
-
 &emsp;&emsp;第22行，注意的是`sort`的值在返回的结果中使用milliseconds-since-the-epoch
-
 &emsp;&emsp;第26行，在脚本中使用了`.nano`返回纳米级别的时间
-
 &emsp;&emsp;第32行，在获取数据时，你可以使用[fields parameter](####The fields option)来指定Date format。如果不使用[strict_date_optional_time_nanos](######strict_date_optional_time_nanos) 你会获取一个四舍五入的结果。
 
 &emsp;&emsp;你也可以通过`||`指定多个Date format。Date nanoseconds field type可以跟Date field type有相同的可用的参数。
@@ -7573,15 +7535,10 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第15行，地理点用一个对象表示，对象中有`lat`跟`lon`两个key
-
 &emsp;&emsp;第24行，地理点用一个字符串类型的format表示：`lat,lon`
-
 &emsp;&emsp;第30行，地理点用GeoHash表示
-
 &emsp;&emsp;第36行，地理点用数组类型的format表示：[`lon`, `lat`]
-
 &emsp;&emsp;第42行，地理点用 [Well-Known Text POINT](https://docs.opengeospatial.org/is/12-063r5/12-063r5.html)的format表示：`"POINT(lon lat)"`
-
 &emsp;&emsp;第48行，一个geo-bounding_box query，用来找到在地理位置范围内所有的地理点。
 
 > IMPORTANT：Geopoints expressed as an array or string
@@ -7716,7 +7673,6 @@ PUT my-index-000001/_doc/2
 ```
 
 &emsp;&emsp;第5、14行：Values for each bucket. Values in the array are treated as doubles and must be given in increasing order. For [T-Digest](####Percentiles aggregation) histograms this value represents the mean value. In case of HDR histograms this represents the value iterated to.
-
 &emsp;&emsp;第6、15行：Count for each bucket. Values in the arrays are treated as integers and must be positive or zero. Negative values will be rejected. The relation between a bucket and a count is given by the position in the array.
 
 #### IP field type
@@ -8153,11 +8109,8 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第6行，`user`域使用`nested`而不是`object`。
-
 &emsp;&emsp;第36行，因为`Alice`和`Smith`不是同一个nested object，所以这个query不会匹配到文档
-
 &emsp;&emsp;第53行，因为`Alice`和`White`是同一个nested object，所以这个query会匹配到文档
-
 &emsp;&emsp;第57行，`inner_hits`允许我们高亮匹配到的文档。
 
 ##### Interacting with nested documents
@@ -8296,9 +8249,7 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第2行，文档外部同样是JSON object
-
 &emsp;&emsp;第4行，包含一个名为`manager`的inner object
-
 &emsp;&emsp;第6行，`manager`接着还包含一个名为`name`的inner object
 
 &emsp;&emsp;内部的实现是一个简单的，扁平的key-value链，如下所示：
@@ -8339,9 +8290,7 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第4行，mapping中最顶层的properties的定义
-
 &emsp;&emsp;第8行，`manager`域是一个inner object
-
 &emsp;&emsp;第11行，`manager.name`域是`manager`域中的inner object
 
 &emsp;&emsp;你不需要显示的指定`object`指定`type`
@@ -8471,7 +8420,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第5行，`my_field`域用于查询
-
 &emsp;&emsp;第8行，`my_field.keyword`用于聚合、排序或者在script中使用
 
 ##### Enabling fielddata on text fields
@@ -8594,9 +8542,7 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第5行，名为`name`的域是一个[text](####Text type family)域，使用了默认的`standard`分词器。
-
 &emsp;&emsp;第7行，`name.length`域是一个[multi-field](####fields)的`token_count`域，它会记录`name`域中token的数量，
-
 &emsp;&emsp;第28行，这个query只会匹配包含`Rachel Alice Williams`的文档，因为它会被分为三个token。
 
 ##### Parameters for token_count fields
@@ -9046,11 +8992,8 @@ GET index_1,index_2/_search
 ```
 
 &emsp;&emsp;第15行，根据`_index`的域值查询
-
 &emsp;&emsp;第21行，在`_index`上执行聚合
-
 &emsp;&emsp;第28行，基于`_index`域排序
-
 &emsp;&emsp;第37行，在脚本中访问`_index`的值
 
 &emsp;&emsp;`_index` field exposed virtually，它不会作为一个真实的域添加到Lucene的索引中。这意味着你可以在`term`或 `terms`查询中使用` _index` 字段（或任何被重写为 `term` 查询的查询，如 `match`、`query_string` 或 `simple_query_string` 查询），以及 `prefix` 和 `wildcard` 查询。但是，它不支持`regexp` 和 `fuzzy` 查询。
@@ -9122,7 +9065,6 @@ GET my-index-000001/_doc/1?routing=user1
 ```
 
 &emsp;&emsp;第1行中，这篇文档使用`user1`作为路由值替代ID。
-
 &emsp;&emsp;第6行中，当[getting](####Get API)、[deleting](####Delete API)、[updating](####Update API)这篇文档时需要提供路由值。
 
 &emsp;&emsp;`_routing`的值可以在查询中使用（accessible）:
@@ -9182,7 +9124,6 @@ PUT my-index-000002/_doc/1
 ```
 
 &emsp;&emsp;第5行中，所有文档的操作都需要提供路由值。
-
 &emsp;&emsp;第10行中，这个请求会抛出`routing_missing_exception`的异常。
 
 #####  Routing to an index partition
@@ -9290,7 +9231,6 @@ GET logs/_search
 ```
 
 &emsp;&emsp;第21、25、27、28行，`_source` 域存储之前会移除这几个域
-
 &emsp;&emsp;第37行，我们仍然可以通过这个域进行检索，尽管它没有被存储
 
 #### \_tier field
@@ -9447,15 +9387,10 @@ GET my-index-000001/_search
 > TIP：可以通过[update mapping API](####Update mapping API)对现有的域更新`search_quote_analyzer`设置。
 
 &emsp;&emsp;第1行，`my_analyzer`对所有的字符串进行分词，包括停用词
-
 &emsp;&emsp;第2行，`my_stop_analyzer`会移除停用词
-
 &emsp;&emsp;第3行，`analyzer`会在索引期间使用`my_analyzer`这个分词器
-
 &emsp;&emsp;第4行，`search_analyzer`会为non-phrase query使用`my_stop_analyzer`这个分词器并且移除停用词
-
 &emsp;&emsp;第5行，`search_quote_analyzer`会使用`my_analyzer`分词器并且确保使用phrase query时停用词不会被移除
-
 &emsp;&emsp;第6行，由于query语句作为一个phrase query使用引号包裹，因此触发`search_quote_analyzer`并且保证停用词不会从这个query中移除。`my_analyzer`分词器会返回下面的token： [the, quick, brown, fox] 用来匹配文档。同时term query会使用`my_stop_analyzer`分词器并且过滤掉停用词。因此查询语句`quick brown fox`或者`A quick brown fox`都会返回两篇文档(the是停用词)，因为这两篇文档都包含下面的token： [quick, brown, fox]。没有`search_quote_analyzer`的话，就无法为phrase query执行精确匹配（exactly match），是因为停用词会被移除，使得两篇文档都会被匹配。
 
 
@@ -9499,7 +9434,6 @@ PUT my-index-000001/_doc/2
 ```
 
 &emsp;&emsp;第18行，number_one这个域将包含数值类型的10
-
 &emsp;&emsp;第23行，由于`coerce`被禁用了，所以这篇文档会被reject
 
 > TIP：`coerce`参数可以通过[update mapping API](####Update mapping API)更新。
@@ -9535,7 +9469,6 @@ PUT my-index-000001/_doc/2
 ```
 
 &emsp;&emsp;第20行，`number_one`这个域中的设置覆盖了索引层的设置，即开启了`coerce`
-
 &emsp;&emsp;第23行，这个文档会被reject，因为`number_two`继承了索引层的设置，即关闭了`coerce`
 
 #### copy_to
@@ -9589,7 +9522,6 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第7、11行，`first_name`和`last_name`的域值被拷贝到`full_name`。
-
 &emsp;&emsp;第30行，`first_name`和`last_name`这两个域依然能分别用来查询frist_name以及last_name，而`full_name`可以用来同时查询frist_name以及last_name。
 
 &emsp;&emsp;一些重要点：
@@ -9635,7 +9567,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第6行，`status_code`是一个普通的`long`类型的域。
-
 &emsp;&emsp;第10行，`session_id`关闭了`index`，使得该域是`Doc-value-only`域，并且只开启DocValues。
 
 ##### Disabling doc values
@@ -9684,7 +9615,6 @@ GET my-index-000001/_mapping
 ```
 
 &emsp;&emsp;第4行，`name`对象域下的两个域是`name.first`和`name.last`
-
 &emsp;&emsp;第10行，查看这个索引的mapping
 
 &emsp;&emsp;下面这篇文档增加两个string field： `email`和`name.middle`: 
@@ -9733,9 +9663,7 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第4行，mapping类型那一层关闭了动态mapping
-
 &emsp;&emsp;第6行，`user`这个object域继承了mapping类型一层的`dynamic`的参数
-
 &emsp;&emsp;第12行，`social_networks`这个inner object开启了动态mapping
 
 ##### Parameters for dynamic
@@ -9854,9 +9782,7 @@ PUT my-index-000001/_doc/session_2
 ```
 
 &emsp;&emsp;第11行，`session_data`域的`enable`参数为false
-
 &emsp;&emsp;第22行，任意类型的数据都可以赋值给`session_data`域，Elasticsearch不会解析这些数据（不解析意味着可以给一个object域赋非JSON格式的数据）
-
 &emsp;&emsp;第33行，`session_data`域同样会忽略不是JSON类型的数据
 
 &emsp;&emsp;可以在mapping中直接定义`enable`参数为false，这样使得所有的内容可以在`_source`字段中检索到但是不会被索引。
@@ -9886,9 +9812,7 @@ GET my-index-000001/_mapping
 ```
 
 &emsp;&emsp;第4行，`enable`参数将应用mapping中的所有域
-
 &emsp;&emsp;第19行，文档可以被检索到
-
 &emsp;&emsp;第21行，这个索引的mapping中没有任何的域的信息
 
 &emsp;&emsp;The `enabled` setting for existing fields and the top-level mapping definition cannot be updated。
@@ -10198,11 +10122,8 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第7行，这个域会忽略字符串长度超过20的域值
-
 &emsp;&emsp;第13行，这篇文档能成功索引
-
 &emsp;&emsp;第18行，这篇文档会被索引，但是`message`域不会被索引
-
 &emsp;&emsp;第23行，两篇文档都会被搜索到，但聚合中只有第一篇文档的message的值会被呈现present
 
 > TIP：可以通过[update mapping API](####Update mapping API)更新`ignore_above`的值。
@@ -10248,7 +10169,6 @@ PUT my-index-000001/_doc/2
 ```
 
 &emsp;&emsp;第19行，这篇文档的`text`域会被索引，`number_one`域不会被索引
-
 &emsp;&emsp;第25行，这篇文档会被reject因为`number_two`域不允许数据格式错误的域值
 
 &emsp;&emsp;下面的mapping类型允许设置`ignore_malformed`参数：
@@ -10288,7 +10208,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第8行，`number_one`域会继承索引层的设置
-
 &emsp;&emsp;第13行，`number_two`域的`ignore_malformed`会覆盖索引层的设置
 
 ##### Dealing with malformed fields
@@ -10502,9 +10421,7 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第8行，`city.raw`域是`city`域的`keyword`版本
-
 &emsp;&emsp;第31行，`city`域可以用于全文检索
-
 &emsp;&emsp;第35、40行，`city.raw`可以用于排序跟聚合
 
 &emsp;&emsp;你可以通过[update mapping API](####Update mapping API)对现有的域添加`multi-filed`
@@ -10555,11 +10472,8 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第5行，`text`域使用`standard`（默认）分词器
-
 &emsp;&emsp;第8行，`text.english`域使用`english`分词器
-
 &emsp;&emsp;第19、22行，索引了两篇文档，一篇文档中包含了`fox`而另一篇则包含了`foxes`
-
 &emsp;&emsp;第33行，同时查询`text`跟`text.english`域，这两个域都会影响文档的打分
 
 &emsp;&emsp;`text`域在第一篇文档中包含了`fox`并且在第二篇文档中包含了`foxes`。`text.english`域在两篇文档中都包含了`fox`，因为`foxes`被词根化stemmed为成了`fox`。
@@ -10796,9 +10710,7 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第7行，使用字符串`NULL`替换那些为null的域值。
-
 &emsp;&emsp;第20行，空的数组不包含显示的null值，该域值不会被替换为`NULL`
-
 &emsp;&emsp;第27行，域名status_code、域值NULL的查询可以匹配文档1，不会匹配文档2
 
 >IMPORTANT：`null_value`的域值类型必须跟这个域的类型一致，long类型的域不能设置为字符串类型的`null_value`
@@ -10842,7 +10754,6 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第11行，这个phrase query 不会匹配到文档，与我们的期望不符。
-
 &emsp;&emsp;第23行，这个phrase query会匹配到文档，因为`slop`大于`position_increment_gap`，尽管`Abraham`和`Lincoln`是两个数组元素的值。
 
 &emsp;&emsp;`position_increment_gap`可以通过下面的方式在mapping中指定：
@@ -10939,11 +10850,8 @@ PUT my-index-000001/_doc/1
 ```
 
 &emsp;&emsp;第4行，在顶层mapping中定义
-
 &emsp;&emsp;第6行，在`manager`下定义
-
 &emsp;&emsp;第13行，在`employees`下定义
-
 &emsp;&emsp;第22行，索引一篇对应上面定义的mapping的文档
 
 > TIP：`properties`这个配置运行在同一个索引中对同一个域名有不同的设置。可以通过[update mapping API](####Update mapping API)添加或者更新现有域的properties。
@@ -11043,11 +10951,8 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第13行，Analysis设置中自定义的分词器`autocomplete`
-
 &emsp;&emsp;第28，29行，`text`域使用在索引期间使用`autocomplete`分词器，而在查询期间使用`standard`分词器
-
 &emsp;&emsp;第37行，这个域对应的这些term会被索引：[q, qu, qui, quic, quick, b, br, bro, brow, brown, f, fo, fox]
-
 &emsp;&emsp;第45行，query中查询的term为：[quick, br]
 
 &emsp;&emsp;见[Index time search-as-you- type ](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/_index_time_search_as_you_type.html)查看这个例子的详细介绍。
@@ -11083,7 +10988,6 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第5行，这个域名为`default_field`的域使用`BM25`算法
-
 &emsp;&emsp;第10行，这个域名为`boolean_sim_field`的域使用`boolean`算法
 
 
@@ -11130,7 +11034,6 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第7、11行，`title`跟`date`域的域值被存储了
-
 &emsp;&emsp;第29行，请求将检索`title`跟`date`的域值（不是从`_source`中提取）
 
 > NOTE：
@@ -11795,13 +11698,9 @@ GET my-index-000001/_analyze
 }
 ```
 &emsp;&emsp;第6行，定义一个名为`std_folded`的分词器
-
 &emsp;&emsp;第21行，`my_text`域使用`std_folded`分词器进行分词
-
 &emsp;&emsp;第27行，要想引用这个分词器，`analyze` API必须要指定索引名
-
 &emsp;&emsp;第29行，通过分词器的名称来指定一个分词器
-
 &emsp;&emsp;第35行，对`my_text`域进行分词
 
 
@@ -11890,11 +11789,8 @@ POST my-index-000001/_analyze
 ```
 
 &emsp;&emsp;第6行，我们定义了一个基于`standard`的分词器`std_english`，但是使用了英语的停用词
-
 &emsp;&emsp;第17行，`my_text`域直接使用了`standard`分词器，没有进行任何的配置。
-
 &emsp;&emsp;第31行，不会移除停用词，所以分词结果为：[`the, old, brown, cow`]
-
 &emsp;&emsp;第21行，`my_text.english`域使用了`std_english`，所以英语停用词会被移除，所以第37行的分词结果为：[`old, brown, cow`]
 
 #### Create a custom analyzer
@@ -12017,11 +11913,8 @@ POST my-index-000001/_analyze
 ```
 
 &emsp;&emsp;第6行，分配给这个索引一个默认自定义的分词器，`my_custom_analyzer`。这个分词器使用了一个自定义的tokenizer，character filter以及token filter。这个分词器omit了`type`参数。
-
 &emsp;&emsp;第18行，定义了一个自定义的名为`punctuation`的tokenizer。
-
 &emsp;&emsp;第24行，定义了一个自定义的名为`emoticons`的character filter。
-
 &emsp;&emsp;第33行，定义了一个自定义的名为`english_stop`的token filter。
 
 &emsp;&emsp;上面的例子会生成下面的term：
@@ -13199,9 +13092,7 @@ POST /_index_template/_simulate
 ```
 
 &emsp;&emsp;第5行，分片的数量来自simulate请求中的值，替代了index template`ct1`中的值
-
 &emsp;&emsp;第19行，`@timestap`域的定义来自index template`ct2`
-
 &emsp;&emsp;第 27行，被覆盖的模板信息，它们有较低的优先级
 
 
@@ -13933,7 +13824,6 @@ PUT /_index_template/my-data-stream-template
 ```
 
 &emsp;&emsp;第8行， 增加index setting `sort.field`
-
 &emsp;&emsp;第9行，增加index setting `sort.order`
 
 &emsp;&emsp;如果需要的话，你可以[roll over the data stream](###Use a data stream)来马上将设置应用到data stream的write index上。应用到在rollover之后新添加到stream的数据上。然而不会影响data stream中现有的索引和现有的数据上。
@@ -14005,9 +13895,7 @@ PUT /_index_template/new-data-stream-template
 ```
 
 &emsp;&emsp;第10行，`@timestamp`域的类型修改为`date_nanos`
-
 &emsp;&emsp;第15行，增加index setting `sort.field`
-
 &emsp;&emsp;第16行，增加index setting `sort.order`
 
 3. 使用[create data stream API ](####Create data stream API)手动创建新的data stream。data stream的名称必须匹配定义在index template中的`index_patterns`属性。
@@ -15464,7 +15352,6 @@ GET /_search
 ```
 
 &emsp;&emsp;第10行，这次查询对应的PIT ID。
-
 &emsp;&emsp;第13行，`_shard_doc`上显示指定一个升序的tiebreak字段，为这次查询返回有序的结果。
 
 &emsp;&emsp;查询响应中包含了一个数组，数组中的值是用于排序这条结果的`sort`的域值（排序值）。如果你使用了PIT，数组中最后一个排序值是一个tiebreaker。在使用PIT时，名为`_shard_doc`的 tiebreaker值会在每一次查询请求中自动的添加。`_shard_doc`的值是 PIT 中的分片索引和 Lucene 的内部 doc ID的组合值。你也可以在查询请求中显示指定tiebreaker实现自定义排序：
@@ -15490,7 +15377,6 @@ GET /_search
 ```
 
 &emsp;&emsp;第10行，这次查询对应的PIT ID。
-
 &emsp;&emsp;第13行，`_shard_doc`上显示指定一个降序的tiebreak字段，为这次查询返回有序的结果。
 
 ```text
@@ -15520,9 +15406,7 @@ GET /_search
 ```
 
 &emsp;&emsp;第2行，Updated `id` for the point in time
-
 &emsp;&emsp;第16行，最后一个结果对应的两个排序值
-
 &emsp;&emsp;第18行，`pid_id`中每一篇文档的唯一的tiebreaker值
 
 &emsp;&emsp;为了获得下一页的结果，使用上一次查询中最后一个结果对应的排序值（包含tiebreaker）作为`search_after`的参数。如果使用了一个PIT，那么在`pit.id`参数中使用最新的PIT ID。这次查询的`query`和`sort`参数必须不能被更改，`from`参数必须是0（默认值）或者`-1`。
@@ -15552,9 +15436,7 @@ GET /_search
 ```
 
 &emsp;&emsp;第10行，上一次查询中返回的PIT ID
-
 &emsp;&emsp;第16行，上一次查询结果中最后一个结果的排序值
-
 &emsp;&emsp;第20行，关闭追踪命中的总数来加速分页查询
 
 &emsp;&emsp;你可以重复上述操作来获得额外的分页结果。如果使用了PIT，你可以在每一次查询请求中使用`keep_alive`参数来增加PIT的保留周期（retention period）。
@@ -15612,9 +15494,7 @@ POST /_search/scroll
 ```
 
 &emsp;&emsp;第1行，可以使用`GET`或`POST`并且URL中不应该包含`index`的名称----索引的名称在最开始的查询中指定
-
 &emsp;&emsp;第3行，`scroll`参数告诉Elasticsearch接着保留1分钟的search context
-
 &emsp;&emsp;第4行，`scroll_id`参数
 
 &emsp;&emsp;`size`参数允许你配置每次返回的结果数量上限。每次调用`scroll` API会返回下一批数据直到没有数据返回，比如`hits`数组为空。
@@ -15745,7 +15625,6 @@ POST my-index-000001/_search
 ```
 
 &emsp;&emsp;第10行，可以是完整的域名或者是通配符pattern。
-
 &emsp;&emsp;第13行，使用`format`参数对域值进行format
 
 > NOTE：默认情况下，当请求的`fields`选项使用了像`*`的通配符pattern，例如`_id`或者`_index`这些文档元数据是不会返回的。然而，当显示的使用这些域名时，`_id`、`_routing`、`_ignored`、`_index`、`_version`这些元数据域才返回。
@@ -15959,7 +15838,6 @@ POST my-index-000001/_search
 ```
 
 &emsp;&emsp;第4行，关闭所有的mapping
-
 &emsp;&emsp;第24行，包含匹配这个field pattern的unmapped fields
 
 &emsp;&emsp;这个响应会包含`session_data.object.*`路径中的域值，即使这些域是unmapped。`user.id`同样是unmapped，但是没有出现在响应中因为没有为那个field pattern设置`include_unmapped`。
@@ -16028,7 +15906,6 @@ POST my-index-000001/_search
 ```
 
 &emsp;&emsp;第5行，这个域有长度限制
-
 &emsp;&emsp;第13行，这个文档有一个域值超过了长度限制所以没有被索引
 
 &emsp;&emsp;在这个响应中，在`ignored_field_values`路径中包含了被限制了长度的域值。这个域值是从文档的原始JSON source中检索出来的并且就是原始的数据，不会被formatted或者任何方式处理。不同于成功写入到索引的域，它们的域值在`fields`块中返回。
@@ -16184,7 +16061,6 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第10行，同时支持完整的域名和通配符pattern
-
 &emsp;&emsp;第13行，使用object notation，你可以传递一个`format`参数指定自定义的format应用到doc value上。[Date fields](####Date field type)支持[date format](####format(mapping parameter))，[Numeric fields](####Numeric field types)支持[DecimalFormat pattern](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html)。其他的域不支持`format`参数。
 
 > TIP：你不可以为nested object使用`docvalue_fields`参数 来检索doc value。如果你指定了一个nested object，则返回一个空的数组。若要访问nested fields，使用[inner_hits](###Retrieve inner hits)参数中的`docvalue_fields`属性
@@ -16432,9 +16308,7 @@ GET /my-index-000001,cluster_one:my-index-000001,cluster_two:my-index-000001/_se
 ```
 
 &emsp;&emsp;第24行，这篇文档的`_index`参数没有集群的名称，说明这个文档来自本地集群
-
 &emsp;&emsp;第41行，这篇文档来自`cluster_one`
-
 &emsp;&emsp;第58行，这篇文档来自`cluster_two`
 
 #### Optional remote clusters
@@ -17898,9 +17772,7 @@ GET /_search
 ```
 
 &emsp;&emsp;第3行，参数`query`说明使用了query context
-
 &emsp;&emsp;第4行，`bool`和`must`在query context中用来描述文档的匹配程度
-
 &emsp;&emsp;第8行，参数`filter`说明使用了filter context，`term`和`query`在filter context中用来过滤掉不匹配的文档，并且不会影响匹配的文档的分数。
 
 >WARNING：query context中计算出的分数是一个精确的浮点型数值。只有24位的精度。超过有效数字精度的分数将被转换为浮点数，但会丢失精度。
@@ -18953,7 +18825,6 @@ GET /_search
 ```
 
 &emsp;&emsp;第5行是查询语句（query string）
-
 &emsp;&emsp;第6行，查询的目标域
 
 ##### fields and per-field boosting
@@ -21559,11 +21430,8 @@ PUT _ilm/policy/timeseries_policy
 ```
 
 &emsp;&emsp;第5行，`min_age`默认值是`0ms`，所以新的索引会马上进入到`hot`阶段
-
 &emsp;&emsp;第8行，满足任意一个后就触发`rollover`动作
-
 &emsp;&emsp;第14行，转存后90天将索引移动到`delete`阶段
-
 &emsp;&emsp;第16行，当索引进入到delete阶段后触发`delete`动作
 
 #### Create an index template to create the data stream and apply the lifecycle policy
@@ -21598,7 +21466,6 @@ PUT _index_template/timeseries_template
 ```
 
 &emsp;&emsp;第3行，当文档索引到`timeseries`中时应用这个模板
-
 &emsp;&emsp;第8行，使用ILM策略的名称来管理data stream
 
 #### Create the data stream
@@ -21675,13 +21542,9 @@ GET .ds-timeseries-*/_ilm/explain
 ```
 
 &emsp;&emsp;第6行，age of the index，用于跟`max_age`计算出rollover的时间
-
 &emsp;&emsp;第8行，管理这个索引的策略名称
-
 &emsp;&emsp;第10行，age of the indexed，用于转移到下一个阶段（在这个例子中跟age of the index一样）
-
 &emsp;&emsp;第15行，ILM在这个索引上正在执行的步骤
-
 &emsp;&emsp;第19行，当前阶段的定义（`hot`阶段的定义）
 
 #### Manage time series data without data streams
@@ -21730,9 +21593,7 @@ PUT _index_template/timeseries_template
 ```
 
 &emsp;&emsp;第3行，模板将应用到索引名以`timeseries-`开头的索引上
-
 &emsp;&emsp;第8行，生命周期策略的名称，将应用到每一个新的索引上
-
 &emsp;&emsp;第9行，alias的名称用于引用这些索引，要求策略使用rollover动作。
 
 #### Bootstrap the initial time series index with a write index alias
@@ -22948,7 +22809,6 @@ PUT _ilm/policy/my_policy
 ```
 
 &emsp;&emsp;第8行，当索引大小达到25G后进行转存（roll over）
-
 &emsp;&emsp;第16行，在转存后的30天后删除索引
 
 #### Apply lifecycle policy with an index template
@@ -22977,9 +22837,7 @@ PUT _index_template/my_template
 ```
 
 &emsp;&emsp;第3行，使用这个模板用于所有索引名以`test-`开头的新的索引
-
 &emsp;&emsp;第8行，应用`my_policy`到使用这个模板创建的索引上
-
 &emsp;&emsp;第9行，定义一个index alias用于引用被`my_policy`管理的索引
 
 #### Create an initial managed index
@@ -23308,21 +23166,13 @@ GET /my-index-000001/_ilm/explain
 ```
 
 &emsp;&emsp;第8行，用于管理索引的策略：`shrink-index`
-
 &emsp;&emsp;第10行，索引寿命：5.1天
-
 &emsp;&emsp;第11行，索引当前位于`warm`阶段
-
 &emsp;&emsp;第13行，当前的动作：`shrink`
-
 &emsp;&emsp;第15行，索引当前位于`ERROR`步骤
-
 &emsp;&emsp;第17行，执行失败时位于`shrink`步骤
-
 &emsp;&emsp;第19行，错误类型和错误的描述
-
 &emsp;&emsp;第24行，`shrink-index`策略中当前阶段的定义
-
 &emsp;&emsp;若要解决这个问题，你可以更新策略：在5天后将索引收缩为单个分片：
 
 ```text
@@ -23526,9 +23376,7 @@ POST _reindex
 ```
 
 &emsp;&emsp;第4行，匹配现有的索引。为新的索引使用前缀使得index pattern更加简单
-
 &emsp;&emsp;第7行，alias指向了你的bootstrapped index
-
 &emsp;&emsp;第8行，如果多个文档有相同的ID就暂停reindex。这种做法是推荐的，能防止在不同的源索引中出现ID相同的文档时覆盖文档的问题
 
 
@@ -25120,7 +24968,6 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第6行，transform中的destination index，在`_preview`中可以忽略
-
 &emsp;&emsp;第10行，使用了两个`group_by`。这意味着transform包含了由`user`和`customer_id`组成的列。在此数据集中，这两个字段都是唯一的。通过将两者都包含在transform中，它为最终结果提供了更多的context。
 
 > NOTE: 在上面的例子中，简练的 （condense）JSON 格式对pivot对象有更好的可读性
@@ -25195,11 +25042,8 @@ POST _transform/_preview
 }
 ```
 &emsp;&emsp;第5行，从数据源中筛选出没有被取消的航班
-
 &emsp;&emsp;第13行，transform中的destination index，在`_preview`中可以忽略
-
 &emsp;&emsp;第17行，根据`Carrier`域进行分组，这个域的域值是航空公司的名称
-
 &emsp;&emsp;第24行，这个`bucket_script`会对聚合返回的结果进行计算。在这个特定的例子中，它会计算出延误占飞行时间的比例。
 
 &emsp;&emsp;预览可以让你看到在新的索引中将含有每家航空公司的这样的数据：
@@ -25284,13 +25128,9 @@ PUT _transform/suspicious_client_ips
 ```
 
 &emsp;&emsp;第6行，transform中的destination index
-
 &emsp;&emsp;第9行，将transform配置为持续运行。它使用`timestamp`字段来同步source index和destination index。最晚60秒进行一次同步
-
 &emsp;&emsp;第16行，根据`clientip`对数据进行分组
-
 &emsp;&emsp;第26行，Filter aggregation统计了`response`域中成功响应（200）的数量。接下来的两个aggregation根据错误码、某个范围内的响应码（response code）统计了错误的响应。
-
 &emsp;&emsp;第40行，`bucket_script`基于聚合结果统计了`clientip`访问的持续时间
 
 &emsp;&emsp;在你创建transform之后，你必须启动它：
@@ -25398,13 +25238,9 @@ PUT _transform/last-log-from-clientip
 ```
 
 &emsp;&emsp;第9行，指定用于对数据分组的域
-
 &emsp;&emsp;第12行，指定用于对数据排序的date域
-
 &emsp;&emsp;第14行，设置时间间隔用于周期性检查source index中是否发生了变化
-
 &emsp;&emsp;第18行，这里面的date域和delay的设置用于同步source index跟destination index
-
 &emsp;&emsp;第24行，为transform指定保留策略，超过配置的值的文档会从destination index中移除
 
 &emsp;&emsp;创建transform之后并启动：
@@ -25519,9 +25355,7 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第7行，使用时间间隔为1个小时的date histogram对数据进行分组
-
 &emsp;&emsp;第16行，计算`bytes`字段的最大值
-
 &emsp;&emsp;第22行，指定top document中的`clientip`和`geo.src`以及排序方法（`bytes`的值最大的文档）
 
 &emsp;&emsp;上面的例子返回的结果大致是：
@@ -25609,7 +25443,6 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第7行，在`customer_id`域上使用`terms aggregation`对数据进行分组
-
 &emsp;&emsp;第16行，根据时间降序排序返回指定的域（email和名称）
 
 &emsp;&emsp;API返回结果大致如下：
@@ -25693,11 +25526,8 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第4行，`init_script`在`state`对象中创建了一个long类型的`timestamp_latest`和string类型的`last_doc`
-
 &emsp;&emsp;第5行，`map_script`中基于文档中的`timestamp`定义了`current_date`，并且跟`state.timestamp_latest`作比较。最终从shard中返回`state.last_doc`。通过使用`new HashMap(...)`复制了source document，这个操作对于将完整的source object从一个阶段传递给下一个阶段是非常重要的
-
 &emsp;&emsp;第11行，`combine_script`从每一个shard中返回`state`
-
 &emsp;&emsp;第12行，`reduce_script`遍历每一个shard返回的`s.timestamp_latest`的值并且返回带有最新timestamp（last_doc）的文档。在响应中，top hit（也就是`latest_doc`）嵌套在`latest_doc`下
 
 &emsp;&emsp;见[scope of scripts](#####Scope of scripts)了解更多的脚本信息
@@ -25759,19 +25589,12 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第2行，aggregation的名称
-
 &emsp;&emsp;第4行，包含了一个painless脚本，该脚本将返回小时
-
 &emsp;&emsp;第6行，基于文档中的timestamp字段设置一个`date`
-
 &emsp;&emsp;第7行，从`date`中返回小时
-
 &emsp;&emsp;第12行，aggregation的名称
-
 &emsp;&emsp;第14行，包含了一个painless脚本，该脚本将返回月份
-
 &emsp;&emsp;第16行，基于文档中的timestamp字段设置一个`date`
-
 &emsp;&emsp;第17行，从`date`中返回月份
 
 
@@ -25819,9 +25642,7 @@ PUT _transform/data_log
 ```
 
 &emsp;&emsp;第25行，为了定义session的时长，我们使用 bucket script
-
 &emsp;&emsp;第27行， bucket script是脚本变量的一个映射（map）并且关联的路径是你在脚本中会使用的变量。在这个例子中，`min`跟`max`这两个变量跟`time_frame.gte.value`和`time_frame.lte.value`形成映射关系
-
 &emsp;&emsp;第31行，最终脚本对session的开始跟结束时间执行减法操作并返回了session的持续时间
 
 ##### Counting HTTP responses by using scripted metric aggregation
@@ -25862,17 +25683,11 @@ PUT _transform/data_log
 ```
 
 &emsp;&emsp;第1行，这个transform的`aggregations`对象包含了所有的aggregation
-
 &emsp;&emsp;第2行，`scripted_metric`  aggregation对象
-
 &emsp;&emsp;第3行，`scripted_metric`在网页日志数据上执行了分布式操作来统计指定的HTTP响应码类型（error，success，其他）
-
 &emsp;&emsp;第4行，`init_scriptc`在`state`对象中创建了带有三个long类型属性（`error`, `success`, `other`）的`responses`数组。
-
 &emsp;&emsp;第5行，`map_script`基于文档中的`response.keyword`定义了`code`。然后基于response中的第一个数字来统计errors, successes, 和其他responses类型
-
 &emsp;&emsp;第15行，`combine_script`从每一个shard中返回`state.responses`
-
 &emsp;&emsp;第16行，`reduce_script`创建了一个`counts`数组，带有`error`,，`success`，`other`三个属性。然后遍历从每一个shard返回的`response`，将不同的相应类型分配给`counts`的对应属性。error responses to the error counts, success responses to the success counts, and other responses to the other counts。最终返回`counts`数组。
 
 ##### Comparing indices by using scripted metric aggregations
@@ -25926,17 +25741,11 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第4行，在`source`对象中引用的索引，他们将会进行相互比较
-
 &emsp;&emsp;第13行，`dest`索引中包含了比较的结果
-
 &emsp;&emsp;第20行，`group_by`字段必须是文档中的唯一键
-
 &emsp;&emsp;第25行，`scripted_metric` aggregation对象
-
 &emsp;&emsp;第27行，`map_script`在`state`对象中定义了一个`doc`，通过`new HashMap(...)`拷贝了原文档，这个操作对于将完整的source object从一个阶段传递给下一个阶段是非常重要的
-
 &emsp;&emsp;第28行，`combine_script`从每一个分片中返回`state`
-
 &emsp;&emsp;第29行，`reduce_script`检查索引的大小是否一样，如果不一样，那么返回`count_mismatch`。然后遍历两个索引的所有值，如果值相等，返回`match`，否则返回`mismatch`
 
 ##### Getting web session details by using scripted metric aggregation
@@ -26049,15 +25858,10 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第8行，使用`sessionid`对数据进行分组
-
 &emsp;&emsp;第14行，aggregation统计了每一个session中`apache.access.path`的种类以及`apache.access.url`的数量。
-
 &emsp;&emsp;第27行，`init_script`在`state`对象中创建了数组类型的`doc`
-
 &emsp;&emsp;第28行，`map_script`使用文档中的timestamp定义了一个`span`数组，以及根据文档中对应的字段定义了`referrer`、`url`。然后将`span`数组的值添加到`doc`对象中。
-
 &emsp;&emsp;第36行，`combine_script`从每一个分片中返回`state.docs`
-
 &emsp;&emsp;第37行，`reduce_script`定义的多个对象例如`min_time`，`max_time`，`duration`都是基于文档中的字段。然后声明一个`ret` 对象，使用`new HashMap ()`将source document拷贝到这个对象中。接着脚本在`ret`中定义了`first_time`，`last_time`，`duration`，这些字段的值基于脚本中的之前的一些值，最终返回`ret`
 
 &emsp;&emsp;最终返回的结果大致如下：
@@ -26774,9 +26578,7 @@ PUT /_ccr/auto_follow/beats
 ```
 
 &emsp;&emsp;第6行，自动follow新的Metricbeat索引
-
 &emsp;&emsp;第7行，自动follow新的Packetbeat索引
-
 &emsp;&emsp;第9行，follower index的名称继承于leader index 并且添加了`copy`后缀
 
 #### Manage cross-cluster replication
@@ -27192,15 +26994,10 @@ PUT _slm/policy/nightly-snapshots
 ```
 
 &emsp;&emsp;第3行，使用[Cron syntax](#####Watcher cron schedule)定义创建快照的时间
-
 &emsp;&emsp;第4行，快照的名称，支持[date math](####Date math support in index and index alias names)。为了防止命名冲突，这个策略在每个名称后面追加了一个UUID
-
 &emsp;&emsp;第5行，[Registered snapshot repository](###Register a snapshot repository)用于存储这个策略的快照
-
 &emsp;&emsp;第7行，这个策略的快照中包含了data stream和 index
-
 &emsp;&emsp;第8行，如果为`true`，该策略的快照中包含集群状态（cluster state）。同时也默认包含所有的 feature state。若要只包含指定的feature states，见[Back up a specific feature state](####Back up a specific feature state)
-
 &emsp;&emsp;第10行，保留规则（可选）。该配置将为快照保留30天，无论快照的寿命（age）是多少，至少保留5个以及最多50个快照。见[SLM retention](#####SLM retention)和[Snapshot retention limits](#####Snapshot retention limits)
 
 
@@ -27396,7 +27193,6 @@ PUT _slm/policy/nightly-cluster-state-snapshots
 ```
 
 &emsp;&emsp;第7行，备份集群状态，同时包含所有的feature states
-
 &emsp;&emsp;第8行，不包括常规的data stream和index
 
 #### Create snapshots at different time intervals
@@ -30311,15 +30107,10 @@ n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: 
 ```
 
 &emsp;&emsp;第5行，当前分片的状态
-
 &emsp;&emsp;第7行，分片最开始未分配的原因
-
 &emsp;&emsp;第11行，能否能分配这个分片
-
 &emsp;&emsp;第19行，是否能将这个分片分配到指定的节点
-
 &emsp;&emsp;第23行，desider为这个节点指向了`no` decision
-
 &emsp;&emsp;第25行，解释了为什么desider返回了一个`no` decision，并且给出了有用的信息：配置导致指向这个`no` decision
 
 &emsp;&emsp;下面的响应中为一个未分配的主分片提供了一个分配信息，这个分片之前已经被分配了。
@@ -30392,9 +30183,7 @@ n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: 
 ```
 
 &emsp;&emsp;第14行，由于刚刚离开集群的节点拥有这个分片，并且配置了`1m`的延迟（如果在超时前那个节点重新回到集群，就不用生成新的副本分片）
-
 &emsp;&emsp;第16行，即将分配副本分片的剩余时间
-
 &emsp;&emsp;第30行，节点上分片数据的信息
 
 ###### Assigned shard
@@ -30442,9 +30231,7 @@ n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: 
 ```
 
 &emsp;&emsp;第11行，分片是否允许一直待在当前节点上
-
 &emsp;&emsp;第12行，decider指出为什么分片不允许待在当前节点上
-
 &emsp;&emsp;第19行，分片是否允许移动到其他节点上
 
 &emsp;&emsp;下面的响应中为一个必须仍然待在当前节点的分片提供了分配信息。移动到其他节点不会提高集群的平衡。
@@ -30478,9 +30265,7 @@ n  "primaryn "primary"'g: '  "primaryn "primary"'g: 'n   "primaryn "primary"'g: 
 ```
 
 &emsp;&emsp;第13行，集群是否允许Rebalance
-
 &emsp;&emsp;第14行，分片是否能Rebalance到其他节点
-
 &emsp;&emsp;第21行，分片不能Rebalance到其他节点的原因，指出相较于待在当前节点并不能通过移动到其他节点来获得更好的平衡
 
 ###### No arguments
@@ -30960,9 +30745,7 @@ GET _nodes/usage
 ```
 
 &emsp;&emsp;第10行，这个节点执行nodes usage请求的时间
-
 &emsp;&emsp;第11行，开始记录节点使用信息的时间，这个值跟节点启动时间是一致的
-
 &emsp;&emsp;第16行，这个节点执行了19次的查询操作
 
 #### Nodes hot threads API
@@ -31806,9 +31589,7 @@ GET _tasks?nodes=nodeId1,nodeId2&actions=cluster:*
 ```
 
 &emsp;&emsp;第1行，获取集群中所有节点上的所有任务的信息
-
 &emsp;&emsp;第2行，获取`nodeId1`和`nodeId2`上的所有任务的信息。关于如何选择单个节点的更多信息见[Node specification](#####Node specification)。
-
 &emsp;&emsp;第3行，获取节点`nodeId1`和`nodeId2`上跟集群相关的所有任务的信息
 
 &emsp;&emsp;这个接口返回下面的结果：
@@ -31999,9 +31780,7 @@ content-length: 831
 ```
 
 &emsp;&emsp;第1行，id作为响应中header的一部分
-
 &emsp;&emsp;第17行，由REST请求初始化的这个任务的id，
-
 &emsp;&emsp;第30行，子任务中由REST请求初始化的这个任务的id
 
 
@@ -33339,11 +33118,8 @@ POST /my-index-000001/_disk_usage?run_expensive_tasks=true
 ```
 
 &emsp;&emsp;第8行，索引中被仅分析的分片的存储大小
-
 &emsp;&emsp;第11行，索引中被分析的分片的存储总量。这个总量通常比第8行中指定的索引大小小，因为一些小型元数据文件被忽略，而 API 可能未扫描数据文件的某些部分。
-
 &emsp;&emsp;第36行，`_id`域的存储大小
-
 &emsp;&emsp;第54行，`_source`域的存储大小。由于存储域使用了压缩格式存储在一起，因此只是尽量估算了存储域的大小。`_id`域的存储大小，可能不太准确。`_id` 字段的存储大小可能被低估，而 `_source`字段可能被高估
 
 #### Clear cache API
@@ -33640,7 +33416,6 @@ PUT /my-index-000001
 ```
 
 &emsp;&emsp;第5行，`number_of_shards`的值为1。
-
 &emsp;&emsp;第6行，`number_of_replicas`的值为1（一个主分片有一个副本分片）。
 
 &emsp;&emsp;或者可以更简单一点：
@@ -35734,11 +35509,8 @@ POST /_index_template/_simulate_index/my-index-000001
 ```
 
 &emsp;&emsp;第1行，创建一个组件模版（`ct1`），定义主分片数量为2。
-
 &emsp;&emsp;第10行，创建第二个组件模版（`ct2`）定义0个副本分片以及一个mapping
-
 &emsp;&emsp;第26行，创建一个索引模板（final-template）并且使用了两个组件模版
-
 &emsp;&emsp;第33行，展示将应用到`my-index-000001`的配置信息
 
 &emsp;&emsp;响应中展示了由`final-template`提供的settings、mappings以及aliases：
@@ -35898,11 +35670,8 @@ POST /_index_template/_simulate/final-template
 ```
 
 &emsp;&emsp;第1行，创建一个组件模版（`ct1`），定义主分片数量为2。
-
 &emsp;&emsp;第10行，创建第二个组件模版（`ct2`）定义0个副本分片以及一个mapping
-
 &emsp;&emsp;第26行，创建一个索引模板（final-template）并且使用了两个组件模版
-
 &emsp;&emsp;第33行，展示了由`final-template`应用后的配置
 
 &emsp;&emsp;响应中展示了由`final-template`应用的settings、mappings以及aliases：
@@ -35937,9 +35706,7 @@ POST /_index_template/_simulate/final-template
 ```
 
 &emsp;&emsp;第5行，来自`ct1`中主分片的数量
-
 &emsp;&emsp;第6行，来自`ct2`中副本分片的数量
-
 &emsp;&emsp;第16行，来自`ct1`中的mappings
 
 ###### Simulating an arbitrary template configuration
@@ -37652,9 +37419,7 @@ GET _ilm/policy/my_policy
 ```
 
 &emsp;&emsp;第3行，当策略更新后，策略版本号则会提高
-
 &emsp;&emsp;第4行，上一次策略更改时间
-
 &emsp;&emsp;第25行，哪些索引、data streams或者模版正使用这个策略
 
 #### Delete lifecycle policy API
@@ -37767,13 +37532,9 @@ POST _ilm/move/my-index-000001
 ```
 
 &emsp;&emsp;第3行，期望索引正处于的步骤
-
 &emsp;&emsp;第8行，你想要执行的步骤
-
 &emsp;&emsp;第10行，索引将被移动到某个动作（可选）
-
 &emsp;&emsp;第11行，索引将被移到某一步骤（可选）
-
 &emsp;&emsp;如果请求成功，你会收到如下结果：
 
 ```text
@@ -38315,18 +38076,144 @@ POST _ilm/stop
 
 ###### search_type
 
-
 #### Async search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search.html#submit-async-search)
 
+&emsp;&emsp;该接口可以让你执行异步的查询请求，监视查询的过程，并且当可用时获取部分结果。
+
 ##### Submit async search API
 
+&emsp;&emsp;异步执行一个查询请求。它跟[search API](###Search API)有相同的请求参数跟请求内容。
+
+```text
+POST /sales*/_async_search?size=0
+{
+  "sort": [
+    { "date": { "order": "asc" } }
+  ],
+  "aggs": {
+    "sale_date": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "1d"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中包含了正在执行查询的标识符。你可以使用这个ID随后获取查询的最终结果。当前可见的查询结果作为[response](###Search API)对象中的一部分返回。
+
+```text
+{
+  "id" : "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=", 
+  "is_partial" : true, 
+  "is_running" : true, 
+  "start_time_in_millis" : 1583945890986,
+  "expiration_time_in_millis" : 1584377890986,
+  "response" : {
+    "took" : 1122,
+    "timed_out" : false,
+    "num_reduce_phases" : 0,
+    "_shards" : {
+      "total" : 562, 
+      "successful" : 3, 
+      "skipped" : 0,
+      "failed" : 0
+    },
+    "hits" : {
+      "total" : {
+        "value" : 157483, 
+        "relation" : "gte"
+      },
+      "max_score" : null,
+      "hits" : [ ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第2行，异步搜索的标识符，用来监视查询进程，获取查询结果或者删除这次查询
+&emsp;&emsp;第3行，当这个Query不处于运行中，会表明查询是否失败或者在所有分片上都成功完成。当Query处于执行中，`is_partial`总是为`true`
+&emsp;&emsp;第4行，查询是否处于执行中还是已经完成
+&emsp;&emsp;第12行，将在多少个分片上进行查询
+&emsp;&emsp;第13行，在多少个分片成功完成查询
+&emsp;&emsp;第19行，当前多少文档匹配了Query，这些文档属于已经成功完成查询的分片
+
+> NOTE：尽管查询不处于运行中，因此 `is_running` 被设置为 `false`，但结果可能是部分的。这种情况发生在一些分片返回结果后搜索失败，或者协调异步搜索的节点停止运行的情况下。
+
+&emsp;&emsp;可以通过设置 `wait_for_completion_timeout` 参数来实现阻塞并等待，直至搜索操作在指定的超时时间内完成，默认这个超时时间是1秒。如果在超时时间内完成异步查询，响应中不会包含Id，因为结果不会存储在集群中。`keep_on_completion`参数，默认为`false`，当查询在`wait_for_completion_timeout`完成时，可以设置为`true`以后的查询存储查询结果。
+
+&emsp;&emsp;你也可以通过`keep_alive`参数指定异步查询应该保持多久，默认是`5d`（5天）。以后的异步查询和其他保存的查询结果将在这个周期后删除。
+
+> NOTE：当你对搜索结果进行排序，而这些结果的排序依据（即主要排序字段）是一个已经被索引的字段时，Elasticsearch可以根据每个分片（shard）持有该字段的最小值和最大值来对这些分片进行排序。因此，根据你请求的排序标准，部分结果可以变得可用，即使搜索还没有完全完成。
+
+&emsp;&emsp;异步搜索支持跟Search API相同的[参数](####Search API)，但有些参数的默认值是不同的：
+
+- `batched_reduce_size`的默认值是`5`：该值会影响部分结果可见的频率，当分片结果被归并（reduce）后才可见。当协调节点收到一定数量的不同的分片结果时就会执行归并（默认是`5`）
+- `request_cache`默认为`true`
+- pre_filter_shard_size 默认为1且不能更改：这是为了执行一个预过滤往返操作，以从每个分片检索统计信息，从而跳过那些肯定不包含与查询匹配的任何文档的分片。
+- `ccs_minimize_roundtrips` 默认为`false`，这也是唯一支持的值。
+
+> WARNING：异步搜索不支持[scroll](####Scroll search results)，也不支持包含[suggest section](####Suggesters)的查询请求。只有在[ccs_minimize_roundtrips](#####Minimize network roundtrips)设置为`false`时才支持CCS查询
+
+> WARNING：默认情况下Elasticsearch不允许存储超过10Mb的异步查询结果，尝试这么做会导致出现错误。可以通过修改集群设置search.max_async_search_response_size来修改存储异步查询结果允许的最大值
+
 ##### Get async search
+
+&emsp;&emsp;该接口根据之前提交的异步查询返回的ID进行查询。如果开启了Elasticsearch security features。指定的异步查询若要访问结果需要受限于[the user or API key that submitted it](####Resource sharing check for users and API keys)。
+
+```text
+GET /_async_search/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=
+```
+
+```text
+{
+  "id" : "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+  "is_partial" : true, 
+  "is_running" : true, 
+  "start_time_in_millis" : 1583945890986,
+  "expiration_time_in_millis" : 1584377890986, 
+  "response" : {
+    "took" : 12144,
+    "timed_out" : false,
+    "num_reduce_phases" : 46, 
+    "_shards" : {
+      "total" : 562,
+      "successful" : 188, 
+      "skipped" : 0,
+      "failed" : 0
+    },
+    "hits" : {
+      "total" : {
+        "value" : 456433,
+        "relation" : "eq"
+      },
+      "max_score" : null,
+      "hits" : [ ]
+    },
+    "aggregations" : { 
+      "sale_date" :  {
+        "buckets" : []
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第2行，当这个Query不处于运行中，会表明查询是否失败或者在所有分片上都成功完成。当Query处于执行中，`is_partial`总是为`true`
+&emsp;&emsp;第3行，查询是否处于执行中还是已经完成
+&emsp;&emsp;第6行，异步查询的过期时间
+&emsp;&emsp;第10行，表示执行归并的结果的数量。如果相比较上一次的查询结果，这个值变大了，那么你可以在查询响应中获取更多额外的结果
+&emsp;&emsp;第13行，执行这个Query的分片数量。注意的是为了分片的结果能包含在查询响应中，它们首先会被归并（reduce）
+&emsp;&emsp;第25行，部分聚合结果，来自那些已经完成Query的分片的结果
+
+&emsp;&emsp;的
 
 ##### Delete async search
 
 #### Point in time API
-(8.2)[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/point-in-time-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/point-in-time-api.html)
 
 &emsp;&emsp;默认在目标索引的最新的可见数据上执行查询请求称为point in time。Elasticsearch PIT是一个轻量级针对于数据状态the state of the data的视图view，在数据初始化后就存在了。在有些场景中，更偏向于使用PIT来执行多次查询。例如，如果[refreshes](####Refresh API)发生在多个search_after请求之间，那么这些请求的结果可能不一致，因为每一次都在最新的PIT上执行查询。
 
@@ -39747,21 +39634,13 @@ PUT /_slm/policy/daily-snapshots
 ```
 
 &emsp;&emsp;第3行，生成快照的时间，在这个例子中是每天的1:30am
-
 &emsp;&emsp;第4行，每一个快照给定的名称
-
 &emsp;&emsp;第5行，存储快照的仓库
-
 &emsp;&emsp;第6行，额外的快照配置
-
 &emsp;&emsp;第7行，快照中包含的data streams和indices
-
 &emsp;&emsp;第11行，可选的保留快照的配置
-
 &emsp;&emsp;第12行，快照保留30天
-
 &emsp;&emsp;第13行，总是至少保留最新的5个状态为成功的快照，即使快照30天才过期
-
 &emsp;&emsp;第14行，最多保留不超过50个状态为成功的快照，即使快照30天才过期
 
 #### Get snapshot lifecycle policy API
@@ -39835,9 +39714,7 @@ GET _slm/policy/daily-snapshots?human
 ```
 
 &emsp;&emsp;第3行，快照策略的版本号，只有最新版本的策略才会被存储，每次更新策略会增加这个版本号的值
-
 &emsp;&emsp;第4行，上一次策略更改的时间
-
 &emsp;&emsp;第28行，下一次策略执行的时间
 
 ###### Get all policy
