@@ -32627,7 +32627,7 @@ POST /_data_stream/_modify
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-update.html)
 
 #### Update By Query API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-update-by-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-update-by-query.html)
 
 &emsp;&emsp;更新满足满足指定Query的文档。如果没有指定，执行data stream或索引中每一篇文档的更新，但是不修改源数据，用来应用mapping的更改是非常有用的。
 
@@ -32652,7 +32652,7 @@ POST /<target>/_update_by_query
 
 &emsp;&emsp;你在请求URI指定查询规则或者在请求体中使用跟[Search API]()相同的语法。
 
-&emsp;&emsp;当你提交了该接口的请求，Elasticsearch在开始处理请求时会获取数据流或索引的快照，并使用内部版本控制（`internal` versioning）来更新匹配的文档。当版本匹配时，文档会被更新并且提高版本号。如果在获取快照和处理更新操作之间，文档发生了变化，这会导致版本冲突，从而使操作失败。你可以通过将`conflicts`设置为`proceed`，使得接口统计发生版本冲突的数量而不是停止并返回。注意的是如果选择这种方式三，那么这次接口操作会尝试从源中更新更多的文档直到更新了`max_doc`数量的文档，或者覆盖了查询范围内的所有文档。
+&emsp;&emsp;当你提交了该接口的请求，Elasticsearch在开始处理请求时会获取数据流或索引的快照，并使用内部版本控制（`internal` versioning）来更新匹配的文档。当版本匹配时，文档会被更新并且提高版本号。如果在获取快照和处理更新操作之间，文档发生了变化，这会导致版本冲突，从而使操作失败。你可以通过将`conflicts`设置为`proceed`，使得接口统计发生版本冲突的数量而不是停止并返回。注意的是如果选择这种方式，那么这次接口操作会尝试从源中更新更多的文档直到更新了`max_doc`数量的文档，或者覆盖了查询范围内的所有文档。
 
 > NOTE：如果文档的版本号是0，那么就不能通过这个接口更新，因为内部版本控制不支持该值，它不是一个有效的版本号
 
@@ -32668,11 +32668,11 @@ POST /<target>/_update_by_query
 
 ###### Waiting for active shards
 
-&emsp;&emsp;`wait_for_active_shards`控制在执行这个请求前应该有多少数量的分片是活跃的（active）。见[Active shards](#Index API)查看详情。`timeout`控制写请求等待那些不见用的分片变得可用的时间。这两个设置在批[Bulk API](#Bulk API)中的工作方式完全相同。Update by Query在实现内部使用了滚动搜索（scroll Search），因此你也可以指定`scroll`参数来控制它保持搜索上下文活跃的时间长短，例如`?scroll=10m`。默认值是5分钟。
+&emsp;&emsp;`wait_for_active_shards`控制在执行这个请求前应该有多少数量的分片是活跃的（active）。见[Active shards](#Index API)查看详情。`timeout`控制写请求等待那些不见用的分片变得可用的时间。这两个设置在Bulk API](#Bulk API)中的工作方式完全相同。Update by Query在实现内部使用了滚动搜索（scroll search），因此你也可以指定`scroll`参数来控制它保持搜索上下文活跃的时间长短，例如`?scroll=10m`。默认值是5分钟。
 
 ###### Throttling update requests
 
-&emsp;&emsp;若要控制Update by Query以多快的速率发出一批批更新操作，你可以将`requests_per_second`设置为任何正小数。这会给每批操作添加/填充等待时间，以此来控制速率。将`requests_per_second`设置为-1可以禁用节流。
+&emsp;&emsp;若要控制Update By Query以多快的速率发出一批批更新操作，你可以将`requests_per_second`设置为任何正小数。这会给每批操作添加/填充等待时间，以此来控制速率。将`requests_per_second`设置为-1可以禁用节流。
 
 &emsp;&emsp;节流通过在批次之间填充等待时间来实现，使得内部scroll请求在设置超时时间时要考虑到这个等待时间。即批次大小除以`requests_per_second`与写入花费的时间差值。默认批次大小为`1000`，因此如果`requests_per_second`设置为500：
 
@@ -32725,9 +32725,410 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
 - q：（Optional,string）Query in Lucene query string syntax
 - request_cache：（Optional, Boolean）如果为`true`，会对这个请求使用请求缓存。默认值是index-level的设置
 - refresh：（Optional,string）如果为`true`，Elasticsearch会refresh被更新的分片使得变更可以被搜索到。默认为`false`
-- requests_per_second：每秒可以执行的子请求数量。默认值为-1，表示不进行节流。
+- requests_per_second：（Optional,integer）每秒可以执行的子请求数量。默认值为-1，表示不进行节流。
+- routing：（Optional,string）自定义的值用来路由到指定分片
+- scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
+- scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
+- search_type：（Optional,string）搜索操作的类型。可选项有：
+  - `query_then_fecth`
+  - `dfs_query_then_fetch`
+- search_timeout：（Optional, [time units](#Time units)）显示指定每一个查询请求的超时时间。默认不超时
+- slices：（Optional, integer）任务中划分出的切片数量。默认为`1`意味着不会切分为多个子任务
+- sort：（Optional,string）用逗号隔开的`<field>:<direction>`列表
+- stats：（Optional,string）Specific tag of the request for logging and statistical purposes.
+- terminate_after：（Optional,integer）每一个分片最多收集的文档数量。如果Query达到了上限，elasticsearch则会提前结束这个Query。Elasticsearch先收集文档再排序
+
+  > IMPORTANG：用户使用这个参数需要特别注意。Elasticsearch将这个参数应用到每一个分片上来处理请求。如果到达上限时，Elasticsearch会自动的执行提前结束查询。对于查询目标是data  stream并且跨数据层的请求不要指定这个参数
+
+- timeout：（Optional, [time units](#Time units)）每一个更新操作中等待下面操作的超时时间：
+  - Dynamic mapping updates
+  - [Waiting for active shards](#Active shards)
+  默认是一分钟。它保证Elasticsearch至少会等待这个超时时间后才会失败。真正的等待时间可能更长，特别发生多次等待时。
+  
+- version：（Optional, Boolean）如果为`true`，请求返回中会有文档的版本号 
+- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+
+##### Request body
+
+- query：（Optional, [query object](#Query DSL)）使用[Query DSL](#Query DSL)指定需要更新的文档
+
 ##### Response body
+
+- took：整个操作从开始到结束的时间
+- timed_out：在更新过程中有任何操作执行超时就会将这个字段设置为`true`
+- total： 成功处理的文档数量
+- updated：成功更新的文档数量
+- deleted：成功删除的文档数量
+- batches：执行scroll操作的次数
+- version_conflicts：版本发生冲突的次数
+- noops：被忽略的文档数量，由于在请求中使用了脚本`ctx.op`返回了`noop`
+- retries：Update by query尝试重试的次数。`bulk`是批量操作重试的数量、`search`是查询动作重试的次数
+- throttled_millis：因为遵循`requests_per_second`而该请求的休眠时间
+- requests_per_second：在update by query中每秒有效执行的请求数量
+- throttled_until_millis：这个字段在`_update_by_query`中的应该总是等于0。只有使用[Task API](#Running update by query asynchronously)时它才有意义。此字段表示为了遵守`requests_per_second`，被节流的请求下次执行的时间（从纪元开始的毫秒数）。这有助于了解请求被节流直到何时才能继续执行
+- failures：在处理过程中任何无法恢复的错误列表。如果该字段不为空说明因为这些原因导致请求终止。Update by query使用batch实现。任何的失败会导致整个过程终止。但是在当前batch中的失败会被收集到数组中。你可以使用`conflicts`选项来阻止因版本冲突导致终止reindex
+
 ##### Example
+
+&emsp;&emsp;`_update_by_query`最简单的使用方式就是对data stream或index中每一个文档执行更新并且不修改原文档。比如说[pick up a new property](#Pick up a new property)或者在线修改mapping。
+
+&emsp;&emsp;若要更新指定文档，可以在请求体中指定一个query：
+
+```text
+POST my-index-000001/_update_by_query?conflicts=proceed
+{
+  "query": { 
+    "term": {
+      "user.id": "kimchy"
+    }
+  }
+}
+```
+
+&emsp;&emsp;第3行，跟[Search API](#Search API)一样的方式，在`query`字段中指定内容。你也可以像Search API一样使用`q`参数。
+
+&emsp;&emsp;在多个data stream或index中更新文档：
+
+```text
+POST my-index-000001,my-index-000002/_update_by_query
+```
+
+&emsp;&emsp;指定路由值要求在指定分片上执行查询：
+
+```text
+POST my-index-000001/_update_by_query?routing=1
+```
+
+&emsp;&emsp;默认Update By Query中每一个scroll查询最多获取1000篇文档。你可以通过`scroll_size`参数修改这个值：
+
+```text
+POST my-index-000001/_update_by_query?scroll_size=100
+```
+
+&emsp;&emsp;使用唯一属性（即`user.id`）来更新一篇文档
+
+```text
+POST my-index-000001/_update_by_query
+{
+  "query": {
+    "term": {
+      "user.id": "kimchy"
+    }
+  },
+  "max_docs": 1
+}
+```
+
+###### Update the document source
+
+&emsp;&emsp;可以使用脚本更新文档中的内容。例如下面的请求中对索引`my-index-000001`中域名为`user.id`域值为`kimchy`的文档中的`count`字段实现加一：
+
+```text
+POST my-index-000001/_update_by_query
+{
+  "script": {
+    "source": "ctx._source.count++",
+    "lang": "painless"
+  },
+  "query": {
+    "term": {
+      "user.id": "kimchy"
+    }
+  }
+}
+```
+
+&emsp;&emsp;注意到的是，这个例子中没有指定`conflicts=proceed`。因此当遇到版本冲突时会终止处理值得你可能处理这个问题。
+
+&emsp;&emsp;跟[Update API](##Update API)一样，你可以设置`ctx.op`的值来修改执行的操作：
+
+- noop：`ctx.op = "noop"`，如果你的脚本决定不需要做任何更改。那么就会跳过不更新这篇文档并且`noop`的值加一
+- delete：`ctx.op = "delete"`，如果你的脚本决定文档应该被删除。那么就会删除文档并且`deleted`的值加一
+
+&emsp;&emsp;该接口支持`update`、`noop`、`delete`。将`ctx.op`设置成其他值都会报错。设置`ctx`的其他域也会报错。这个接口只能让你更改匹配到的文档的内容，你不能移动他们。
+
+###### Update documents using an ingest pipeline
+
+&emsp;&emsp;可以通过指定一个`pipeline`来使用[ingest pipelines](##Ingest pipelines)的功能：
+
+```text
+PUT _ingest/pipeline/set-foo
+{
+  "description" : "sets foo",
+  "processors" : [ {
+      "set" : {
+        "field": "foo",
+        "value": "bar"
+      }
+  } ]
+}
+POST my-index-000001/_update_by_query?pipeline=set-foo
+```
+
+###### Get the status of update by query operations
+
+&emsp;&emsp;可以通过[Task API](#Task management API)获取所有运行中的Update By Query请求的状态：
+
+```text
+GET _tasks?detailed=true&actions=*byquery
+```
+
+&emsp;&emsp;相应如下：
+
+```text
+{
+  "nodes" : {
+    "r1A2WoRbTwKZ516z6NEs5A" : {
+      "name" : "r1A2WoR",
+      "transport_address" : "127.0.0.1:9300",
+      "host" : "127.0.0.1",
+      "ip" : "127.0.0.1:9300",
+      "attributes" : {
+        "testattr" : "test",
+        "portsfile" : "true"
+      },
+      "tasks" : {
+        "r1A2WoRbTwKZ516z6NEs5A:36619" : {
+          "node" : "r1A2WoRbTwKZ516z6NEs5A",
+          "id" : 36619,
+          "type" : "transport",
+          "action" : "indices:data/write/update/byquery",
+          "status" : {    
+            "total" : 6154,
+            "updated" : 3500,
+            "created" : 0,
+            "deleted" : 0,
+            "batches" : 4,
+            "version_conflicts" : 0,
+            "noops" : 0,
+            "retries": {
+              "bulk": 0,
+              "search": 0
+            },
+            "throttled_millis": 0
+          },
+          "description" : ""
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第18行，该对象包含真实的状态。它类似于响应的JSON，但重要的增加了total字段。total是reindex预期执行的操作总数。你可以通过加上updated、created和deleted字段来估计进度。当这些字段的和等于total字段时，请求将完成
+
+&emsp;&emsp;根据任务id你可以直接查看这个任务。下面的例子获取了任务`r1A2WoRbTwKZ516z6NEs5A:36619：`的信息：
+
+```text
+GET /_tasks/r1A2WoRbTwKZ516z6NEs5A:36619
+```
+
+&emsp;&emsp;这个API的优势在于它与`wait_for_completion=false`集成，以透明方式返回已完成任务的状态。如果任务已完成且在其上设置了`wait_for_completion=false`，则它会返回带有结果或错误字段的响应。这个特性的成本是在`.tasks/task/${taskId}`创建的文档。删除该文档的责任在于用户。
+
+###### Cancel an update by query operation
+
+&emsp;&emsp;通过使用[Task Cancel API](#Task management API)取消Update By Query：
+
+```text
+POST _tasks/r1A2WoRbTwKZ516z6NEs5A:36619/_cancel
+```
+
+&emsp;&emsp;可以通过[tasks API](#Task management API)获取任务ID。
+
+&emsp;&emsp;取消操作很快就发生但可能需要一点时间。task status API会继续列出Update By Query直到它意识到自己被取消了并终止自己。
+
+###### Change throttling for a request
+
+&emsp;&emsp;可以通过`_rethrottle`接口对运行中的Update By Query修改`requests_per_second`的值：
+
+```text
+POST _update_by_query/r1A2WoRbTwKZ516z6NEs5A:36619/_rethrottle?requests_per_second=-1
+```
+
+&emsp;&emsp;可以通过[tasks API](#Task management API)获取任务ID。
+
+&emsp;&emsp;在设置`_update_by_query API`时，`requests_per_second`可以设为`-1`禁用节流，或设为任何小数如`1.7`或`12`来限制到该级别的速率。加速查询的重新节流（Rethrottling）立即生效，而减速查询的重新节流将在完成当前批次后生效，以防止滚动超时。
+
+###### Slice manually
+
+&emsp;&emsp;在请求中通过提供slice id和slice的总数来手动对Update By Query进行切分：
+
+```text
+POST my-index-000001/_update_by_query
+{
+  "slice": {
+    "id": 0,
+    "max": 2
+  },
+  "script": {
+    "source": "ctx._source['extra'] = 'test'"
+  }
+}
+POST my-index-000001/_update_by_query
+{
+  "slice": {
+    "id": 1,
+    "max": 2
+  },
+  "script": {
+    "source": "ctx._source['extra'] = 'test'"
+  }
+}
+```
+
+&emsp;&emsp;你可以通过下面的方式进行验证：
+
+```text
+GET _refresh
+POST my-index-000001/_search?size=0&q=extra:test&filter_path=hits.total
+```
+
+&emsp;&emsp;生成类似下面的合理的（sensible）`total`：
+
+```text
+{
+  "hits": {
+    "total": {
+        "value": 120,
+        "relation": "eq"
+    }
+  }
+}
+```
+
+###### Use automatic slicing
+
+&emsp;&emsp;你可以使用[sliced scroll]()根据`id`切分来自动实现并行。指定`slices`的数量来使用它：
+
+```text
+POST my-index-000001/_update_by_query?refresh&slices=5
+{
+  "script": {
+    "source": "ctx._source['extra'] = 'test'"
+  }
+}
+```
+
+&emsp;&emsp;佴可以通过下面方式验证：
+
+```text
+POST my-index-000001/_search?size=0&q=extra:test&filter_path=hits.total
+```
+
+&emsp;&emsp;生成类似下面的合理的（sensible）`total`：
+
+```text
+{
+  "hits": {
+    "total": {
+        "value": 120,
+        "relation": "eq"
+    }
+  }
+}
+```
+
+&emsp;&emsp;将`slices`设置为`auto`时，Elasticsearch会自动选择切片数量，通常是每个分片一个切片，直到达到上限。如果存在多个data stream或index，它会根据分片数最少的index或backing index来确定切片数。
+
+&emsp;&emsp;在`_update_by_query`中添加切片，实际上是自动化了手动过程，产生了一些特性（quirk）：
+
+- 这些请求在[Tasks APIs](#Running update by query asynchronously)中可见，对于`slice`对应的任务，这些子请求是这个任务的"child"
+- 带`slice`的请求任务状态仅显示已完成切片的状态；
+- 这些子请求可以单独被取消或重新节流；
+- 重新节流`slice`的请求会按比例重新节流未完成的子请求；
+- 取消`slice`的请求将取消所有子请求。
+- 由于切片的性质，每个子请求不会获得文档的完全平均分配，但所有文档都会被处理。有些分片可能处理的比其他的大。Expect larger slices to have a more even distribution.
+- `requests_per_second`和`max_docs`参数会按比例分配给每个子请求。
+- 像requests_per_second和max_docs这样的参数会按比例分配给每个子请求。结合上述分配可能不均的情况，可以得出使用`max_docs`的`slice`可能不会精确更新指定数量的文档。
+- 每个子请求获取源data stream或index的略有不同的快照，尽管这些快照几乎同时获取。
+
+###### Pick up a new property
+
+&emsp;&emsp;比如说你没有使用动态mapping创建了一个索引，写入了数据并且然后添加了mapping来从数据获取更多的域：
+
+```text
+PUT test
+{
+  "mappings": {
+    "dynamic": false,   
+    "properties": {
+      "text": {"type": "text"}
+    }
+  }
+}
+
+POST test/_doc?refresh
+{
+  "text": "words words",
+  "flag": "bar"
+}
+POST test/_doc?refresh
+{
+  "text": "words words",
+  "flag": "foo"
+}
+PUT test/_mapping   
+{
+  "properties": {
+    "text": {"type": "text"},
+    "flag": {"type": "text", "analyzer": "keyword"}
+  }
+}
+```
+
+&emsp;&emsp;第4行，意味着新的域不会被索引，只保存在`_source`中
+&emsp;&emsp;第21行，添加新的`flag`域到mapping中。但是你需要reindex才能查询到`flag`的信息
+
+&emsp;&emsp;查询这个`flag`域不会有任何数据：
+
+```text
+POST test/_search?filter_path=hits.total
+{
+  "query": {
+    "match": {
+      "flag": "foo"
+    }
+  }
+}
+```
+
+```text
+{
+  "hits" : {
+    "total": {
+        "value": 0,
+        "relation": "eq"
+    }
+  }
+}
+```
+
+&emsp;&emsp;但是你可以发起`_update_by_query`来添加新的mapping：
+
+```text
+POST test/_update_by_query?refresh&conflicts=proceed
+POST test/_search?filter_path=hits.total
+{
+  "query": {
+    "match": {
+      "flag": "foo"
+    }
+  }
+}
+```
+
+```text
+{
+  "hits" : {
+    "total": {
+        "value": 1,
+        "relation": "eq"
+    }
+  }
+}
+```
+
+&emsp;&emsp;当你向多字段（multifield）添加一个字段时，可以做同样的事情。
 
 #### Bulk API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-bulk.html)
