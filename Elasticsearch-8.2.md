@@ -32998,7 +32998,7 @@ POST my-index-000001/_search?size=0&q=extra:test&filter_path=hits.total
 
 ###### Use automatic slicing
 
-&emsp;&emsp;你可以使用[sliced scroll]()根据`id`切分来自动实现并行。指定`slices`的数量来使用它：
+&emsp;&emsp;你可以使用[sliced scroll](#Sliced scroll)根据`id`切分来自动实现并行。指定`slices`的数量来使用它：
 
 ```text
 POST my-index-000001/_update_by_query?refresh&slices=5
@@ -33140,7 +33140,7 @@ POST test/_search?filter_path=hits.total
 
 &emsp;&emsp; 数据源可以是现有的索引、别名、或者data stream。目的地跟源必须是不同的。比如你不能将data stream reindex到自身。
 
-> IMPORTANT：Reindex要求源众的文档开启[\_source](#_source field)。
+> IMPORTANT：Reindex要求源中的文档开启[\_source](#_source field)。
 > 目的地应该在调用`_reindex`之前进行配置。Reindex不会从源拷贝settings以及相关的模板。
 > Mapping、分片数量、副本分片等等必须提前配置好
 
@@ -33176,7 +33176,7 @@ POST /_reindex
 
 &emsp;&emsp;从源索引中提取[document Source](#_source field)，然后索引到目标索引中。你可以拷贝所有的文档到目标索引，或者Reindex文档的子集。
 
-&emsp;&emsp;就像[\_update_by_query](#Update By Query API)，`_reindex`获取源的快照
+&emsp;&emsp;就像[\_update_by_query](#Update By Query API)，`_reindex`会获取源的快照，但不同的是目的地不能是自身（`update_by_query`是对自身更新），因此不会出现version conflict的问题（文档的版本号，响应中`_version`字段）。
 
 ##### Path parameters
 ##### Query parameters
