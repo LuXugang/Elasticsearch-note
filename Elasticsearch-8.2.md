@@ -32079,8 +32079,39 @@ DELETE /_internal/desired_nodes
 ### Cross-cluster replication APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
+#### Get cross-cluster replication stats API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
+
+&emsp;&emsp;获取cross-cluster replication的统计信息。
+
+##### Request
+
+```text
+GET /_ccr/stats
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`monitor`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
+##### Description
+
+&emsp;&emsp;这个API获取CCR的统计信息。它返回跟CCR相关的所有统计信息。
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Create follower API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-follow.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Pause follower API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-pause-follow.html)
@@ -32095,7 +32126,124 @@ DELETE /_internal/desired_nodes
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-unfollow.html)
 
 #### Get follower stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-follow-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-follow-stats.html)
+
+&emsp;&emsp;获取follower的统计信息。
+
+##### Request
+
+```text
+GET /<index>/_ccr/stats
+```
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`monitor`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
+##### Description
+
+&emsp;&emsp;这个接口获取follower的统计信息。这个接口将返回指定索引中与每一个分片相关的follower task
+
+##### Path parameters
+
+- `<index>`：（Required, string）用逗号隔开的index pattern列表
+
+##### Response body
+
+- indices：（array）follower index统计数据的数组
+  - fatal_exception：（object）描述了被取消的following task的fetal异常信息。在这种情况下，只能通过[resume follower API](#Resume follower API)手动恢复following task
+  - index：（String）follower index 的名称
+  - shards：（array）分片层（shard-level）的following task的统计信息
+    - bytes_read：（long）从leader传输的字节数总量
+
+       >NOTE：
+       >这只是一个估值并且没有考虑压缩的情况（如果开启了压缩的话）
+
+    - failed_read_requests：（long）读取失败的数量
+    - failed_write_requests：（long）在follower上执行的批量写请求的失败数量
+    - follower_aliases_version：（long）follower同步的索引别名的版本号
+    - follower_global_checkpoint：（long）follower上全局检查点。`leader_global_checkpoint`与`follower_global_checkpoint`之间的差异指示了follower落后于leader的程度
+    - follower_index：（string）follower index的名称
+    - follower_mapping_version：（long）follower同步的mapping版本号
+    - follower_max_seq_no：（long）follower上当前最大的序号（这个序号是文档的序号`_seq_no`，最新被处理（添加/更新）的文档有最大的序号）
+    - follower_settings_version：（long）follower同步的索引设置（Index settings）的版本号
+    - last_requested_seq_no：（long）从leader执行批量请求时，这批文档中的第一篇文档的序列号
+    - leader_global_checkpoint：（long）follower task所知道的在leader上当前的全局检查点
+    - leader_index：（string）正在follow的leader集群中索引的名称
+    - leader_max_seq_no：（long）follower task所知道的在leader上最大的序列号
+    - operations_read：（long）从leader读取操作的数量
+    - operations_written：（long）在follower的写操作的数量
+    - outstanding_read_requests：（integer）follower上正在读取的操作数量
+    - outstanding_write_requests：（integer）从follower上正在批量写入的操作数量
+    - read_exceptions：（array）描述读取失败的对象数组
+      - exception：（object）导致读取失败的异常内容
+      - from_seq_no：（long）从leader批量请求中第一个序列号
+      - retries：（integer）批量操作重试次数
+    - remote_cluster：（string）包含leader index的[remote cluster](#Remote clusters)
+    - shard_id：（integer）分片ID，从0开始的值，最大值就是分片的总数-1
+    - successful_read_requests：（long）成功获取的数量
+    - successful_write_requests：（long）follower上成功批量写入请求的数量
+    - time_since_last_read_millis：（long）The number of milliseconds since a read request was sent to the leader.
+
+      > NOTE：
+      >When the follower is caught up to the leader, this number will increase up to the configured read_poll_timeout at which point another read request will be sent to the leader.
+
+    - total_read_remote_exec_time_millis：（long）在远程集群上执行读取花费总时间
+    - total_read_time_millis：（long）读取请求从发送给leader到follower收到回复的总时间
+    - total_write_time_millis：（long）在follower上写入操作花费的总时间
+    - write_buffer_operation_count：（integer）在follower上排队等待写入的操作数量
+    - write_buffer_size_in_bytes：（long）当前排队等待写入的操作的总字节
+    
+##### Example
+
+&emsp;&emsp;下面的例子来获取follower的统计信息：
+
+```text
+GET /follower_index/_ccr/stats
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "indices" : [
+    {
+      "index" : "follower_index",
+      "shards" : [
+        {
+          "remote_cluster" : "remote_cluster",
+          "leader_index" : "leader_index",
+          "follower_index" : "follower_index",
+          "shard_id" : 0,
+          "leader_global_checkpoint" : 1024,
+          "leader_max_seq_no" : 1536,
+          "follower_global_checkpoint" : 768,
+          "follower_max_seq_no" : 896,
+          "last_requested_seq_no" : 897,
+          "outstanding_read_requests" : 8,
+          "outstanding_write_requests" : 2,
+          "write_buffer_operation_count" : 64,
+          "follower_mapping_version" : 4,
+          "follower_settings_version" : 2,
+          "follower_aliases_version" : 8,
+          "total_read_time_millis" : 32768,
+          "total_read_remote_exec_time_millis" : 16384,
+          "successful_read_requests" : 32,
+          "failed_read_requests" : 0,
+          "operations_read" : 896,
+          "bytes_read" : 32768,
+          "total_write_time_millis" : 16384,
+          "write_buffer_size_in_bytes" : 1536,
+          "successful_write_requests" : 16,
+          "failed_write_requests" : 0,
+          "operations_written" : 832,
+          "read_exceptions" : [ ],
+          "time_since_last_read_millis" : 8
+        }
+      ]
+    }
+  ]
+}
+```
 
 #### Delete auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-delete-auto-follow-pattern.html)
