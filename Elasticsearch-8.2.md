@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/20）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/27）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -33014,7 +33014,7 @@ POST /_ccr/auto_follow/my_auto_follow_pattern/pause
 ```
 
 #### Resume auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-resume-auto-follow-pattern.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-resume-auto-follow-pattern.html)
 
 &emsp;&emsp;恢复一个auto-follow pattern。
 
@@ -39649,6 +39649,8 @@ POST _ilm/stop
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
 
+
+
 #### Search API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-search.html)
 
@@ -39986,10 +39988,129 @@ GET /_search
 >IMPORTANT：应该对所有片使用相同的时间点ID。如果使用不同的PIT id，则片可能会重叠和遗漏文档。这是因为拆分标准是基于Lucene文档id的，这些文档id在索引更改时变的不稳定。
 
 #### Search template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-template-api.html)
+
+&emsp;&emsp;使用[search template](#Search templates)运行一个查询。
+
+```text
+GET my-index/_search/template
+{
+  "id": "my-search-template",
+  "params": {
+    "query_string": "hello world",
+    "from": 0,
+    "size": 10
+  }
+}
+```
+
+##### Request
+
+```text
+GET <target>/_search/template
+GET _search/template
+POST <target>/_search/template
+POST _search/template
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要在data stream、index或者alias上有`read`的[index privilege](#Indices privileges)。对于CCS，见[Configure remote clusters with security](#Configure remote clusters with security)
+
+##### Path parameters
+
+- `<target>`：（Optional,string）用逗号隔开的data stream、indices以及alias的列表。支持通配符（`*`）。若要查询所有的data streams和indices，可以忽略或者使用`*`
+
+##### Query parameters
+
+- allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+- ccs_minimize_roundtrips：（Optional, Boolean）如果为`true`，跨集群搜索（Cross Cluster Search）尝试最小化网络往返次数，以提高搜索效率。默认值为`true`
+- expand_wildcards：（Optional, string）通配符模式可以匹配的索引类型。如果请求目标是data stream，还会检测通配符表达式是否会匹配隐藏的data streams。支持多值，例如`open`, `hidden`。合法值有：
+  - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target syntax-1)
+  - open：匹配打开的，非隐藏的索引。同样匹配非隐藏的data stream
+  - closed：匹配关闭的，非隐藏的索引。同样匹配非隐藏的data stream。Data stream不能关闭
+  - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+  - none：不展开通配符模式
+  默认值为`all`。
+
+- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息并。默认为`false`
+- ignore_throttled：（Optional,Boolean）如果为`true`，当索引被限流时，指定的具体的、展开的或别名的索引将不包括在响应中。默认值为`true`
+- ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+- preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
+- rest_total_hits_as_int：（Optional, Boolean）如果为`true`，响应返回整数类型的`hits.total`。如果为`false`，返回object类型的`hits.total`。默认为`false`
+- routing：（Optional,string）自定义的值用来路由到指定分片
+- scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
+- scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
+- search_type：（Optional,string）搜索操作的类型。可选项有：
+  - `query_then_fecth`
+  - `dfs_query_then_fetch`
+- typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
+
+##### Response body
+
+- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息并。默认为`false`。
+  - 如果你同时在请求参数中指定了 `explain`，那接口只使用请求参数中的参数
+- id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
+- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+- profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
+- source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API]()相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
+  - 如果`id`未指定，那么必须提供这个参数
+
 
 #### Multi search template API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-search-template.html)
+
+&emsp;&emsp;使用单个请求执行多个[templated searches](#Run multiple templated searches)。
+
+```text
+GET my-index/_msearch/template
+{ }
+{ "id": "my-search-template", "params": { "query_string": "hello world", "from": 0, "size": 10 }}
+{ }
+{ "id": "my-other-search-template", "params": { "query_type": "match_all" }}
+```
+
+##### Request
+
+```text
+GET <target>/_msearch/template
+GET _msearch/template
+POST <target>/_msearch/template
+POST _msearch/template
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须要在data stream、index或者alias上有`read`的[index privilege](#Indices privileges)。对于CCS，见[Configure remote clusters with security](#Configure remote clusters with security)
+
+##### Query parameters
+
+- ccs_minimize_roundtrips：（Optional, Boolean）如果为`true`，跨集群搜索（Cross Cluster Search）尝试最小化网络往返次数，以提高搜索效率。默认值为`true`
+- max_concurrent_searches：（Optional,integer）该接口运行查询并行度最大值。默认是
+  > max(1, (# of [data nodes](#Data node) * min([search thread pool size](#Thread pools), 10)))
+
+- rest_total_hits_as_int：（Optional, Boolean）如果为`true`，响应返回整数类型的`hits.total`。如果为`false`，返回object类型的`hits.total`。默认为`false`
+- search_type：（Optional,string）搜索操作的类型。可选项有：
+  - `query_then_fecth`
+  - `dfs_query_then_fetch`
+- typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
+
+##### Request  body
+
+&emsp;&emsp;请求体必须是按照以下格式的换行符分隔的 JSON（NDJSON）：
+
+```text
+<header>\n
+<body>\n
+<header>\n
+<body>\n
+```
+
+&emsp;&emsp;每一个`header`跟`body`对代表一次查询请求。
+
+&emsp;&emsp;The` <header>` supports the same parameters as the [multi search API's ](#Multi search API)`<header>`. The` <body>` supports the same parameters as the [search template API's ]() request body.
+
+##### Example
 
 #### Render search template API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/render-search-template-api.html)
