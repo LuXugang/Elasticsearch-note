@@ -32119,10 +32119,13 @@ GET /_ccr/stats
 
 ##### Description
 
-&emsp;&emsp;这个API获取CCR的统计信息。它返回跟CCR相关的所有统计信息。
-##### Path parameters
-##### Query parameters
+&emsp;&emsp;这个API获取CCR的统计信息。它返回跟CCR相关的所有统计信息。该接口返回auto-following信息、以及跟[get  follower stats API](#Get follower stats API)一样的分片层（shard-level）的信息。
+
 ##### Response body
+
+- auto_follow_stats：（object）
+- follow_stats：（object）
+
 ##### Example
 
 #### Create follower API
@@ -32718,16 +32721,118 @@ GET /follower_index/_ccr/info
 ##### Example
 
 #### Create auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-auto-follow-pattern.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-auto-follow-pattern.html)
 
-&emsp;&emsp;
+&emsp;&emsp;创建一个auto-folllow pattern。
+
 ##### Request
+
+```text
+PUT /_ccr/auto_follow/<auto_follow_pattern_name>
+{
+  "remote_cluster" : "<remote_cluster>",
+  "leader_index_patterns" :
+  [
+    "<leader_index_pattern>"
+  ],
+  "leader_index_exclusion_patterns":
+  [
+    "<leader_index_exclusion_pattern>"
+  ],
+  "follow_index_pattern" : "<follow_index_pattern>"
+}
+```
+
 ##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须在leader index patterns上有`read`、`monitor`的index privilege。在包含follower index的集群上要有`manage_ccr`的cluster privilege。更多信息见[Security privileges](####Security privileges)
+
 ##### Description
+
+&emsp;&emsp;该接口对请求体中指定的集群创建了[auto-follow pattern]()集合。在远端集群中新创建的索引会自动在本地配置follower index。另外，这个接口可以用来更新现有的[auto-follow patterns]()。注意的是即使在更新auto-follow pattern后它们不再匹配新的pattern，之前自动配置的follower index将保持不变。
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<auto_follow_pattern_name>`：（Required,string）auto-follow patterns集合的名称
+
+##### Request body
+- remote_cluster：（Required,string）包含用来匹配的leader index的[remote cluster](#Remote clusters)
+- leader_index_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中匹配leader index的index pattern集合
+- leader_index_exclusion_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中排除匹配到leader index的index pattern集合。远端集群中匹配到一个或者多个`leader_index_patterns`并且匹配到一个或多个`leader_index_exclusion_patterns`的索引不会被跟随
+- follow_index_pattern：（Optional,string）follower index的名称。模版`{{leader_index}}`可以将从leader index的名称衍生到follower Index中。当跟随一个data stream，使用`{{leader_index}}`，CCR不支持修改一个follower data stream中的backing Index
+- settings：（object）覆盖来自leader index 的settings。有些settings是不能被覆盖的（比如`index.number_of_shards`）
+- max_read_request_operation_count：（integer）从远端集群中执行的读请求中，每一个请求中包含的操作数量最大值（设置`max_read_request_operation_count`为1000，那么在执行一次从leader到follower的数据同步时，每一次读取请求将最多包含1000个操作）
+- max_outstanding_read_requests：（long）正在从远端集群中执行读取请求的数量最
+- max_read_request_size：（[byte value](#Byte size units) ）从远端集群中的读请求中，批量操作的字节数最大值
+- max_write_request_operation_count：（integer）在follower上每一个批量写入的最大操作数
+- max_write_request_size：（[byte value](#Byte size units) ）在follower上每一个批量写入的最大字节数
+- max_outstanding_write_requests：（integer）正在follower上执行写入请求的数量最大值
+- max_write_buffer_count：（integer）排队等待写入的最大操作数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_write_buffer_size：（[byte value](#Byte size units) ）排队等待写入的最大字节数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_retry_delay：（[time value](#API conventions)）某个操作发生异常后，在重试之前的等待时间。基于exponential Backoff策略
+- read_poll_timeout：（[time value](#API conventions)）follower index同步leader index时，等待远端集群中出现新的操作的时间。超时后，拉去操作将返回到follower，然后更新一些统计信息，随后再次尝试从leader中读取
+
+##### Default values
+
+&emsp;&emsp;下面的输出来自follower info API，描述了这个接口中请求参数的所有默认值：
+
+```text
+{
+  "follower_indices" : [
+    {
+      "parameters" : {
+        "max_read_request_operation_count" : 5120,
+        "max_read_request_size" : "32mb",
+        "max_outstanding_read_requests" : 12,
+        "max_write_request_operation_count" : 5120,
+        "max_write_request_size" : "9223372036854775807b",
+        "max_outstanding_write_requests" : 9,
+        "max_write_buffer_count" : 2147483647,
+        "max_write_buffer_size" : "512mb",
+        "max_retry_delay" : "500ms",
+        "read_poll_timeout" : "1m"
+      }
+    }
+  ]
+}
+```
+
 ##### Example
+
+&emsp;&emsp;这个例子创建了一个名为`my_auto_folowe_pattern`的auto-follow pattern：
+
+```text
+PUT /_ccr/auto_follow/my_auto_follow_pattern
+{
+  "remote_cluster" : "remote_cluster",
+  "leader_index_patterns" :
+  [
+    "leader_index*"
+  ],
+  "follow_index_pattern" : "{{leader_index}}-follower",
+  "settings": {
+    "index.number_of_replicas": 0
+  },
+  "max_read_request_operation_count" : 1024,
+  "max_outstanding_read_requests" : 16,
+  "max_read_request_size" : "1024k",
+  "max_write_request_operation_count" : 32768,
+  "max_write_request_size" : "16k",
+  "max_outstanding_write_requests" : 8,
+  "max_write_buffer_count" : 512,
+  "max_write_buffer_size" : "512k",
+  "max_retry_delay" : "10s",
+  "read_poll_timeout" : "30s"
+}
+```
+
+&emsp;&emsp;这个接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Pause auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-pause-auto-follow-pattern.html)
