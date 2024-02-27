@@ -33672,7 +33672,7 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
 - scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
 - scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
 - search_type：（Optional,string）搜索操作的类型。可选项有：
-  - `query_then_fecth`
+  - `query_then_fetch`
   - `dfs_query_then_fetch`
 - search_timeout：（Optional, [time units](#Time units)）显示指定每一个查询请求的超时时间。默认不超时
 - slices：（Optional, integer）任务中划分出的切片数量。默认为`1`意味着不会切分为多个子任务
@@ -40042,13 +40042,13 @@ POST _search/template
 - scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
 - scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
 - search_type：（Optional,string）搜索操作的类型。可选项有：
-  - `query_then_fecth`
+  - `query_then_fetch`
   - `dfs_query_then_fetch`
 - typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
 
 ##### Response body
 
-- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息并。默认为`false`。
+- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`。
   - 如果你同时在请求参数中指定了 `explain`，那接口只使用请求参数中的参数
 - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
 - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
@@ -40058,7 +40058,7 @@ POST _search/template
 
 
 #### Multi search template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-search-template.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-search-template.html)
 
 &emsp;&emsp;使用单个请求执行多个[templated searches](#Run multiple templated searches)。
 
@@ -40091,7 +40091,7 @@ POST _msearch/template
 
 - rest_total_hits_as_int：（Optional, Boolean）如果为`true`，响应返回整数类型的`hits.total`。如果为`false`，返回object类型的`hits.total`。默认为`false`
 - search_type：（Optional,string）搜索操作的类型。可选项有：
-  - `query_then_fecth`
+  - `query_then_fetch`
   - `dfs_query_then_fetch`
 - typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
 
@@ -40108,7 +40108,57 @@ POST _msearch/template
 
 &emsp;&emsp;每一个`header`跟`body`对代表一次查询请求。
 
-&emsp;&emsp;The` <header>` supports the same parameters as the [multi search API's ](#Multi search API)`<header>`. The` <body>` supports the same parameters as the [search template API's ]() request body.
+&emsp;&emsp;The` <header>` supports the same parameters as the [multi search API's ](#Multi search API)`<header>`. The` <body>` supports the same parameters as the [search template API's ](#Search API) request body.
+
+- `<header>`：（Required,object）用来限制或者更改查询
+  - 每一个查询体中都要这个对象但可以是空(`{}`)或者空白行
+  - allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
+  - expand_wildcards：（Optional, string）通配符模式可以匹配的索引类型。如果请求目标是data stream，还会检测通配符表达式是否会匹配隐藏的data streams。支持多值，例如`open`, `hidden`。合法值有：
+    - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target syntax-1)
+    - open：匹配打开的，非隐藏的索引。同样匹配非隐藏的data stream
+    - closed：匹配关闭的，非隐藏的索引。同样匹配非隐藏的data stream。Data stream不能关闭
+    - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
+    - none：不展开通配符模式
+    默认值为`all`。
+
+  - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
+  - index：（Optional, string or array of strings）待查询的data streams、indices以及alias。支持通配符(`*`)。使用数组指定多个目标
+  - preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
+  - request_cache：（Optional,Boolean）如果为`true`，该查询可以使用request cache。默认为索引层的settings。见[Shard request cache settings](#Shard request cache settings)
+  - routing：（Optional,string）自定义的[routing value](#_routing field)用来路由到指定分片
+- search_type：（Optional,string）是否使用全局的term以及文档词频用于文档打分。可选项  有：
+    - `query_then_fetch`：（默认）文档打分只基于当前分片中的term以及文档词频。这种类型通常执行很快但不够精确
+    - `dfs_query_then_fetch`：文档打分只基于所有分片中的term以及文档词频。这种类型通常执行很慢但是精确
+- `<body>`：（Request,object）用于查询的参数
+  - explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`
+  - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
+  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+  - profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
+  - source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
+    - 如果`id`未指定，那么必须提供这个参数
+
+##### Response codes
+
+&emsp;&emsp;如果请求自身出错则返回`400`。如果请求中一个或多个查询失败了，接口返回`200`并且在响应中包含一个`error`对象描述每一个错误。
+
+##### Response body
+
+- reponses：（array of objects）每一个查询的结果，按照请求提交的顺序返回。每一个对象中使用跟[search API](#Search API)的响应中一样的属性
+  - 如果查询失败，响应中会包含一个带有错误信息的`error`对象
+
+###### curl requests
+
+&emsp;&emsp;如果提供了文本文件或者文本输入通过`curl`执行，使用`--data-binary`而不是`-d`防止newlines。
+
+```text
+$ cat requests
+{ "index": "my-index" }
+{ "id": "my-search-template", "params": { "query_string": "hello world", "from": 0, "size": 10 }}
+{ "index": "my-other-index" }
+{ "id": "my-other-search-template", "params": { "query_type": "match_all" }}
+
+$ curl -H "Content-Type: application/x-ndjson" -XGET localhost:9200/_msearch/template --data-binary "@requests"; echo
+```
 
 ##### Example
 
