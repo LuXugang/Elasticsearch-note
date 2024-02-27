@@ -39700,7 +39700,7 @@ POST _scripts/<script-id>/<context>
 ##### Request body
 
 - script：（Required,object）包含脚本或search template，参数以及脚本语言
-  - lang：（Required,string）[Script language]()。对于Search template，使用的是`mustache`
+  - lang：（Required,string）[Script language](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)。对于Search template，使用的是`mustache`
   - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
   - source：（Required\*,object）对于脚本来说就是包含脚本的字符串
     - 对于search template来说，是包含了search template的对象。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
@@ -39753,16 +39753,31 @@ GET _script_language
 
 
 #### Get stored script API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-stored-script-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-stored-script-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取一个[stored Script](#Store and retrieve scripts)或[search template](#Search templates)。
+
+```text
+GET _scripts/my-stored-script
+```
+
 ##### Request
+
+```text
+GET _scripts/<script-id>
+```
+
 ##### Prerequisites
-##### Description
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#Cluster privileges)来使用这个API
+
 ##### Path parameters
+
+- `<script-id>`：（Required,string）stored script或search template的标识符
+
 ##### Query parameters
-##### Response body
-##### Example
+
+- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
