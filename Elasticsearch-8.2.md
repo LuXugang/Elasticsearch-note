@@ -32709,16 +32709,43 @@ GET /follower_index/_ccr/info
 ```
 
 #### Delete auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-delete-auto-follow-pattern.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-delete-auto-follow-pattern.html)
 
-&emsp;&emsp;
+&emsp;&emsp;删除auto-follow patterns。
+
 ##### Request
+
+```text
+DELETE /_ccr/auto_follow/<auto_follow_pattern_name>
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`manage_ccr`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
 ##### Description
+
+&emsp;&emsp;删除一个已配置的[auto-follow patterns](#Manage auto-follow patterns)集合。
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<auto_follow_pattern_name>`：（Required,string）待删除的auto-follow pattern集合。
+
 ##### Example
+
+&emsp;&emsp;这个例子删除了一个名为`my_auto_follow_pattern`的auto-follow pattern集合。
+
+```text
+DELETE /_ccr/auto_follow/my_auto_follow_pattern
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Create auto-follow pattern API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-auto-follow-pattern.html)
@@ -32749,7 +32776,7 @@ PUT /_ccr/auto_follow/<auto_follow_pattern_name>
 
 ##### Description
 
-&emsp;&emsp;该接口对请求体中指定的集群创建了[auto-follow pattern]()集合。在远端集群中新创建的索引会自动在本地配置follower index。另外，这个接口可以用来更新现有的[auto-follow patterns]()。注意的是即使在更新auto-follow pattern后它们不再匹配新的pattern，之前自动配置的follower index将保持不变。
+&emsp;&emsp;该接口对请求体中指定的集群创建了[auto-follow pattern](#Manage auto-follow patterns)集合。在远端集群中新创建的索引会自动在本地配置follower index。另外，这个接口可以用来更新现有的[auto-follow patterns](#Manage auto-follow patterns)。注意的是即使在更新auto-follow pattern后它们不再匹配新的pattern，之前自动配置的follower index将保持不变。
 
 ##### Path parameters
 
