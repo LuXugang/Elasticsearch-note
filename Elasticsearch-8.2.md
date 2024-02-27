@@ -32209,7 +32209,46 @@ PUT /follower_index/_ccr/follow?wait_for_active_shards=1
 ```
 
 #### Pause follower API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-pause-follow.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-pause-follow.html)
+
+&emsp;&emsp;暂停一个follower index。
+
+##### Request
+
+```text
+POST /<follower_index>/_ccr/pause_follow
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`manage_ccr`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
+##### Description
+
+&emsp;&emsp;该接口用来暂停一个follower index。当接口返回后，follower index不会从leader index中获取任何额外的操作。你可以通过[resume follwer API](#Resume follower API)恢复。暂停然后恢复一个follower index可以用来修改following task的配置。
+
+##### Path parameters
+
+- `<follower_index>`：（Required,string）follower index的名称
+
+##### Example
+
+&emsp;&emsp;下面的例子暂停了一个名为`follower_index`的follower index。
+
+```text
+POST /follower_index/_ccr/pause_follow
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
+
+#### Get auto-follow pattern API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-auto-follow-pattern.html)
 
 &emsp;&emsp;
 ##### Request
@@ -32219,9 +32258,6 @@ PUT /follower_index/_ccr/follow?wait_for_active_shards=1
 ##### Query parameters
 ##### Response body
 ##### Example
-
-#### Get auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-auto-follow-pattern.html)
 
 #### Resume follower API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-resume-follow.html)
