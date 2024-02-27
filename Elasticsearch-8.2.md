@@ -32910,16 +32910,45 @@ PUT /_ccr/auto_follow/my_auto_follow_pattern
 ```
 
 #### Pause auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-pause-auto-follow-pattern.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-pause-auto-follow-pattern.html)
 
-&emsp;&emsp;
+&emsp;&emsp;暂停一个auto-follow pattern。
+
 ##### Request
+
+```text
+POST /_ccr/auto_follow/<auto_follow_pattern_name>/pause
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`manage_ccr`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
 ##### Description
+
+&emsp;&emsp;该接口暂停一个[auto-follow pattern]()。接口返回后，这个auto-follow pattern则为inactive并且忽略所有在远端集群上创建的并且匹配的新索引。暂停auto-follow pattern会将将[GET auto-follow patterns API]()中的`active`的值设置为`false`。
+
+&emsp;&emsp;你可以使用[resume auto-follow pattern API]()恢复。一旦恢复，auto-follow pattern再次为active并且匹配到远端集群上创建的新索引后在本地创建follower index。创建的索引即使在pattern被暂定后也可以被跟随（follow），除非同时被关闭或者删除。
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<auto_follow_pattern_name>`：（Required,string）待暂停的auto-follow pattern集合
+
 ##### Example
+
+&emsp;&emsp;下面的例子暂停名为`my_auto_follw`的auto-follow pattern：
+
+```text
+POST /_ccr/auto_follow/my_auto_follow_pattern/pause
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Resume auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-resume-auto-follow-pattern.html)
