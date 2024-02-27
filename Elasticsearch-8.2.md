@@ -32275,16 +32275,64 @@ POST /follower_index/_ccr/pause_follow
 ```
 
 #### Get auto-follow pattern API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-auto-follow-pattern.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-auto-follow-pattern.html)
 
-&emsp;&emsp;
+&emsp;&emsp;获取auto-follow patterns。
+
 ##### Request
+
+```text
+GET /_ccr/auto_follow/
+```
+
+```text
+GET /_ccr/auto_follow/<auto_follow_pattern_name>
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`manage_ccr`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
 ##### Description
+
+&emsp;&emsp;该接口获取已配置的[auto-follow patterns](#Manage auto-follow patterns)。返回指定的auto-follow patterns集合。
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<auto_follow_pattern_name>`：（Optional,string）指定你想要获取的auto-follow pattern。如果你不指定，则返回所有的集合
+
 ##### Example
+
+&emsp;&emsp;这个例子获取名为`my_auto_follow_pattern`的auto-follow pattern 集合。
+
+```text
+GET /_ccr/auto_follow/my_auto_follow_pattern
+```
+
+&emsp;&emsp;这个接口返回以下结果：
+
+```text
+{
+  "patterns": [
+    {
+      "name": "my_auto_follow_pattern",
+      "pattern": {
+        "active": true,
+        "remote_cluster" : "remote_cluster",
+        "leader_index_patterns" :
+        [
+          "leader_index*"
+        ],
+        "leader_index_exclusion_patterns":
+        [
+          "leader_index_001"
+        ],
+        "follow_index_pattern" : "{{leader_index}}-follower"
+      }
+    }
+  ]
+}
+```
 
 #### Resume follower API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-resume-follow.html)
