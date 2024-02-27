@@ -32102,7 +32102,114 @@ GET /_ccr/stats
 ##### Example
 
 #### Create follower API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-follow.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-follow.html)
+
+&emsp;&emsp;创建一个follower index。
+
+##### Request
+
+```text
+PUT /<follower_index>/_ccr/follow?wait_for_active_shards=1
+{
+  "remote_cluster" : "<remote_cluster>",
+  "leader_index" : "<leader_index>"
+}
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须在follower index上有`write`、`monitor`、`manage_follow_index`的index privilege。在leader index上必须要有`read`和`monitor`的index privilege。在包含follower index的集群上要有`manage_ccr`的cluster privilege。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;该接口用来创建一个新的follower index配置为跟随（follow）一个被引用的leader  index。。该接口返回后，生成了follower index，然后CCR开始从leader index执行复制操作到follower index中
+
+##### Path parameters
+
+- `<follower_index>`：（Required, string）follower index的名称
+
+##### Query parameters
+
+- wait_for_active_shards：（Optional,integer）在收到响应前指定的分片数量要处于活跃（active）状态。默认不等待。分片必须在活跃之前需先从leader index 中恢复。恢复一个follower分片要求传输远端的Lucene段文件到follower index中。
+
+##### Request body
+
+- leader_index：（string）在leader cluster 中跟随（follow）的索引名称
+- remote_cluster：（string）leader Index所在的[remote cluster](###Remote clusters)
+- settings：（object）覆盖来自leader index 的settings。有些settings是不能被覆盖的（比如`index.number_of_shards`）
+- max_read_request_operation_count：（integer）从远端集群中执行的读请求中，每一个请求中包含的操作数量最大值（设置`max_read_request_operation_count`为1000，那么在执行一次从leader到follower的数据同步时，每一次读取请求将最多包含1000个操作）
+- max_outstanding_read_requests：（long）正在从远端集群中执行读取请求的数量最
+- max_read_request_size：（[byte value](#Byte size units) ）从远端集群中的读请求中，批量操作的字节数最大值
+- max_write_request_operation_count：（integer）在follower上每一个批量写入的最大操作数
+- max_write_request_size：（[byte value](#Byte size units) ）在follower上每一个批量写入的最大字节数
+- max_outstanding_write_requests：（integer）正在follower上执行写入请求的数量最大值
+- max_write_buffer_count：（integer）排队等待写入的最大操作数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_write_buffer_size：（[byte value](#Byte size units) ）排队等待写入的最大字节数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_retry_delay：（[time value](#API conventions)）某个操作发生异常后，在重试之前的等待时间。基于exponential Backoff策略
+- read_poll_timeout：（[time value](#API conventions)）follower index同步leader index时，等待远端集群中出现新的操作的时间。超时后，拉去操作将返回到follower，然后更新一些统计信息，随后再次尝试从leader中读取
+
+###### Default values
+
+&emsp;&emsp;下面的输出来自follower info API，描述了这个接口中请求参数的所有默认值：
+
+```text
+{
+  "follower_indices" : [
+    {
+      "parameters" : {
+        "max_read_request_operation_count" : 5120,
+        "max_read_request_size" : "32mb",
+        "max_outstanding_read_requests" : 12,
+        "max_write_request_operation_count" : 5120,
+        "max_write_request_size" : "9223372036854775807b",
+        "max_outstanding_write_requests" : 9,
+        "max_write_buffer_count" : 2147483647,
+        "max_write_buffer_size" : "512mb",
+        "max_retry_delay" : "500ms",
+        "read_poll_timeout" : "1m"
+      }
+    }
+  ]
+}
+```
+
+##### Example
+
+&emsp;&emsp;下面的例子创建了一个名为`follower_index`的follower index：
+
+```text
+PUT /follower_index/_ccr/follow?wait_for_active_shards=1
+{
+  "remote_cluster" : "remote_cluster",
+  "leader_index" : "leader_index",
+  "settings": {
+    "index.number_of_replicas": 0
+  },
+  "max_read_request_operation_count" : 1024,
+  "max_outstanding_read_requests" : 16,
+  "max_read_request_size" : "1024k",
+  "max_write_request_operation_count" : 32768,
+  "max_write_request_size" : "16k",
+  "max_outstanding_write_requests" : 8,
+  "max_write_buffer_count" : 512,
+  "max_write_buffer_size" : "512k",
+  "max_retry_delay" : "10s",
+  "read_poll_timeout" : "30s"
+}
+```
+
+&emsp;&emsp;该接口返回下面的结果：
+
+```text
+{
+  "follow_index_created" : true,
+  "follow_index_shards_acked" : true,
+  "index_following_started" : true
+}
+```
+
+#### Pause follower API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-pause-follow.html)
 
 &emsp;&emsp;
 ##### Request
@@ -32112,9 +32219,6 @@ GET /_ccr/stats
 ##### Query parameters
 ##### Response body
 ##### Example
-
-#### Pause follower API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-pause-follow.html)
 
 #### Get auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-auto-follow-pattern.html)
