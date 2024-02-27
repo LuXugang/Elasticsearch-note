@@ -39635,7 +39635,28 @@ POST _ilm/stop
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-stop-job.html)
 
 ### Script APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-apis.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-apis.html)
+
+&emsp;&emsp;使用下面的API来管理、存储以及测试你的[script](#Scripting)。
+
+##### Script support APIs
+
+&emsp;&emsp;使用script support APIs获取支持的脚本内容和脚本语言。
+
+- [Get script contexts](#Get script contexts API)
+- [Get script languages](#Get script languages API)
+
+##### Stored script APIs
+
+&emsp;&emsp;使用stored script APIs来管理[stored scripts](#Store and retrieve scripts)和[search templates.](#Search templates)。
+
+- [Create or update stored script](#Create or update stored script API)
+- [Get stored script](#Get stored script API)
+- [Delete stored script](#Delete stored script API)
+
+##### Painless APIs
+
+&emsp;&emsp;在生成中使用之前，先使用[Painless execute API ](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-execute-api.html)安全的测试Painless脚本。
 
 #### Create or update stored script API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-stored-script-api.html#create-stored-script-api)
@@ -39649,7 +39670,11 @@ POST _ilm/stop
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
 
+##### Search templates（Search APIs）
 
+- [Search template](#Search template API)
+- [Multi search template](#Multi search template API)
+- [Render search template](#Render search template API)
 
 #### Search API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-search.html)
