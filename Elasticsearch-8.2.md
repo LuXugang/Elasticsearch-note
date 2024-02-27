@@ -1657,9 +1657,9 @@ node.roles: [ data_warm ]
 
 &emsp;&emsp;cold data node是[cold tier](#Cold tier)的一部分。当你不再经常（regular）搜索时序数据了，那可以将它们从warm tier移到cold tier。数据仍然可以被搜索到，在这一层的通常会被优化成较低的存储开销而不是查询速度。
 
-&emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。跟普通索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
+&emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。跟常规索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
 
-&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
+&emsp;&emsp;另外你可以使用cold tier存储常规索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
 
 &emsp;&emsp;通过下面的方式创建一个专用的cold node:
 
@@ -22071,7 +22071,7 @@ GET /my-index-000001,my-index-000002
 | [Searchable Snapshot](#Searchable snapshot) | 在配置好的仓库中添加一个被管理的索引的快照，挂载这个快照使其成为一个可以用于搜索的快照。 |
 | [Set Priority](#Set priority) | 降低索引在生命周期中的优先级，以确保首先恢复hot索引 |
 | [Shrink](#Shrink) | 收缩到新的索引中并减少主分片的数量 |
-| [Unfollow](#Unfollow) | 将一个follower index转化为普通索引。会在执行rollover、shrink、searchable snapshot动作前自动执行该动作 |
+| [Unfollow](#Unfollow) | 将一个follower index转化为常规索引。会在执行rollover、shrink、searchable snapshot动作前自动执行该动作 |
 | [Wait For Snapshot](#Wait for snapshot) | 保证在删除索引前已经创建好了snapshot |
 
 
@@ -22405,7 +22405,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;当现有的索引满足一个或者多个转存（rollover）条件后转存到一个新的索引。
 
-> IMPORTANT：如果rollover动作应用在一个[follower index](#Create follower API)，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后通过[unfollow](#Unfollow)动作将follower index转化为一个普通索引（regular index）。
+> IMPORTANT：如果rollover动作应用在一个[follower index](#Create follower API)，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
 
 &emsp;&emsp;转存对象可以是[data stream](#Data Streams)或者[index alias](#Aliases)。当转存对象是数据流（data stream）时，新的索引会变成数据流的write index并且提高它的generation。
 
@@ -22720,7 +22720,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;shrink动作会移除索引的`index.routing.allocation.total_shards_per_node`设置，意味着将取消限制。这个操作能保证索引的所有分片都被拷贝到同一个节点上。This setting change will persist on the index even after the step completes。
 
-> IMPORTANT：如果收缩动作在[follower index](#Create follower API)上使用，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后在执行shrink动作前先通过[unfollow](#Unfollow)动作将follower index转化为一个普通索引（regular index）。
+> IMPORTANT：如果收缩动作在[follower index](#Create follower API)上使用，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后在执行shrink动作前先通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
 
 ##### Shrink options
 
@@ -22793,11 +22793,11 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;可以在hot、warm、cold、frozen阶段使用该动作。
 
-&emsp;&emsp;将一个[CCR](#Cross-cluster replication APIs) follower index转变为普通索引（regular index），使得shrink、rollover、以及searchable snapshot动作可以在follower index上安全的执行。你可以在生命周期中移动follower index时直接使用unfollow。该动作不会对非follower index产生影响，阶段中执行该动作只是继续做下一个动作。
+&emsp;&emsp;将一个[CCR](#Cross-cluster replication APIs) follower index转变为常规索引（regular index），使得shrink、rollover、以及searchable snapshot动作可以在follower index上安全的执行。你可以在生命周期中移动follower index时直接使用unfollow。该动作不会对非follower index产生影响，阶段中执行该动作只是继续做下一个动作。
 
 > NOTE：如果是应用在follower index上，这个动作会被[rollover](#Rollover)、[shrink](#Shrink)以及[searchable snapshot](#Searchable snapshot)动作自动触发。
 
-&emsp;&emsp;这个动作会一直等到安全的将一个follower index转化为普通索引才会执行，必须满足下面的条件：
+&emsp;&emsp;这个动作会一直等到安全的将一个follower index转化为常规索引才会执行，必须满足下面的条件：
 
 - lead index必须已经将`index.lifecycle.indexing_complete`设置为`true`。如果leader index使用[rollover](#Rollover)动作转存结束，这个设置会自动完成。并且也可以使用[index settings API](#Update index settings API)来手动设置。
 - leader index上的所有操作都已经在follower index上执行。这个保证了当索引转变结束后不会丢失任何的操作。
@@ -23529,7 +23529,7 @@ PUT _cluster/settings
 - [Content tier](#Content tier)节点处理例如产品目录内容的索引和查询负载
 - [Hot tier](#Hot tier)节点处理例如logs或者metrics这些时序（time series）数据的索引负载，并且保存（hold）你最近最常访问的数据
 - [Warm tier](#Warm tier)节点保存最近less-frequently的访问并且很少（rarely）需要更新的时序数据
-- [Cold tier](#Cold tier)节点保留infrequent的访问并且一般不更新的时序数据。为了节省空间，你可以在cold tier上保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。这些fully mounted indices会消除（eliminate）对副本分片的需求，相较于普通索引（regular index）能降低50%的磁盘空间
+- [Cold tier](#Cold tier)节点保留infrequent的访问并且一般不更新的时序数据。为了节省空间，你可以在cold tier上保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。这些fully mounted indices会消除（eliminate）对副本分片的需求，相较于常规索引（regular index）能降低50%的磁盘空间
 - [Frozen tier](#Frozen tier)节点保留很少（rarely）访问并且从不更新的时序数据。 Fronze tier只存储 [partially mounted indices](#Partially mounted index)的[searchable snapshots](#Searchable snapshots)。This extends the storage capacity even further — by up to 20 times compared to the warm tier.
 
 &emsp;&emsp;当你直接往指定索引中写入文档，这些文档将无期限（indefinitely）的一直保留（remain on）在content ties节点上。
@@ -23556,9 +23556,9 @@ PUT _cluster/settings
 
 &emsp;&emsp;当你不再经常（regular）搜索时序数据了，那可以将它们从warm tier移到cold tier。数据仍然可以被搜索到，在这一层的通常会被优化成较低的存储开销而不是查询速度。
 
-&emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。跟普通索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
+&emsp;&emsp;为了更好的节省存储（storage saveing），你可以在cold tier保留[fully mounted indices](#Fully mounted index)的[searchable snapshots](#Searchable snapshots)。跟常规索引（regular index）不同的是，这些fully mounted indices不需要副本分片来满足可靠性（reliability），一旦出现失败事件，可以从底层（underlying）snapshot中恢复。这样可以潜在的减少一般的本地数据存储开销。snapshot仓库要求在cold tier使用fully mounted indices。Fully mounted indices只允许读取，不能修改。
 
-&emsp;&emsp;另外你可以使用cold tier存储普通索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
+&emsp;&emsp;另外你可以使用cold tier存储常规索引并且使用副本分片的方式，而不是使用searchable snapshot，这样会帮你在较低成本的硬件上存储较老的索引，但是相较于warm tier不会降低磁盘空间。
 
 #### Frozen tier
 
@@ -32355,7 +32355,7 @@ POST /follower_index/_ccr/resume_follow
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-unfollow.html)
 
 
-&emsp;&emsp;将一个follower index转化为一个普通的索引（regular index）。
+&emsp;&emsp;将一个follower index转化为一个常规索引（regular index）。
 
 ##### Request
 
@@ -32369,9 +32369,9 @@ POST /<follower_index>/_ccr/unfollow
 
 ##### Description
 
-&emsp;&emsp;该接口会停止相关follower index的following task并且从CCR中移除相关的index metadata以及settings。将follower index视为一个普通的索引。follower index必须先暂停并且关闭才能调用该接口
+&emsp;&emsp;该接口会停止相关follower index的following task并且从CCR中移除相关的index metadata以及settings。将follower index视为一个常规索引。follower index必须先暂停并且关闭才能调用该接口
 
-> NOTE：当前CCR不支持将一个现有的普通索引转化为一个follower index。因此将一个follower index转化为一个普通索引是一个不可逆的操作
+> NOTE：当前CCR不支持将一个现有的常规索引转化为一个follower index。因此将一个follower index转化为一个常规索引是一个不可逆的操作
 
 ##### Path parameters
 
@@ -32379,7 +32379,7 @@ POST /<follower_index>/_ccr/unfollow
 
 ##### Example
 
-&emsp;&emsp;这个例子将名为`follower_index`的follower Index转化为一个普通的索引：
+&emsp;&emsp;这个例子将名为`follower_index`的follower Index转化为一个常规索引：
 
 ```text
 POST /follower_index/_ccr/unfollow
@@ -32390,6 +32390,82 @@ POST /follower_index/_ccr/unfollow
 ```text
 {
   "acknowledged" : true
+}
+```
+
+#### Forget follower API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-forget-follower.html)
+
+&emsp;&emsp;从leader中移除follower retention leases（保留租约）。
+
+##### Request
+
+```text
+POST /<leader_index>/_ccr/forget_follower
+{
+  "follower_cluster" : "<follower_cluster>",
+  "follower_index" : "<follower_index>",
+  "follower_index_uuid" : "<follower_index_uuid>",
+  "leader_remote_cluster" : "<leader_remote_cluster>"
+}
+```
+
+```text
+{
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "failed" : 0,
+    "failures" : [ ]
+  }
+}
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在leader index上有`manage_leader_index`的[index privilege](#Indices privileges)，更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;一个following index会在其leader index上创建保留租约（retention leases）。这些保留租约用于提高leader index的分片保留following index分片需要执行复制的操作历史的可能性。当一个following index通过unfollow API转换为一个常规索引时（无论是通过显式执行此API还是通过索引生命周期管理隐式执行），这些保留租约会被移除。然而，移除这些保留租约有可能失败（例如，如果包含leader index的远程集群不可用）。虽然这些保留租约最终会自动过期，但它们延长存在的时间可能导致leader index保留比必要更多的历史记录，并阻止索引生命周期管理在leader index上执行某些操作。此API的存在是为了在unfollow API无法做到这一点时，手动移除这些保留租约。
+
+> NOTE：该接口不会停止following index的复制。如果你对一个仍然处于跟随（following）的follower index使用该接口，following index将会重新添加保留租约。这个接口只处理在[unfollow API](#Unfollow API)调用后无能移除保留租约的情况。
+
+##### Path parameters
+
+- `<leader_index>`：（Required,string）leader index的名称
+
+##### Request body
+
+- follower_cluster：（Required,string）包含follower index的汲取名称
+- follower_index：（Required,string）follower index的名称
+- follower_index_uuid：（Required,string）follower index的UUID
+- leader_remote_cluster：（Required,string）包含leader index的[remote cluster]()的别名（包含follower index的集群视角）
+
+##### Example
+
+&emsp;&emsp;下面的例子从`leader_index`中移除`follower_index`的保留租约。
+
+```text
+POST /leader_index/_ccr/forget_follower
+{
+  "follower_cluster" : "follower_cluster",
+  "follower_index" : "follower_index",
+  "follower_index_uuid" : "vYpnaWPRQB6mNspmoCeYyA",
+  "leader_remote_cluster" : "leader_cluster"
+}
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "failed" : 0,
+    "failures" : [ ]
+  }
 }
 ```
 
@@ -32608,14 +32684,50 @@ GET /follower_index/_ccr/info
 #### Delete auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-delete-auto-follow-pattern.html)
 
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Create auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-auto-follow-pattern.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Pause auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-pause-auto-follow-pattern.html)
 
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Resume auto-follow pattern API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-resume-auto-follow-pattern.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 ### Data stream APIs
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-stream-apis.html)
