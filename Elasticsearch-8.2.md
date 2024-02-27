@@ -32104,7 +32104,7 @@ DELETE /_internal/desired_nodes
 - [Resume auto-follow pattern](#Resume auto-follow pattern API)
 
 #### Get cross-cluster replication stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
 
 &emsp;&emsp;获取cross-cluster replication的统计信息。
 
@@ -32123,10 +32123,73 @@ GET /_ccr/stats
 
 ##### Response body
 
-- auto_follow_stats：（object）
-- follow_stats：（object）
+- auto_follow_stats：（object）auto-follow coordinator的统计信息
+  - number_of_failed_follow_indices：（long）auto-follow coordinator自动跟随失败的索引数量。最近的失败日志记录在master node以及`auto_follow_stats.recent_auto_follow_errors`中
+  - number_of_failed_remote_cluster_state_requests：（long）auto-follow coordinator无法从auto-follow pattern中定义的远端集群获取集群状态的次数
+  - number_of_successful_follow_indices：（long）auto-follow coordinator成功跟随的索引数量
+  - recent_auto_follow_errors：（array）auto-follow coordinator中错误相关信息
+- follow_stats：（object）描述了follower index的分片层级的统计信息。详情见[get follower stats API](#Get follower stats API)
 
 ##### Example
+
+&emsp;&emsp;这个例子获取CCR的统计信息：
+
+```text
+GET /_ccr/stats
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "auto_follow_stats" : {
+    "number_of_failed_follow_indices" : 0,
+    "number_of_failed_remote_cluster_state_requests" : 0,
+    "number_of_successful_follow_indices" : 1,
+    "recent_auto_follow_errors" : [],
+    "auto_followed_clusters" : []
+  },
+  "follow_stats" : {
+    "indices" : [
+      {
+        "index" : "follower_index",
+        "shards" : [
+          {
+            "remote_cluster" : "remote_cluster",
+            "leader_index" : "leader_index",
+            "follower_index" : "follower_index",
+            "shard_id" : 0,
+            "leader_global_checkpoint" : 1024,
+            "leader_max_seq_no" : 1536,
+            "follower_global_checkpoint" : 768,
+            "follower_max_seq_no" : 896,
+            "last_requested_seq_no" : 897,
+            "outstanding_read_requests" : 8,
+            "outstanding_write_requests" : 2,
+            "write_buffer_operation_count" : 64,
+            "follower_mapping_version" : 4,
+            "follower_settings_version" : 2,
+            "follower_aliases_version" : 8,
+            "total_read_time_millis" : 32768,
+            "total_read_remote_exec_time_millis" : 16384,
+            "successful_read_requests" : 32,
+            "failed_read_requests" : 0,
+            "operations_read" : 896,
+            "bytes_read" : 32768,
+            "total_write_time_millis" : 16384,
+            "write_buffer_size_in_bytes" : 1536,
+            "successful_write_requests" : 16,
+            "failed_write_requests" : 0,
+            "operations_written" : 832,
+            "read_exceptions" : [ ],
+            "time_since_last_read_millis" : 8
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 #### Create follower API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-put-follow.html)
