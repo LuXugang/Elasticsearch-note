@@ -40160,10 +40160,48 @@ $ cat requests
 $ curl -H "Content-Type: application/x-ndjson" -XGET localhost:9200/_msearch/template --data-binary "@requests"; echo
 ```
 
-##### Example
-
 #### Render search template API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/render-search-template-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/render-search-template-api.html)
+
+&emsp;&emsp;渲染一个[search template](##Search templates)为查询的[request body]()。
+
+```text
+POST _render/template
+{
+  "id": "my-search-template",
+  "params": {
+    "query_string": "hello world",
+    "from": 20,
+    "size": 10
+  }
+}
+```
+
+##### Request
+
+```text
+GET _render/template
+GET _render/template/<template-id>
+POST _render/template
+POST _render/template/<template-id>
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须在至少一个index pattern上有`read`的[index privilege](#Indices privileges)。
+
+##### Path parameters
+
+- `<template-id>`：（Required\*, string）待渲染的search template的ID。如果未指定`source`，必须指定该参数或者请求体中的`id`
+
+##### Request body
+
+- id：（Required\*,string）待渲染的search template的ID。如果未指定`source`，那么必须提供这个参数或者`<template-id>`
+- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+- profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
+- source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
+  - 如果`id`或`<template-id>`未指定，那么必须提供这个参数
+
 
 #### Search shards API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-shards.html)
