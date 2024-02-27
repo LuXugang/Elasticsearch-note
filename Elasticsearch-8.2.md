@@ -32260,10 +32260,109 @@ POST /follower_index/_ccr/pause_follow
 ##### Example
 
 #### Resume follower API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-resume-follow.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-resume-follow.html)
+
+&emsp;&emsp;恢复一个follower index。
+
+##### Request
+
+```text
+POST /<follower_index>/_ccr/resume_follow
+{
+}
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须在follower index上有`write`、`monitor`的index privilege。在leader index上必须要有`read`和`monitor`的index privilege。在包含follower index的集群上要有`manage_ccr`的cluster privilege。更多信息见[Security privileges](####Security privileges)
+
+##### Description
+
+&emsp;&emsp;显示的通过[pause follower API]()暂停或者在跟随（follow）过程中某些操作由于无法通过重试来执行导致失败而暂停的follower index，可以使用该接口恢复。在接口返回后，follower index将恢复从leader index中获取操作。
+
+##### Path parameters
+
+- `<follower_index>`：（Required,string）follower index的名称
+
+##### Request body
+
+- settings：（object）覆盖来自leader index 的settings。有些settings是不能被覆盖的（比如`index.number_of_shards`）
+- max_read_request_operation_count：（integer）从远端集群中执行的读请求中，每一个请求中包含的操作数量最大值（设置`max_read_request_operation_count`为1000，那么在执行一次从leader到follower的数据同步时，每一次读取请求将最多包含1000个操作）
+- max_outstanding_read_requests：（long）正在从远端集群中执行读取请求的数量最
+- max_read_request_size：（[byte value](#Byte size units) ）从远端集群中的读请求中，批量操作的字节数最大值
+- max_write_request_operation_count：（integer）在follower上每一个批量写入的最大操作数
+- max_write_request_size：（[byte value](#Byte size units) ）在follower上每一个批量写入的最大字节数
+- max_outstanding_write_requests：（integer）正在follower上执行写入请求的数量最大值
+- max_write_buffer_count：（integer）排队等待写入的最大操作数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_write_buffer_size：（[byte value](#Byte size units) ）排队等待写入的最大字节数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+- max_retry_delay：（[time value](#API conventions)）某个操作发生异常后，在重试之前的等待时间。基于exponential Backoff策略
+- read_poll_timeout：（[time value](#API conventions)）follower index同步leader index时，等待远端集群中出现新的操作的时间。超时后，拉去操作将返回到follower，然后更新一些统计信息，随后再次尝试从leader中读取
+
+###### Default values
+
+&emsp;&emsp;下面的输出来自follower info API，描述了这个接口中请求参数的所有默认值：
+
+```text
+{
+  "follower_indices" : [
+    {
+      "parameters" : {
+        "max_read_request_operation_count" : 5120,
+        "max_read_request_size" : "32mb",
+        "max_outstanding_read_requests" : 12,
+        "max_write_request_operation_count" : 5120,
+        "max_write_request_size" : "9223372036854775807b",
+        "max_outstanding_write_requests" : 9,
+        "max_write_buffer_count" : 2147483647,
+        "max_write_buffer_size" : "512mb",
+        "max_retry_delay" : "500ms",
+        "read_poll_timeout" : "1m"
+      }
+    }
+  ]
+}
+```
+
+##### Example
+
+&emsp;&emsp;下面的例子恢复了一个名为`follwer_index`的follower index：
+
+```text
+POST /follower_index/_ccr/resume_follow
+{
+  "max_read_request_operation_count" : 1024,
+  "max_outstanding_read_requests" : 16,
+  "max_read_request_size" : "1024k",
+  "max_write_request_operation_count" : 32768,
+  "max_write_request_size" : "16k",
+  "max_outstanding_write_requests" : 8,
+  "max_write_buffer_count" : 512,
+  "max_write_buffer_size" : "512k",
+  "max_retry_delay" : "10s",
+  "read_poll_timeout" : "30s"
+}
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Unfollow API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-unfollow.html)
+
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Get follower stats API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-follow-stats.html)
