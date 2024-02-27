@@ -39659,13 +39659,110 @@ POST _ilm/stop
 &emsp;&emsp;在生成中使用之前，先使用[Painless execute API ](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-execute-api.html)安全的测试Painless脚本。
 
 #### Create or update stored script API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-stored-script-api.html#create-stored-script-api)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/create-stored-script-api.html#create-stored-script-api)
+
+&emsp;&emsp;创建或更新一个[stored script](#Store and retrieve scripts)或者[search template](#Search templates)。
+
+```text
+PUT _scripts/my-stored-script
+{
+  "script": {
+    "lang": "painless",
+    "source": "Math.log(_score * 2) + params['my_modifier']"
+  }
+}
+```
+
+##### Request
+
+```text
+PUT _scripts/<script-id>
+POST _scripts/<script-id>
+PUT _scripts/<script-id>/<context>
+POST _scripts/<script-id>/<context>
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#Cluster privileges)来使用这个API
+
+##### Path parameters
+
+- `<script-id>`：（Required,string）stored script 或 search template的标识符。在集群中必须是唯一的。
+- `<context>`：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
+
+##### Query parameters
+- context：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
+  - 如果你同时在请求参数中指定了`<context>`，该接口只使用请求参数中的参数
+- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
+##### Request body
+
+- script：（Required,object）包含脚本或search template，参数以及脚本语言
+  - lang：（Required,string）[Script language]()。对于Search template，使用的是`mustache`
+  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+  - source：（Required\*,object）对于脚本来说就是包含脚本的字符串
+    - 对于search template来说，是包含了search template的对象。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
 
 #### Delete stored script API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-stored-script-api.html)
 
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
+#### Get script contexts API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-script-contexts-api.html)
+
+&emsp;&emsp;获取支持的脚本内容和他们的方法。
+
+```text
+GET _script_context
+```
+
+##### Request
+
+```text
+GET _script_context
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#Cluster privileges)来使用这个API
+
+#### Get script languages API
+（8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-script-languages-api.html)
+
+&emsp;&emsp;获取支持的[script languages](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)和他们的上下文。
+
+##### Request
+
+```text
+GET _script_language
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security功能，你必须有`manage` [cluster privilege](#Cluster privileges)来使用这个API
+
+
 #### Get stored script API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-stored-script-api.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
