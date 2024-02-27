@@ -32352,17 +32352,46 @@ POST /follower_index/_ccr/resume_follow
 ```
 
 #### Unfollow API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-unfollow.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-post-unfollow.html)
 
 
-&emsp;&emsp;
+&emsp;&emsp;将一个follower index转化为一个普通的索引（regular index）。
+
 ##### Request
+
+```text
+POST /<follower_index>/_ccr/unfollow
+```
+
 ##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage_follow_index`的[cluster privilege](#Cluster privileges)来使用这个API
+
 ##### Description
+
+&emsp;&emsp;该接口会停止相关follower index的following task并且从CCR中移除相关的index metadata以及settings。将follower index视为一个普通的索引。follower index必须先暂停并且关闭才能调用该接口
+
+> NOTE：当前CCR不支持将一个现有的普通索引转化为一个follower index。因此将一个follower index转化为一个普通索引是一个不可逆的操作
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<follower_index>`：（Required,string）follower index的名称
+
 ##### Example
+
+&emsp;&emsp;这个例子将名为`follower_index`的follower Index转化为一个普通的索引：
+
+```text
+POST /follower_index/_ccr/unfollow
+```
+
+&emsp;&emsp;该接口返回以下结果：
+
+```text
+{
+  "acknowledged" : true
+}
+```
 
 #### Get follower stats API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-follow-stats.html)
