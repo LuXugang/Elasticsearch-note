@@ -32077,7 +32077,31 @@ DELETE /_internal/desired_nodes
 ```
 
 ### Cross-cluster replication APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
+
+&emsp;&emsp;你可以使用这些接口来执行CCR操作。
+
+#### Top-Level
+
+- [Get cross-cluster replication stats](#Get cross-cluster replication stats API)
+
+#### Follow
+
+- [Create follower index](#Create follower API)
+- [Pause follower](#Pause follower API)
+- [Resume follower](#Resume follower API)
+- [Convert follower index to a regular index](#Unfollow API)
+- [Remove follower retention leases from the leader](#Forget follower API)
+- [Get stats about follower indices](#Get follower stats API)
+- [Get info about follower indices](#Get follower info API)
+
+#### Auto-follow
+
+- [Create auto-follow pattern](#Create auto-follow pattern API)
+- [Delete auto-follow pattern](#Delete auto-follow pattern API)
+- [Get auto-follow patterns](#Get auto-follow pattern API)
+- [Pause auto-follow pattern](#Pause auto-follow pattern API)
+- [Resume auto-follow pattern](#Resume auto-follow pattern API)
 
 #### Get cross-cluster replication stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-nodes-stats.html)
@@ -32440,7 +32464,7 @@ POST /<leader_index>/_ccr/forget_follower
 - follower_cluster：（Required,string）包含follower index的汲取名称
 - follower_index：（Required,string）follower index的名称
 - follower_index_uuid：（Required,string）follower index的UUID
-- leader_remote_cluster：（Required,string）包含leader index的[remote cluster]()的别名（包含follower index的集群视角）
+- leader_remote_cluster：（Required,string）包含leader index的[remote cluster]()的别名（包含follower index的集群的视角）
 
 ##### Example
 
