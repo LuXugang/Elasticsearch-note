@@ -32161,7 +32161,7 @@ GET /<index>/_ccr/stats
     - failed_read_requests：（long）读取失败的数量
     - failed_write_requests：（long）在follower上执行的批量写请求的失败数量
     - follower_aliases_version：（long）follower同步的索引别名的版本号
-    - follower_global_checkpoint：（long）follower上全局检查点。`leader_global_checkpoint`与`follower_global_checkpoint`之间的差异指示了follower落后于leader的程度
+    - follower_global_checkpoint：（long）follower上全局检查点（可以理解为它至少描述了follower index中已成功复制并确认的最高文档操作的序列号（sequence number））。`leader_global_checkpoint`与`follower_global_checkpoint`之间的差异指示了follower落后于leader的程度
     - follower_index：（string）follower index的名称
     - follower_mapping_version：（long）follower同步的mapping版本号
     - follower_max_seq_no：（long）follower上当前最大的序号（这个序号是文档的序号`_seq_no`，最新被处理（添加/更新）的文档有最大的序号）
@@ -32240,6 +32240,98 @@ GET /follower_index/_ccr/stats
           "time_since_last_read_millis" : 8
         }
       ]
+    }
+  ]
+}
+```
+
+#### Get follower info API
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ccr-get-follow-info.html)
+
+&emsp;&emsp;获取所有follower index的信息。
+
+##### Request
+
+```text
+GET /<index>/_ccr/info
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须在包含follower index的集群上有`monitor`的[cluster privilege](#Cluster privileges)。见[Security privileges](####Security privileges)。
+
+##### Description
+
+&emsp;&emsp;该接口列出了每一个follower index的参数以及状态。例如，响应中会包括follower的索引名称，leader 索引名称。复制选项（replica options）以及follower index处于活跃还是暂停中。
+
+##### Path parameters
+
+- `<index>`：（Required, string）用逗号隔开的index pattern列表
+
+##### Response body
+
+- follower_indices：（array）follower index的统计信息
+  - follower_index：（string）follower index的名称
+  - leader_index：（string）在leader cluster 中跟随（follow）的索引名称
+  - parameters：（object）该字段概述了CCR的参数。如果follower index的`status`为`paused`，则忽略该字段
+    - max_outstanding_read_requests：（long）正在从远端集群中执行读取请求的数量最大值
+    - max_outstanding_write_requests：（integer）正在follower上执行写入请求的数量最大值
+    - max_read_request_operation_count：（integer）从远端集群中执行的读请求中，每一个请求中包含的操作数量最大值（设置`max_read_request_operation_count`为1000，那么在执行一次从leader到follower的数据同步时，每一次读取请求将最多包含1000个操作）
+    - max_read_request_size：（[byte value](#Byte size units) ）从远端集群中的读请求中，批量操作的字节数最大值
+    - max_retry_delay：（[time value](#API conventions)）某个操作发生异常后，在重试之前的等待时间。基于exponential Backoff策略
+    - max_write_buffer_count：（integer）排队等待写入的最大操作数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+    - max_write_buffer_size：（[byte value](#Byte size units) ）排队等待写入的最大字节数。一旦达到该限制，将暂停从leader中拉去更多操作，直到在队里中的操作已被写入
+    - max_write_request_operation_count：（integer）在follower上每一个批量写入的最大操作数
+    - max_write_request_size：（[byte value](#Byte size units) ）在follower上每一个批量写入的最大字节数
+    - read_poll_timeout：（[time value](#API conventions)）follower index同步leader index时，等待远端集群中出现新的操作的时间。超时后，拉去操作将返回到follower，然后更新一些统计信息，随后再次尝试从leader中读取
+  - remote_cluster：（string）leader Index所在的[remote cluster](###Remote clusters)
+  - status：（string）follower index的`status`为`active`还是`paused`
+
+##### Example
+
+&emsp;&emsp;下面的例子获取follower信息：
+
+```text
+GET /follower_index/_ccr/info
+```
+
+&emsp;&emsp;如果follower index的`status`为`active`，接口返回下面的结果：
+
+```text
+{
+  "follower_indices": [
+    {
+      "follower_index": "follower_index",
+      "remote_cluster": "remote_cluster",
+      "leader_index": "leader_index",
+      "status": "active",
+      "parameters": {
+        "max_read_request_operation_count": 5120,
+        "max_read_request_size": "32mb",
+        "max_outstanding_read_requests": 12,
+        "max_write_request_operation_count": 5120,
+        "max_write_request_size": "9223372036854775807b",
+        "max_outstanding_write_requests": 9,
+        "max_write_buffer_count": 2147483647,
+        "max_write_buffer_size": "512mb",
+        "max_retry_delay": "500ms",
+        "read_poll_timeout": "1m"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;如果follower index的`status`为`paused`，接口返回下面的结果：
+
+```text
+{
+  "follower_indices": [
+    {
+      "follower_index": "follower_index",
+      "remote_cluster": "remote_cluster",
+      "leader_index": "leader_index",
+      "status": "paused"
     }
   ]
 }
