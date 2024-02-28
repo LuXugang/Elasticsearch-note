@@ -20647,10 +20647,107 @@ GET /my-index-000001/_search?size=0
 > NOTE：[search.max_buckets](#search.max_buckets)这个集群设置限制了在单个响应中分桶的数量
 
 #### Adjacency matrix aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-adjacency-matrix-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-adjacency-matrix-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;一种返回邻接矩阵（[adjacency matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)）形式的桶聚合。请求提供了一系列命名的过滤表达式集合，类似于[filters aggregation](#Filters aggregation)请求。响应中的每个桶代表了交叉过滤器矩阵中的一个非空单元格。
 
+&emsp;&emsp;给定名为`A`、`B`、`C`的过滤名，响应中会返回以下名字的分桶：
+
+|      |  A   |  B   |  C   |
+| :--: | :--: | :--: | :--: |
+|  A   |  A   | A&B  | A&C  |
+|  B   |      |  B   | B&C  |
+|  C   |      |      |  C   |
+
+&emsp;&emsp;交叉的桶，例如`A&C`，使用两个过滤器名称的组合以及默认的分隔符`&`进行标记。注意，响应中不会包含`C&A`桶，因为这会是与`A&C`相同的一组文档。这个矩阵被认为是对称的，所以我们只返回其中的一半。为了做到这一点，我们对过滤器名称字符串进行排序，并且总是使用一对中较小的值作为分隔符左侧的值。
+
+##### Example
+
+&emsp;&emsp;下面的名为`interactions`的`adjacency_matrix` aggregation哪些人群交换了电子邮件：
+
+```text
+PUT emails/_bulk?refresh
+{ "index" : { "_id" : 1 } }
+{ "accounts" : ["hillary", "sidney"]}
+{ "index" : { "_id" : 2 } }
+{ "accounts" : ["hillary", "donald"]}
+{ "index" : { "_id" : 3 } }
+{ "accounts" : ["vladimir", "donald"]}
+
+GET emails/_search
+{
+  "size": 0,
+  "aggs" : {
+    "interactions" : {
+      "adjacency_matrix" : {
+        "filters" : {
+          "grpA" : { "terms" : { "accounts" : ["hillary", "sidney"] }},
+          "grpB" : { "terms" : { "accounts" : ["donald", "mitt"] }},
+          "grpC" : { "terms" : { "accounts" : ["vladimir", "nigel"] }}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中包含每一个过滤条件以及其组合的分桶和文档数量。不匹配的文档被排除在响应中。
+
+```text
+{
+  "took": 9,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "interactions": {
+      "buckets": [
+        {
+          "key":"grpA",
+          "doc_count": 2
+        },
+        {
+          "key":"grpA&grpB",
+          "doc_count": 1
+        },
+        {
+          "key":"grpB",
+          "doc_count": 2
+        },
+        {
+          "key":"grpB&grpC",
+          "doc_count": 1
+        },
+        {
+          "key":"grpC",
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+##### Parameters
+
+- filters：（Required,object）用于创建分桶的过滤条件
+  - `<filter>`：（Required,[Query DSL object](#Query DSL)）key就是过滤条件的名字
+  至少要指定一个过滤条件。过滤条件数量不能超过[indices.query.bool.max_clause_count ](#indices.query.bool.max_clause_count)，见[Filter limits](#Filter limits（Adjacency matrix aggregation）)。
+  
+- separator：（Optional,string）用来组合过滤名称的符号。默认是`&`
+
+##### Response body
+
+- key：（string）分桶的名字。如果如果这个分桶对应多个过滤条件，那么名字会使用`separator`进行拼装
+- document_count：（integer）满足该分桶过滤条件的文档数量
+
+##### Usage
+
+&emsp;&emsp;仅凭这个聚合就可以提供创建无向加权图所需的所有数据。然而，当与子聚合（如日期直方图）一起使用时，结果可以提供执行动态网络分析（[dynamic network analysis](https://en.wikipedia.org/wiki/Dynamic_network_analysis)）所需的额外数据层级，在这种分析中，检查随时间变化的交互变得非常重要。
+
+##### Filter limits
+
+&emsp;&emsp;对于N个过滤条件会生成`N^2 / 2`个分桶。断路器（[ circuit breaker](#Circuit breaker settings)）会组织结果生成太多的分桶来避免过多的磁盘寻道（disk seek）。请使用`indices.query.bool.max_clause_count`来限制过滤条件的数量。
 
 #### Filter aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
@@ -20873,7 +20970,7 @@ GET logs/_search
 &emsp;&emsp;可以设置参数`other_bucket`将不满足所有过滤条件的文档落入到一个桶中并添加到响应中。这个参数的值可以是：
 
 - false：不计算`other` bucket
-- true：如果请求中过滤条件指定了名字，那么在响应中`other` bucket的名字默认是`_other_`，如果请求中过滤条件没有指定名字，那么`other` bucket就是数组中的最后一个（上面的例子中，没有给过滤条件指定名字）
+- true：如果请求中过滤条件指定了名字，那么在响应中`other bucket`的名字默认是`_other_`，如果请求中过滤条件没有指定名字（Anonymous filters），那么`other bucket`就是数组中的最后一个（上面的例子中，没有给过滤条件指定名字）
 
 &emsp;&emsp;可以定义`other_bucket_key`参数指定`other_bucket`的名字，而不是使用默认的`_other_`（如果过滤条件没有指定名字，设置这个参数不会生效）。设置这个参数会默认将`other_bucket`设置为`true`。
 
