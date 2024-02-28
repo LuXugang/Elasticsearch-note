@@ -20638,6 +20638,14 @@ GET /my-index-000001/_search?size=0
 ### Bucket aggregations
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket.html)
 
+&emsp;&emsp;Bucket aggregation不像metric aggregation那样对域计算指标，而是对文档进行分桶。使用对应的规则（取决于聚合类型）进行分桶，决定某篇文档是否要"落入"当前的分桶中。换句话说，分桶有效的定义了文档集。除了分桶本身，`bucket` aggregation还计算"落入"到每一个分桶中的文档数量。
+
+&emsp;&emsp;Bucket aggregation跟`metric` aggregation不同的是，它可以包含sub-aggregation。这些sub-aggregation可以对由它们的"parent" bucket aggregation创建的分桶，在桶内进行聚合操作。
+
+&emsp;&emsp;不同的bucket aggregation有不同的"bucketing"策略。有些定义了单个分桶，有些定义了固定数量的多个分桶，还有的能在聚合处理期间动态的创建分桶。
+
+> NOTE：[search.max_buckets](#search.max_buckets)这个集群设置限制了在单个响应中分桶的数量
+
 #### Filter aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
 
