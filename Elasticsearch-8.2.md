@@ -20636,7 +20636,7 @@ GET /my-index-000001/_search?size=0
 &emsp;&emsp;当运行聚合时，Elasticsearch使用[double](#Numeric field types)值来处理并且代表数值类型的数据。使得对超过`2^53`的[long](#Numeric field types)数值的聚合结果是近似值。
 
 ### Bucket aggregations
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket.html)
 
 &emsp;&emsp;Bucket aggregation不像metric aggregation那样对域计算指标，而是对文档进行分桶。使用对应的规则（取决于聚合类型）进行分桶，决定某篇文档是否要"落入"当前的分桶中。换句话说，分桶有效的定义了文档集。除了分桶本身，`bucket` aggregation还计算"落入"到每一个分桶中的文档数量。
 
@@ -20966,7 +20966,11 @@ GET my-index-000001/_search?size=0
 ##### Execution hint
 
 ### Metrics aggregations
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-stats-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-stats-aggregation.html)
+
+&emsp;&emsp;聚合家族中的这类聚合基于以某种方式从正在被聚合的文档中提取的值来计算指标。提取的值通常来自文档中的域值，但也可以由脚本生成。
+
+&emsp;&emsp;数值类的metric aggregation是一种特殊的聚合，他们输出的结果是数值类型的值。一些聚合的输出是单个数值类型的指标（比如`avg`）并且称为`single-value numeric metrics aggregation`，其他生成多个指标（比如`stats`）的聚合称为`multi-value numeric metrics aggregation`。这两者的区别在于，当这些聚合作为某些bucket aggregation的直接sub-aggregation时扮演为不同的角色（一些bucket aggregation允许你根据每个桶中的数值指标对返回的桶进行排序）
 
 #### Avg aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
