@@ -20768,7 +20768,165 @@ POST /sales/_search?size=0&filter_path=aggregations
 ```
 
 #### Filters aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket aggregation，每一个分桶中的文档满足定义的[query](#Query DSL)。
+
+&emsp;&emsp;例子：
+
+```text
+PUT /logs/_bulk?refresh
+{ "index" : { "_id" : 1 } }
+{ "body" : "warning: page could not be rendered" }
+{ "index" : { "_id" : 2 } }
+{ "body" : "authentication error" }
+{ "index" : { "_id" : 3 } }
+{ "body" : "warning: connection timed out" }
+
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "filters" : {
+          "errors" :   { "match" : { "body" : "error"   }},
+          "warnings" : { "match" : { "body" : "warning" }}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子中，我们对日志信息进行解析。该聚合会构建两类日志信息的分桶，一个是包含`error`的，另一个是包含`warning`的。
+
+&emsp;&emsp;响应：
+
+```text
+{
+  "took": 9,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": {
+        "errors": {
+          "doc_count": 1
+        },
+        "warnings": {
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
+
+##### Anonymous filters
+
+&emsp;&emsp;可以将多个过滤条件作为一个filters数组。如下所示：
+
+```text
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "filters" : [
+          { "match" : { "body" : "error"   }},
+          { "match" : { "body" : "warning" }}
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中两个分桶的先后顺序跟请求中定义的顺序一样。这个例子的响应如下：
+
+```text
+{
+  "took": 4,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": [
+        {
+          "doc_count": 1
+        },
+        {
+          "doc_count": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+##### `Other` Bucket
+
+&emsp;&emsp;可以设置参数`other_bucket`将不满足所有过滤条件的文档落入到一个桶中并添加到响应中。这个参数的值可以是：
+
+- false：不计算`other` bucket
+- true：如果请求中过滤条件指定了名字，那么在响应中`other` bucket的名字默认是`_other_`，如果请求中过滤条件没有指定名字，那么`other` bucket就是数组中的最后一个（上面的例子中，没有给过滤条件指定名字）
+
+&emsp;&emsp;可以定义`other_bucket_key`参数指定`other_bucket`的名字，而不是使用默认的`_other_`（如果过滤条件没有指定名字，设置这个参数不会生效）。设置这个参数会默认将`other_bucket`设置为`true`。
+
+&emsp;&emsp;下面的片段中`other bucket`的名字设置为`other_messages`：
+
+```text
+PUT logs/_doc/4?refresh
+{
+  "body": "info: user Bob logged out"
+}
+
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "other_bucket_key": "other_messages",
+        "filters" : {
+          "errors" :   { "match" : { "body" : "error"   }},
+          "warnings" : { "match" : { "body" : "warning" }}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应差不多是这样的：
+
+```text
+{
+  "took": 3,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": {
+        "errors": {
+          "doc_count": 1
+        },
+        "warnings": {
+          "doc_count": 2
+        },
+        "other_messages": {
+          "doc_count": 1
+        }
+      }
+    }
+  }
+}
+```
 
 #### Composite aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-composite-aggregation.html#_date_histogram)
