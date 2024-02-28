@@ -20346,7 +20346,294 @@ GET /_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
 
 ## Aggregations
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
+
+&emsp;&emsp;聚合（aggregation）能汇总你的数据用于指标、统计以及其他的分析。聚合能帮助你回答类似下面的问题：
+
+- 我的网站的平均加载时间是多少？
+- 基于交易量，谁是最有价值的客户？
+- 在我的网络上，什么被认为是一个大文件？
+- 产品分类中的每一个产品有多少数量？
+
+&emsp;&emsp;Elasticsearch将聚合组织成三类：
+
+- [Metric](#Metrics aggregations) aggregation：根据域值（field value）计算指标值，例如sum、average
+- [Bucket](#Bucket aggregations) aggregation：根据域值、返回或者其他规则将文档分组到桶内，也可以成为`bins`（箱）
+- [Pipeline](#Pipeline aggregations) aggregation：这种聚合的输入来自其他聚合的输出而不是来自文档或域（filed）
+
+#### Run an aggregation
+
+&emsp;&emsp;你可以在[search API](#Search API)中指定`agg`参数，将其作为[search](#Search your data)的一部分。下面的查询在名为`my-field`的域上运行一个[term aggregation](#Terms aggregation)：
+
+```text
+GET /my-index-000001/_search
+{
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "my-field"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;聚合的结果在响应中的`aggregations`对象中：
+
+```text
+{
+  "took": 78,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 5,
+      "relation": "eq"
+    },
+    "max_score": 1.0,
+    "hits": [...]
+  },
+  "aggregations": {
+    "my-agg-name": {                           
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": []
+    }
+  }
+}
+```
+
+&emsp;&emsp;第19行，`my-agg-name`聚合的结果。
+
+#### Change an aggregation’s scope
+
+&emsp;&emsp;使用`query`参数限制聚合的目标文档：
+
+```text
+GET /my-index-000001/_search
+{
+  "query": {
+    "range": {
+      "@timestamp": {
+        "gte": "now-1d/d",
+        "lt": "now/d"
+      }
+    }
+  },
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "my-field"
+      }
+    }
+  }
+}
+```
+
+#### Return only aggregation results
+
+&emsp;&emsp;默认包含聚合操作的查询结果同时返回查询命中和聚合结果。若只要返回聚合结果，将`size`设置为`0`即可：
+
+```text
+GET /my-index-000001/_search
+{
+  "size": 0,
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "my-field"
+      }
+    }
+  }
+}
+```
+
+#### Run multiple aggregations
+
+&emsp;&emsp;你可以在同一个请求中指定多个聚合操作：
+
+```text
+GET /my-index-000001/_search
+{
+  "aggs": {
+    "my-first-agg-name": {
+      "terms": {
+        "field": "my-field"
+      }
+    },
+    "my-second-agg-name": {
+      "avg": {
+        "field": "my-other-field"
+      }
+    }
+  }
+}
+```
+
+#### Run sub-aggregations
+
+&emsp;&emsp;Bucket aggregation支持bucket or metric sub-aggregation。例如，一个带有[avg]() sub-aggregation的term aggregation会计算每一个分桶中的平均值。对于嵌套的sub-aggregation没有层数或深度的限制。
+
+```text
+GET /my-index-000001/_search
+{
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "my-field"
+      },
+      "aggs": {
+        "my-sub-agg-name": {
+          "avg": {
+            "field": "my-other-field"
+          }
+        }
+      }
+    }
+  }
+}
+
+```
+
+&emsp;&emsp;响应中嵌套的sub-aggregation结果位于parent aggregation中：
+
+```text
+{
+  ...
+  "aggregations": {
+    "my-agg-name": {                           
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "foo",
+          "doc_count": 5,
+          "my-sub-agg-name": {                 
+            "value": 75.0
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第4行，名为`my-agg-name`的parent aggregation的结果。
+&emsp;&emsp;第11行，名为`my-sub-agg-name`的聚合结果，它是名为`my-agg-name`的parent aggregation的sub-aggregation。
+
+#### Add custom metadata
+
+&emsp;&emsp;在聚合中使用`meta`对象关联自定义的元数据：
+
+```text
+GET /my-index-000001/_search
+{
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "my-field"
+      },
+      "meta": {
+        "my-metadata-field": "foo"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中会原样返回`meta`对象：
+
+```text
+{
+  ...
+  "aggregations": {
+    "my-agg-name": {
+      "meta": {
+        "my-metadata-field": "foo"
+      },
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": []
+    }
+  }
+}
+```
+
+#### Return the aggregation type
+
+&emsp;&emsp;默认情况下，聚合结果中包含了聚合名称但没有聚合类型。若要返回聚合类型，可以使用请求参数`typed_keys`。
+
+```text
+GET /my-index-000001/_search?typed_keys
+{
+  "aggs": {
+    "my-agg-name": {
+      "histogram": {
+        "field": "my-field",
+        "interval": 1000
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中，聚合类型会作为聚合名称的前缀。
+
+> IMPORTANT：一些聚合返回跟请求中不同的聚合类型。例如，terms、[significant terms](#Significant terms aggregation)、[percentiles aggregations](#Percentiles aggregation) 会返回不同的聚合类型，这取决于被聚合的域的数据类型。
+
+```text
+{
+  ...
+  "aggregations": {
+    "histogram#my-agg-name": {                 
+      "buckets": []
+    }
+  }
+}
+```
+
+&emsp;&emsp;第4行，聚合类型就是`histogram`后面紧跟`#`以及聚合名称，即`my-agg-name`。
+
+#### Use scripts in an aggregation
+
+&emsp;&emsp;当某个域不能完全满足你想要的聚合目的，你应该在[runtime field](#Runtime fields)上聚合：
+
+```text
+GET /my-index-000001/_search?size=0
+{
+  "runtime_mappings": {
+    "message.length": {
+      "type": "long",
+      "script": "emit(doc['message.keyword'].value.length())"
+    }
+  },
+  "aggs": {
+    "message_length": {
+      "histogram": {
+        "interval": 10,
+        "field": "message.length"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;脚本中域值的计算是动态的，他会额外增加一点点聚合的开销。除了计算的时间开销，一些比如[terms](#Terms aggregation)和[filters](#Filters aggregation)的聚合不能在使用runtime field时使用一些优化。总之，使用runtime field的开销根据不同的聚合类型而不同。
+
+#### Aggregation caches
+
+&emsp;&emsp;为了能快速响应，Elasticsearch在[shard request cache](#Shard request cache settings)中缓存了频繁的聚合操作的结果。若要获取缓存结果，可以在每一次查询中使用相同的[preference string](#Set a preference)。如果不需要查询命中，可以将[size](#Return only aggregation results)设置为`0`来避免缓存查询命中。
+
+&emsp;&emsp;Elasticsearch根据相同的preference string将查询路由到相同的分片上。如果在查询时分片的数据没有发生变化，分片会返回缓存的聚合结果。
+
+#### Limits for long values
+
+&emsp;&emsp;当运行聚合时，Elasticsearch使用[double](#Numeric field types)值来处理并且代表数值类型的数据。使得对超过`2^53`的[long](#Numeric field types)数值的聚合结果是近似值。
 
 ### Bucket aggregations
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket.html)
@@ -37778,10 +38065,10 @@ GET /_resolve/index/f*,remoteCluster1:bar*?expand_wildcards=all
 }
 ```
 
-&emsp;&emsp;第2行，所有匹配了提供的名字或者表达式的索引
+&emsp;&emsp;第2行，所有匹配了提供的名称或者表达式的索引
 &emsp;&emsp;第6行，index attribute可以是`open, closed, hidden, system, frozen`
-&emsp;&emsp;第25行，所有匹配了提供的名字或者表达式的别名
-&emsp;&emsp;第34行，所有匹配了提供的名字或者表达式的data stream
+&emsp;&emsp;第25行，所有匹配了提供的名称或者表达式的别名
+&emsp;&emsp;第34行，所有匹配了提供的名称或者表达式的data stream
 
 #### Refresh API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-refresh.html)
@@ -38233,7 +38520,7 @@ POST /_reindex
 
 ###### Rename a field
 
-&emsp;&emsp;重命名域的名称会让旧名字的域对应的数据失效。你可以添加一个[alias](#Alias field type)来作为替代方案。
+&emsp;&emsp;重命名域的名称会让旧名称的域对应的数据失效。你可以添加一个[alias](#Alias field type)来作为替代方案。
 
 &emsp;&emsp;例如，使用[create index](#Create index API)创建一个索引，它包含了名为`user_identifier`的域。
 
@@ -39701,7 +39988,7 @@ POST _scripts/<script-id>/<context>
 
 - script：（Required,object）包含脚本或search template，参数以及脚本语言
   - lang：（Required,string）[Script language](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)。对于Search template，使用的是`mustache`
-  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
   - source：（Required\*,object）对于脚本来说就是包含脚本的字符串
     - 对于search template来说，是包含了search template的对象。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
 
@@ -40199,7 +40486,7 @@ POST _search/template
 - explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`。
   - 如果你同时在请求参数中指定了 `explain`，那接口只使用请求参数中的参数
 - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
-- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
 - profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
 - source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API]()相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
   - 如果`id`未指定，那么必须提供这个参数
@@ -40280,7 +40567,7 @@ POST _msearch/template
 - `<body>`：（Request,object）用于查询的参数
   - explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`
   - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
-  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+  - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
   - profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
   - source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
     - 如果`id`未指定，那么必须提供这个参数
@@ -40345,7 +40632,7 @@ POST _render/template/<template-id>
 ##### Request body
 
 - id：（Required\*,string）待渲染的search template的ID。如果未指定`source`，那么必须提供这个参数或者`<template-id>`
-- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名字。值是变量的值
+- params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
 - profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
 - source：（Required\*,object）直接提供的search template（而不是通过`id`字段获取）。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
   - 如果`id`或`<template-id>`未指定，那么必须提供这个参数
