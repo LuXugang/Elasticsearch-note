@@ -8766,7 +8766,7 @@ PUT my-index-000001
 
 &emsp;&emsp;Bucket aggregation总是返回一个名为`doc_count`的域，它表示每一个bucket中参与集合的文档数量。计算`doc_count`的值是很简单的。在每一个bucket中，每收集到一篇文档，`doc_count`的值就加一。
 
-&emsp;&emsp;在独立的文档中进行聚合计算时这种简单的方式是很高效的。但是统计那些存储pre-aggregation的文档数量就会丢失精度（比如说[histogram](#Histogram aggregation)或者`aggregate_metric_double`），因为一个summary field中代表了多篇文档（见[Histogram fields](#Histogram fields)）。
+&emsp;&emsp;在独立的文档中进行聚合计算时这种简单的方式是很高效的。但是统计那些存储pre-aggregation的文档数量就会丢失精度（比如说[histogram](#Histogram aggregation)或者`aggregate_metric_double`），因为一个summary field中代表了多篇文档（见[Histogram fields](#Histogram fields（Histogram aggregation）)）。
 
 &emsp;&emsp;为了允许纠正统计pre-aggregation数据时的文档数量。可以使用一种名为`_doc_count`的metadata field类型。`_doc_count`必须总是用一个正整数来表示单个summary field对应的文档数量。
 
@@ -20864,6 +20864,12 @@ POST /sales/_search?size=0&filter_path=aggregations
 }
 ```
 
+#### Auto-interval date histogram aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-autodatehistogram-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket aggregation。 
+
+
 #### Filters aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
@@ -21320,15 +21326,342 @@ GET my-index-000001/_search?size=0
 #### Date histogram aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
 
+&emsp;&emsp;它属于multi-bucket aggregation，类似与普通的[histogram]()
+
 #### Date range aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
 
 ##### Date Format/Pattern
 
 #### Histogram aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
 
-##### Histogram fields
+&emsp;&emsp;它属于multi-bucket Values Source aggregation，作用到从文档中提取出的数值类型或者数值类型范围的值。他动态在值之间构建固定大小（bucket size，也就是间隔interval）。例如，如果文档中有一个名为价格的域（数值），我们可以将这个聚合自动的配置为`5`的间隔（因为价格可以是`5$`）当执行聚合时，每一个文档中的价格会被评估并且下舍入（rounded down）到最近的分桶。比如说价格为`32`并且间隔为`5`，那么`32`被下舍入到`30`，因此"落入"到key为`30`的分桶中。正式点的表达就是，使用了以下的舌入函数：
+
+```text
+bucket_key = Math.floor((value - offset) / interval) * interval + offset
+```
+
+&emsp;&emsp;对于range values，一篇文档可以落入到多个分桶中。第一个分桶根据range value的下界值计算，计算方式跟单值是一样的。最后一个分桶根据range value的上界值计算。且range value中的所有被计入从首个桶到最后一个桶之间的所有桶内，包括这两个桶。
+
+&emsp;&emsp;间隔`interval`必须是正整数，并且`offset`必须是`[0, interval)`之间的整数（左闭右开）。
+
+&emsp;&emsp;下面的片段基于`price`域以及间隔`50`进行分桶：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "prices": {
+      "histogram": {
+        "field": "price",
+        "interval": 50
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应差不多应该是：
+
+```text
+{
+  ...
+  "aggregations": {
+    "prices": {
+      "buckets": [
+        {
+          "key": 0.0,
+          "doc_count": 1
+        },
+        {
+          "key": 50.0,
+          "doc_count": 1
+        },
+        {
+          "key": 100.0,
+          "doc_count": 0
+        },
+        {
+          "key": 150.0,
+          "doc_count": 2
+        },
+        {
+          "key": 200.0,
+          "doc_count": 3
+        }
+      ]
+    }
+  }
+}
+```
+
+##### Minimum document count
+
+&emsp;&emsp;上面的响应中显示在`[100, 150)`的分桶中没有文档有这个价格。默认情况下会使用空的分桶来填充。不过有`min_doc_count`参数使得分桶中的文档数量必须高于该值，那么就不会返回空的分桶。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "prices": {
+      "histogram": {
+        "field": "price",
+        "interval": 50,
+        "min_doc_count": 1
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+
+  ...
+  "aggregations": {
+    "prices": {
+      "buckets": [
+        {
+          "key": 0.0,
+          "doc_count": 1
+        },
+        {
+          "key": 50.0,
+          "doc_count": 1
+        },
+        {
+          "key": 150.0,
+          "doc_count": 2
+        },
+        {
+          "key": 200.0,
+          "doc_count": 3
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;默认情况下，`histogram`根据数据自身情况返回所有的分桶，拥有最小值的文档决定了最小的分桶（第一个分桶，key最小的分桶），拥有最大值的文档决定了最大的分桶（最后一个分桶，key最大的分桶）。通常在要求返回空的分桶时，这样会造成一定的困惑，特别是在数据被过滤时。
+
+&emsp;&emsp;要理解上面这段话，可以看下这个例子：
+
+&emsp;&emsp;比如说你的请求中要求过滤出值为`0`到`500`的所有文档，另外你还想要使用间隔为`50`histogram的来划分数据。因为你想要获取所有的分桶，包括空的分桶，所以你同时还指定了`min_doc_count: 0`。如果所有的文档的价格都大于`100`，那么第一个分桶的key将会是`100`。这可能会给你带来困惑，因为你想要获取在`0-100`之间的分桶。
+
+&emsp;&emsp;通过`extended_bounds`参数，你可以指定`min`和`max`（即使某些区间没有对应满足的文档）来构建分桶。使用`extended_bounds`只有当`min_doc_count`为`0`时才有意义（因为如果`min_doc_count`大于`0`，不会返回空的分桶）。
+
+&emsp;&emsp;注意的是`extended_bounds`不是用来过滤分桶的，也就说，如果`extended_bounds.min`大于文档中提取出的值，仍然会根据文档中的最小值来决定第一个分桶（`extended_bounds.max`小于文档中的最大值也是一样处理）。若要过滤分桶，应该在histogram中嵌套一个range `filter` aggregation并使用合适的`from/to`。
+
+&emsp;&emsp;例子：
+
+```text
+POST /sales/_search?size=0
+{
+  "query": {
+    "constant_score": { "filter": { "range": { "price": { "to": "500" } } } }
+  },
+  "aggs": {
+    "prices": {
+      "histogram": {
+        "field": "price",
+        "interval": 50,
+        "extended_bounds": {
+          "min": 0,
+          "max": 500
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;分桶会根据返回的文档的值来聚合范围。也就是说响应中可能包含在query的range外的分桶。比如说，如果你的query查看大于100，并且你有50到150的文档，并且间隔为50，那么文档落入3个分桶中：50、100以及150。你可以理解为query跟aggregation的步骤是独立的。query用来选择文档，而聚合分桶不会考虑这些文档是否被query过滤。见[note on bucketing range fields](#Subtleties of bucketing range fields)查看更多信息以及例子。
+
+&emsp;&emsp;`hard_bounds`对应于`extended_bounds`可以限制histogram中分桶的范围。在开放的[data ranges](#Range field types)中使用这个参数非常有用，因为它会导致大量的分桶。
+
+&emsp;&emsp;例子：
+
+```text
+POST /sales/_search?size=0
+{
+  "query": {
+    "constant_score": { "filter": { "range": { "price": { "to": "500" } } } }
+  },
+  "aggs": {
+    "prices": {
+      "histogram": {
+        "field": "price",
+        "interval": 50,
+        "hard_bounds": {
+          "min": 100,
+          "max": 200
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个例子中尽管query中指定了`to 500`，histogram只有两个分桶，分别是100跟150，其他的分桶会被忽略，即使有文档会落入到这些分桶内并且应该呈现出来。
+
+##### Order
+
+&emsp;&emsp;默认情况下分桶按照他们的key升序排序，不过可以通过`order`来控制这个行为。它跟[Terms Aggregation](#Terms aggregation)有相同的功能。
+
+##### Offset
+
+&emsp;&emsp;默认情况下，分桶的key从0开始，然后以间隔的等距一步步继续，例如，如果间隔是10，前三个桶（假设它们内部有数据）将是[0, 10)，[10, 20)，[20, 30)。可以通过使用offset来移动桶边界。
+
+&emsp;&emsp;这可以通过一个例子最好地说明。如果有10个文档，其值范围从5到14，使用10作为间隔将导致两个各含5个文档的桶。如果使用额外的`offset`为5，那么将只有一个单一的桶[5, 15)，包含所有10个文档。
+
+##### Response Format
+
+&emsp;&emsp;默认情况下分桶是一个有序的数组。可以要求响应中用分桶的key值作为hash的key。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "prices": {
+      "histogram": {
+        "field": "price",
+        "interval": 50,
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "prices": {
+      "buckets": {
+        "0.0": {
+          "key": 0.0,
+          "doc_count": 1
+        },
+        "50.0": {
+          "key": 50.0,
+          "doc_count": 1
+        },
+        "100.0": {
+          "key": 100.0,
+          "doc_count": 0
+        },
+        "150.0": {
+          "key": 150.0,
+          "doc_count": 2
+        },
+        "200.0": {
+          "key": 200.0,
+          "doc_count": 3
+        }
+      }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如果进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "quantity": {
+      "histogram": {
+        "field": "quantity",
+        "interval": 10,
+        "missing": 0 
+      }
+    }
+  }
+}
+
+```
+
+&emsp;&emsp;第7行，没有`quantity`域的文档会落入相同的分桶中，并且把这些文档看成有`quantity`域，并且值为`0`
+
+##### Histogram fields（Histogram aggregation）
+
+&emsp;&emsp;对于[histogram fields](#Histogram field type)进行histogram aggregation时，将计算每个间隔的总数。
+
+&emsp;&emsp;比如对以下不同网络中已经预先聚合过的延迟指标进行histogram aggregation时：
+
+```text
+PUT metrics_index/_doc/1
+{
+  "network.name" : "net-1",
+  "latency_histo" : {
+      "values" : [1, 3, 8, 12, 15],
+      "counts" : [3, 7, 23, 12, 6]
+   }
+}
+
+PUT metrics_index/_doc/2
+{
+  "network.name" : "net-2",
+  "latency_histo" : {
+      "values" : [1, 6, 8, 12, 14],
+      "counts" : [8, 17, 8, 7, 6]
+   }
+}
+
+POST /metrics_index/_search?size=0
+{
+  "aggs": {
+    "latency_buckets": {
+      "histogram": {
+        "field": "latency_histo",
+        "interval": 5
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`histogram` aggregation会根据`values`累计每一个间隔（`counts`）的数量并返回以下结果：
+
+```text
+{
+  ...
+  "aggregations": {
+    "prices": {
+      "buckets": [
+        {
+          "key": 0.0,
+          "doc_count": 18
+        },
+        {
+          "key": 5.0,
+          "doc_count": 48
+        },
+        {
+          "key": 10.0,
+          "doc_count": 25
+        },
+        {
+          "key": 15.0,
+          "doc_count": 6
+        }
+      ]
+    }
+  }
+}
+```
+
+> IMPORTANT： Histogram aggregation是一种bucket aggregation，它将文档分配到桶中，而不是像metric aggregation那样对字段进行计算。每个桶代表了一组文档，可以在其上运行sub-aggregation。另一方面，[Histogram field](#Histogram field type)是一种预聚合字段，表示单个字段内的多个值：数值数据的桶和每个桶的项目/文档计数。这种在histogram聚合预期输入（期望原始文档）和Histogram field（提供摘要信息）之间的不匹配，限制了聚合的结果仅为每个桶的文档计数。
+>因此，当在Histogram field上执行直方图聚合时，不允许进行sub-aggregation。
 
 #### Range aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
