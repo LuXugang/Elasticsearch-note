@@ -341,7 +341,7 @@ pkill -F pid
 - `jvm.options` 用于配置Elasticsearch JVM 设置
 - `log4j2.properties` 用于配置 Elasticsearch日志记录
 
-&emsp;&emsp;这三个文件都在config目录中，他们的默认路径取决于使用哪种方式安装：归档发行版（archive distribution）`tar.gz`或者`zip`还是安装包发行版（package distribution）Debian 或者RPM安装包。
+&emsp;&emsp;这三个文件都在config目录中，它们的默认路径取决于使用哪种方式安装：归档发行版（archive distribution）`tar.gz`或者`zip`还是安装包发行版（package distribution）Debian 或者RPM安装包。
 
 &emsp;&emsp;对于归档发行版，config目录位置默认是`$ES_HOME/config`。config目录的位置能通过`ES_PATH_CONFIG`这个环境变量进行更改：
 
@@ -402,7 +402,7 @@ export HOSTNAME="host1,host2"
 
 ##### Cluster and node setting types
 
-&emsp;&emsp;集群跟节点的设置基于他们是如何被配置可以分类为：
+&emsp;&emsp;集群跟节点的设置基于它们是如何被配置可以分类为：
 
 ###### Dynamic（settings）
 
@@ -543,7 +543,7 @@ PUT _cluster/settings
 ```
 6. 通过删除数据路径的方式来丢弃被停掉的节点拥有的数据。
 7. 重新配置你的存储。使用LVM或者Storage Spaces将你的磁盘合并到单个文件系统中。确保你重新配置的存储有足够的空间存储数据
-8. 通过设置`elasticsearch.yml`文件中的`path.data`来重新配置你的节点。如果有需要的话，安装更多的节点，并使用他们自己各自的`path.data`。
+8. 通过设置`elasticsearch.yml`文件中的`path.data`来重新配置你的节点。如果有需要的话，安装更多的节点，并使用它们自己各自的`path.data`。
 9. 启动新的节点并按照[rolling restart process](#Rolling restart)中的其他步骤执行
 10. 确保你的集群健康是`green`，使得所有的分片都已经分配结束
 
@@ -601,13 +601,13 @@ discovery.seed_hosts:
 1. 如果hostname关联多个IP 地址，那么当前节点会试图发现hostname关联的所有地址上的节点
 1. IPv6地址使用方括号包裹（enclosed in square brackets）
 
-&emsp;&emsp;如果候选的主节点的节点没有固定的名称或者地址，可以使用[alternative hosts provider](#Discovery) 来动态的找到他们的地址。
+&emsp;&emsp;如果候选的主节点的节点没有固定的名称或者地址，可以使用[alternative hosts provider](#Discovery) 来动态的找到它们的地址。
 
 ###### cluster.initial_master_nodes
 
 &emsp;&emsp;当你第一次启动Elasticsearch集群，在[cluster bootstrapping](#Bootstrapping-a-cluster)阶段确定在第一次参与投票的候选主节点。在[development mode](#Bootstrap-Checks)中，with no discovery settings configured, this step is performed automatically by the nodes themselves。
 
-&emsp;&emsp;因为auto-bootstrapping是内在不安全的，在生产模式中启动一个新的集群时，你必须显式列出候选的主节点并且他们的投票要被统计在第一轮的选票中。你可以使用`cluster.initial_master_nodes`设置来列出这些候选的主节点。
+&emsp;&emsp;因为auto-bootstrapping是内在不安全的，在生产模式中启动一个新的集群时，你必须显式列出候选的主节点并且它们的投票要被统计在第一轮的选票中。你可以使用`cluster.initial_master_nodes`设置来列出这些候选的主节点。
 
 > IMPORTANT：当一个新的集群第一次形成之后，从每个节点的配置中移除cluster.initial_master_nodes设置。当重启一个集群或者往已存在的集群中添加一个新的节点时，不要使用该配置。
 
@@ -1246,7 +1246,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;超过上限后，Elasticsearch会reject创建更多分片的请求。比如集群的`cluster.max_shards_per_node`的值是`100`，并且三个data node就有`300`的分片数量限制。如果集群中已经包含了296个分片，Elasticsearch会reject增加5个或者更多分片数量的请求。
 
-&emsp;&emsp;注意的是frozen shard有他们自己独立的限制。
+&emsp;&emsp;注意的是frozen shard有它们自己独立的限制。
 
 ###### cluster.max_shards_per_node.frozen
 
@@ -1583,7 +1583,7 @@ node.roles: [ master ]
 
 &emsp;&emsp;voting-only master-eligible node是会参与[master elections](#Discovery and cluster formation)的节点，但是不会成为集群的master节点。特别在于一个voting-only node可以成为选举过程中的tiebreaker。
 
-&emsp;&emsp;使用"master-eligible"这个词来描述一个voting-only node看起来有点让人困惑，因为这种节点是完全没资格成为master节点的。使用这个术语是因为历史的原因（This terminology is an unfortunate consequence of history）：master-eligible node是那些参与选举、集群状态发布（cluster state publication）期间执行一些任务的节点，而voting-only node有着相同的工作职责（responsibility）只是他们不会被选举为master节点。
+&emsp;&emsp;使用"master-eligible"这个词来描述一个voting-only node看起来有点让人困惑，因为这种节点是完全没资格成为master节点的。使用这个术语是因为历史的原因（This terminology is an unfortunate consequence of history）：master-eligible node是那些参与选举、集群状态发布（cluster state publication）期间执行一些任务的节点，而voting-only node有着相同的工作职责（responsibility）只是它们不会被选举为master节点。
 
 &emsp;&emsp;通过添加`master`和`voting_only`角色来配置一个master-eligible node为voting-only node。下面的例子创建了一个voting-onyl data node：
 
@@ -1593,7 +1593,7 @@ node.roles: [ data, master, voting_only ]
 
 > IMPORTANT：只有拥有`master`角色的节点才可以标记为拥有`voting_only`角色。
 
-&emsp;&emsp;高可用（HA：high availability）的集群要求至少有三个master-eligible node，他们中的至少两个节点不是voting-only node。这样的集群才能够在其中一个节点发生故障后选出一个master节点。
+&emsp;&emsp;高可用（HA：high availability）的集群要求至少有三个master-eligible node，它们中的至少两个节点不是voting-only node。这样的集群才能够在其中一个节点发生故障后选出一个master节点。
 
 &emsp;&emsp;由于voting-only node不会被选举为master节点，所以相较于真正的master node，它们需要较少的堆以及较低性能的CPU。然而所有的master-eligible node，包括voting-only node，相较于集群中的其他节点，它们需要相当快速的持久存储以及一个可靠的低延迟的网络连接，因为它们处于[publishing cluster state updates](#Publishing the cluster state)的关键路径（critical path）上。
 
@@ -1687,7 +1687,7 @@ node.roles: [ ingest ]
 
 &emsp;&emsp;如果你的节点不需要（take away）处理master职责（duty）、保留数据、pre-process文档的能力，那么你还剩下一个coordinating only node，只能处理路由请求、查询的reduce phase、以及分布式的块索引（bulk Indexing）。本质上coordinating only node表现为像一个智能的负载均衡节点。
 
-&emsp;&emsp;在大规模的集群中将coordinating node角色从data node和master-eligible node中剥离（offload）出来能体现coordinating only nodes的益处。这些节点加入到集群中并且接收完整的[cluster state](#Cluster state API)，就像每一个其他的节点一样，他们使用cluster state将请求路由到合适的地方。
+&emsp;&emsp;在大规模的集群中将coordinating node角色从data node和master-eligible node中剥离（offload）出来能体现coordinating only nodes的益处。这些节点加入到集群中并且接收完整的[cluster state](#Cluster state API)，就像每一个其他的节点一样，它们使用cluster state将请求路由到合适的地方。
 
 > WARNING：集群中添加太多的coordinating only nodes会增加整个集群的负担（burden），因为被选举为master的节点必须等待从每一个节点更新后的cluster state的回应。不能过度夸大（overstate）coordinating only node的益处-data node也可以实现跟coordinating only nodes相同的目的（same purpose）
 
@@ -2390,7 +2390,7 @@ sysctl -w vm.max_map_count=262144
 
 &emsp;&emsp;保证有足够多的节点来形成quorum并且每个节点能相互通过网络联系到对方。如果选举问题持续了好几分钟，Elasticsearch会额外的报出网络连接的细节。如果你不能启动足够多的节点来形成quorum，那么启动一个新的集群并且从最新的snapshot中恢复数据。参考[Quorum-based decision making ](#Quorum-based decision making)了解更多信息。
 
-&emsp;&emsp;如果日志显示Elasticsearch已经发现了 a possible quorum of nodes。那么集群不能选出master的原因通常是其中的节点不能发现quorum。检查其他master-eligible node上的日志并且保证他们已经发现了足够多的节点来形成一个quorum。
+&emsp;&emsp;如果日志显示Elasticsearch已经发现了 a possible quorum of nodes。那么集群不能选出master的原因通常是其中的节点不能发现quorum。检查其他master-eligible node上的日志并且保证它们已经发现了足够多的节点来形成一个quorum。
 
 ###### Master is elected but unstable
 
@@ -2477,7 +2477,7 @@ discovery.seed_providers: file
 
 &emsp;&emsp;通过更新集群中的[voting configuration](#Voting configurations)使得在添加/移除节点时，Elasticsearch能维护一个最佳的容错能力（Elasticsearch maintains an optimal level of fault tolerance）。voting configuration是master-eligible的集合，它们的响应会被计数用来对选举出新的master和提交（commit）新的集群状态做出决策。只有voting configuration中的超过半数才能做出决策。通常情况下，voting configuration跟当前集群中所有的master-eligible集合是相同的，然而在有些情况下会有不同。
 
-&emsp;&emsp;为了保证集群仍然可用（remain available），你必须不能在同一时间（at the same time）停止一半或者更多的voting configuration中的节点。只要超过一半的voting node是可用的，集群就能正常的工作。例如，如果有3个或者4个master-eligible node，集群可以容忍一个不可用的节点。如果2个或者更少的master-eligible node，他们必须都是可用的。
+&emsp;&emsp;为了保证集群仍然可用（remain available），你必须不能在同一时间（at the same time）停止一半或者更多的voting configuration中的节点。只要超过一半的voting node是可用的，集群就能正常的工作。例如，如果有3个或者4个master-eligible node，集群可以容忍一个不可用的节点。如果2个或者更少的master-eligible node，它们必须都是可用的。
 
 &emsp;&emsp;一个节点加入/离开集群时，选举为master的节点必须发布（issue）集群状态的更新，调整（adjustment）voting configuration，这个过程可能会花费一点时间。在移除更多节点之前等待调整结束是非常重要的。
 
@@ -2496,7 +2496,7 @@ discovery.seed_providers: file
 
 &emsp;&emsp;通常情况下voting configuration和当前集群中所有的master-eligible node集合相同。然而在某些情况下可能会不同。
 
-> IMPORTANT：为了保证集群仍然可用（remain available），你必须不能在同一时间（at the same time）停止一半或者更多的voting configuration中的节点。只要超过一半的voting node是可用的，集群就能正常的工作。例如，如果有3个或者4个master-eligible node，集群可以容忍一个不可用的节点。如果2个或者更少的master-eligible node，他们必须都是可用的。
+> IMPORTANT：为了保证集群仍然可用（remain available），你必须不能在同一时间（at the same time）停止一半或者更多的voting configuration中的节点。只要超过一半的voting node是可用的，集群就能正常的工作。例如，如果有3个或者4个master-eligible node，集群可以容忍一个不可用的节点。如果2个或者更少的master-eligible node，它们必须都是可用的。
 
 &emsp;&emsp;在某个节点加入或者离开集群时，Elasticsearch会自动的对voting configuration作出对应的变更来保证集群尽可能的具有弹性（resilient）。非常重要的一点是：你从集群中移除更多节点之前，要等待调整（adjustment）完成，见[Adding and removing nodes.](#Adding and removing nodes)。
 
@@ -2508,7 +2508,7 @@ GET /_cluster/state?filter_path=metadata.cluster_coordination.last_committed_con
 
 > NOTE：当前的voting configuration不需要跟集群中的所有的可用的master-eligible node集合相同。改变（alert）voting configuration会涉及进行投票，所以节点加入或者离开集群时会花一点时间来调整configuration。同样的，也会存在most resilient configuration包含不可用的节点或者不包含可用的节点。在这种情况下，voting configuration就会跟集群中的master-eligible node不相同。
 
-&emsp;&emsp;规模大（large）的voting configuration 通常更具有弹性。所以Elasticsearch更喜欢（prefer to）在master-eligible node加入到集群后把他们添加到voting configuration中。同样的，如果一个在voting configuration中的节点离开了集群并且集群中有另一个不在voting configuration中的master-eligible node，那么会去交换这两个节点。voting configuration的大小没有发生变化但是提高了弹性。
+&emsp;&emsp;规模大（large）的voting configuration 通常更具有弹性。所以Elasticsearch更喜欢（prefer to）在master-eligible node加入到集群后把它们添加到voting configuration中。同样的，如果一个在voting configuration中的节点离开了集群并且集群中有另一个不在voting configuration中的master-eligible node，那么会去交换这两个节点。voting configuration的大小没有发生变化但是提高了弹性。
 
 &emsp;&emsp;节点离开集群后，从voting configuration中移除节点不是一件简单的事情。不同的策略有不同的好处跟缺点，所以正确的选择取决于集群如何被使用。你可以通过[cluster.auto_shrink_voting_configuration setting](#cluster.auto_shrink_voting_configuration)来控制voting configuration是否要自动的收缩（shrink）。
 
@@ -2622,7 +2622,7 @@ bootstrap a cluster: have discovered [{master-b.example.com}{...
 
 &emsp;&emsp;master允许在有限的时间内完成集群状态更改到发布给所有的节点。定义在`cluster.publish.timeout`设置中，默认值`30s`。从publication开始算时间。如果在新的集群状态提交前达到了这个时间，集群状态的变更会被reject然后master会认为自己出现了故障。然后开始新的选举。
 
-&emsp;&emsp;如果在达到`cluster.publish.timeout`之前新的集群状态提交了，master会认为这次变更成功了。master会等待所有节点应用更新状态后的确认或者等待超时，然后开始处理并发布下一次的集群状态更新。如果master没有收到一些确认（比如一些节点还没有确认他们已经应用了当前的更新）这些节点被认为是它们的集群状态落后于master最新的状态。默认值是`90s`。如果仍然没有成功的应用集群状态更新，那么它会被认为发生了故障并且从集群中移除。
+&emsp;&emsp;如果在达到`cluster.publish.timeout`之前新的集群状态提交了，master会认为这次变更成功了。master会等待所有节点应用更新状态后的确认或者等待超时，然后开始处理并发布下一次的集群状态更新。如果master没有收到一些确认（比如一些节点还没有确认它们已经应用了当前的更新）这些节点被认为是它们的集群状态落后于master最新的状态。默认值是`90s`。如果仍然没有成功的应用集群状态更新，那么它会被认为发生了故障并且从集群中移除。
 
 &emsp;&emsp;发布的集群状态的更新内容通常是跟上一次状态的差异，这样能减低时间以及网络带宽。例如为集群状态中部分索引的更新mappings时，只要节点上有上一次的集群状态，那么就可以只发布这些索引更新对应的差异到集群中的节点上。如果一个节点缺失了上一个集群状态，比如说重新加入到了集群，master会发送完整的集群状态到这个节点，使得这个节点后续能接收差异更新。
 
@@ -2863,7 +2863,7 @@ POST _ml/set_upgrade_mode?enabled=true
 
 - 当你关闭了upgrade mode，会使用上一次自动保存的模型状态（model state）来恢复任务。这个选项可以避免在关机期间管理活跃的任务（active job）的开销，并且快于显示的停止datafeeds和关闭任务jobs。
 
-- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，你重新打开jobs时，他们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
+- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，你重新打开jobs时，它们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
 
 &emsp;&emsp;2.2 **Shut down all nodes**
 
@@ -2888,9 +2888,9 @@ kill $(cat pid)
 3. **Perform any needed changes**
 4. **Restart nodes**
 
-&emsp;&emsp;如果你有专用的master node，那可以在处理你的data node前，先启动它们，然后等待他们形成一个集群并选举出一个master。你可以通过日志查看处理进程。
+&emsp;&emsp;如果你有专用的master node，那可以在处理你的data node前，先启动它们，然后等待它们形成一个集群并选举出一个master。你可以通过日志查看处理进程。
 
-&emsp;&emsp;一旦有足够的master-eligible node相互的发现了对方，他们就会形成一个集群并且选举出master。在这个时候，你可以使用[cat health](#cat health API)和[cat nodes](#cat nodes API)来监控加入到集群的节点。
+&emsp;&emsp;一旦有足够的master-eligible node相互的发现了对方，它们就会形成一个集群并且选举出master。在这个时候，你可以使用[cat health](#cat health API)和[cat nodes](#cat nodes API)来监控加入到集群的节点。
 
 ```text
 GET _cat/health
@@ -2976,7 +2976,7 @@ POST _ml/set_upgrade_mode?enabled=true
 
 - 当你关闭了upgrade mode，会使用上一次自动保存的模型状态（model state）来恢复任务。这个选项可以避免在关机期间管理活跃的任务（active job）的开销，并且快于显示的停止datafeeds和关闭任务jobs。
 
-- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，在你重新打开jobs时，他们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
+- [Stop all datafeeds and close all jobs](https://www.elastic.co/guide/en/machine-learning/8.2/stopping-ml.html)。这个选项会在关闭时保存模型状态。当集群重启后，在你重新打开jobs时，它们能使用完全相同的模型。然而相较于使用upgrade mode，保存最新的模型状态会需要更长的时间，特别是你拥有很多的jobs或者说jobs有很大的模型状态。
 
 - 如果你执行了一个rolling restart，你也可以让machining learning jobs继续运行。当你关闭一个machine leaning node时，它的jobs会自动的移动到其他节点并恢复模型状态（model state）。这个选项可以让你的jobs继续运行但是会增加集群中的负载。
 
@@ -4782,7 +4782,7 @@ PUT my-index-000001/_doc/1
   "match": "^profit_\d+$"
 ```
 
-&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的域，但是排除了以`_text`结尾的域，并将他们的域值映射为`long`：
+&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的域，但是排除了以`_text`结尾的域，并将它们的域值映射为`long`：
 
 ```text
 PUT my-index-000001
@@ -5049,7 +5049,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;模版中出现的`keyword`域是dynamic mappings中默认存在的。当然如果你不需要在这个域上执行精确查询或者聚合，你可以不需要它们，你可以正如上文中描述的那样来移除他们。
+&emsp;&emsp;模版中出现的`keyword`域是dynamic mappings中默认存在的。当然如果你不需要在这个域上执行精确查询或者聚合，你可以不需要它们，你可以正如上文中描述的那样来移除它们。
 
 ###### Time series
 
@@ -6256,7 +6256,7 @@ GET my-index-000001/_search
 
 ##### Define a composite runtime field
 
-&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个域。你可以定义类型化的子域（typed subfields）集合然后emit多个值。在查询期间，每一个子域会检索出跟他们名称相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
+&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个域。你可以定义类型化的子域（typed subfields）集合然后emit多个值。在查询期间，每一个子域会检索出跟它们名称相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
 
 ```text
 PUT my-index-000001/_mappings
@@ -6825,7 +6825,7 @@ GET trips/_field_caps?fields=route_*,transit_mode
 
 &emsp;&emsp;另外，alias只能对应一个目标域。意味着不可能使用一个alias在single clause（一个query属于一个clause）中查询多个目标域。
 
-&emsp;&emsp;可以通过更新mapping来更改alias指向（refer to）的目标域。已知的一个限制是如果任何已经存储的percolator query包含了alias，他们仍然指向原先的目标。更多信息见[percolator documentation](#Percolator field type)。
+&emsp;&emsp;可以通过更新mapping来更改alias指向（refer to）的目标域。已知的一个限制是如果任何已经存储的percolator query包含了alias，它们仍然指向原先的目标。更多信息见[percolator documentation](#Percolator field type)。
 
 ##### Unsupported APIs
 
@@ -7181,7 +7181,7 @@ POST my-index-000001/_search
 #### Date nanoseconds field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date_nanos.html)
 
-&emsp;&emsp;这个时间类型是`date`数据类型的补充。然而他们之间有一个很重要的不同。现有的`date`数据类型存储毫秒级分辨率的时间，而`date_nanos`则是纳秒级分辨率，严格限制了从1970到2262这个时间范围，因为日期仍然以代表自纪元（epoch）以来纳秒数的long类型存储。
+&emsp;&emsp;这个时间类型是`date`数据类型的补充。然而它们之间有一个很重要的不同。现有的`date`数据类型存储毫秒级分辨率的时间，而`date_nanos`则是纳秒级分辨率，严格限制了从1970到2262这个时间范围，因为日期仍然以代表自纪元（epoch）以来纳秒数的long类型存储。
 
 &emsp;&emsp;内部处理纳秒时会将其转化为long类型的数值，聚合和存储的结果会被转回成一个字符串，字符串的值区间于Date format。
 
@@ -7258,9 +7258,9 @@ GET my-index-000001/_search
 #### Flattened field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
 
-&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名称无法提前知晓，那么他们会被自动映射（[mapped dynamically](#Dynamic mapping)）。
+&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名称无法提前知晓，那么它们会被自动映射（[mapped dynamically](#Dynamic mapping)）。
 
-&emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将他们作为keyword索引到一个域中。对象的内容随后可以通过query和aggregation查询。
+&emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将它们作为keyword索引到一个域中。对象的内容随后可以通过query和aggregation查询。
 
 &emsp;&emsp;对于很大的或者有未知数量键的对象，使用`flattened`就很有用。只要创建一个域的类型来处理整个JSON对象，有助于防止因太多不同的域的类型导致[mappings explosion](#Settings to prevent mapping explosion)。
 
@@ -8018,7 +8018,7 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;`user.first`和`user.last`平铺为多值的域，同时`alice`和`white`的关联信息也丢失了（关联信息指的是：他们两个属于同一个对象）。下面`alice AND smith`的这种查询会错误的匹配到这篇文档：
+&emsp;&emsp;`user.first`和`user.last`平铺为多值的域，同时`alice`和`white`的关联信息也丢失了（关联信息指的是：它们两个属于同一个对象）。下面`alice AND smith`的这种查询会错误的匹配到这篇文档：
 
 ```text
 GET my-index-000001/_search
@@ -8124,7 +8124,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;用[nested inner hits](#Nested inner hits)检索以及高亮
 
-> IMPORTANT：因为nested documents索引为单独的文档（在lucene中是单独的文档，数组中的每一个对象都是lucene中的一篇文档，并且包含父文档的父文档ID，以及在主文档中的位置信息）。因此他们只能通过`nested` query， `nested/reverse_nested` aggregation，或者[nested inner hits](#Nested inner hits)访问。
+> IMPORTANT：因为nested documents索引为单独的文档（在lucene中是单独的文档，数组中的每一个对象都是lucene中的一篇文档，并且包含父文档的父文档ID，以及在主文档中的位置信息）。因此它们只能通过`nested` query， `nested/reverse_nested` aggregation，或者[nested inner hits](#Nested inner hits)访问。
 > 
 > 例如，如果nested document内的字符串字段的[index_options](#index_options)设置为`offsets`以便在高亮显示时使用倒排信息，那么在主要高亮（main highlighting）显示阶段这些偏移量将不可用。相反，需要通过[nested inner hits](#Nested inner hits)来执行高亮显示。在通过[docvalue_fields](#Doc value fields)或[stored_fields](#Stored fields)进行搜索时加载字段时，同样的考虑也适用。
 
@@ -10967,7 +10967,7 @@ GET my-index-000001/_search
 
 |  BM25   | 即[Okapi BM25 algorithm](https://en.wikipedia.org/wiki/Okapi_BM25)，Elasticsearch以及Lucene默认使用这个算法 |
 | :-----: | :----------------------------------------------------------: |
-| boolean | 一个简单的布尔算法，不需要全文本ranking并且打分值基于是否匹配到了查询中的term。Boolean算法给term打出的分数跟他们的query boost一样 |
+| boolean | 一个简单的布尔算法，不需要全文本ranking并且打分值基于是否匹配到了查询中的term。Boolean算法给term打出的分数跟它们的query boost一样 |
 
 &emsp;&emsp;参数`similarity`可以在域最开始创建时设置在这个域的层级：
 
@@ -10995,7 +10995,7 @@ PUT my-index-000001
 #### store(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-store.html)
 
-&emsp;&emsp;默认情况下，域值被[indexed](#index)使得可以被搜索到，但是他们没有存储（store）。意味着该域能用于查询，但是原始的域值（origin source value）不能被检索到。
+&emsp;&emsp;默认情况下，域值被[indexed](#index)使得可以被搜索到，但是它们没有存储（store）。意味着该域能用于查询，但是原始的域值（origin source value）不能被检索到。
 
 &emsp;&emsp;通常来说没有关系，因为域值早已经是[\_source](#\_source field)域的一部分，默认被存储了。如果你想检索单个域或者一些域的域值而不是整个`_source`， 你可以使用[source filtering](#Retrieve selected fields from a search)来达到你的目的。
 
@@ -15853,7 +15853,7 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;nested field会根据他们的nested path进行分组，不受检索时使用的pattern的影响。例如，如果你在上面的例子中只查询`user.first`：
+&emsp;&emsp;nested field会根据它们的nested path进行分组，不受检索时使用的pattern的影响。例如，如果你在上面的例子中只查询`user.first`：
 
 ```text
 POST my-index-000001/_search
@@ -17593,7 +17593,7 @@ GET /_search
 
 #### Ignoring Unmapped Fields
 
-&emsp;&emsp;默认情况下，如果某个域没有对应的mapping，那么根据这个域排序的请求会失败。`unmapped_type`选项允许你忽略没有对应mapping的域，不根据他们进行排序。这个参数的值可以用于determine what sort values to emit。下面是使用这个参数的例子：
+&emsp;&emsp;默认情况下，如果某个域没有对应的mapping，那么根据这个域排序的请求会失败。`unmapped_type`选项允许你忽略没有对应mapping的域，不根据它们进行排序。这个参数的值可以用于determine what sort values to emit。下面是使用这个参数的例子：
 
 ```text
 GET /_search
@@ -17812,7 +17812,7 @@ GET /_search
 
 #### Memory Considerations
 
-&emsp;&emsp;排序时，用于排序的域会加载到内存中。这意味着每一个分片都应该有足够的内存来处理他们。对于用于排序的string类型，它不应该设置为analyzed / tokenized。对于数值类型，如果可以的话，建议显示的（explicit）设置为narrower types（例如`short`、`ingeger`以及`float`）。
+&emsp;&emsp;排序时，用于排序的域会加载到内存中。这意味着每一个分片都应该有足够的内存来处理它们。对于用于排序的string类型，它不应该设置为analyzed / tokenized。对于数值类型，如果可以的话，建议显示的（explicit）设置为narrower types（例如`short`、`ingeger`以及`float`）。
 
 ## Query DSL
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl.html)
@@ -18811,7 +18811,7 @@ GET /_search
 
 &emsp;&emsp;比如说，如果查询关键字是`quick brown f`。这个请求会创建一个`quick`和`brown`的短语查询（文档中`quick`必须存在紧接着它的下一个term必须是`brown`）。然后从[sorted term dictionary](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2019/0401/索引文件之tim&&tip)中找到50个以`f`开头的term，最后将这些term添加到短语查询中。
 
-&emsp;&emsp;问题在于这前50个term可能没有`fox`这个term，使得没法找到`quick brown fox`这个短语。但这通常又不是一个问题，因为用户会继续输入更多的字母，直到出现他们想要查找的词。
+&emsp;&emsp;问题在于这前50个term可能没有`fox`这个term，使得没法找到`quick brown fox`这个短语。但这通常又不是一个问题，因为用户会继续输入更多的字母，直到出现它们想要查找的词。
 
 &emsp;&emsp;见[completion suggester](#Completion Suggester)和[search_as_you_type field type](#Search-as-you-type field type)了解更多`search-as-you-type`更好的解决方案。
 
@@ -19082,7 +19082,7 @@ GET /_search
 
 ##### phrase and phrase_prefix
 
-&emsp;&emsp;`phrase`和`phrase_prefix`类型跟[best_fields](#best_fields)很像，只是他们使用了`match_phrase`或者`match_phrase_prefix`而不是`match` query。
+&emsp;&emsp;`phrase`和`phrase_prefix`类型跟[best_fields](#best_fields)很像，只是它们使用了`match_phrase`或者`match_phrase_prefix`而不是`match` query。
 
 &emsp;&emsp;这个请求：
 
@@ -20646,8 +20646,129 @@ GET /my-index-000001/_search?size=0
 
 > NOTE：[search.max_buckets](#search.max_buckets)这个集群设置限制了在单个响应中分桶的数量
 
+#### Adjacency matrix aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-adjacency-matrix-aggregation.html)
+
+&emsp;&emsp;
+
+
 #### Filter aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
+
+&emsp;&emsp;它属于single bucket aggregation（一个过滤条件只会生成一个分桶），将满足[query](#Query DSL)的文档落入到单个桶内。
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个例子尖酸了所有衣服的平均价格同时将`t-shirt`类型的衣服划分为一个桶，并且计算了桶内的平均价格。
+
+&emsp;&emsp;响应如下：
+
+```text
+{
+  "aggregations": {
+    "avg_price": { "value": 140.71428571428572 },
+    "t_shirts": {
+      "doc_count": 3,
+      "avg_price": { "value": 128.33333333333334 }
+    }
+  }
+}
+```
+
+##### Use a top-level query to limit all aggregations
+
+&emsp;&emsp;若要限制在查询运行时目标文档数量，可以使用一个top-level `query`。这样能加快带有sub-aggregation的`filter` aggregation。
+
+&emsp;&emsp;使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "query": { "term": { "type": "t-shirt" } },
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+##### Use the filters aggregation for multiple filters
+
+&emsp;&emsp;若要使用多个filter对文档进行分组，可以使用[filters aggregation](#Filters aggregation)，它比使用多个`filter` aggregations更快。
+
+&emsp;&emsp;例如应该这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "f": {
+      "filters": {
+        "filters": {
+          "hats": { "term": { "type": "hat" } },
+          "t_shirts": { "term": { "type": "t-shirt" } }
+        }
+      },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "hats": {
+      "filter": { "term": { "type": "hat" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+#### Filters aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
 #### Composite aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-composite-aggregation.html#_date_histogram)
@@ -20970,7 +21091,7 @@ GET my-index-000001/_search?size=0
 
 &emsp;&emsp;聚合家族中的这类聚合基于以某种方式从正在被聚合的文档中提取的值来计算指标。提取的值通常来自文档中的域值，但也可以由脚本生成。
 
-&emsp;&emsp;数值类的metric aggregation是一种特殊的聚合，他们输出的结果是数值类型的值。一些聚合的输出是单个数值类型的指标（比如`avg`）并且称为`single-value numeric metrics aggregation`，其他生成多个指标（比如`stats`）的聚合称为`multi-value numeric metrics aggregation`。这两者的区别在于，当这些聚合作为某些bucket aggregation的直接sub-aggregation时扮演为不同的角色（一些bucket aggregation允许你根据每个桶中的数值指标对返回的桶进行排序）
+&emsp;&emsp;数值类的metric aggregation是一种特殊的聚合，它们输出的结果是数值类型的值。一些聚合的输出是单个数值类型的指标（比如`avg`）并且称为`single-value numeric metrics aggregation`，其他生成多个指标（比如`stats`）的聚合称为`multi-value numeric metrics aggregation`。这两者的区别在于，当这些聚合作为某些bucket aggregation的直接sub-aggregation时扮演为不同的角色（一些bucket aggregation允许你根据每个桶中的数值指标对返回的桶进行排序）
 
 #### Avg aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
@@ -21033,7 +21154,7 @@ POST /exams/_search?size=0
 
 ##### Missing value
 
-&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
 
 ```text
 POST /exams/_search?size=0
@@ -21228,7 +21349,7 @@ GET latency/_search
 
 ##### Missing value
 
-&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
 
 ```text
 POST /exams/_search?size=0
@@ -21270,7 +21391,7 @@ GET /exams/_search
 
 &emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`exteneed_stats`并且`field`定义了文档中的数值类型的域并计算该域的统计数据。上面中请求的响应如下所示：
 
-&emsp;&emsp;`std_deviation`和`variance`是基于总体指标（population metric）计算的，所以他们的值分别跟`std_deviation_population`和`variance_population`相同。
+&emsp;&emsp;`std_deviation`和`variance`是基于总体指标（population metric）计算的，所以它们的值分别跟`std_deviation_population`和`variance_population`相同。
 
 ```text
 {
@@ -21328,7 +21449,7 @@ GET /exams/_search
 
 &emsp;&emsp;`sigma`可以是任何非负双精度值，这意味着你可以请求非整数值，如1.5。 0也是一个有效的值，但它将只返回平均值作为上下限（`uppper`和`lower`边界）。
 
-&emsp;&emsp;上下限（`uppper`和`lower`边界）基于总体指标计算得来，所以他们的值分别跟`upper_population`和`lower_population`相同。
+&emsp;&emsp;上下限（`uppper`和`lower`边界）基于总体指标计算得来，所以它们的值分别跟`upper_population`和`lower_population`相同。
 
 > NOTE：计算标准偏差和界限（bounds）需要数据服从正态分布
 > 标准偏差及其边界默认会被显示，但它们并不总是适用于所有数据集。你的数据必须呈正态分布，这样这些指标才有意义。标准偏差背后的统计学假设数据是正态分布的，因此如果你的数据严重向左或向右偏斜，返回的值将是误导性的。
@@ -21362,7 +21483,7 @@ GET /exams/_search
 
 ##### Missing value
 
-&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
 
 ```text
 GET /exams/_search
@@ -21443,7 +21564,7 @@ POST /sales/_search
 
 ##### Missing value
 
-&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
 
 ```text
 POST /sales/_search
@@ -21594,7 +21715,7 @@ POST /exams/_search
 
 ##### Missing value
 
-&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，他们会被忽略，但是可以将它们视为具有某个值的文档。
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
 
 ```text
 POST /exams/_search?size=0
@@ -24239,7 +24360,7 @@ PUT _rollup/job/sensor
 &emsp;&emsp;接下来是`groups`的设置。Essentially, we are defining the dimensions that we wish to pivot on at a later date when querying the data。这个job中的grouping允许我们在`timestamp`域上执行`date_histogram`操作，按照一小时的间隔进行rollup。同样允许我们在`node`域上进行terms aggregation。
 
 > Date histogram interval vs cron schedule
-> 你可能注意到了job中的cron配置为每30秒执行一次，但是date_histogram配置为按照60分钟的间隔执行rollup，他们之间是什么关系呢？
+> 你可能注意到了job中的cron配置为每30秒执行一次，但是date_histogram配置为按照60分钟的间隔执行rollup，它们之间是什么关系呢？
 > date_histogram控制保存的数据（saved data）的颗粒度。数据会按照小时的间隔（hourly interval）执行rollup，并且你无法执行更细的颗粒度（finer granularity）的查询。cron只是简单的查找是不是有新的数据可以用于rollup。每隔30秒，cron会看下有没有new hour’s worth of data可以用于rollup，如果没有，这个job则go back to sleep。
 > 通常来说，在一个较大的间隔（1h）中定义一个这么小的cron（30s）是不合理的，因为大部分cron激活后会马上go back to sleep。但这也不会有什么问题，job会正确处理这种情况。
 
@@ -24318,7 +24439,7 @@ GET /sensor_rollup/_rollup_search
 
 &emsp;&emsp;这里唯一需要注意的是Rollup的查询结果中是没有`hits`结果的，因为我们不再从原始的，live data中进行查询。其他部分都是相同的语法结构。
 
-&emsp;&emsp;There are a few interesting takeaways here。首先，尽管数据按小时的间隔（hourly interval）并按照node的名称进行分组，但是这个query我们只计算了所有文档中temperature的最大值。job中配置的`groups`在查询不是必要的元素（mandatory element），他们只是你可以用于分组的额外的维度。其次，这个查询和响应跟普通的DSL是一模一样的，使得更容易集成与dashboard和应用中。
+&emsp;&emsp;There are a few interesting takeaways here。首先，尽管数据按小时的间隔（hourly interval）并按照node的名称进行分组，但是这个query我们只计算了所有文档中temperature的最大值。job中配置的`groups`在查询不是必要的元素（mandatory element），它们只是你可以用于分组的额外的维度。其次，这个查询和响应跟普通的DSL是一模一样的，使得更容易集成与dashboard和应用中。
 
 &emsp;&emsp;最后，我们可以使用分组的字段来构造一个更加复杂的查询：
 
@@ -25050,7 +25171,7 @@ _transform/
    -  在这个例子中， 我们将使用电子商务订单的样例数据(eCommerce orders sample data)。如果你不熟悉`kibana_sample_data_ecommerce`这个索引，使用Kibana中的**Revenue**了解下。考虑下你能从这些电子商务数据中获得哪些insight
 3. 选出transform的pivot类型，并使用各种用于分组和聚合的选项
    - 目前有两种类型的transform，但首先我们先要`Pivoting`你的数据，也就是至少使用一个域进行分组（apply）并应用一个聚合。你可以先预览转化后的数据（transformed data）， so go ahead and play with it! 你也可以开启histogram chart来更好的了解你的数据分布。
-   - 比如说你可能想要根据产品ID进行分组并且统计每一个产品的销售额和平均价格。或者你可能想要查看每一个客户的行为，计算每一个客户的总消费以及他们为多少种产品付费。或者你可能想要将货币和地区考虑进去。What are the most interesting ways you can transform and interpret this data?
+   - 比如说你可能想要根据产品ID进行分组并且统计每一个产品的销售额和平均价格。或者你可能想要查看每一个客户的行为，计算每一个客户的总消费以及它们为多少种产品付费。或者你可能想要将货币和地区考虑进去。What are the most interesting ways you can transform and interpret this data?
 
 &emsp;&emsp;进入Kibana中的**Management > Stack Management > Data > Transforms**，使用向导（use the wizard）来创建一个transform：
 
@@ -26140,7 +26261,7 @@ POST _transform/_preview
 }
 ```
 
-&emsp;&emsp;第4行，在`source`对象中引用的索引，他们将会进行相互比较
+&emsp;&emsp;第4行，在`source`对象中引用的索引，它们将会进行相互比较
 &emsp;&emsp;第13行，`dest`索引中包含了比较的结果
 &emsp;&emsp;第20行，`group_by`字段必须是文档中的唯一键
 &emsp;&emsp;第25行，`scripted_metric` aggregation对象
@@ -26326,7 +26447,7 @@ POST _transform/_preview
 
 ###### Transforms support cross-cluster search if the remote cluster is configured properly
 
-&emsp;&emsp;如果你使用[cross-cluster search](#Search across clusters)，远程的集群（remote cluster）必须支持你transform中的查询和聚合。Transform会验证他们的配置。如果你使用了cross-cluster search并且验证失败，确保远程的集群支持你使用的查询和聚合。
+&emsp;&emsp;如果你使用[cross-cluster search](#Search across clusters)，远程的集群（remote cluster）必须支持你transform中的查询和聚合。Transform会验证它们的配置。如果你使用了cross-cluster search并且验证失败，确保远程的集群支持你使用的查询和聚合。
 
 ###### Using scripts in transforms
 
@@ -26531,7 +26652,7 @@ POST _transform/_preview
 
 &emsp;&emsp;一旦你的集群增长超过3个节点，你可以指定节点给予特定的责任，根据需要独立的衡量节点需要的资源。你可以有许多例如 [data nodes](#Data node), [ingest nodes](#Ingest pipelines), [machine learning nodes](#Machine learning node)等等的节点。根据你的需求来支持你的工作量。当你的集群增长到更大后，我们建议你为每一个角色指定专用的节点。这样可以为每一个任务来独立的衡量对应的资源。
 
-&emsp;&emsp;然而，一个好的实践就是限制master-eligible的节点数量到三个。Master节点不需要像其他类型的节点一样去衡量，因为总是从他们三个中选取一个作为master节点。如果有太多的master-eligible节点，那么完成master的选举需要较长的时间才能完成。在大型的集群中，我们建议你配置一些节点为dedicated master-eligible节点，并且避免往这些专用的节点中发送请求。如果master-eligible节点因为额外的工作可能会导致你的集群可能变得不稳定，这些额外的工作可以交给其他节点处理。
+&emsp;&emsp;然而，一个好的实践就是限制master-eligible的节点数量到三个。Master节点不需要像其他类型的节点一样去衡量，因为总是从它们三个中选取一个作为master节点。如果有太多的master-eligible节点，那么完成master的选举需要较长的时间才能完成。在大型的集群中，我们建议你配置一些节点为dedicated master-eligible节点，并且避免往这些专用的节点中发送请求。如果master-eligible节点因为额外的工作可能会导致你的集群可能变得不稳定，这些额外的工作可以交给其他节点处理。
 
 &emsp;&emsp;你可以将master-eligible节点中的一个节点为[voting-only node](#Voting-only master-eligible node)，这样它永远不会被选为master节点。比如说你有两个专用的master 节点以及一个第三个节点，这个节点同时是data note以及voting-only master-eligible节点。第三个节点将会用于在master选举中扮演tiebreaker并且自身不会成为master。
 
@@ -26594,7 +26715,7 @@ POST _transform/_preview
 - 至少有两个区域有数据节点
 - 每一个不是[searchable snapshot index](#Searchable snapshots)的索引至少每一个分片都有一个replica，in addition to the primary
 - 配置Shard allocation awareness使得不让一个分片的所有副本都集中在一个区域中
-- 集群中至少有三个master-eligible节点，只要这些节点中至少有两个不是voting-only master-eligible nodes，并且他们分在至少三个不同的区域中
+- 集群中至少有三个master-eligible节点，只要这些节点中至少有两个不是voting-only master-eligible nodes，并且它们分在至少三个不同的区域中
 - 客户端配置为将其请求发送到多个节点，或者配置为使用负载均衡器在一组适当的节点之间平衡请求，[Elastic Cloud](https://www.elastic.co/cloud/elasticsearch-service/signup?baymax=docs-body&elektra=docs) 服务提供这种负载均衡
 
 ### Cross-cluster replication
@@ -28131,7 +28252,7 @@ GET index/_search
 
 &emsp;&emsp;一种推荐的方式是使用一个字符串（用户的id或者session）来确认登陆的用户的身份作为一个[preference](#preference)，使得给定的用户总是去命中相同的分片，最终多个查询的打分始终是一致的。
 
-&emsp;&emsp;这种work around还有别的好处：当两篇文档的打分相同时，他们会默认的根据lucene内部id（跟`_id没有关系`）进行排序。然而这些lucene内部id在同一个分片的不同副本中可能是不同的。所以通过总是命中相同的分片，使得相同打分值的文档总是有一致的排序结果。
+&emsp;&emsp;这种work around还有别的好处：当两篇文档的打分相同时，它们会默认的根据lucene内部id（跟`_id没有关系`）进行排序。然而这些lucene内部id在同一个分片的不同副本中可能是不同的。所以通过总是命中相同的分片，使得相同打分值的文档总是有一致的排序结果。
 
 ##### Relevancy looks wrong
 
@@ -29453,7 +29574,7 @@ PUT my-index-000001/_settings
 GET _cat/count/my-index-000001?v=true
 ```
 
-&emsp;&emsp;一旦有了空的索引列表，你可以使用[delete index API](#Delete index API)删除他们。你也可以删除不再与需要的索引。
+&emsp;&emsp;一旦有了空的索引列表，你可以使用[delete index API](#Delete index API)删除它们。你也可以删除不再与需要的索引。
 
 ```text
 DELETE my-index-000001
@@ -31574,7 +31695,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - attributes：（object）用列表描述的节点的一些属性
   - indices：（object）分配到节点的索引分片的统计信息
     - docs：（object）节点上所有主分片的文档统计信息
-      - count：（integer）Lucene提供的文档数量的报告。不包含被删除的文档以及[nested documents](#Nested field type)中从他们的parent分离的文档。同样不包含已经索引到内存但还未属于某个段的文档
+      - count：（integer）Lucene提供的文档数量的报告。不包含被删除的文档以及[nested documents](#Nested field type)中从它们的parent分离的文档。同样不包含已经索引到内存但还未属于某个段的文档
       - deleted：（integer）Lucene提供的被删除的文档数量。这个数字可能高于或低于你执行的删除操作次数。这个数字不包括最近执行的且尚未属于任何段的删除。被删除的文档可以通过[][automatic merge process](#Merge)进行清理，如果这样做是有意义的话。此外，Elasticsearch会内部创建额外的已删除文档，用以跟踪分片上最近的操作历史。
     - store：（object）分配到该节点上的分片大小的统计信息
       - size：（[byte value](#Byte size units)）分配到该结点上所有分片的大小（所有索引数据的物理磁盘占用大小，存储优化后的数据）总量
@@ -33764,7 +33885,7 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;Elasticsearch中的每一个索引操作首先基于文档编号（document ID）通过[routing](#Routing(Index API))解析（resolve）replication group。一旦检测到replication group，这个操作会在内部转发到组中当前的主分片中。这个索引阶段称为`coordinating stage`。
 
-&emsp;&emsp;索引阶段的下一个阶段就是`primary stage`，在主分片上执行。主分片负责对索引操作进行验证并转发到其他副本分片。由于副本分片可能处于离线状态，主分片不要求一定要转发到所有的副本分片。Elasticsearch维护了副本分片的列表，这些副本会收到主分片的转发。这个列表称为`in-sync copies` 并且master node负责维护。正如in-sync这个名称一样，列表中的都是"good" 副本分片并且他们已经处理好了所有的索引和删除操作并且响应给了用户。主分片负责维护这个列表因此会复制操作给列表中的每一个副本分片。
+&emsp;&emsp;索引阶段的下一个阶段就是`primary stage`，在主分片上执行。主分片负责对索引操作进行验证并转发到其他副本分片。由于副本分片可能处于离线状态，主分片不要求一定要转发到所有的副本分片。Elasticsearch维护了副本分片的列表，这些副本会收到主分片的转发。这个列表称为`in-sync copies` 并且master node负责维护。正如in-sync这个名称一样，列表中的都是"good" 副本分片并且它们已经处理好了所有的索引和删除操作并且响应给了用户。主分片负责维护这个列表因此会复制操作给列表中的每一个副本分片。
 
 &emsp;&emsp;主分片遵循下面基本的步骤：
 
@@ -33775,7 +33896,7 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;`in-sync`中的副本分片在本地执行索引操作。这个索引阶段称为`replica stage`。
 
-&emsp;&emsp;这些索引阶段（coordination，primary，replica）是有序执行的。为了能实现内部重试（to enable internal retries），每一个阶段的时间（lifetime）包括（encompass）了 它的下一个阶段的时间。例如，coordination stage直到每一个primary stage完成才算是完成，primary stage可能会分散（spread out）到不同的主分片，等待他们完成。每一个primary stage直到每一个replica stage完成才算是完成，replica stage需要等到每一个副本分配完成本地的文档索引操作并且能成功的响应。
+&emsp;&emsp;这些索引阶段（coordination，primary，replica）是有序执行的。为了能实现内部重试（to enable internal retries），每一个阶段的时间（lifetime）包括（encompass）了 它的下一个阶段的时间。例如，coordination stage直到每一个primary stage完成才算是完成，primary stage可能会分散（spread out）到不同的主分片，等待它们完成。每一个primary stage直到每一个replica stage完成才算是完成，replica stage需要等到每一个副本分配完成本地的文档索引操作并且能成功的响应。
 
 ###### Failure handling
 
@@ -34086,7 +34207,7 @@ POST my-index-000001/_update_by_query
 - noop：`ctx.op = "noop"`，如果你的脚本决定不需要做任何更改。那么就会跳过不更新这篇文档并且`noop`的值加一
 - delete：`ctx.op = "delete"`，如果你的脚本决定文档应该被删除。那么就会删除文档并且`deleted`的值加一
 
-&emsp;&emsp;该接口支持`update`、`noop`、`delete`。将`ctx.op`设置成其他值都会报错。设置`ctx`的其他域也会报错。这个接口只能让你更改匹配到的文档的内容，你不能移动他们。
+&emsp;&emsp;该接口支持`update`、`noop`、`delete`。将`ctx.op`设置成其他值都会报错。设置`ctx`的其他域也会报错。这个接口只能让你更改匹配到的文档的内容，你不能移动它们。
 
 ###### Update documents using an ingest pipeline
 
@@ -35070,7 +35191,7 @@ PUT /my_source_index/_settings
 &emsp;&emsp;克隆工作方式如下：
 
 - 首先创建一个跟源索引相同定义的目标索引
-- 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且他们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
+- 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且它们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
 - 最后，恢复后的目标索引就像是一个被关闭的索引，并且刚刚被打开
 
 ###### Clone an index
@@ -35523,7 +35644,7 @@ PUT /_component_template/<component-template>
 
 - template：（Required, object）待应用的模板。模板中可能包含`mappings`、`settings`、`aliases`配置
   - aliases：（Optional, object of objects）待添加的别名
-    - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+    - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
         - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
         - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -35673,7 +35794,7 @@ PUT /_index_template/<index-template>
 ##### Response body
 
 - composed_of：（Optional, array of object）有序的组件模版（component template）列表。组件模板按照定义中的顺序进下合并，意味着最后一个组件模版有最高的优先级。见[Composing multiple component templates](#Composing aliases, mappings, and settings)中的例子
-- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及他们的backing indices。支持空的对象（即`data_stream: {}`）
+- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及它们的backing indices。支持空的对象（即`data_stream: {}`）
   - Data stream要求满足匹配的模板中要有一个`data_stream`字段。见[create an index template](#Create an index template)
     - hidden：（Boolean）如果为`true`，data stream是[hidden](#Hidden data streams and indices-1)
     - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据允许自定义写请求([custom routing](#\_routing field))
@@ -35683,7 +35804,7 @@ PUT /_index_template/<index-template>
 - priority：（Optional, integer）当data stream或者index创建时，决定了优先匹配哪些索引。总是选择优先级最高的模版。如果索引模板中没有指定优先级，即默认为优先级为`0`（最低的优先级）。Elasticsearch不会自动生成这个字段
 - template：（Optional, object）待应用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
     - aliases：（Optional, object of objects）待添加的别名
-      - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+      - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
         - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
           - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
           - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -35938,7 +36059,7 @@ PUT _template/template_1
 
 - index_patterns：（array）被替代的模板中定义的`index_pattern`内容
 - aliases：（Optional, object of objects）待添加的别名
-  - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+  - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
     - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
       - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
       - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -37213,7 +37334,7 @@ PUT /my_source_index/_settings
 &emsp;&emsp;收缩操作：
 
 1. 创建一个跟源索引有相同定义的目标索引，但是有更少的主分片
-2. 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且他们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
+2. 建立源索引跟目标索引的hard-links segments。（如果系统不支持hard-linking，那么所有的段会拷贝到新的索引，这样花费更多的处理时间。同样的如果使用了多个数据路径，并且它们不在同一个磁盘上，由于hardlink不支持跨磁盘，那么就要求完全拷贝段文件）
 3. 恢复后的目标索引就像是一个被关闭的索引，并且刚刚被打开
 
 ###### Shrink an index
@@ -37341,7 +37462,7 @@ POST /_index_template/_simulate_index/<index>
   - index_patterns：（array）被替代的模板中定义的`index_pattern`内容
 - template：（object）应用到索引的settings、mappings以及aliases
   - aliases：（Optional, object of objects）待添加的别名
-    - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+    - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
         - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
         - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -37470,7 +37591,7 @@ POST /_index_template/_simulate/<index-template>
 
 ##### Request body
 
-- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及他们的backing indices。支持空的对象（即`data_stream: {}`）
+- data_stream：（Optional, object）如果请求中有这个字段，说明这个模板用来创建data streams以及它们的backing indices。支持空的对象（即`data_stream: {}`）
   - Data stream要求满足匹配的模板中要有一个`data_stream`字段。见[create an index template](#Create an index template)
     - hidden：（Boolean）如果为`true`，data stream是[hidden](#Hidden data streams and indices-1)
     - allow_custom_routing：（Boolean）如果为`true`，流入到data stream的数据允许自定义写请求([custom routing](#\_routing field))
@@ -37480,7 +37601,7 @@ POST /_index_template/_simulate/<index-template>
 - priority：（Optional, integer）当data stream或者index创建时，决定了优先匹配哪些索引。总是选择优先级最高的模版。如果索引模板中没有指定优先级，即默认为优先级为`0`（最低的优先级）。Elasticsearch不会自动生成这个字段
 - template：（Optional, object）待应用（apply）的模版。它可能包含了`aliases`、`mappings`、`settings`这三个配置
     - aliases：（Optional, object of objects）待添加的别名
-      - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+      - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
         - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
           - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
           - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -37502,7 +37623,7 @@ POST /_index_template/_simulate/<index-template>
   - index_patterns：（array）被替代的模板中定义的`index_pattern`内容
 - template：（object）应用到索引的settings、mappings以及aliases
   - aliases：（Optional, object of objects）待添加的别名
-    - 如果索引模板中定义了`data_stream`，则他们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
+    - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
         - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
         - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
@@ -40030,7 +40151,7 @@ DELETE _scripts/<script-id>
 #### Get script contexts API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-script-contexts-api.html)
 
-&emsp;&emsp;获取支持的脚本内容和他们的方法。
+&emsp;&emsp;获取支持的脚本内容和它们的方法。
 
 ```text
 GET _script_context
@@ -40049,7 +40170,7 @@ GET _script_context
 #### Get script languages API
 （8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-script-languages-api.html)
 
-&emsp;&emsp;获取支持的[script languages](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)和他们的上下文。
+&emsp;&emsp;获取支持的[script languages](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)和它们的上下文。
 
 ##### Request
 
@@ -40352,7 +40473,7 @@ POST /_search
 
 &emsp;&emsp;参数`keep_alive`用于打开PIT的请求以及后续的查询请求，用来延长expand对应的PIT的存活时间time to live，这个值表示需要在这个时间内执行下一次查询，而不是在这个时间内必须处理完所有的结果。
 
-&emsp;&emsp;通常来说，后台的段的合并操作会将一些较小的段合并成一个更大的新的段。一旦这些较小的段（已经被合并了）不再被使用那么就会被删除。然后PIT会使得这些段防止被删除因为他们还在使用中。
+&emsp;&emsp;通常来说，后台的段的合并操作会将一些较小的段合并成一个更大的新的段。一旦这些较小的段（已经被合并了）不再被使用那么就会被删除。然后PIT会使得这些段防止被删除因为它们还在使用中。
 
 >TIP：保留旧的段意味着要求更多的磁盘空间以及文件句柄，确保在你的节点上配置好充足的ample的文件句柄，见[File Descriptors](#File Descriptors)
 
@@ -41011,7 +41132,7 @@ POST /_snapshot/<repository>/<snapshot>
   - For snapshots taken after 7.12.0, [feature states](#Feature states)
 - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
   - 你不能使用这个参数来包含或者排除[system indices or system data streams](#System indices)，可以转而使用下面的feature_states参数
-- feature_states：（Optional, array of strings）将[Feature states ](#Feature states)包含到快照中。若要获取可能的值以及他们的描述，可以使用[get features API](#Get Features API)
+- feature_states：（Optional, array of strings）将[Feature states ](#Feature states)包含到快照中。若要获取可能的值以及它们的描述，可以使用[get features API](#Get Features API)
   - 如果`include_global_state`为`true`，快照默认包含所有的feature states。否则不包含
   - 注意的是指定一个空数组会产生默认行为。若要排除素有的feature states，并且不用关心`include_global_state`是何值，则可以指定一个只有`none`值的数组（`["none"]`）
 - metadata：（Optional, object）任意的附加快照的一些元数据。比如记录哪个人生成了快照，为什么要生成快照，或者其他有用的数据。元数据大小必须小于1024个字节
@@ -41906,7 +42027,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
     - For snapshots taken after 7.12.0, [feature states](#Feature states)
   - indices：（Optional, string or array of strings）写入到快照的data streams和indices，用逗号隔开。支持[multi-target syntax](#Multi-target-syntax)。默认是一个空数组（`[]`），包含常规的data streams和常规的indices。若要排除所有的data streams和indices，可以使用`-*`
     - 你不能使用这个参数来包含或者排除[system indices or system data streams](#System indices)，可以转而使用下面的feature_states参数
-  - feature_states：（Optional, array of strings）将[Feature states ](#Feature states)包含到快照中。若要获取可能的值以及他们的描述，可以使用[get features API](#Get Features API)
+  - feature_states：（Optional, array of strings）将[Feature states ](#Feature states)包含到快照中。若要获取可能的值以及它们的描述，可以使用[get features API](#Get Features API)
     - 如果`include_global_state`为`true`，快照默认包含所有的feature states。否则不包含
     - 注意的是指定一个空数组会产生默认行为。若要排除素有的feature states，并且不用关心`include_global_state`是何值，则可以指定一个只有`none`值的数组（`["none"]`）
   - metadata：（Optional, object）任意的附加快照的一些元数据。比如记录哪个人生成了快照，为什么要生成快照，或者其他有用的数据。元数据大小必须小于1024个字节
