@@ -20865,9 +20865,264 @@ POST /sales/_search?size=0&filter_path=aggregations
 ```
 
 #### Auto-interval date histogram aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-autodatehistogram-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-autodatehistogram-aggregation.html)
 
-&emsp;&emsp;它属于multi-bucket aggregation。 
+&emsp;&emsp;它属于multi-bucket aggregation。 类似[Date histogram](#Date histogram aggregation)，Date histogram aggregation使用了间隔（interval）作为每一个分桶之间的"宽度"。而Auto-interval date histogram aggregation则是指定了分桶的数量，来告知需要返回的分桶数。它能自动的选择分桶之间的"宽度"来满足要求。返回的分桶数量将总是不大于指定的分桶数量。
+
+&emsp;&emsp;参数`buckets`是可选的，如果未指定则使用默认值：`10`。
+
+&emsp;&emsp;要求返回10个分桶：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "auto_date_histogram": {
+        "field": "date",
+        "buckets": 10
+      }
+    }
+  }
+}
+```
+
+##### Keys
+
+&emsp;&emsp;在Elasticsearch内部实现中，日期用64位的时间戳表示，也就是milliseconds-since-the-epoch（01/01/1970 midnight UTC）。这些时间戳将作为分桶的key。`key_as_string`则是使用相同的时间戳根据`format`转化成格式化后的日期字符串：
+
+> TIP：如果你不指定`format`，则使用域的mapping中第一个date [format](#format(mapping parameter))。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "auto_date_histogram": {
+        "field": "date",
+        "buckets": 5,
+        "format": "yyyy-MM-dd" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，支持expressive date [format pattern](#Date range aggregation)
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "sales_over_time": {
+      "buckets": [
+        {
+          "key_as_string": "2015-01-01",
+          "key": 1420070400000,
+          "doc_count": 3
+        },
+        {
+          "key_as_string": "2015-02-01",
+          "key": 1422748800000,
+          "doc_count": 2
+        },
+        {
+          "key_as_string": "2015-03-01",
+          "key": 1425168000000,
+          "doc_count": 2
+        }
+      ],
+      "interval": "1M"
+    }
+  }
+}
+```
+
+##### Intervals
+
+&emsp;&emsp;返回的分桶之间的间隔基于被聚合的数据进行选择，因此返回的分桶数量将总是不大于指定的分桶数量。可能的间隔如下所示：
+
+
+
+| seconds |     以1、5、10和30的倍数      |
+| :-----: | :---------------------------: |
+| minutes |     以1、5、10和30的倍数      |
+|  hours  |       以1、3和12的倍数        |
+|  days   |         以1和7的倍数          |
+| months  |         以1和3的倍数          |
+|  years  | 以1、5、10、20、50和100的倍数 |
+
+
+&emsp;&emsp;最坏的情况下，当指定的分桶数量由于是按天分桶导致分桶数量过多的话，返回的分桶数量是指定数量的1/7。
+
+##### Time Zone
+
+&emsp;&emsp;Elasticsearch用Coordinated Universal Time (UTC)存储日期时间。默认使用UTC进行分桶和舌入。使用`time_zone`字段来告知应该使用不同的时区。
+
+&emsp;&emsp;你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`就是在TZ 数据库中使用的标识符。
+
+&emsp;&emsp;比如有这样的例子：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "date": "2015-10-01T00:30:00Z"
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "date": "2015-10-01T01:30:00Z"
+}
+
+PUT my-index-000001/_doc/3?refresh
+{
+  "date": "2015-10-01T02:30:00Z"
+}
+
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "by_day": {
+      "auto_date_histogram": {
+        "field":     "date",
+        "buckets" : 3
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果未指定时区则使用UTC，返回了3个间隔为1个小时的分桶，第一个分桶从2015年10月1日午夜开始：
+
+```text
+{
+  ...
+  "aggregations": {
+    "by_day": {
+      "buckets": [
+        {
+          "key_as_string": "2015-10-01T00:00:00.000Z",
+          "key": 1443657600000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T01:00:00.000Z",
+          "key": 1443661200000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T02:00:00.000Z",
+          "key": 1443664800000,
+          "doc_count": 1
+        }
+      ],
+      "interval": "1h"
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果指定`time_zone`为`-01:00`，那么分桶的开始时间就是UTC午夜时间的前一个小时。
+
+```text
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "by_day": {
+      "auto_date_histogram": {
+        "field":     "date",
+        "buckets" : 3,
+        "time_zone": "-01:00"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;现在分桶之间的间隔仍然是1个小诗诗，但是第一个分桶的开始时间为2015年9月30号下午11点。这是指定时区的本地时间：
+
+```text
+{
+  ...
+  "aggregations": {
+    "by_day": {
+      "buckets": [
+        {
+          "key_as_string": "2015-09-30T23:00:00.000-01:00", 
+          "key": 1443657600000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T00:00:00.000-01:00",
+          "key": 1443661200000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T01:00:00.000-01:00",
+          "key": 1443664800000,
+          "doc_count": 1
+        }
+      ],
+      "interval": "1h"
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，The `key_as_string` value represents midnight on each day in the specified time zone.（感觉说的不对）
+
+> WARNING：许多时区会因夏令时而调整时钟。在这些变更发生时附近的桶可能比你根据calendar_interval或fixed_interval预期的大小略有不同。例如，考虑CET时区的夏令时开始：2016年3月27日凌晨2点，时钟向前调整1小时至当地时间3点。如果你使用day作为calendar_interval，那么覆盖那天的桶将只包含23小时的数据，而不是其他桶的常规24小时。对于更短的间隔，如fixed_interval的12小时，当夏令时变更发生时，3月27日早上你将只有一个11小时的桶
+
+##### Minimum Interval parameteredit
+
+&emsp;&emsp;`minimum_interval`参数允许使用者指定应该使用的最小舌入间隔（rounding interval）。这使得收集过程更加效率，因为聚合不会尝试在小于`minimum_interval`的任何间隔上进行舍入。
+
+&emsp;&emsp;可接受的`minimum_interval`单位有：
+
+- year
+- month
+- day
+- hour
+- minute
+- second
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sale_date": {
+      "auto_date_histogram": {
+        "field": "date",
+        "buckets": 10,
+        "minimum_interval": "minute"
+      }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sale_date": {
+      "auto_date_histogram": {
+        "field": "date",
+        "buckets": 10,
+        "missing": "2000/01/01" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，没有`date`域的文档会落入相同的分桶中，并且把这些文档看成有`date`域，并且值为`2000/01/01`
 
 
 #### Filters aggregation
