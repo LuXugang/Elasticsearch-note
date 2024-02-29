@@ -22716,7 +22716,7 @@ POST /sales/_search?size=0
 #### Date range aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
 
-&emsp;&emsp;专门为日期值使用的range aggregation。这个聚合根[range](#Range aggregation) aggregation的主要不同是`from`跟`to`可以用[Date Math](#Date Math)表达式。也可以在返回的`from`跟`to`使用格式化后的日期。注意的是在这个聚合中，每一个范围的`from`是包含并且`to`是不包含的。
+&emsp;&emsp;专门为日期值（date value）使用的range aggregation。这个聚合根[range](#Range aggregation) aggregation的主要不同是`from`跟`to`可以用[Date Math](#Date Math)表达式。也可以在返回的`from`跟`to`使用格式化后的日期。注意的是在这个聚合中，每一个范围的`from`是包含并且`to`是不包含的。
 
 &emsp;&emsp;例子：
 
@@ -22994,6 +22994,241 @@ POST /sales/_search?size=0
           "from_as_string": "03-2015",
           "to": 1.4331168E12,
           "to_as_string": "06-2015",
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
+
+#### Geo-distance aggregation
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-geodistance-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket aggregation。应用在[geo_point](#Geopoint field type)类型的域上，概念上跟[range](#Range aggregation) aggregation十分相似。用户可以定义一个名为`origin`的点以及距离范围集合。该聚合根据`origin`中指定的 `point`计算每一个文档跟这个点的的距离，然后根据范围（如果文档跟`origin`的距离属于定义的某个距离范围，那么就落入到对应的分桶中）决定文档落在哪个分桶中。
+
+```text
+PUT /museums
+{
+  "mappings": {
+    "properties": {
+      "location": {
+        "type": "geo_point"
+      }
+    }
+  }
+}
+
+POST /museums/_bulk?refresh
+{"index":{"_id":1}}
+{"location": "POINT (4.912350 52.374081)", "name": "NEMO Science Museum"}
+{"index":{"_id":2}}
+{"location": "POINT (4.901618 52.369219)", "name": "Museum Het Rembrandthuis"}
+{"index":{"_id":3}}
+{"location": "POINT (4.914722 52.371667)", "name": "Nederlands Scheepvaartmuseum"}
+{"index":{"_id":4}}
+{"location": "POINT (4.405200 51.222900)", "name": "Letterenhuis"}
+{"index":{"_id":5}}
+{"location": "POINT (2.336389 48.861111)", "name": "Musée du Louvre"}
+{"index":{"_id":6}}
+{"location": "POINT (2.327000 48.860000)", "name": "Musée d'Orsay"}
+
+POST /museums/_search?size=0
+{
+  "aggs": {
+    "rings_around_amsterdam": {
+      "geo_distance": {
+        "field": "location",
+        "origin": "POINT (4.894 52.3760)",
+        "ranges": [
+          { "to": 100000 },
+          { "from": 100000, "to": 300000 },
+          { "from": 300000 }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "rings_around_amsterdam": {
+      "buckets": [
+        {
+          "key": "*-100000.0",
+          "from": 0.0,
+          "to": 100000.0,
+          "doc_count": 3
+        },
+        {
+          "key": "100000.0-300000.0",
+          "from": 100000.0,
+          "to": 300000.0,
+          "doc_count": 1
+        },
+        {
+          "key": "300000.0-*",
+          "from": 300000.0,
+          "doc_count": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;待聚合的域必须是`geo_point`类型（只能在mapping中显示的指定该类型）。`geo_point`类型也可以包含一个geo_point字段的数组，在聚合时候所有的点都会考虑进去。`origing`的值可以有跟[geo_point](#Geopoint field type)一样的格式：
+
+- 对象格式：`{ "lat" : 52.3760, "lon" : 4.894 }`。这是最安全的格式，因为显示的指明了`lat`和`lon`的值
+- 字符串格式：`"52.3760, 4.894"` 。第一个数值是`lat`，第二个数值是`lon`
+- 数组格式：`[4.894, 52.3760]`。基于 GeoJSON标准，第一个数值是`lon`，第二个数值是`lat`
+
+&emsp;&emsp;默认情况下，距离单位是`m`（meters）但也可以是：`mi` (miles), `in` (inches), `yd` (yards), `km` (kilometers), `cm` (centimeters), `mm` (millimeters).
+
+```text
+POST /museums/_search?size=0
+{
+  "aggs": {
+    "rings": {
+      "geo_distance": {
+        "field": "location",
+        "origin": "POINT (4.894 52.3760)",
+        "unit": "km", 
+        "ranges": [
+          { "to": 100 },
+          { "from": 100, "to": 300 },
+          { "from": 300 }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，按照千米进行计算
+
+&emsp;&emsp;有两种计算模式：`arc`（弧度，默认计算方式）和`plane`（平面）。平面计算是最快但最不准确的。当你的搜索上下文是“狭窄的”且跨越较小的地理区域（约5公里）时，考虑使用平面计算。对于跨越非常大的区域（例如，跨洲搜索）的搜索，平面计算将返回更高的误差范围。距离计算类型可以使用`distance_type`参数来设置：
+
+```text
+POST /museums/_search?size=0
+{
+  "aggs": {
+    "rings": {
+      "geo_distance": {
+        "field": "location",
+        "origin": "POINT (4.894 52.3760)",
+        "unit": "km",
+        "distance_type": "plane",
+        "ranges": [
+          { "to": 100 },
+          { "from": 100, "to": 300 },
+          { "from": 300 }
+        ]
+      }
+    }
+  }
+}
+```
+
+##### Keyed Response
+
+&emsp;&emsp;将`keyed`设置为`true`，每个分桶名会关联一个唯一的string key，响应中所有的分桶用hash展示而不是用数组：
+
+```text
+POST /museums/_search?size=0
+{
+  "aggs": {
+    "rings_around_amsterdam": {
+      "geo_distance": {
+        "field": "location",
+        "origin": "POINT (4.894 52.3760)",
+        "ranges": [
+          { "to": 100000 },
+          { "from": 100000, "to": 300000 },
+          { "from": 300000 }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "rings_around_amsterdam": {
+      "buckets": {
+        "*-100000.0": {
+          "from": 0.0,
+          "to": 100000.0,
+          "doc_count": 3
+        },
+        "100000.0-300000.0": {
+          "from": 100000.0,
+          "to": 300000.0,
+          "doc_count": 1
+        },
+        "300000.0-*": {
+          "from": 300000.0,
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;也可以为每一个范围指定自定义的key：
+
+```text
+POST /museums/_search?size=0
+{
+  "aggs": {
+    "rings_around_amsterdam": {
+      "geo_distance": {
+        "field": "location",
+        "origin": "POINT (4.894 52.3760)",
+        "ranges": [
+          { "to": 100000, "key": "first_ring" },
+          { "from": 100000, "to": 300000, "key": "second_ring" },
+          { "from": 300000, "key": "third_ring" }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "rings_around_amsterdam": {
+      "buckets": {
+        "first_ring": {
+          "from": 0.0,
+          "to": 100000.0,
+          "doc_count": 3
+        },
+        "second_ring": {
+          "from": 100000.0,
+          "to": 300000.0,
+          "doc_count": 1
+        },
+        "third_ring": {
+          "from": 300000.0,
           "doc_count": 2
         }
       }
