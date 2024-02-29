@@ -21121,120 +21121,6 @@ GET emails/_search
 
 &emsp;&emsp;对于N个过滤条件会生成`N^2 / 2`个分桶。断路器（[ circuit breaker](#Circuit breaker settings)）会组织结果生成太多的分桶来避免过多的磁盘寻道（disk seek）。请使用`indices.query.bool.max_clause_count`来限制过滤条件的数量。
 
-#### Filter aggregation
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
-
-&emsp;&emsp;它属于single bucket aggregation（一个过滤条件只会生成一个分桶），将满足[query](#Query DSL)的文档落入到单个桶内。
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "avg_price": { "avg": { "field": "price" } },
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;这个例子尖酸了所有衣服的平均价格同时将`t-shirt`类型的衣服划分为一个桶，并且计算了桶内的平均价格。
-
-&emsp;&emsp;响应如下：
-
-```text
-{
-  "aggregations": {
-    "avg_price": { "value": 140.71428571428572 },
-    "t_shirts": {
-      "doc_count": 3,
-      "avg_price": { "value": 128.33333333333334 }
-    }
-  }
-}
-```
-
-##### Use a top-level query to limit all aggregations
-
-&emsp;&emsp;若要限制在查询运行时目标文档数量，可以使用一个top-level `query`。这样能加快带有sub-aggregation的`filter` aggregation。
-
-&emsp;&emsp;使用下面的例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "query": { "term": { "type": "t-shirt" } },
-  "aggs": {
-    "avg_price": { "avg": { "field": "price" } }
-  }
-}
-```
-
-&emsp;&emsp;而不是使用下面的例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-##### Use the filters aggregation for multiple filters
-
-&emsp;&emsp;若要使用多个filter对文档进行分组，可以使用[filters aggregation](#Filters aggregation)，它比使用多个`filter` aggregations更快。
-
-&emsp;&emsp;例如应该这个例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "f": {
-      "filters": {
-        "filters": {
-          "hats": { "term": { "type": "hat" } },
-          "t_shirts": { "term": { "type": "t-shirt" } }
-        }
-      },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;而不是使用这个例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "hats": {
-      "filter": { "term": { "type": "hat" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    },
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
 
 #### Auto-interval date histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-autodatehistogram-aggregation.html)
@@ -21413,7 +21299,7 @@ GET my-index-000001/_search?size=0
 }
 ```
 
-&emsp;&emsp;现在分桶之间的间隔仍然是1个小诗诗，但是第一个分桶的开始时间为2015年9月30号下午11点。这是指定时区的本地时间：
+&emsp;&emsp;现在分桶之间的间隔仍然是1个小时，但是第一个分桶的开始时间为2015年9月30号下午11点。这是指定时区的本地时间：
 
 ```text
 {
@@ -21504,7 +21390,7 @@ POST /sales/_search?size=0
 #### Children aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
-&emsp;&emsp;它属于特殊的single bucket aggregation，选择有指定类型的子文档（child document），该类型在[join filed](#Join field type)中定义。
+&emsp;&emsp;它属于特殊的single bucket aggregation，选择有指定了类型的子文档（child document），该类型在[join filed](#Join field type)中定义。
 
 &emsp;&emsp;这个聚合有单个选项：
 
@@ -21712,6 +21598,414 @@ POST child_example/_search?size=0
 &emsp;&emsp;第67行， tag为`file-transfer`, `windows-server-2003`等question文档的数量
 &emsp;&emsp;第69行， tag为`file-transfer`, `windows-server-2003`等关联的answer文档的数量
 
+#### Composite aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-composite-aggregation.html#_date_histogram)
+
+> WARNING：composite aggregation开销是昂贵的。在你生产中部署composite aggregation前先进行测试。
+
+&emsp;&emsp;它属于multi-bucket aggregation，会根据不同的source创建composite buckets。
+
+&emsp;&emsp;跟其他`multi-bucket` aggregation不同的是，你可以使用`composite` aggregation有效地对来自多层次聚合（multi-level）aggregation的所有桶进行分页。这个聚合提供了一个方法流式处理一个指定的聚合的所有分桶，跟[scroll](#Scroll search results)处理文档类似。
+
+&emsp;&emsp;composite buckets通过对提取/创建出的每一篇文档中的值进行组合（combination），并且每一种组合都认为是一个composite bucket。
+
+&emsp;&emsp;例如，在下面这个文档中：
+
+```text
+{
+  "keyword": ["foo", "bar"],
+  "number": [23, 65, 76]
+}
+```
+
+&emsp;&emsp;下面的composite bucket中，使用`keyword`和`number`作为聚合结果的source filed。
+
+```text
+{ "keyword": "foo", "number": 23 }
+{ "keyword": "foo", "number": 65 }
+{ "keyword": "foo", "number": 76 }
+{ "keyword": "bar", "number": 23 }
+{ "keyword": "bar", "number": 65 }
+{ "keyword": "bar", "number": 76 }
+```
+
+##### Value sources
+
+&emsp;&emsp;`sources`参数定义了构建compost bucket时使用的source filed。在`sources`中的定义先后顺序控制了key的返回顺序。
+
+> NOTE: 当你定义`sources`时，你必须使用一个唯一键
+
+&emsp;&emsp;`sources`参数的类型只能是下列中的一种：
+
+- [Terms](#\_Terms)
+- [Histogram](#Histogram（Composite）)
+- [Date histogram](#Date histogram（Composite）)
+- [GeoTile grid](#GeoTile-grid（Composite）)
+
+###### \_Terms
+
+&emsp;&emsp;`terms`这个value source类似一个简答的`terms` aggregation。这个值从一个域中提出出来，跟`terms` aggregation一样。
+
+&emsp;&emsp;例子：
+
+```text
+GET /_search
+{
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          { "product": { "terms": { "field": "product" } } }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;跟`terms` aggregation一样，可以为composite bucket通过[runtime field](#Runtime fields)创建一个值：
+
+```text
+GET /_search
+{
+  "runtime_mappings": {
+    "day_of_week": {
+      "type": "keyword",
+      "script": """
+        emit(doc['timestamp'].value.dayOfWeekEnum
+          .getDisplayName(TextStyle.FULL, Locale.ROOT))
+      """
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          {
+            "dow": {
+              "terms": { "field": "day_of_week" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;尽管很相似，但是`terms`这个 value source 不支持`terms` aggregation中的参数。对于支持的value source参数，见：
+
+- [Order](#Order（Composite）)
+- [Missing bucket](#Missing bucket（Composite）)
+
+###### Histogram（Composite）
+
+&emsp;&emsp;`histogram` 这个value source可以应用在数值类型的值上，构建值之间固定大小的间隔。`interval`参数定义数值类型的值如何被转化（transform）。比如说一个`interval`为5时，任何数值都会转到其最接近的间隔，`101`这个值会被转化为`100`。这个key用于描述100到105的值。
+
+&emsp;&emsp;例如：
+
+```text
+GET /_search
+{
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          { "histo": { "histogram": { "field": "price", "interval": 5 } } }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;跟`histogram` aggregation 一样，可以为composite bucket通过[runtime field](#Runtime fields)创建一个值：
+
+```text
+GET /_search
+{
+  "runtime_mappings": {
+    "price.discounted": {
+      "type": "double",
+      "script": """
+        double price = doc['price'].value;
+        if (doc['product'].value == 'mad max') {
+          price *= 0.8;
+        }
+        emit(price);
+      """
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          {
+            "price": {
+              "histogram": {
+                "interval": 5,
+                "field": "price.discounted"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+###### Date histogram（Composite）
+
+&emsp;&emsp;`date_histogram` 类似与`histogram`，只是间隔值用的是date/time。
+
+```text
+GET /_search
+{
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          { "date": { "date_histogram": { "field": "timestamp", "calendar_interval": "1d" } } }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子创建了一个按天作为时间间隔，并将所有`timestamp`的值转化成最近的时间间隔。可用的间隔表达式有：`year`, `quarter`, `month`, `week`,`day`, `hour`,`minute`, `second`。
+
+&emsp;&emsp;时间值也可以缩写为目前支持的[time units](#Time units)。注意的是小数点的时间值是不支持的，但是你可以转化为其他单位来解决这个问题（比如说`1.5h`可以替换为`90m`）。
+
+- Format
+
+&emsp;&emsp;在内部实现中，日期会用一个64位的milliseconds-since-the-epoch数字表示。这些时间戳返回后会作为bucket key。可以返回格式化的日期字符串，而不是使用格式参数指定的格式：
+
+```text
+GET /_search
+{
+  "size": 0,
+  "aggs": {
+    "my_buckets": {
+      "composite": {
+        "sources": [
+          {
+            "date": {
+              "date_histogram": {
+                "field": "timestamp",
+                "calendar_interval": "1d",
+                "format": "yyyy-MM-dd"         
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp; 第13行，见[format pattern](#Date Format/Pattern)
+
+- Time Zone
+
+
+&emsp;&emsp;Elasticsearch用Coordinated Universal Time (UTC)存储日期时间。默认使用UTC进行分桶和舌入。使用`time_zone`字段来告知应该使用不同的时区。
+
+&emsp;&emsp;你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`就是在TZ 数据库中使用的标识符。
+
+- Offset
+
+&emsp;&emsp;使用`offset`参数，指定正负号（`+`或`-`）的时间修改每一个分桶的开始值，比如`1h`就是一小时，`1d`就是一天。见[time units](#Time units)了解更多的选项。
+
+&emsp;&emsp;比如，当使用了`day`的间隔，每一个分桶从每天的午夜开始，下一个午夜结束，将`offset`设置为`+6h`后，每一个分桶从早上6点到下一个早上6点：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "date": "2015-10-01T05:30:00Z"
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "date": "2015-10-01T06:30:00Z"
+}
+
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "my_buckets": {
+      "composite" : {
+        "sources" : [
+          {
+            "date": {
+              "date_histogram" : {
+                "field": "date",
+                "calendar_interval": "day",
+                "offset": "+6h",
+                "format": "iso8601"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的请求会将6am开始的文档分组到分桶内，而不是从凌晨开始。
+
+```text
+{
+  ...
+  "aggregations": {
+    "my_buckets": {
+      "after_key": { "date": "2015-10-01T06:00:00.000Z" },
+      "buckets": [
+        {
+          "key": { "date": "2015-09-30T06:00:00.000Z" },
+          "doc_count": 1
+        },
+        {
+          "key": { "date": "2015-10-01T06:00:00.000Z" },
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+> NOTE: 每一分桶开始的`offse`已经用`time_zone`进行了调整。
+
+###### GeoTile grid（Composite）
+
+##### Order（Composite）
+
+##### Missing bucket（Composite）
+
+#### Filter aggregation
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
+
+&emsp;&emsp;它属于single bucket aggregation（一个过滤条件只会生成一个分桶），将满足[query](#Query DSL)的文档落入到单个桶内。
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个例子尖酸了所有衣服的平均价格同时将`t-shirt`类型的衣服划分为一个桶，并且计算了桶内的平均价格。
+
+&emsp;&emsp;响应如下：
+
+```text
+{
+  "aggregations": {
+    "avg_price": { "value": 140.71428571428572 },
+    "t_shirts": {
+      "doc_count": 3,
+      "avg_price": { "value": 128.33333333333334 }
+    }
+  }
+}
+```
+
+##### Use a top-level query to limit all aggregations
+
+&emsp;&emsp;若要限制在查询运行时目标文档数量，可以使用一个top-level `query`。这样能加快带有sub-aggregation的`filter` aggregation。
+
+&emsp;&emsp;使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "query": { "term": { "type": "t-shirt" } },
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+##### Use the filters aggregation for multiple filters
+
+&emsp;&emsp;若要使用多个filter对文档进行分组，可以使用[filters aggregation](#Filters aggregation)，它比使用多个`filter` aggregations更快。
+
+&emsp;&emsp;例如应该这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "f": {
+      "filters": {
+        "filters": {
+          "hats": { "term": { "type": "hat" } },
+          "t_shirts": { "term": { "type": "t-shirt" } }
+        }
+      },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "hats": {
+      "filter": { "term": { "type": "hat" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
 #### Filters aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
@@ -21873,297 +22167,6 @@ GET logs/_search
 }
 ```
 
-#### Composite aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-composite-aggregation.html#_date_histogram)
-
-> WARNING：composite aggregation开销是昂贵的。在你生产中部署composite aggregation前先进行测试。
-
-&emsp;&emsp;多个分桶（multi-bucket）的聚合会根据不同的source创建composite buckets。
-
-&emsp;&emsp;跟其他`multi-bucket` aggregation不同的是，你可以使用`composite` aggregation有效地对来自多层次聚合（multi-level）aggregation的所有桶进行分页。这个聚合提供了一个方法流式处理一个指定的聚合的所有分桶，跟[scroll](#Scroll search results)处理文档类似。
-
-&emsp;&emsp;composite buckets通过对提取/创建出的每一篇文档中的值进行组合（combination），并且每一种组合都认为是一个composite bucket。
-
-&emsp;&emsp;例如，在下面这个文档中：
-
-```text
-{
-  "keyword": ["foo", "bar"],
-  "number": [23, 65, 76]
-}
-```
-
-&emsp;&emsp;下面的composite bucket中，使用`keyword`和`number`作为聚合结果的source filed。
-
-```text
-{ "keyword": "foo", "number": 23 }
-{ "keyword": "foo", "number": 65 }
-{ "keyword": "foo", "number": 76 }
-{ "keyword": "bar", "number": 23 }
-{ "keyword": "bar", "number": 65 }
-{ "keyword": "bar", "number": 76 }
-```
-
-##### Value sources
-
-&emsp;&emsp;`sources`参数定义了构建compost bucket时使用的source filed。在`sources`中的定义先后顺序控制了key的返回顺序。
-
-> NOTE: 当你定义`sources`时，你必须使用一个唯一键
-
-&emsp;&emsp;`sources`参数的类型只能是下列中的一种：
-
-- [Terms](#\_Terms)
-- [Histogram](#\_Histogram)
-- [Date histogram](#\_Date histogram)
-- [GeoTile grid](#\_GeoTile grid)
-
-###### \_Terms
-
-&emsp;&emsp;`terms`这个value source类似一个简答的`terms` aggregation。这个值从一个域中提出出来，跟`terms` aggregation一样。
-
-&emsp;&emsp;例子：
-
-```text
-GET /_search
-{
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          { "product": { "terms": { "field": "product" } } }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;跟`terms` aggregation一样，可以为composite bucket通过[runtime field](#Runtime fields)创建一个值：
-
-```text
-GET /_search
-{
-  "runtime_mappings": {
-    "day_of_week": {
-      "type": "keyword",
-      "script": """
-        emit(doc['timestamp'].value.dayOfWeekEnum
-          .getDisplayName(TextStyle.FULL, Locale.ROOT))
-      """
-    }
-  },
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          {
-            "dow": {
-              "terms": { "field": "day_of_week" }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;尽管很相似，但是`terms`这个 value source 不支持`terms` aggregation中的参数。对于支持的value source参数，见：
-
-- [Order](#Order)
-- [Missing bucket](#Missing bucket)
-
-###### \_Histogram
-
-&emsp;&emsp;`histogram` 这个value source可以应用到（apply to）数值类型的值（numeric value）上，构建值之间固定大小的间隔。`interval`参数定义数值类型的值如何被转化（transform）。比如说一个`interval`为5时，任何数值都会转到其最接近的间隔，`101`这个值会被转化为`100`。这个key用于描述100到105的值。
-
-&emsp;&emsp;例如：
-
-```text
-GET /_search
-{
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          { "histo": { "histogram": { "field": "price", "interval": 5 } } }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;跟`histogram` aggregation 一样，可以为composite bucket通过[runtime field](#Runtime fields)创建一个值：
-
-```text
-GET /_search
-{
-  "runtime_mappings": {
-    "price.discounted": {
-      "type": "double",
-      "script": """
-        double price = doc['price'].value;
-        if (doc['product'].value == 'mad max') {
-          price *= 0.8;
-        }
-        emit(price);
-      """
-    }
-  },
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          {
-            "price": {
-              "histogram": {
-                "interval": 5,
-                "field": "price.discounted"
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-###### \_Date histogram
-
-&emsp;&emsp;`date_histogram` 类似与`histogram`，只是间隔值用的是date/time。
-
-```text
-GET /_search
-{
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          { "date": { "date_histogram": { "field": "timestamp", "calendar_interval": "1d" } } }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;上面的例子创建了一个按天作为时间间隔，并将所有`timestamp`的值转化成最近的时间间隔。可用的间隔表达式有：`year`, `quarter`, `month`, `week`,`day`, `hour`,`minute`, `second`。
-
-&emsp;&emsp;时间值也可以缩写为目前支持的[time units](#Time units)。注意的是小数点的时间值是不支持的，但是你可以转化为其他单位来解决这个问题（比如说`1.5h`可以替换为`90m`）。
-
-- Format
-
-&emsp;&emsp;在源码中，date会用一个64位的milliseconds-since-the-epoch数字表示。这些时间戳返回后会作为bucket key。可以返回格式化的日期字符串，而不是使用格式参数指定的格式：
-
-```text
-GET /_search
-{
-  "size": 0,
-  "aggs": {
-    "my_buckets": {
-      "composite": {
-        "sources": [
-          {
-            "date": {
-              "date_histogram": {
-                "field": "timestamp",
-                "calendar_interval": "1d",
-                "format": "yyyy-MM-dd"         
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp; 第13行，见[format pattern](#Date Format/Pattern)
-
-- Time Zone
-
-&emsp;&emsp;Date-Times在Elasticsearch使用UTC存储。默认情况下，所有的分组和rounding都是在UTC下完成。`time_zone`参数用来指示分桶应该使用不同的时区。
-
-&emsp;&emsp; 时区可以通过一个ISO  8601 UTC offset（比如 `+01:00` 或者`-08:00`）或者一个timezone id来指定，这个timezone id在TZ database中使用，例如`America/Los_Angele`。
-
-- Offset
-
-&emsp;&emsp;使用`offset`参数通过指定正偏移和负偏移的持续时间来改变每一个分桶的开始值（start value of each bucket）。例如`1h`代表一个小时，`1d`代表一天。见[Time units](#Time units)见更多选项。
-
-&emsp;&emsp;例如当使用了`day`作为时间间隔。那么每一个分桶的时间是凌晨到午夜。将`offset`参数设置为`6h`后，每一个分桶中的时间就变更为`6am`到`6am`：
-
-```text
-PUT my-index-000001/_doc/1?refresh
-{
-  "date": "2015-10-01T05:30:00Z"
-}
-
-PUT my-index-000001/_doc/2?refresh
-{
-  "date": "2015-10-01T06:30:00Z"
-}
-
-GET my-index-000001/_search?size=0
-{
-  "aggs": {
-    "my_buckets": {
-      "composite" : {
-        "sources" : [
-          {
-            "date": {
-              "date_histogram" : {
-                "field": "date",
-                "calendar_interval": "day",
-                "offset": "+6h",
-                "format": "iso8601"
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;上面的请求会将6am开始的文档分组到分桶内，而不是从凌晨开始。
-
-```text
-{
-  ...
-  "aggregations": {
-    "my_buckets": {
-      "after_key": { "date": "2015-10-01T06:00:00.000Z" },
-      "buckets": [
-        {
-          "key": { "date": "2015-09-30T06:00:00.000Z" },
-          "doc_count": 1
-        },
-        {
-          "key": { "date": "2015-10-01T06:00:00.000Z" },
-          "doc_count": 1
-        }
-      ]
-    }
-  }
-}
-```
-
-> NOTE: 每一分桶开始的`offse`已经用`time_zone`进行了调整。
-
-###### \_GeoTile grid
-
-##### Order
-
-##### Missing bucket
 
 #### Date histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
@@ -22713,6 +22716,8 @@ POST /sales/_search?size=0
 #### Date range aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
 
+&emsp;&emsp;专门为日期值使用的range aggregation。这个聚合根[range]() aggregation的主要不同是`from`跟`to`可以用[Date Math]()表达式，
+
 ##### Date Format/Pattern
 
 #### Histogram aggregation
@@ -23046,7 +23051,372 @@ POST /metrics_index/_search?size=0
 >因此，当在Histogram field上执行直方图聚合时，不允许进行sub-aggregation。
 
 #### Range aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket value source based aggregation，允许用户定义一个范围集合，每一个范围代表一个分桶。在聚合过程中，从每个文档中提取出的值会根据分桶对应的范围进行检查，然后把文档分到这个桶内。注意的是在这个聚合中，每一个范围的`from`是包含并且`to`是不包含的。
+
+&emsp;&emsp;例如：
+
+```text
+GET sales/_search
+{
+  "aggs": {
+    "price_ranges": {
+      "range": {
+        "field": "price",
+        "ranges": [
+          { "to": 100.0 },
+          { "from": 100.0, "to": 200.0 },
+          { "from": 200.0 }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "price_ranges": {
+      "buckets": [
+        {
+          "key": "*-100.0",
+          "to": 100.0,
+          "doc_count": 2
+        },
+        {
+          "key": "100.0-200.0",
+          "from": 100.0,
+          "to": 200.0,
+          "doc_count": 2
+        },
+        {
+          "key": "200.0-*",
+          "from": 200.0,
+          "doc_count": 3
+        }
+      ]
+    }
+  }
+}
+```
+
+##### Keyed Response
+
+&emsp;&emsp;将`keyed`设置为`true`，分桶的key_as_string的值将作为key，响应中所有的分桶用hash展示而不是用数组：
+
+```text
+GET sales/_search
+{
+  "aggs": {
+    "price_ranges": {
+      "range": {
+        "field": "price",
+        "keyed": true,
+        "ranges": [
+          { "to": 100 },
+          { "from": 100, "to": 200 },
+          { "from": 200 }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "price_ranges": {
+      "buckets": {
+        "*-100.0": {
+          "to": 100.0,
+          "doc_count": 2
+        },
+        "100.0-200.0": {
+          "from": 100.0,
+          "to": 200.0,
+          "doc_count": 2
+        },
+        "200.0-*": {
+          "from": 200.0,
+          "doc_count": 3
+        }
+      }
+    }
+  }
+}
+
+```
+
+&emsp;&emsp;也可以为每一个范围自定义key：
+
+```text
+GET sales/_search
+{
+  "aggs": {
+    "price_ranges": {
+      "range": {
+        "field": "price",
+        "keyed": true,
+        "ranges": [
+          { "key": "cheap", "to": 100 },
+          { "key": "average", "from": 100, "to": 200 },
+          { "key": "expensive", "from": 200 }
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "price_ranges": {
+      "buckets": {
+        "cheap": {
+          "to": 100.0,
+          "doc_count": 2
+        },
+        "average": {
+          "from": 100.0,
+          "to": 200.0,
+          "doc_count": 2
+        },
+        "expensive": {
+          "from": 200.0,
+          "doc_count": 3
+        }
+      }
+    }
+  }
+}
+```
+
+##### Script
+
+&emsp;&emsp;如果文档中的数据不完全满足你聚合的目的，可以使用[runtime filed](#Runtime fields)。这个例子中，你如果要应用一个特殊的货币汇率：
+
+```text
+GET sales/_search
+{
+  "runtime_mappings": {
+    "price.euros": {
+      "type": "double",
+      "script": {
+        "source": """
+          emit(doc['price'].value * params.conversion_rate)
+        """,
+        "params": {
+          "conversion_rate": 0.835526591
+        }
+      }
+    }
+  },
+  "aggs": {
+    "price_ranges": {
+      "range": {
+        "field": "price.euros",
+        "ranges": [
+          { "to": 100 },
+          { "from": 100, "to": 200 },
+          { "from": 200 }
+        ]
+      }
+    }
+  }
+}
+```
+
+##### Sub Aggregations
+
+&emsp;&emsp;下面的例子中，不仅仅将文档分到桶内，还同时统计了在每一个价格区间内价格的统计信息。
+
+```text
+GET sales/_search
+{
+  "aggs": {
+    "price_ranges": {
+      "range": {
+        "field": "price",
+        "ranges": [
+          { "to": 100 },
+          { "from": 100, "to": 200 },
+          { "from": 200 }
+        ]
+      },
+      "aggs": {
+        "price_stats": {
+          "stats": { "field": "price" }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "price_ranges": {
+      "buckets": [
+        {
+          "key": "*-100.0",
+          "to": 100.0,
+          "doc_count": 2,
+          "price_stats": {
+            "count": 2,
+            "min": 10.0,
+            "max": 50.0,
+            "avg": 30.0,
+            "sum": 60.0
+          }
+        },
+        {
+          "key": "100.0-200.0",
+          "from": 100.0,
+          "to": 200.0,
+          "doc_count": 2,
+          "price_stats": {
+            "count": 2,
+            "min": 150.0,
+            "max": 175.0,
+            "avg": 162.5,
+            "sum": 325.0
+          }
+        },
+        {
+          "key": "200.0-*",
+          "from": 200.0,
+          "doc_count": 3,
+          "price_stats": {
+            "count": 3,
+            "min": 200.0,
+            "max": 200.0,
+            "avg": 200.0,
+            "sum": 600.0
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+###### Histogram fields
+
+&emsp;&emsp;对[Histogram fields](#Histogram field type)运行range aggregation会计算每一个配置的范围的`counts`数量。
+
+&emsp;&emsp;这一过程不会在histogram之间进行插值。因此，可能存在一个范围位于两个histogram的值“之间”，导致该范围桶的文档计数为零。
+
+&emsp;&emsp;例如，对存储不同网络的延迟指标（以毫秒为单位）的预聚合直方图的索引执行范围聚合。
+
+```text
+PUT metrics_index
+{
+  "mappings": {
+    "properties": {
+      "network": {
+        "properties": {
+          "name": {
+            "type": "keyword"
+          }
+        }
+      },
+      "latency_histo": {
+         "type": "histogram"
+      }
+    }
+  }
+}
+
+PUT metrics_index/_doc/1?refresh
+{
+  "network.name" : "net-1",
+  "latency_histo" : {
+      "values" : [1, 3, 8, 12, 15],
+      "counts" : [3, 7, 23, 12, 6]
+   }
+}
+
+PUT metrics_index/_doc/2?refresh
+{
+  "network.name" : "net-2",
+  "latency_histo" : {
+      "values" : [1, 6, 8, 12, 14],
+      "counts" : [8, 17, 8, 7, 6]
+   }
+}
+
+GET metrics_index/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "latency_ranges": {
+      "range": {
+        "field": "latency_histo",
+        "ranges": [
+          {"to": 2},
+          {"from": 2, "to": 3},
+          {"from": 3, "to": 10},
+          {"from": 10}
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;`range` aggregation根据`values`对将每一个范围内的`counts`进行累加并返回以下结果：
+
+```text
+{
+  "aggregations": {
+    "latency_ranges": {
+      "buckets": [
+        {
+          "key": "*-2.0",
+          "to": 2.0,
+          "doc_count": 11
+        },
+        {
+          "key": "2.0-3.0",
+          "from": 2.0,
+          "to": 3.0,
+          "doc_count": 0
+        },
+        {
+          "key": "3.0-10.0",
+          "from": 3.0,
+          "to": 10.0,
+          "doc_count": 55
+        },
+        {
+          "key": "10.0-*",
+          "from": 10.0,
+          "doc_count": 31
+        }
+      ]
+    }
+  }
+}
+```
+
+> IMPORTANT： Histogram aggregation是一种bucket aggregation，它将文档分配到桶中，而不是像metric aggregation那样对字段进行计算。每个桶代表了一组文档，可以在其上运行sub-aggregation。另一方面，[Histogram field](#Histogram field type)是一种预聚合字段，表示单个字段内的多个值：数值数据的桶和每个桶的项目/文档计数。这种在histogram聚合预期输入（期望原始文档）和Histogram field（提供摘要信息）之间的不匹配，限制了聚合的结果仅为每个桶的文档计数。
+>因此，当在Histogram field上执行range aggregation时，不允许进行sub-aggregation。
 
 #### Significant text aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-significanttext-aggregation.html)
