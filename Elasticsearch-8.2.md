@@ -21326,7 +21326,7 @@ GET my-index-000001/_search?size=0
 #### Date histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
 
-&emsp;&emsp;它属于multi-bucket aggregation，类似与普通的[histogram](#Histogram aggregation)。但是它只能用于日期或者日期类型的范围值（range value）。因为日期在Elasticsearch内部用long值表示，因此`histogram`aggregation 也可以用于日期，但准确性不如data histogram。这两个聚合的区别在于这个聚合的间隔（interval）可以指定为date/time 表达式。Time-based的数据要求特殊支持，因为time-based的interval不总是一个固定长度（比如间隔为`1M`，那么不同月份的一个月的天数是不一样的）。
+&emsp;&emsp;它属于multi-bucket aggregation，类似与普通的[histogram](#Histogram aggregation)。但是它只能用于日期或者日期类型的范围值（range value）。由于日期在Elasticsearch内部用long值表示，因此`histogram`aggregation 也可以用于日期，但准确性不如data histogram。这两个聚合的区别在于这个聚合的间隔（interval）可以指定为date/time 表达式。Time-based的数据要求特殊支持，因为time-based的interval不总是一个固定长度（比如间隔为`1M`，那么不同月份的一个月的天数是不一样的）。
 
 &emsp;&emsp;跟histogram一样的是，域值会被下舍入到最近的分桶中，例如，如果间隔是一个日历日（calendar day），那么`2020-01-03T07:00:01Z`会下舍入到`2020-01-03T00:00:00Z`。域值按照以下方式舌入：
 
@@ -21338,7 +21338,7 @@ bucket_key = Math.floor(value / interval) * interval
 
 &emsp;&emsp;在配置一个date histogram aggregation时，有两种方式指定间隔：calendar-aware time（日历感知，也就是自然时间，比如一个月，一年这种）以及fixed time（固定时间）。
 
-&emsp;&emsp;calendar-aware time理解到夏令时会改变特定日子的长度，不同的月份有不同数量的天数，而闰秒可以加到特定的年份上。
+&emsp;&emsp;calendar-aware time能根据夏令时会改变特定日子的长度，不同的月份有不同数量的天数，而闰秒可以加到特定的年份上。
 
 &emsp;&emsp;相比之下，固定间隔总是国际单位制的倍数，并且不会根据日历情境发生变化。
 
@@ -21354,7 +21354,8 @@ bucket_key = Math.floor(value / interval) * interval
 - hour, 1h
   - 所有小时都从00分钟00秒开始。一小时（1h）是指定时区中第一个小时的00:00分到下一个小时的00:00分之间的间隔，补偿任何介入的闰秒，以便小时过去的分钟数和秒数在开始和结束时是相同的
 - day, 1d
- - 所有天都从可能的最早时间开始，通常是00:00:00（午夜）。一天（1d）是指定时区中一天的开始到下一天开始之间的间隔，补偿任何介入的时间变化
+  - 所有天都从可能的最早时间开始，通常是00:00:00（午夜）。一天（1d）是指定时区中一天的开始到下一天开始之间的间隔，补偿任何介入的时间变化
+
 - week, 1w
   - 一周是从开始的 day_of_week:hour:minute:second 到指定时区的下一周的同一天和时间之间的间隔。
 - month, 1M
@@ -21382,7 +21383,7 @@ POST /sales/_search?size=0
 }
 ```
 
-&emsp;&emsp;如果你尝试使用多个日历单元（calendar unit），那么聚合将会失败，因为支持单个单位数量。
+&emsp;&emsp;如果你尝试使用多个日历单元（calendar unit），那么聚合将会失败，因为只支持单个单位数量。
 
 ```text
 POST /sales/_search?size=0
