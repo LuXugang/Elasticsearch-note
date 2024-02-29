@@ -7580,6 +7580,7 @@ def lon      = doc['location'].lon;
 #### Geoshape field type
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-shape.html)
 
+
 #### Histogram field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/histogram.html)
 
@@ -23567,6 +23568,11 @@ POST /metrics_index/_search?size=0
 > IMPORTANT： Histogram aggregation是一种bucket aggregation，它将文档分配到桶中，而不是像metric aggregation那样对字段进行计算。每个桶代表了一组文档，可以在其上运行sub-aggregation。另一方面，[Histogram field](#Histogram field type)是一种预聚合字段，表示单个字段内的多个值：数值数据的桶和每个桶的项目/文档计数。这种在histogram聚合预期输入（期望原始文档）和Histogram field（提供摘要信息）之间的不匹配，限制了聚合的结果仅为每个桶的文档计数。
 >因此，当在Histogram field上执行直方图聚合时，不允许进行sub-aggregation。
 
+#### IP prefix aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
+
+&emsp;&emsp;根据网络地址或者IP address的子网络对文档进行分组。
+
 #### Range aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
 
@@ -24027,7 +24033,7 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+&emsp;&emsp;第7行，没有`grade`字段的文档被划分到相同分桶中并且认为`grade`的值为10。
 
 ##### Histogram fields
 
@@ -24222,10 +24228,146 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+&emsp;&emsp;第7行，没有`grade`字段的文档被划分到相同分桶中并且认为`grade`的值为10。
 
 #### Cardinality aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-cardinality-aggregation.html)
+
+&emsp;&emsp;它属于single-value aggregation。计算不同值的近似数量（approximate  count）。
+
+&emsp;&emsp;假设你正在索引商店销售数据并且想要统计满足Query的不同的售卖的产品的数量：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "type_count": {
+      "cardinality": {
+        "field": "type"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "type_count": {
+      "value": 3
+    }
+  }
+}
+```
+
+##### Precision control
+
+&emsp;&emsp;这个聚合支持`precision_threshold`参数：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "type_count": {
+      "cardinality": {
+        "field": "type",
+        "precision_threshold": 100 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，`precision_threshold` 选项允许在内存与准确性之间进行权衡，并定义了一个独特的计数阈值，低于此阈值时，计数预计将接近准确。超过这个值，计数可能会变得有些模糊。支持的最大值是40000，高于这个数字的阈值将会产生与阈值为40000相同的效果。默认值是3000。
+
+##### Counts are approximate
+
+&emsp;&emsp;计算精确的计数需要将值加载到一个哈希集中并返回其大小。在处理高基数（high-cardinality）集合和/或大值时，这种方法不具可扩展性，因为所需的内存使用量以及在节点之间通信这些每个分片的集合会消耗太多集群资源。
+
+&emsp;&emsp;这种基数聚合基于[HyperLogLog++](https://static.googleusercontent.com/media/research.google.com/fr//pubs/archive/40671.pdf)算法，该算法基于值的哈希进行计数，并具有一些有趣的特性：
+
+- 可配置的精度，决定了如何权衡内存与准确性，
+- 在低基数（low-cardinality）集合上具有优秀的准确性，
+- 固定的内存使用：无论是数十个还是数十亿个唯一值，内存使用量只依赖于配置的精度。 
+
+&emsp;&emsp;对于精度阈值`c`，我们使用的实现大约需要`c * 8`字节的内存。
+
+&emsp;&emsp;下图显示了阈值前后误差如何变化：
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/cardinality_error.png">
+
+&emsp;&emsp;对于所有3个阈值，计数在配置的阈值范围内都保持了准确性。虽然没有保证，但这很可能是常见情况。实际的准确性取决于具体的数据集。一般来说，大多数数据集显示出一致的良好准确性。还要注意，即使阈值低至100，当计数达到数百万个项目时，误差仍然非常低（如上图所示，为1-6%）。
+
+&emsp;&emsp;HyperLogLog++算法依赖于哈希值前导零的数量，数据集中哈希的具体分布可以影响基数的准确性。
+
+##### Pre-computed hashes
+
+&emsp;&emsp;对于具有高基数的字符串字段，将字段值的哈希存储在索引中然后在此字段上运行cardinality aggregation可能会更快。这可以通过从客户端提供哈希值来完成，或者通过使用[mapper-murmur3](https://www.elastic.co/guide/en/elasticsearch/plugins/8.12/mapper-murmur3.html)插件让Elasticsearch为您计算哈希值来实现。
+
+> NOTE：Pre-computed hashes通常只在非常大和/或高基数字段上有用，因为它节省了CPU和内存。然而，在数值字段上，哈希运算非常快速，并且存储原始值所需的内存与存储哈希值相比，需要的内存量相同或更少。在低基数的字符串字段上也是如此，特别是考虑到为了确保每个唯一值每个段最多只计算一次哈希，这些字段有一个优化。
+
+##### Script
+
+&emsp;&emsp;如果你要计算的目标是两个域的组合值，可以使用[runtime field](#Runtime fields)
+
+```text
+POST /sales/_search?size=0
+{
+  "runtime_mappings": {
+    "type_and_promoted": {
+      "type": "keyword",
+      "script": "emit(doc['type'].value + ' ' + doc['promoted'].value)"
+    }
+  },
+  "aggs": {
+    "type_promoted_count": {
+      "cardinality": {
+        "field": "type_and_promoted"
+      }
+    }
+  }
+}
+```
+
+##### Missing value
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "tag_cardinality": {
+      "cardinality": {
+        "field": "tag",
+        "missing": "N/A" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，没有`tag`字段的文档被划分到相同分桶中并且认为`tag`的值为`N/a`。
+
+
+##### Execution hint
+
+&emsp;&emsp;您可以通过不同的机制运行基数聚合：
+
+- 直接使用域值（`direct`）
+- 使用字段的全局序数（global ordinals ），并在完成一个分片后解析这些值（`global_ordinals`）
+- 使用段内序数值（segment ordinal values），并在每个段完成后解析这些值（`segment_ordinals`）
+
+&emsp;&emsp;此外，还有两种基于启发式的模式。这些模式将导致Elasticsearch使用一些关于索引状态的数据来选择合适的执行方法。这两种启发式是：
+
+- save_time_heuristic - 这是Elasticsearch 8.4及以后版本的默认设置。
+- save_memory_heuristic - 这是Elasticsearch 8.3及以前版本的默认设置。
+
+&emsp;&emsp;如果未指定，Elasticsearch将应用启发式来选择适当的模式。还要注意，对于某些数据（non-ordinal fields），`direct`是唯一的选项，在这些情况下将忽略提示。一般而言，不需要设置这个值。
+
 
 #### Extended stats aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-extendedstats-aggregation.html)
@@ -24357,7 +24499,7 @@ GET /exams/_search
 }
 ```
 
-&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+&emsp;&emsp;第7行，没有`grade`字段的文档被划分到相同分桶中并且认为`grade`的值为10。
 
 #### Max aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-max-aggregation.html)
@@ -24437,7 +24579,7 @@ POST /sales/_search
 }
 ```
 
-&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+&emsp;&emsp;第7行，没有`grade`字段的文档被划分到相同分桶中并且认为`grade`的值为10。
 
 ##### Histogram fields
 
@@ -24496,6 +24638,8 @@ POST /metrics_index/_search?size=0&filter_path=aggregations
 
 #### Min aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-min-aggregation.html#search-aggregations-metrics-min-aggregation-histogram-fields)
+
+&emsp;&emsp;单值的指标聚合（Single-value metric aggregation）计算是从被聚合的文档中提取出数值的最大值。
 
 #### Percentile ranks aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-rank-aggregation.html)
@@ -24588,7 +24732,7 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;第7行，没有`grade`字段的文档同样被划分到分桶中并且认为`grade`的值为10。
+&emsp;&emsp;第7行，没有`grade`字段的文档被划分到相同分桶中并且认为`grade`的值为10。
 
 #### Sum aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-sum-aggregation.html)
