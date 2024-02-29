@@ -21336,7 +21336,7 @@ GET my-index-000001/_search?size=0
 #### Histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
 
-&emsp;&emsp;它属于multi-bucket Values Source aggregation，作用到从文档中提取出的数值类型或者数值类型范围的值。他动态在值之间构建固定大小（bucket size，也就是间隔interval）。例如，如果文档中有一个名为价格的域（数值），我们可以将这个聚合自动的配置为`5`的间隔（因为价格可以是`5$`）当执行聚合时，每一个文档中的价格会被评估并且下舍入（rounded down）到最近的分桶。比如说价格为`32`并且间隔为`5`，那么`32`被下舍入到`30`，因此"落入"到key为`30`的分桶中。正式点的表达就是，使用了以下的舌入函数：
+&emsp;&emsp;它属于multi-bucket Values Source aggregation，作用到从文档中提取出的数值类型或者数值类型范围值。他动态在值之间构建固定大小（bucket size，也就是间隔interval）。例如，如果文档中有一个名为价格的域（数值），我们可以将这个聚合自动的配置为`5`的间隔（因为价格可以是`5$`）当执行聚合时，每一个文档中的价格会被评估并且下舍入（rounded down）到最近的分桶。比如说价格为`32`并且间隔为`5`，那么`32`被下舍入到`30`，因此"落入"到key为`30`的分桶中。正式点的表达就是，使用了以下的舌入函数：
 
 ```text
 bucket_key = Math.floor((value - offset) / interval) * interval + offset
@@ -21449,7 +21449,7 @@ POST /sales/_search?size=0
 
 &emsp;&emsp;要理解上面这段话，可以看下这个例子：
 
-&emsp;&emsp;比如说你的请求中要求过滤出值为`0`到`500`的所有文档，另外你还想要使用间隔为`50`histogram的来划分数据。因为你想要获取所有的分桶，包括空的分桶，所以你同时还指定了`min_doc_count: 0`。如果所有的文档的价格都大于`100`，那么第一个分桶的key将会是`100`。这可能会给你带来困惑，因为你想要获取在`0-100`之间的分桶。
+&emsp;&emsp;比如说你的请求中要求过滤出值为`0`到`500`的所有文档，另外你还想要使用间隔为`50`的histogram的来划分数据。因为你想要获取所有的分桶，包括空的分桶，所以你同时还指定了`min_doc_count: 0`。如果所有的文档的价格都大于`100`，那么第一个分桶的key将会是`100`。这可能会给你带来困惑，因为你也想要获取在`0-100`之间空的分桶。
 
 &emsp;&emsp;通过`extended_bounds`参数，你可以指定`min`和`max`（即使某些区间没有对应满足的文档）来构建分桶。使用`extended_bounds`只有当`min_doc_count`为`0`时才有意义（因为如果`min_doc_count`大于`0`，不会返回空的分桶）。
 
@@ -21478,7 +21478,7 @@ POST /sales/_search?size=0
 }
 ```
 
-&emsp;&emsp;分桶会根据返回的文档的值来聚合范围。也就是说响应中可能包含在query的range外的分桶。比如说，如果你的query查看大于100，并且你有50到150的文档，并且间隔为50，那么文档落入3个分桶中：50、100以及150。你可以理解为query跟aggregation的步骤是独立的。query用来选择文档，而聚合分桶不会考虑这些文档是否被query过滤。见[note on bucketing range fields](#Subtleties of bucketing range fields)查看更多信息以及例子。
+&emsp;&emsp;分桶会根据返回的文档的值来聚合范围。也就是说响应中可能包含在query范围外的分桶。比如说，如果你的query查看大于100，并且你有50到150的文档，并且间隔为50，那么文档落入3个分桶中：50、100以及150。你可以理解为query跟aggregation的步骤是独立的。query用来选择文档，而聚合分桶不会考虑这些文档是否被query过滤。见[note on bucketing range fields](#Subtleties of bucketing range fields)查看更多信息以及例子。
 
 &emsp;&emsp;`hard_bounds`对应于`extended_bounds`可以限制histogram中分桶的范围。在开放的[data ranges](#Range field types)中使用这个参数非常有用，因为它会导致大量的分桶。
 
@@ -21509,7 +21509,7 @@ POST /sales/_search?size=0
 
 ##### Order
 
-&emsp;&emsp;默认情况下分桶按照他们的key升序排序，不过可以通过`order`来控制这个行为。它跟[Terms Aggregation](#Terms aggregation)有相同的功能。
+&emsp;&emsp;默认情况下分桶按照他们的key升序排序，不过可以通过`order`来控制这个行为。它跟[Terms Aggregation](#Terms aggregation)中的`order`有相同的功能。
 
 ##### Offset
 
@@ -21572,7 +21572,7 @@ POST /sales/_search?size=0
 
 ##### Missing value
 
-&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如果进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
+&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
 
 ```text
 POST /sales/_search?size=0
