@@ -7781,9 +7781,381 @@ GET my-index-000001/_search
 ```
 
 #### Join field type
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`join`数据类型是一个特殊的域，用来创建同一个索引中文档间的父子关系。`relations`定义了文档之间的关系，它也定义了父文档的名称以及子文档的名称。
+
+> WARNING：不要使用[多级父子关系](Multiple levels of parent join)来模拟关系型数据库模型。每增加一级关系，都会在查询时增加内存和计算的开销。为了获得更好的搜索性能，建议denormalize你的数据。
+
+&emsp;&emsp;通过以下方式定义父子关系：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_id": {
+        "type": "keyword"
+      },
+      "my_join_field": { 
+        "type": "join",
+        "relations": {
+          "question": "answer" 
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，域的名字
+&emsp;&emsp;第11行，定义了单个关系，`question`是`answer`的父级
+
+&emsp;&emsp;若要使用join索引一篇文档，需要在`_source`中提供关系的名称和父级文档（可选）。例如下面的例子创建了在`question`的上下文中定义了两个`parent`文档：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "my_id": "1",
+  "text": "This is a question",
+  "my_join_field": {
+    "name": "question" 
+  }
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "my_id": "2",
+  "text": "This is another question",
+  "my_join_field": {
+    "name": "question"
+  }
+}
+```
+
+&emsp;&emsp;第6行，这篇文档时`question`文档。
+
+&emsp;&emsp;当索引父级文档时，你可以选择快捷的只指定关系的名称，而不是使用对象进行封装：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "my_id": "1",
+  "text": "This is a question",
+  "my_join_field": "question" 
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "my_id": "2",
+  "text": "This is another question",
+  "my_join_field": "question"
+}
+```
+
+&emsp;&emsp;第5行，直接使用关系的名称。
+
+&emsp;&emsp;当索引一篇子文档时，必须在`_source`中添加关系的名称以及父文档的文档ID（`_id`）.
+
+> WARNING：要求将父子关系索引到同一个分片上，因此你必须使用父级文档ID来路由
+
+
+&emsp;&emsp;例如下面的例子中展示了如何索引两篇`child`文档：
+
+```text
+PUT my-index-000001/_doc/3?routing=1&refresh 
+{
+  "my_id": "3",
+  "text": "This is an answer",
+  "my_join_field": {
+    "name": "answer", 
+    "parent": "1" 
+  }
+}
+
+PUT my-index-000001/_doc/4?routing=1&refresh
+{
+  "my_id": "4",
+  "text": "This is another answer",
+  "my_join_field": {
+    "name": "answer",
+    "parent": "1"
+  }
+}
+```
+
+&emsp;&emsp;第1行，路由值是强制要有的，因为父/子文档必须索引到同一个分片上
+&emsp;&emsp;第6行，`answer`是这个文档的join 名称
+&emsp;&emsp;第7行，这个子文档的父级文档的文档ID
+
+##### Parent-join and performance
+
+&emsp;&emsp;在Elasticsearch中，不应将join字段用作关系数据库中的连接操作。为了保持良好的性能，关键是将数据反规范化（de-normalize）成文档。每个join字段、`has_child`或`has_parent`查询都会显著增加查询性能的负担，并可能触发[global ordinals](#eager_global_ordinals)的构建。
+
+&emsp;&emsp;只有在数据包含一对多关系，其中一个实体数量显著多于另一个实体的情况下，使用join字段才有意义。例如，产品和这些产品的优惠就是这样的用例，如果优惠的数量远多于产品的数量，那么将产品模型化为父文档，将优惠模型化为子文档是有意义的。
+
+##### Parent-join restrictionsedit
+
+- 每一个索引的mapping中只能有一个`join`类型的域
+- 父/子文档必须索引到相同的分片上。意味着在[getting](#Get API)、[deleting](#Delete API)、[updating](#Update API)子文档时必须提供相同的`route`值
+- 一个元素可以有多个子节点但只能有一个父节点
+- 可以像现有的`join`域中添加新的关系
+- 如果元素已经是父节点，也可以向现有元素添加子节点
+
+##### Searching with parent-join
+
+&emsp;&emsp;在Elasticsearch中使用父子连接（parent-join）搜索时，该功能创建一个字段来索引文档内关系的名称（例如my_parent, my_child等）。
+
+&emsp;&emsp;对于每个父/子关系，它还会创建一个字段，该字段名称由join字段的名称加上`#`和关系中父项的名称组成。例如，对于`my_parent` → `[my_child, another_child]`关系，join字段会创建一个额外的名为`my_join_field#my_parent`的字段。
+
+&emsp;&emsp;如果文档是子文档（my_child或another_child），此字段包含文档链接到的父`_id`；如果是父文档（my_parent），则包含文档的`_id`。搜索包含join字段的索引时，这两个字段总是返回在搜索响应中。
+
+&emsp;&emsp;当查询一个包含`join`于的索引时，这两个域总是会返回：
+
+```text
+GET my-index-000001/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "sort": ["my_id"]
+}
+```
+
+&emsp;&emsp;返回：
+
+```text
+{
+  ...,
+  "hits": {
+    "total": {
+      "value": 4,
+      "relation": "eq"
+    },
+    "max_score": null,
+    "hits": [
+      {
+        "_index": "my-index-000001",
+        "_id": "1",
+        "_score": null,
+        "_source": {
+          "my_id": "1",
+          "text": "This is a question",
+          "my_join_field": "question"         
+        },
+        "sort": [
+          "1"
+        ]
+      },
+      {
+        "_index": "my-index-000001",
+        "_id": "2",
+        "_score": null,
+        "_source": {
+          "my_id": "2",
+          "text": "This is another question",
+          "my_join_field": "question"          
+        },
+        "sort": [
+          "2"
+        ]
+      },
+      {
+        "_index": "my-index-000001",
+        "_id": "3",
+        "_score": null,
+        "_routing": "1",
+        "_source": {
+          "my_id": "3",
+          "text": "This is an answer",
+          "my_join_field": {
+            "name": "answer",                 
+            "parent": "1"                     
+          }
+        },
+        "sort": [
+          "3"
+        ]
+      },
+      {
+        "_index": "my-index-000001",
+        "_id": "4",
+        "_score": null,
+        "_routing": "1",
+        "_source": {
+          "my_id": "4",
+          "text": "This is another answer",
+          "my_join_field": {
+            "name": "answer",
+            "parent": "1"
+          }
+        },
+        "sort": [
+          "4"
+        ]
+      }
+    ]
+  }
+}
+```
+
+&emsp;&emsp;第17行，这个文档是`question`
+&emsp;&emsp;第30行，这个文档是`question`
+&emsp;&emsp;第45行，这个文档是`answer`
+&emsp;&emsp;第46行，子文档链接的父文档ID
+
+##### Parent-join queries and aggregations
+
+&emsp;&emsp;查看[has_child](#Has child query)、[has_parent](#Has parent query) Query、[child aggregation](#Children aggregation)以及[inner hits](#Parent/child inner-hits)了解更多信息。
+
+&emsp;&emsp`join`域的域值可以在聚合根脚本中访问，可以使用[parent_id query](#Parent ID query)查询。
+
+```text
+GET my-index-000001/_search
+{
+  "query": {
+    "parent_id": { 
+      "type": "answer",
+      "id": "1"
+    }
+  },
+  "aggs": {
+    "parents": {
+      "terms": {
+        "field": "my_join_field#question", 
+        "size": 10
+      }
+    }
+  },
+  "runtime_mappings": {
+    "parent": {
+      "type": "long",
+      "script": """
+        emit(Integer.parseInt(doc['my_join_field#question'].value)) 
+      """
+    }
+  },
+  "fields": [
+    { "field": "parent" }
+  ]
+}
+```
+
+&emsp;&emsp;第4行，查询`parent_id`域(见[has_parent query ](#Has parent query)和[has_child query](#Has child query))
+&emsp;&emsp;第12行，在`parent_id`上聚合（见[children aggregation](#Children aggregation)）
+&emsp;&emsp;第21行，在脚本中访问`parent_id`
+
+##### Global ordinals
+
+&emsp;&emsp;`join`字段使用全局序号（[global ordinals](#eager_global_ordinals)）来加速连接操作。每当分片发生变化后，全局序号需要重建。分片中存储的父ID值越多，重建join字段的全局序号所需时间就越长；
+
+&emsp;&emsp;默认情况下，全局序号会积极（eagerly）构建：如果索引发生变化，`join`字段的全局序号会作为刷新的一部分被重建。这可能会显著增加刷新时间。然而，大多数情况下这是正确的权衡，否则在首次使用父子连接查询或聚合时，全局序号会被重建，这可能会为用户引入显著的延迟峰值。
+
+&emsp;&emsp;当`join`字段使用不频繁且频繁写入时，可能有必要禁用积极加载。
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_join_field": {
+        "type": "join",
+        "relations": {
+           "question": "answer"
+        },
+        "eager_global_ordinals": false
+      }
+    }
+  }
+}
+
+```
+
+&emsp;&emsp;可以通过下面的方式查看每一个parent relation对应的全局序号的内存使用量：
+
+```text
+# Per-index
+GET _stats/fielddata?human&fields=my_join_field#question
+
+# Per-node per-index
+GET _nodes/stats/indices/fielddata?human&fields=my_join_field#question
+```
+
+##### Multiple children per parentedit
+
+&emsp;&emsp;也可以为单个parent定义多个child：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_join_field": {
+        "type": "join",
+        "relations": {
+          "question": ["answer", "comment"]  
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，`question`是`answer`和`comment`的parent
+
+##### Multiple levels of parent join
+
+> WARNING：不要使用多级父子关系来模拟关系型数据库模型。每增加一级关系，都会在查询时增加内存和计算的开销。为了获得更好的搜索性能，建议denormalize你的数据。
+
+&emsp;&emsp;Multiple levels of parent/child：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "my_join_field": {
+        "type": "join",
+        "relations": {
+          "question": ["answer", "comment"],  
+          "answer": "vote" 
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，`question`是`answer`和`comment`的parent
+&emsp;&emsp;第8行，`vote`是`answer`的parent
+
+&emsp;&emsp;上面的mapping意思就是：
+
+```text
+  question
+    /    \
+   /      \
+comment  answer
+           |
+           |
+          vote
+```
+
+&emsp;&emsp;索引一个grandchild文档需要跟grand-parent一样的路由值（the greater parent of the lineage）
+
+```text
+PUT my-index-000001/_doc/3?routing=1&refresh 
+{
+  "text": "This is a vote",
+  "my_join_field": {
+    "name": "vote",
+    "parent": "2" 
+  }
+}
+```
+
+&emsp;&emsp;第1行，必须跟parent、grand-parent在相同的分片上
+&emsp;&emsp;第6行，这个文档的父级文档的文档ID（必须指向`answer`文档）
 
 #### Keyword type family
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
@@ -21075,7 +21447,7 @@ GET my-index-000001/_search?size=0
 
 > WARNING：许多时区会因夏令时而调整时钟。在这些变更发生时附近的桶可能比你根据calendar_interval或fixed_interval预期的大小略有不同。例如，考虑CET时区的夏令时开始：2016年3月27日凌晨2点，时钟向前调整1小时至当地时间3点。如果你使用day作为calendar_interval，那么覆盖那天的桶将只包含23小时的数据，而不是其他桶的常规24小时。对于更短的间隔，如fixed_interval的12小时，当夏令时变更发生时，3月27日早上你将只有一个11小时的桶
 
-##### Minimum Interval parameteredit
+##### Minimum Interval parameter
 
 &emsp;&emsp;`minimum_interval`参数允许使用者指定应该使用的最小舌入间隔（rounding interval）。这使得收集过程更加效率，因为聚合不会尝试在小于`minimum_interval`的任何间隔上进行舍入。
 
@@ -21124,6 +21496,15 @@ POST /sales/_search?size=0
 
 &emsp;&emsp;第8行，没有`date`域的文档会落入相同的分桶中，并且把这些文档看成有`date`域，并且值为`2000/01/01`
 
+#### Categorize text aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket aggregation，将半结构化（semi-structured）的文档分组到分桶内。每一个`text`类型的域使用自定义的analyzer重新分析。
+
+#### Children aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+
+&emsp;&emsp;它属于特殊的single bucket aggregation，
 
 #### Filters aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
