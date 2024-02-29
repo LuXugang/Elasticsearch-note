@@ -848,7 +848,7 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;（[Dynamic](#Dynamic（settings）)）该配置是一个常量，所有field data的估算值乘以这个常量来计算出最终的估算值。默认是值1.03。
 
-##### Request circuit breakeredit
+##### Request circuit breaker
 
 &emsp;&emsp;Request熔断器允许Elasticsearch防止每一个请求的数据结构（例如，在一次请求中，聚合计算占用的内存量）超过一定量的内存量。
 
@@ -894,7 +894,7 @@ POST _nodes/reload_secure_settings
 
 &emsp;&emsp;（[Dynamic](#Dynamic（settings）)）Limit for the number of unique dynamic scripts within a certain interval that are allowed to be compiled. Defaults to 150/5m, meaning 150 every 5 minutes。
 
-##### Regex circuit breakeredit
+##### Regex circuit breaker
 
 &emsp;&emsp;写的不好的正则表达式会降低（degrade）集群稳定性以及性能。regex熔断器限制了[Painless scripts](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-regexes.html)中正则表达式的使用以及复杂性。
 
@@ -7894,7 +7894,7 @@ PUT my-index-000001/_doc/4?routing=1&refresh
 
 &emsp;&emsp;只有在数据包含一对多关系，其中一个实体数量显著多于另一个实体的情况下，使用join字段才有意义。例如，产品和这些产品的优惠就是这样的用例，如果优惠的数量远多于产品的数量，那么将产品模型化为父文档，将优惠模型化为子文档是有意义的。
 
-##### Parent-join restrictionsedit
+##### Parent-join restrictions
 
 - 每一个索引的mapping中只能有一个`join`类型的域
 - 父/子文档必须索引到相同的分片上。意味着在[getting](#Get API)、[deleting](#Delete API)、[updating](#Update API)子文档时必须提供相同的`route`值
@@ -8081,7 +8081,7 @@ GET _stats/fielddata?human&fields=my_join_field#question
 GET _nodes/stats/indices/fielddata?human&fields=my_join_field#question
 ```
 
-##### Multiple children per parentedit
+##### Multiple children per parent
 
 &emsp;&emsp;也可以为单个parent定义多个child：
 
@@ -22714,11 +22714,293 @@ POST /sales/_search?size=0
 &emsp;&emsp;响应中包含了一周中相关星期几的分桶：1代表星期一，2代表星期二……7代表星期日。
 
 #### Date range aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
 
-&emsp;&emsp;专门为日期值使用的range aggregation。这个聚合根[range]() aggregation的主要不同是`from`跟`to`可以用[Date Math]()表达式，
+&emsp;&emsp;专门为日期值使用的range aggregation。这个聚合根[range](#Range aggregation) aggregation的主要不同是`from`跟`to`可以用[Date Math](#Date Math)表达式。也可以在返回的`from`跟`to`使用格式化后的日期。注意的是在这个聚合中，每一个范围的`from`是包含并且`to`是不包含的。
+
+&emsp;&emsp;例子：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "range": {
+      "date_range": {
+        "field": "date",
+        "format": "MM-yyyy",
+        "ranges": [
+          { "to": "now-10M/M" },  
+          { "from": "now-10M/M" } 
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，< now minus 10 months，下舍入到月份的开始时间
+&emsp;&emsp;第9行，>= now minus 10 months，下舍入到月份的开始时间
+
+&emsp;&emsp;在上面的例子中，我们创建了两个范围的分桶，10个月前的文档将划分到第一个捅，10个月前开始到现在的文档划分到第二个分桶。
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "range": {
+      "buckets": [
+        {
+          "to": 1.4436576E12,
+          "to_as_string": "10-2015",
+          "doc_count": 7,
+          "key": "*-10-2015"
+        },
+        {
+          "from": 1.4436576E12,
+          "from_as_string": "10-2015",
+          "doc_count": 0,
+          "key": "10-2015-*"
+        }
+      ]
+    }
+  }
+}
+```
+> WARNING：如果format或者日期值不完整，date range aggregation使用默认值替换缺失的部分。见[Missing date components](#Missing date components)
+> - 你进行日期范围聚合时，如果你指定的日期没有包含所有需要的信息（比如，年、月、日、时、分、秒等），Elasticsearch会自动用一些预设的值来填充这些缺失的部分，以确保日期值是完整的
+
+##### Missing Values
+
+&emsp;&emsp;当文档缺失聚合字段时，`missing`参数定义了在这篇文档中聚合字段的值。默认情况下，它们会被忽略，但是可以将它们视为具有某个值的文档。可以通过添加域名集合完成：域值被映射为一个默认值
+
+```text
+POST /sales/_search?size=0
+{
+   "aggs": {
+       "range": {
+           "date_range": {
+               "field": "date",
+               "missing": "1976/11/30",
+               "ranges": [
+                  {
+                    "key": "Older",
+                    "to": "2016/02/01"
+                  }, 
+                  {
+                    "key": "Newer",
+                    "from": "2016/02/01",
+                    "to" : "now/d"
+                  }
+              ]
+          }
+      }
+   }
+}
+```
+
+&emsp;&emsp;第11行，没有`date`域的文档会被划分到"Older"的分桶中，因为它们的域值为`1976/11/30`。
+
 
 ##### Date Format/Pattern
+
+> NOTE：以下的内容拷贝于[DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html)。
+
+&emsp;&emsp;所有ASCII字母都被保留作为format pattern letter，其定义如下：
+
+| Symbol |          Meaning           | Presentation |                  Examples                  |
+| :----: | :------------------------: | :----------: | :----------------------------------------: |
+|   G    |            era             |     text     |             AD; Anno Domini; A             |
+|   u    |            year            |     year     |                  2004; 04                  |
+|   y    |        year-of-era         |     year     |                  2004; 04                  |
+|   D    |        day-of-year         |    number    |                    189                     |
+|  M/L   |       month-of-year        | number/text  |            7; 07; Jul; July; J             |
+|   d    |        day-of-month        |    number    |                     10                     |
+|  Q/q   |      quarter-of-year       | number/text  |           3; 03; Q3; 3rd quarter           |
+|   Y    |      week-based-year       |     year     |                  1996; 96                  |
+|   w    |  week-of-week-based-year   |    number    |                     27                     |
+|   W    |       week-of-month        |    number    |                     4                      |
+|   E    |        day-of-week         |     text     |              Tue; Tuesday; T               |
+|  e/c   |   localized day-of-week    | number/text  |           2; 02; Tue; Tuesday; T           |
+|   F    |       week-of-month        |    number    |                     3                      |
+|   a    |        am-pm-of-day        |     text     |                     PM                     |
+|   h    | clock-hour-of-am-pm (1-12) |    number    |                     12                     |
+|   K    |    hour-of-am-pm (0-11)    |    number    |                     0                      |
+|   k    | clock-hour-of-am-pm (1-24) |    number    |                     0                      |
+|   H    |     hour-of-day (0-23)     |    number    |                     0                      |
+|   m    |       minute-of-hour       |    number    |                     30                     |
+|   s    |      second-of-minute      |    number    |                     55                     |
+|   S    |     fraction-of-second     |   fraction   |                    978                     |
+|   A    |        milli-of-day        |    number    |                    1234                    |
+|   n    |       nano-of-second       |    number    |                 987654321                  |
+|   N    |        nano-of-day         |    number    |                 1234000000                 |
+|   V    |        time-zone ID        |   zone-id    |       America/Los_Angeles; Z; -08:30       |
+|   z    |       time-zone name       |  zone-name   |         Pacific Standard Time; PST         |
+|   O    |   localized zone-offset    |   offset-O   |        GMT+8; GMT+08:00; UTC-08:00;        |
+|   X    |  zone-offset *Z* for zero  |   offset-X   | Z; -08; -0830; -08:30; -083015; -08:30:15; |
+| Symbol |          Meaning           | Presentation |                  Examples                  |
+|   G    |            era             |     text     |             AD; Anno Domini; A             |
+|   u    |            year            |     year     |                  2004; 04                  |
+|   y    |        year-of-era         |     year     |                  2004; 04                  |
+|   D    |        day-of-year         |    number    |                    189                     |
+|  M/L   |       month-of-year        | number/text  |            7; 07; Jul; July; J             |
+|   d    |        day-of-month        |    number    |                     10                     |
+
+&emsp;&emsp;pattern字母的数量决定了format。
+
+- Text
+  - 文本样式基于使用的pattern letter数量来确定。少于4个pattern letter将使用短格式。恰好4个pattern letter将使用全格式。恰好5个pattern letter将使用窄格式。pattern letter `L`、`c`和`q`指定文本样式的独立形式。
+- Number
+  - 如果字母数量为一，则值使用最少的数字输出且不填充。否则，数字的数量用作输出字段的宽度，必要时使用零填充。以下pattern letter对字母的数量有限制。c和F只能指定一个字母。`d`、`H`、`h`、`K`、`k`、`m`和`s`最多可以指定两个字母。D最多可以指定三个字母。
+- Number/Text
+  - 如果pattern letter的数量为3个或更多，使用上述文本规则。否则使用上述数字规则。
+- Fraction
+  - 以秒的分数形式输出纳秒字段。纳秒值有九位数字，因此pattern letter的数量从1到9。如果少于9，则纳秒值被截断，只输出最重要的数字。
+- Year
+  - 字母的数量决定了填充使用的最小字段宽度。如果字母数量为两个，则使用缩减的两位数字形式。对于打印，这将输出最右边的两位数字。对于解析，这将使用2000年的基准值进行解析，结果在2000年到2099年之间。如果字母数量少于四个（但不是两个），则只有在年份为负时才输出符号，按照`SignStyle.NORMAL`。否则，如果超过填充宽度，符号将被输出，按照`SignStyle.EXCEEDS_PAD`。
+- ZoneId
+  - 输出时区ID，例如`Europe/Paris`。如果字母数量为两个，则输出时区ID。任何其他数量的字母都会抛出`IllegalArgumentException`。
+- Zone names
+  - 输出时区ID的显示名称。如果字母数量为一、二或三，则输出短名称。如果字母数量为四，则输出全名称。五个或更多字母会抛出`IllegalArgumentException`。
+- Offset X and x
+  - 根据pattern letter的数量格式化偏移。一个字母仅输出小时数，例如`+01`，除非分钟非零，在这种情况下也会输出分钟，例如`+0130`。两个字母输出小时和分钟，没有冒号，例如`+0130`。三个字母输出小时和分钟，有冒号，例如`+01:30`。四个字母输出小时、分钟和可选的秒数，没有冒号，例如`+013015`。五个字母输出小时、分钟和可选的秒数，有冒号，例如`+01:30:15`。六个或更多字母会抛出`IllegalArgumentException`。pattern letter`X`（大写）在偏移为零时输出Z，而pattern letter`x`（小写）在偏移为零时输出`+00`、`+0000`或`+00:00`。
+- Offset O
+  - 根据pattern letter的数量格式化本地化偏移。一个字母输出本地化偏移的简短形式，即本地化偏移文本，例如`GMT`，小时数不带前导零，可选的2位数字的分`钟和秒（如果非零），并且有冒号，例如`GMT+8`。四个字母输出完整形式，即本地化偏移文本，如`GMT`，带有2位数字的小时和分钟字段，可选的秒字段（如果非零），并且有冒号，例如`GMT+08:00`。任何其他数量的字母都会抛出`IllegalArgumentException`。
+- Offset Z
+  - 根据pattern letter的数量格式化偏移。一、两或三个字母输出小时和分钟，没有冒号，例如+0130。偏移为零时输出将是`+0000`。四个字母输出本地化偏移的完整形式，等同于Offset-O的四个字母。如果偏移为零，输出将是相应的本地化偏移文本。五个字母输出小时、分钟，如果非零则带有可选的秒数，有冒号。如果偏移为零，则输出`Z`。六个或更多字母会抛出IllegalArgumentException。
+
+- Optional section
+  - 可选部分标记的工作方式就像调用`DateTimeFormatterBuilder.optionalStart()`和`DateTimeFormatterBuilder.optionalEnd()`一样。
+
+- Pad modifier
+  - 用空格填充紧随其后的模式。填充宽度由pattern letter的数量决定。这与调用`DateTimeFormatterBuilder.padNext(int)`相同。
+
+##### Time zone in date range aggregations
+
+&emsp;&emsp;可以通过`time_zone`参数将日期从UTC转化到另一个时区。
+
+&emsp;&emsp;你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`就是在TZ 数据库中使用的标识符。
+
+&emsp;&emsp;`time_zone`参数也用于date math表达式中的舍入操作。举个例子，如果你想要按照中欧时间（CET）时区来舍入到当天的开始，你可以这么做：
+
+```text
+POST /sales/_search?size=0
+{
+   "aggs": {
+       "range": {
+           "date_range": {
+               "field": "date",
+               "time_zone": "CET",
+               "ranges": [
+                  { "to": "2016/02/01" }, 
+                  { "from": "2016/02/01", "to" : "now/d" }, 
+                  { "from": "now/d" }
+              ]
+          }
+      }
+   }
+}
+```
+
+&emsp;&emsp;第8行，这个日期将被转化为`2016-02-01T00:00:00.000+01:00`
+&emsp;&emsp;第9行，`now/d`将被舌入到欧时间（CET）时区当天的开始
+
+##### Keyed Response
+
+&emsp;&emsp;将`keyed`设置为`true`，每个分桶名会关联一个唯一的string key，响应中所有的分桶用hash展示而不是用数组：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "range": {
+      "date_range": {
+        "field": "date",
+        "format": "MM-yyy",
+        "ranges": [
+          { "to": "now-10M/M" },
+          { "from": "now-10M/M" }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;相应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "range": {
+      "buckets": {
+        "*-10-2015": {
+          "to": 1.4436576E12,
+          "to_as_string": "10-2015",
+          "doc_count": 7
+        },
+        "10-2015-*": {
+          "from": 1.4436576E12,
+          "from_as_string": "10-2015",
+          "doc_count": 0
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;也可以为每一个范围自定义key：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "range": {
+      "date_range": {
+        "field": "date",
+        "format": "MM-yyy",
+        "ranges": [
+          { "from": "01-2015", "to": "03-2015", "key": "quarter_01" },
+          { "from": "03-2015", "to": "06-2015", "key": "quarter_02" }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "range": {
+      "buckets": {
+        "quarter_01": {
+          "from": 1.4200704E12,
+          "from_as_string": "01-2015",
+          "to": 1.425168E12,
+          "to_as_string": "03-2015",
+          "doc_count": 5
+        },
+        "quarter_02": {
+          "from": 1.425168E12,
+          "from_as_string": "03-2015",
+          "to": 1.4331168E12,
+          "to_as_string": "06-2015",
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
 
 #### Histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
