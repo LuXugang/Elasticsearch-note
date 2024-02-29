@@ -830,7 +830,7 @@ POST _nodes/reload_secure_settings
 
 ###### indices.breaker.total.use_real_memory
 
-&emsp;&emsp;（[Static](#Static（settings） )）如果该值为true，那么父级别的熔断器会考虑真实的内存使用量，否则考虑的是子级别的熔断器预定（reserved）的内存量总和。默认值为true。
+&emsp;&emsp;（[Static](#Static（settings） )）如果该值为true，那么父级别的熔断器会考虑实际的内存使用量，否则考虑的是子级别的熔断器预定（reserved）的内存量总和。默认值为true。
 
 ###### indices.breaker.total.limit
 
@@ -8183,7 +8183,7 @@ PUT my-index-000001
 
 ##### Which type should I use?
 
-&emsp;&emsp;对于整数类型（`byte`, `short`, `integer` 以及`long`），对于你的用例，你应该选择最小类型（smallest Type）。这将让索引和搜索更加高效。注意的是尽管存储时会基于真实的值进行优化，因此选择一种类型而不是另一种类型对存储需求没有影响。 
+&emsp;&emsp;对于整数类型（`byte`, `short`, `integer` 以及`long`），对于你的用例，你应该选择最小类型（smallest Type）。这将让索引和搜索更加高效。注意的是尽管存储时会基于实际的值进行优化，因此选择一种类型而不是另一种类型对存储需求没有影响。 
 
 &emsp;&emsp;对于浮点型，通常使用`scaling factor`将浮点数据存储为整数会更有效率，这正是`scaled_float`类型在底层所做的。例如，一个price字段可以使用`scaling factor`为100的`scaled_float`来存储。API中像是将域值作为一个double存储，但在Elasticsearch内部以"分"为单位存储，`price*100`，就可以将double变成一个整数。相较于浮点数，整数更易于压缩来节省磁盘开销。`scaled_float`属于精度跟磁盘开销之间的折中方式。例如，假设你在跟踪 CPU利用率，这是一个介于 0 和 1 之间的数字。CPU 利用率是 12.7% 还是 13% 通常并不重要，所以你可以使用一个 scaling_factor 为 100 的 scaled_float，以将 CPU 利用率四舍五入到最接近的百分比，以节省空间。（如果域值是固定小数位，用scaled_float是个不错的选择）
 
@@ -21324,9 +21324,548 @@ GET my-index-000001/_search?size=0
 ##### Missing bucket
 
 #### Date histogram aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
 
-&emsp;&emsp;它属于multi-bucket aggregation，类似与普通的[histogram]()
+&emsp;&emsp;它属于multi-bucket aggregation，类似与普通的[histogram](#Histogram aggregation)。但是它只能用于日期或者日期类型的范围值（range value）。因为日期在Elasticsearch内部用long值表示，因此`histogram`aggregation 也可以用于日期，但准确性不如data histogram。这两个聚合的区别在于这个聚合的间隔（interval）可以指定为date/time 表达式。Time-based的数据要求特殊支持，因为time-based的interval不总是一个固定长度（比如间隔为`1M`，那么不同月份的一个月的天数是不一样的）。
+
+&emsp;&emsp;跟histogram一样的是，域值会被下舍入到最近的分桶中，例如，如果间隔是一个日历日（calendar day），那么`2020-01-03T07:00:01Z`会下舍入到`2020-01-03T00:00:00Z`。域值按照以下方式舌入：
+
+```text
+bucket_key = Math.floor(value / interval) * interval
+```
+
+##### Calendar and fixed intervals
+
+&emsp;&emsp;在配置一个date histogram aggregation时，有两种方式指定间隔：calendar-aware time（日历感知，也就是自然时间，比如一个月，一年这种）以及fixed time（固定时间）。
+
+&emsp;&emsp;calendar-aware time理解到夏令时会改变特定日子的长度，不同的月份有不同数量的天数，而闰秒可以加到特定的年份上。
+
+&emsp;&emsp;相比之下，固定间隔总是国际单位制的倍数，并且不会根据日历情境发生变化。
+
+##### Calendar intervals
+
+&emsp;&emsp;calendar-aware interval通过`calendar_interval`配置。你可以使用单位名称，比如`month`、或者单个单位数量，比如`1M`。例如`day`和`1d`是同等的。多个数量，比如`2d`是不支持的。
+
+&emsp;&emsp;可接受的日历间隔（calendar interval）包括：
+
+- minute,1m
+  - 所有分钟都从00秒开始。一分钟是指定时区中第一分钟的00秒到下一分钟的00秒之间的间隔，补偿任何介入的闰秒，以便小时过去的分钟数和秒数在开始和结束时是相同的
+    - 如果一个时间间隔从某个小时的开始计算（比如，下午3点整），那么这个时间间隔结束时也应该是在某个小时的开始（比如，下午4点整），即使在这个时间段内实际添加了闰秒，也不会改变这个规律
+- hour, 1h
+  - 所有小时都从00分钟00秒开始。一小时（1h）是指定时区中第一个小时的00:00分到下一个小时的00:00分之间的间隔，补偿任何介入的闰秒，以便小时过去的分钟数和秒数在开始和结束时是相同的
+- day, 1d
+ - 所有天都从可能的最早时间开始，通常是00:00:00（午夜）。一天（1d）是指定时区中一天的开始到下一天开始之间的间隔，补偿任何介入的时间变化
+- week, 1w
+  - 一周是从开始的 day_of_week:hour:minute:second 到指定时区的下一周的同一天和时间之间的间隔。
+- month, 1M
+  - 一个月是从月份的开始日和一天中的时间到下一个月的同一天和时间之间的间隔，以便月份中的日和一天中的时间在开始和结束时是相同的
+- quarter, 1q
+  - 一个季度是从月份的开始日和一天中的时间到三个月后的同一天和时间之间的间隔，以便月份中的日和一天中的时间在开始和结束时是相同的
+- year, 1y
+  - 一年是从月份的开始日和一天中的时间到下一年的同一天和时间之间的间隔，以便日期和时间在开始和结束时是相同的
+
+###### Calendar interval examples
+
+&emsp;&emsp;下面的例子中，按照间隔为一个月的日历时间进行分桶：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "month"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果你尝试使用多个日历单元（calendar unit），那么聚合将会失败，因为支持单个单位数量。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "2d"
+      }
+    }
+  }
+}
+```
+
+```text
+{
+  "error" : {
+    "root_cause" : [...],
+    "type" : "x_content_parse_exception",
+    "reason" : "[1:82] [date_histogram] failed to parse field [calendar_interval]",
+    "caused_by" : {
+      "type" : "illegal_argument_exception",
+      "reason" : "The supplied interval [2d] could not be parsed as a calendar interval.",
+      "stack_trace" : "java.lang.IllegalArgumentException: The supplied interval [2d] could not be parsed as a calendar interval."
+    }
+  }
+}
+```
+
+##### Fixed intervals
+
+&emsp;&emsp;固定间隔使用`fixed_interval`配置。
+
+&emsp;&emsp;与Calendar aware intervals不同，固定间隔是固定数量的国际单位制（SI）单位，不会偏离（也就是不受日历上的变化（如月份长度不同、闰年等）或特殊时间调整（如夏令时）的影响），不管它们落在日历上的哪个位置。一秒钟总是由1000毫秒组成。这允许固定间隔以支持单位的任何倍数来指定。
+
+&emsp;&emsp;然而，这意味着固定间隔不能表示像月份这样的单位，因为一个月的持续时间不是一个固定数量。尝试指定一个像月或季度这样的日历间隔将会抛出异常。
+
+&emsp;&emsp;固定间隔接受的单位有：
+
+- milliseconds (ms)：单个毫秒，这是非常非常小的间隔
+- seconds (s)：相当于定义了1000ms
+- minutes (m)：相当于定义了60s或者60000ms。所有的分钟从00秒开始
+- hours (h)：相当于定义了60m或者3600000ms。所有的小时从00分00秒开始
+- days (d)：相当于定义了24h或者86400000ms。所有天都从可能的最早时间开始，通常是00:00:00（午夜）
+
+###### Fixed interval examples
+
+&emsp;&emsp;如果我们尝试重新创建一个之前`calendar_interval`的一个月，我们可以使用固定的30天来近似实现。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "fixed_interval": "30d"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;但如果我们尝试使用日历单位时是不支持的，比如多个周，我们会得到一个异常：
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "fixed_interval": "2w"
+      }
+    }
+  }
+}
+```
+
+```text
+{
+  "error" : {
+    "root_cause" : [...],
+    "type" : "x_content_parse_exception",
+    "reason" : "[1:82] [date_histogram] failed to parse field [fixed_interval]",
+    "caused_by" : {
+      "type" : "illegal_argument_exception",
+      "reason" : "failed to parse setting [date_histogram.fixedInterval] with value [2w] as a time value: unit is missing or unrecognized",
+      "stack_trace" : "java.lang.IllegalArgumentException: failed to parse setting [date_histogram.fixedInterval] with value [2w] as a time value: unit is missing or unrecognized"
+    }
+  }
+}
+```
+
+##### Date histogram usage notes
+
+&emsp;&emsp;在所有情况下，当指定的结束时间不存在时，实际的结束时间是指定结束后最接近的可用时间。
+
+&emsp;&emsp;广泛分布的应用程序还必须考虑到一些变数，比如一些国家在凌晨12:01开始和停止夏令时（daylight savings time），因此一年中会有`一分钟的星期日后接着是额外的59分钟的星期六`，以及那些决定跨越国际日期变更线的国家。这样的情况可能会让不规则的时区偏移看起来简单。
+
+> NOTE：**一分钟的星期日后接着是额外的59分钟的星期六**
+夏令时是一种在夏季月份调整时钟以便更好地利用日照的做法，通常涉及在春季将时钟向前调整一小时，在秋季再将其调回
+> - 夏令时结束前：时间进入到凌晨12:01 AM，接着是星期日的第一分钟。
+> - 夏令时结束：在凌晨12:01 AM，时钟后退一小时到前一个小时的开始，即回到11:01 PM。
+> - 夏令时结束后：时间再次经历11:02 PM到11:59 PM的59分钟，这些时间实际上是“重复”的，因为它们在夏令时期间已经发生过一次。这导致了一个有趣的现象，即夏令时结束的那一天会比标准的24小时多出一个小时，总计25小时。
+> 因此，这种情况下，看似在星期日的第一分钟后，实际上是回到了星期六的最后一个小时，从而造成了“一分钟的星期日后接着是额外的59分钟的星期六”的现象。
+
+&emsp;&emsp;一如既往，严格的测试，特别是在时间变更事件周围，将确保您的时间间隔规范是您所期望的。
+
+> WARNING：为了避免意外结果，所有连接的服务器和客户端都必须同步到一个可靠的网络时间服务。
+
+> NOTE：不支持小数时间值，但您可以通过转换到另一个时间单位来解决这个问题（例如，1.5小时可以指定为90分钟）。
+
+> NOTE：您还可以使用时间单位解析支持的缩写来指定时间值。
+
+##### Keys
+
+&emsp;&emsp;在Elasticsearch内部实现中，日期用64位的时间戳表示，也就是milliseconds-since-the-epoch（01/01/1970 midnight UTC）。这些时间戳将作为分桶的key。`key_as_string`则是使用相同的时间戳根据`format`转化成格式化后的日期字符串：
+
+> TIP：如果你不指定`format`，则使用域的mapping中第一个date [format](#format(mapping parameter))。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "1M",
+        "format": "yyyy-MM-dd" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，支持expressive date [format pattern](#Date range aggregation)
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "sales_over_time": {
+      "buckets": [
+        {
+          "key_as_string": "2015-01-01",
+          "key": 1420070400000,
+          "doc_count": 3
+        },
+        {
+          "key_as_string": "2015-02-01",
+          "key": 1422748800000,
+          "doc_count": 2
+        },
+        {
+          "key_as_string": "2015-03-01",
+          "key": 1425168000000,
+          "doc_count": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+##### Time zone
+
+&emsp;&emsp;Elasticsearch用Coordinated Universal Time (UTC)存储日期时间。默认使用UTC进行分桶和舌入。使用`time_zone`字段来告知应该使用不同的时区。
+
+&emsp;&emsp;例如，如果间隔是calendar day并且时区是`America/New_York`（西五区），那么`2020-01-03T01:00:01Z`转化为`2020-01-02T18:00:01`（应该是`2020-01-02T20:00:01`吧？），舌入到`2020-01-02T00:00:00`然后转回到UTC的`2020-01-02T05:00:00:00Z`。最终以`America/New_York`显示分桶名称，所以变成了`2020-01-02T00:00:00`。
+
+&emsp;&emsp;也就是：
+
+```text
+bucket_key = localToUtc(Math.floor(utcToLocal(value) / interval) * interval))
+```
+
+&emsp;&emsp;你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`。
+
+&emsp;&emsp;看这个例子：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "date": "2015-10-01T00:30:00Z"
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "date": "2015-10-01T01:30:00Z"
+}
+
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "by_day": {
+      "date_histogram": {
+        "field":     "date",
+        "calendar_interval":  "day"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果不指定一个时区，则使用UTC。这将导致这两个结果放到同一个分桶中，开始于：`midnight UTC on 1 October 2015`：
+
+```text
+{
+  ...
+  "aggregations": {
+    "by_day": {
+      "buckets": [
+        {
+          "key_as_string": "2015-10-01T00:00:00.000Z",
+          "key":           1443657600000,
+          "doc_count":     2
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;如果你指定的时区为`-01:00`，那么午夜时间是UTC午夜的前一个小时：
+
+```text
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "by_day": {
+      "date_histogram": {
+        "field":     "date",
+        "calendar_interval":  "day",
+        "time_zone": "-01:00"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;注意的是第一个文档会落入到2015年9月30的桶，而另一个落入到2015年10月1号的桶
+
+```text
+{
+  ...
+  "aggregations": {
+    "by_day": {
+      "buckets": [
+        {
+          "key_as_string": "2015-09-30T00:00:00.000-01:00", 
+          "key": 1443574800000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T00:00:00.000-01:00", 
+          "key": 1443661200000,
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;`key_as_string`描述了指定时区中每天的午夜时间。
+
+> WARNING：许多时区会因夏令时而调整时钟。在这些变更发生时附近的桶可能比你根据calendar_interval或fixed_interval预期的大小略有不同。例如，考虑CET时区的夏令时开始：2016年3月27日凌晨2点，时钟向前调整1小时至当地时间3点。如果你使用day作为calendar_interval，那么覆盖那天的桶将只包含23小时的数据，而不是其他桶的常规24小时。对于更短的间隔，如fixed_interval的12小时，当夏令时变更发生时，3月27日早上你将只有一个11小时的桶
+
+##### Offset
+
+&emsp;&emsp;使用`offset`参数，指定正负号（`+`或`-`）的时间修改每一个分桶的开始值，比如`1h`就是一小时，`1d`就是一天。见[time units](#Time units)了解更多的选项。
+
+&emsp;&emsp;比如，当使用了`day`的间隔，每一个分桶从每天的午夜开始，下一个午夜结束，将`offset`设置为`+6h`后，每一个分桶从早上6点到下一个早上6点：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "date": "2015-10-01T05:30:00Z"
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "date": "2015-10-01T06:30:00Z"
+}
+
+GET my-index-000001/_search?size=0
+{
+  "aggs": {
+    "by_day": {
+      "date_histogram": {
+        "field":     "date",
+        "calendar_interval":  "day",
+        "offset":    "+6h"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的请求将文档分别落入到两个从早上6点开始的分桶中，而不是落入到同一个从午夜开始的单个分桶中：
+
+```text
+{
+  ...
+  "aggregations": {
+    "by_day": {
+      "buckets": [
+        {
+          "key_as_string": "2015-09-30T06:00:00.000Z",
+          "key": 1443592800000,
+          "doc_count": 1
+        },
+        {
+          "key_as_string": "2015-10-01T06:00:00.000Z",
+          "key": 1443679200000,
+          "doc_count": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+> NOTE：在调整时区后，在根据`offset`计算
+
+##### Keyed Response
+
+&emsp;&emsp;将`keyed`设置为`true`，分桶的key_as_string的值将作为key，响应中所有的分桶用hash展示而不是用数组。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "1M",
+        "format": "yyyy-MM-dd",
+        "keyed": true
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "sales_over_time": {
+      "buckets": {
+        "2015-01-01": {
+          "key_as_string": "2015-01-01",
+          "key": 1420070400000,
+          "doc_count": 3
+        },
+        "2015-02-01": {
+          "key_as_string": "2015-02-01",
+          "key": 1422748800000,
+          "doc_count": 2
+        },
+        "2015-03-01": {
+          "key_as_string": "2015-03-01",
+          "key": 1425168000000,
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
+
+##### Script
+
+&emsp;&emsp;如果文档中的数据不完全满足你聚合的目的，可以使用[runtime filed](#Runtime fields)。比如，如果促销销售的收入应该在销售日期的后一天确认：
+
+```text
+POST /sales/_search?size=0
+{
+  "runtime_mappings": {
+    "date.promoted_is_tomorrow": {
+      "type": "date",
+      "script": """
+        long date = doc['date'].value.toInstant().toEpochMilli();
+        if (doc['promoted'].value) {
+          date += 86400;
+        }
+        emit(date);
+      """
+    }
+  },
+  "aggs": {
+    "sales_over_time": {
+      "date_histogram": {
+        "field": "date.promoted_is_tomorrow",
+        "calendar_interval": "1M"
+      }
+    }
+  }
+}
+```
+
+##### Parameters
+
+&emsp;&emsp;你可以使用`order`参数控制返回的分桶的顺序，以及根据`min_doc_count`过滤分桶（默认第一个和最后一个之间的所有分桶都会返回，意思是即使是空的分桶也会返回）。histogram同样支持`extended_bounds`。使得histogram的范围可以超过数据自身。`hard_bounds`可以限制histogram的范围。更多信息见[Extended Bounds](#Histogram aggregation)和[Hard Bounds](#Histogram aggregation)。
+
+###### Missing value
+
+&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
+
+```text
+POST /sales/_search?size=0
+{
+  "aggs": {
+    "sale_date": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "year",
+        "missing": "2000/01/01" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，没有`date`域的文档会落入相同的分桶中，并且把这些文档看成有`date`域，并且值为`2000/01/01`
+
+###### Order
+
+&emsp;&emsp;默认情况下分桶按照他们的key升序排序，不过可以通过`order`来控制这个行为。它跟[Terms Aggregation](#Terms aggregation)中的`order`有相同的功能。
+
+###### Using a script to aggregate by day of the week
+
+&emsp;&emsp;当你需要按星期几聚合结果时，可以在一个[runtime field](#Runtime fields)上执行`terms`聚合，该字段返回星期几。这种方法允许你根据日期数据的特定部分（即星期几）来组织和分析聚合结果
+
+```text
+POST /sales/_search?size=0
+{
+  "runtime_mappings": {
+    "date.day_of_week": {
+      "type": "keyword",
+      "script": "emit(doc['date'].value.dayOfWeekEnum.getDisplayName(TextStyle.FULL, Locale.ROOT))"
+    }
+  },
+  "aggs": {
+    "day_of_week": {
+      "terms": { "field": "date.day_of_week" }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "aggregations": {
+    "day_of_week": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "Sunday",
+          "doc_count": 4
+        },
+        {
+          "key": "Thursday",
+          "doc_count": 3
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中包含了一周中相关星期几的分桶：1代表星期一，2代表星期二……7代表星期日。
 
 #### Date range aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-daterange-aggregation.html)
@@ -29001,7 +29540,7 @@ GET _search
 
 &emsp;&emsp;如果查询受 I/O 限制（I/O-bound），考虑增加文件系统缓存的大小（见上文）或使用更快的存储。每一个查询涉及到在多个文件上进行随机和顺序的读取，并且可能在每一个分片上并发的进行查询。因此SSD驱动器的性能往往比旋转磁盘（spinning disk）好。
 
-&emsp;&emsp;Directly-attached类型的存储（local storage）通常比远程储存（remote storage）有更好的性能因为它配置更方便并且避免了communications overheads。通过精心的调整，远程储存也可以达到可接受的性能要求。使用真实的工作负载进行基准测试来检测你用于调整的参数。如果达不到你期望的性能要求，跟存储的供应商一起找出问题所在。
+&emsp;&emsp;Directly-attached类型的存储（local storage）通常比远程储存（remote storage）有更好的性能因为它配置更方便并且避免了communications overheads。通过精心的调整，远程储存也可以达到可接受的性能要求。使用实际的工作负载进行基准测试来检测你用于调整的参数。如果达不到你期望的性能要求，跟存储的供应商一起找出问题所在。
 
 &emsp;&emsp;如果查询受CPU限制，考虑使用更多更快的cpu。
 
@@ -29276,7 +29815,7 @@ PUT index
 
 &emsp;&emsp;Kibana中的[Search Profiler](https://www.elastic.co/guide/en/kibana/8.2/xpack-profiler.html)能更方便的定位和分析profile results，并让你深入了解如何调整查询以提高性能并减少负载。
 
-&emsp;&emsp;由于Profile API自身就会带来额外的开销，所以主要用来观察各个子查询之间相对的开销，不会真正的给出真实的处理花费的时间。
+&emsp;&emsp;由于Profile API自身就会带来额外的开销，所以主要用来观察各个子查询之间相对的开销，不会真正的给出实际的处理花费的时间。
 
 #### Faster phrase queries with index_phrases
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/faster-phrase-queries.html#faster-phrase-queries)
@@ -34865,7 +35404,7 @@ GET _tasks?detailed=true&actions=*byquery
 }
 ```
 
-&emsp;&emsp;第18行，该对象包含真实的状态。它类似于响应的JSON，但重要的增加了total字段。total是reindex预期执行的操作总数。你可以通过加上updated、created和deleted字段来估计进度。当这些字段的和等于total字段时，请求将完成
+&emsp;&emsp;第18行，该对象包含实际的状态。它类似于响应的JSON，但重要的增加了total字段。total是reindex预期执行的操作总数。你可以通过加上updated、created和deleted字段来估计进度。当这些字段的和等于total字段时，请求将完成
 
 &emsp;&emsp;根据任务id你可以直接查看这个任务。下面的例子获取了任务`r1A2WoRbTwKZ516z6NEs5A:36619：`的信息：
 
