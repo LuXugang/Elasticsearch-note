@@ -7809,7 +7809,7 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第8行，域的名字
-&emsp;&emsp;第11行，定义了单个关系，`question`是`answer`的父级
+&emsp;&emsp;第11行，定义了单个关系，`question`是`answer`的父级（parent）
 
 &emsp;&emsp;若要使用join索引一篇文档，需要在`_source`中提供关系的名称和父级文档（可选）。例如下面的例子创建了在`question`的上下文中定义了两个`parent`文档：
 
@@ -7835,7 +7835,7 @@ PUT my-index-000001/_doc/2?refresh
 
 &emsp;&emsp;第6行，这篇文档时`question`文档。
 
-&emsp;&emsp;当索引父级文档时，你可以选择快捷的只指定关系的名称，而不是使用对象进行封装：
+&emsp;&emsp;当索引父级文档（parent document）时，你可以选择快捷的只指定关系的名称，而不是使用对象进行封装：
 
 ```text
 PUT my-index-000001/_doc/1?refresh
@@ -7855,7 +7855,7 @@ PUT my-index-000001/_doc/2?refresh
 
 &emsp;&emsp;第5行，直接使用关系的名称。
 
-&emsp;&emsp;当索引一篇子文档时，必须在`_source`中添加关系的名称以及父文档的文档ID（`_id`）.
+&emsp;&emsp;当索引一篇子文档（child parent）时，必须在`_source`中添加关系的名称以及父文档的文档ID（`_id`）.
 
 > WARNING：要求将父子关系索引到同一个分片上，因此你必须使用父级文档ID来路由
 
@@ -21502,9 +21502,215 @@ POST /sales/_search?size=0
 &emsp;&emsp;它属于multi-bucket aggregation，将半结构化（semi-structured）的文档分组到分桶内。每一个`text`类型的域使用自定义的analyzer重新分析。
 
 #### Children aggregation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
-&emsp;&emsp;它属于特殊的single bucket aggregation，
+&emsp;&emsp;它属于特殊的single bucket aggregation，选择有指定类型的子文档（child document），该类型在[join filed](#Join field type)中定义。
+
+&emsp;&emsp;这个聚合有单个选项：
+
+- type：待选择的子文档的类型
+
+&emsp;&emsp;比如，我们有关系为`question`和`answer`的索引（`question`是`answer`的parent）。answer类型在mapping的定义如下所示：
+
+```text
+PUT child_example
+{
+  "mappings": {
+    "properties": {
+      "join": {
+        "type": "join",
+        "relations": {
+          "question": "answer"
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面的例子中，`parent`文档中包含一个名为`tag` 域并且`answer`文档中包含一个名为`owner`的 域。`children aggregation`能在单个请求中将tag bucket映射到owner bucket中，尽管这两个域在不同类型的文档中。
+
+&emsp;&emsp;`question`的文档：
+
+```text
+PUT child_example/_doc/1
+{
+  "join": {
+    "name": "question"
+  },
+  "body": "<p>I have Windows 2003 server and i bought a new Windows 2008 server...",
+  "title": "Whats the best way to file transfer my site from server to a newer one?",
+  "tags": [
+    "windows-server-2003",
+    "windows-server-2008",
+    "file-transfer"
+  ]
+}
+```
+
+&emsp;&emsp;`answer`的文档：
+
+```text
+PUT child_example/_doc/2?routing=1
+{
+  "join": {
+    "name": "answer",
+    "parent": "1"
+  },
+  "owner": {
+    "location": "Norfolk, United Kingdom",
+    "display_name": "Sam",
+    "id": 48
+  },
+  "body": "<p>Unfortunately you're pretty much limited to FTP...",
+  "creation_date": "2009-05-04T13:45:37.030"
+}
+
+PUT child_example/_doc/3?routing=1&refresh
+{
+  "join": {
+    "name": "answer",
+    "parent": "1"
+  },
+  "owner": {
+    "location": "Norfolk, United Kingdom",
+    "display_name": "Troll",
+    "id": 49
+  },
+  "body": "<p>Use Linux...",
+  "creation_date": "2009-05-05T13:45:37.030"
+}
+```
+
+&emsp;&emsp;下面的请求能将他们连接在一起：
+
+```text
+POST child_example/_search?size=0
+{
+  "aggs": {
+    "top-tags": {
+      "terms": {
+        "field": "tags.keyword",
+        "size": 10
+      },
+      "aggs": {
+        "to-answers": {
+          "children": {
+            "type" : "answer" 
+          },
+          "aggs": {
+            "top-names": {
+              "terms": {
+                "field": "owner.display_name.keyword",
+                "size": 10
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第12行，`type`指向了名为`answer`的类型。
+
+&emsp;&emsp;上面的例子返回了top question tags以及每一个tag的top answer owners。
+
+```text
+{
+  "took": 25,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped" : 0,
+    "failed": 0
+  },
+  "hits": {
+    "total" : {
+      "value": 3,
+      "relation": "eq"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "top-tags": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "file-transfer",
+          "doc_count": 1, 
+          "to-answers": {
+            "doc_count": 2, 
+            "top-names": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "Sam",
+                  "doc_count": 1
+                },
+                {
+                  "key": "Troll",
+                  "doc_count": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "key": "windows-server-2003",
+          "doc_count": 1, 
+          "to-answers": {
+            "doc_count": 2, 
+            "top-names": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "Sam",
+                  "doc_count": 1
+                },
+                {
+                  "key": "Troll",
+                  "doc_count": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "key": "windows-server-2008",
+          "doc_count": 1, 
+          "to-answers": {
+            "doc_count": 2, 
+            "top-names": {
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0,
+              "buckets": [
+                {
+                  "key": "Sam",
+                  "doc_count": 1
+                },
+                {
+                  "key": "Troll",
+                  "doc_count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;第67行， tag为`file-transfer`, `windows-server-2003`等question文档的数量
+&emsp;&emsp;第69行， tag为`file-transfer`, `windows-server-2003`等关联的answer文档的数量
 
 #### Filters aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
