@@ -24956,8 +24956,8 @@ POST /exams/_search?size=0
 | [`java`](#Advanced scripts using script engines) | ![No](http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/icon-no.png) | You write it!   | Expert API                      |
 
 
-### How to write scripts
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-using.html)
+### Painless scripting language
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-painless.html)
 
 &emsp;&emsp;Painless是一种高性能、安全的脚本语言，专门为Elasticsearch设计。你可以在Elasticsearch支持脚本的任何地方安全地编写内联和存储脚本。
 
@@ -24972,6 +24972,288 @@ POST /exams/_search?size=0
 &emsp;&emsp;准备开始使用Painless编写脚本了吗，见[how to write your first script.](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-api-reference.html)。
 
 &emsp;&emsp;如果你已经熟悉了Painless，可以查看[Painless Language Specification ](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-lang-spec.html)了解Painless语法和功能的详细介绍。
+
+### How to write scripts
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-using.html)
+
+&emsp;&emsp;无论在哪个API中编写脚本，总是按照下面的模式编写；你要指定脚本语言，提供脚本逻辑（或者脚本源，即通过标识符获取之前存储过的脚本），以及传入到脚本的参数：
+
+```text
+"script": {
+    "lang":   "...",
+    "source" | "id": "...",
+    "params": { ... }
+  }
+```
+
+- lang：指定要编写的脚本语言。默认是`Painless`
+- source, id：在`source`中指定脚本自身内容作为内联脚本或者指定`id`，获取之前存储好的脚本。使用[stored script APIs ](#Stored script APIs)创建管理脚本。
+- params：指定参数名称和传给脚本的参数值。使用[parameters](Use parameters in your script)而不是hard-code值来降低编译时间。
+
+##### Write your first script
+
+&emsp;&emsp;Painless是Elasticsearch的默认脚本语言。它既安全又高效，并为具有一点编程经验的人提供了自然的语法。
+
+&emsp;&emsp;一个Painless脚本由一个或多个语句构成，并且在开头可选地包含一个或多个用户定义的函数。脚本必须至少包含一个语句。
+
+&emsp;&emsp;[Painless execute API](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-execute-api.html)提供了使用简单的用户定义参数测试脚本并接收结果的能力。让我们从一个完整的脚本开始，并审查其组成部分。
+
+&emsp;&emsp;首先，索引一个只有单个字段的文档，这样我们就有了一些可以操作的数据：
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "my_field": 5
+}
+```
+
+&emsp;&emsp;我们然后就可以编写一个脚本，并且在`my_field`上操作并且运行脚本，其作为查询的一部分。下面的请求使用了Search API中的[script_fields](#Script fields)参数来获取一个脚本结果。这个查询会发生很多事情，但我们会进行拆解然后一个一个的去理解。现在，你只需要知道脚本获取了`my_field`然后对这个域进行操作。
+
+```text
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "my_doubled_field": {
+      "script": { 
+        "source": "doc['my_field'].value * params['multiplier']", 
+        "params": {
+          "multiplier": 2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第5行，`script`对象
+&emsp;&emsp;第6行，`script`的source，也就是脚本本身的内容
+
+&emsp;&emsp;`script`是一个标准JSON对象，在Elasticsearch中大多数APIs中定义。这个对象指定了`source`字段来提供脚本自身内容。这个脚本没有指定脚本语言，因此默认就是Painless。
+
+##### Use parameters in your script
+
+&emsp;&emsp;Elasticsearch首次遇到一个新脚本时，它会编译该脚本并将编译后的版本存储在缓存中。编译可能是一个繁重的过程。与其在脚本中hard-code，不如将它们作为在`params`参数中指定并传递。
+
+&emsp;&emsp;例如，在之前的脚本中，我们本可以直接hard-code，并编写一个看似较为简单的脚本。我们可以直接获取`my_field`的第一个值，然后将其乘以`2`：
+
+```text
+"source": "return doc['my_field'].value * 2"
+```
+
+&emsp;&emsp;虽然这个方法可行，但这个解决方案相当不灵活。我们必须修改脚本源码以改变乘数，而且每次乘数改变时，Elasticsearch都必须重新编译脚本。
+
+&emsp;&emsp;与其hard-code，不如使用`params`参数来使脚本灵活，并且在脚本运行时减少编译时间。现在，你可以更改乘数参数而无需Elasticsearch重新编译脚本。
+
+```text
+"source": "doc['my_field'].value * params['multiplier']",
+"params": {
+  "multiplier": 2
+}
+```
+
+&emsp;&emsp;默认每5分钟可以编译最多150个脚本。对于ingest contexts，则默认没有限制：
+
+```text
+script.context.field.max_compilations_rate=100/10m
+```
+
+> IMPORTANT：如果你短时间内编译太多脚本，Elasticsearch会reject新的动态脚本（dynamic）并且抛出`circuit_breaking_exception`错误
+
+##### Shorten your script
+
+&emsp;&emsp;利用Painless固有的语法能力，你可以减少脚本中的冗长表达，使它们更加简洁。这里有一个我们可以简化的简单脚本：
+
+```text
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "my_doubled_field": {
+      "script": {
+        "lang":   "painless",
+        "source": "doc['my_field'].value * params.get('multiplier');",
+        "params": {
+          "multiplier": 2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;现在我们给出一个更简短的版本看下相比较之前的有哪些提升：
+
+```text
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "my_doubled_field": {
+      "script": {
+        "source": "field('my_field').get(null) * params['multiplier']",
+        "params": {
+          "multiplier": 2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个版本的脚本移除了几个组成部分，并显著简化了语法：
+
+- `lang`声明。因为Painless是默认语言，如果你正在编写Painless脚本，就不需要指定语言。
+- `return`关键字。Painless自动使用脚本中的最后一条语句（在可能的情况下）在需要返回值的脚本上下文中产生返回值。
+- `get`方法，被替换为方括号`[]`。Painless为Map类型使用了一种特定的快捷方式，允许我们使用方括号而不是较长的`get`方法。
+- `source`中句末尾的分号。Painless在块的最后一句话不需要分号。然而，在其他情况下它确实需要分号来消除歧义。
+
+在Elasticsearch支持脚本的任何地方使用这种简化的语法（abbreviated syntax），比如当你创建[runtime fields](#Map a runtime field)时。
+
+
+##### Store and retrieve scripts
+
+&emsp;&emsp;你可以通过[stored script APIs](#Stored script APIs)来保存和获取脚本。保存的脚本能降低编译时间使得查询更快。
+
+> NOTE：不同于直接提供脚本自身内容，存储的脚本需要你使用`lang`参数显示的指定脚本语言
+
+&emsp;&emsp;你可以使用[create stored script API](#Create or update stored script API)创建一个脚本。比如，下面的请求创建了一个名为`calculate-score`来存储脚本。
+
+```text
+POST _scripts/calculate-score
+{
+  "script": {
+    "lang": "painless",
+    "source": "Math.log(_score * 2) + params['my_modifier']"
+  }
+}
+```
+
+&emsp;&emsp;你可以通过[get stored script API](#Get stored script API)获取脚本。
+
+```text
+GET _scripts/calculate-score
+```
+
+&emsp;&emsp;如要在query中使用存储的脚本，需要在`script`中指定脚本的`id`。
+
+```text
+GET my-index-000001/_search
+{
+  "query": {
+    "script_score": {
+      "query": {
+        "match": {
+            "message": "some message"
+        }
+      },
+      "script": {
+        "id": "calculate-score", 
+        "params": {
+          "my_modifier": 2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第11行，存储的脚本`id`。
+
+&emsp;&emsp;若要删除一个脚本，则提交一个[delete stored script API ](#Delete stored script API)请求。
+
+```text
+DELETE _scripts/calculate-score
+```
+
+##### Update documents with scripts
+
+&emsp;&emsp;你可以使用[update API ](#Update API)使用一个脚本更新文档。脚本可以更新，删除或者跳过修改文档。update API还支持传递部分文档，这部分文档将被合并到现有文档中。
+
+&emsp;&emsp;比如我们索引一篇文档：
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "counter" : 1,
+  "tags" : ["red"]
+}
+```
+
+&emsp;&emsp;若要增加`counter`值，你可以使用下面的脚本提交一个更新请求：
+
+```text
+POST my-index-000001/_update/1
+{
+  "script" : {
+    "source": "ctx._source.counter += params.count",
+    "lang": "painless",
+    "params" : {
+      "count" : 4
+    }
+  }
+}
+```
+
+&emsp;&emsp;同样地，你可以使用更新脚本新增一个tag到tags列表中。因为这是一个列表，因此即使已经存在也可以添加进去：
+
+```text
+POST my-index-000001/_update/1
+{
+  "script": {
+    "source": "ctx._source.tags.add(params['tag'])",
+    "lang": "painless",
+    "params": {
+      "tag": "blue"
+    }
+  }
+}
+```
+
+&emsp;&emsp;你也可以从tags列表中移除一个tag。Java中的`remove`方法在Painless也可以使用。它根据数组下标来移除。若要防止可能的runtime error，你首先需要保证tags是存在的。如果列表中包含重复的tag，这个脚本只会移除一次。
+
+```text
+POST my-index-000001/_update/1
+{
+  "script": {
+    "source": "if (ctx._source.tags.contains(params['tag'])) { ctx._source.tags.remove(ctx._source.tags.indexOf(params['tag'])) }",
+    "lang": "painless",
+    "params": {
+      "tag": "blue"
+    }
+  }
+}
+```
+
+&emsp;&emsp;你也可以从一篇文档中添加并且移除域。例如下面的脚本中添加一个名为`new_field`的新域：
+
+```text
+POST my-index-000001/_update/1
+{
+  "script" : "ctx._source.new_field = 'value_of_new_field'"
+}
+```
+
+&emsp;&emsp;同样的也可以移除`new_field`。
+
+```text
+POST my-index-000001/_update/1
+{
+  "script" : "ctx._source.remove('new_field')"
+}
+```
+
+&emsp;&emsp;你也可以根据脚本中执行的内容来修改操作。例如，下面的请求中，如果`tags`中包含`green`则删除该文档，否则什么也不做（`noop`）：
+
+```text
+POST my-index-000001/_update/1
+{
+  "script": {
+    "source": "if (ctx._source.tags.contains(params['tag'])) { ctx.op = 'delete' } else { ctx.op = 'none' }",
+    "lang": "painless",
+    "params": {
+      "tag": "green"
+    }
+  }
+}
+```
 
 #### Scripts, caching, and search speed
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scripts-and-search-speed.html)
