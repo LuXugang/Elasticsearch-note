@@ -16048,23 +16048,23 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 &emsp;&emsp;
 
 ### Retrieve selected fields from a search
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-fields.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-fields.html)
 
-&emsp;&emsp;默认情况下，查询响应中的每一个命中的结果中都会包含文档的[\_source](#_source field)，它是一个整个JSON object，即被索引的文档。下面有两个推荐的方法在一次查询请求中检索选中的域（域）：
+&emsp;&emsp;默认情况下，查询响应中的每一个命中的结果中都会包含文档的[\_source](#_source field)，它是一个整个JSON object，即被索引的文档。下面有两个推荐的方法在一次查询请求中获取指定的（selected）的域：
 
 - 在index mapping中使用[fields option](#The fields option)展示要提取的域
 - 在索引期间使用[\_source option](#The _source option)指定你需要访问的原始数据
 
-&emsp;&emsp;你可以同时使用这些方法，`fields`这个方法更好些因为它能同时参考（consult）文档数据和index mappings。在某些情况下，你可能想要[other methods](#Other methods of retrieving data)来检索数据。
+&emsp;&emsp;你可以同时使用这些方法，`fields`这个方法更好些因为它能同时参考（consult）文档数据和index mappings。在某些情况下，你可能想要[other methods](#Other methods of retrieving data)来获取数据。
 
 #### The fields option
 
-&emsp;&emsp;若要在查询响应中检索指定的域，则使用`fields`参数。相较于引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
+&emsp;&emsp;若要在查询响应中获取指定的域，则使用`fields`参数。相较于引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
 
 - 以一种标准化的方式返回每一个匹配mapping类型的值
 - accepts [multi-fields ](#fields)和[field aliases](#Alias field type)
 - 格式化日期和空间数据类型
-- 检索出[runtime field values](#Retrieve a runtime field)
+- 获取出[runtime field values](#Retrieve a runtime field)
 - 返回在索引期间通过脚本计算出的域
 - 使用[lookup runtime fields](#Retrieve fields from related indices)返回关联索引中的域
 
@@ -16074,7 +16074,7 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 
 ##### Retrieve specific fields
 
-&emsp;&emsp;下面的查询请求使用`fields`参数检索`user.id`、`http.response`下所有的域、`@timestamp`这些域的值。
+&emsp;&emsp;下面的查询请求使用`fields`参数获取`user.id`、`http.response`下所有的域、`@timestamp`这些域的值。
 
 &emsp;&emsp;使用object notation，你可以传递一个[format](#format(mapping parameter))自定义时间或者地理空间的值的格式。
 
@@ -16146,7 +16146,7 @@ POST my-index-000001/_search
 
 &emsp;&emsp;使用`fields`返回[nested fields](#Nested field type)的响应中其他普通的object fields都少许不同。在普通的`object`fields 中的leaf values的返回内容是平铺的列表（flat list），而`nested field`返回的内容也是一个平铺的列表，列表中是分组为一个个object，每一个object是nested fields的一个域并且域值也是一个数组。多层的nested fields按照这个规则嵌套下去。
 
-&emsp;&emsp;下面的mapping中，`user`是一个nested field，索引下面的文档并检索`user`field中所有的域：
+&emsp;&emsp;下面的mapping中，`user`是一个nested field，索引下面的文档并获取`user`field中所有的域：
 
 ```text
 PUT my-index-000001
@@ -16226,7 +16226,7 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;nested field会根据它们的nested path进行分组，不受检索时使用的pattern的影响。例如，如果你在上面的例子中只查询`user.first`：
+&emsp;&emsp;nested field会根据它们的nested path进行分组，不受获取时使用的pattern的影响。例如，如果你在上面的例子中只查询`user.first`：
 
 ```text
 POST my-index-000001/_search
@@ -16278,7 +16278,7 @@ POST my-index-000001/_search
 
 &emsp;&emsp;默认情况下，`fields`参数只返回mapped fields的值，然而，Elasticsearch允许存储`_source`中的域，并且这些域是unmapped。 例如设置[dynamic  field mapping](#Dynamic field mapping)的值为`false`或者使用一个object域并且设置`enabled`为`false`。这些选项使得关闭解析并且不索引object的内容。
 
-&emsp;&emsp;若要在object中检索`_source`中的unmapped域，那么在`fields`中 使用`include_unmapped`选项：
+&emsp;&emsp;若要在object中获取`_source`中的unmapped域，那么在`fields`中 使用`include_unmapped`选项：
 
 ```text
 PUT my-index-000001
@@ -16351,7 +16351,7 @@ POST my-index-000001/_search
 
 ##### Ignored field values
 
-&emsp;&emsp;响应中的`fields`块中只返回合法索引的值。如果你的查清请求要求的域值忽略某些值，这些值是malformed或者太大，这些域值会在另一个`ignored_field_values`块中返回。
+&emsp;&emsp;响应中的`fields`块中只返回合法索引的值。如果你的查询请求要求的域值忽略某些值，这些值是malformed或者太大，这些域值会在另一个`ignored_field_values`块中返回。
 
 &emsp;&emsp;在这个例子中，我们索引了一篇文档，文档中的一个值被限制了长度导致没有添加到索引中，所以在查询请求中分开的显示：
 
@@ -16382,7 +16382,7 @@ POST my-index-000001/_search
 &emsp;&emsp;第5行，这个域有长度限制
 &emsp;&emsp;第13行，这个文档有一个域值超过了长度限制所以没有被索引
 
-&emsp;&emsp;在这个响应中，在`ignored_field_values`路径中包含了被限制了长度的域值。这个域值是从文档的原始JSON source中检索出来的并且就是原始的数据，不会被formatted或者任何方式处理。不同于成功写入到索引的域，它们的域值在`fields`块中返回。
+&emsp;&emsp;在这个响应中，在`ignored_field_values`路径中包含了被限制了长度的域值。这个域值是从文档的原始JSON source中获取出来的并且就是原始的数据，不会被formatted或者任何方式处理。不同于成功写入到索引的域，它们的域值在`fields`块中返回。
 
 ```text
 {
@@ -16513,7 +16513,7 @@ GET /_search
 
 &emsp;&emsp;Doc values are stored for supported fields by default。然而，doc value不支持[text](#Text type family)或者[text_annotated](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/mapper-annotated-text-usage.html)域。
 
-&emsp;&emsp;下面的查询请求使用`docvalue_fields`参数检索user.id，所有以`http.response`开头的以及`@timestamp`的doc value。
+&emsp;&emsp;下面的查询请求使用`docvalue_fields`参数获取user.id，所有以`http.response`开头的以及`@timestamp`的doc value。
 
 ```text
 GET my-index-000001/_search
@@ -16537,13 +16537,115 @@ GET my-index-000001/_search
 &emsp;&emsp;第10行，同时支持完整的域名和通配符pattern
 &emsp;&emsp;第13行，使用object notation，你可以传递一个`format`参数指定自定义的format应用到doc value上。[Date fields](#Date field type)支持[date format](#format(mapping parameter))，[Numeric fields](#Numeric field types)支持[DecimalFormat pattern](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html)。其他的域不支持`format`参数。
 
-> TIP：你不可以为nested object使用`docvalue_fields`参数 来检索doc value。如果你指定了一个nested object，则返回一个空的数组。若要访问nested fields，使用[inner_hits](#Retrieve inner hits)参数中的`docvalue_fields`属性
+> TIP：你不可以为nested object使用`docvalue_fields`参数 来获取doc value。如果你指定了一个nested object，则返回一个空的数组。若要访问nested fields，使用[inner_hits](#Retrieve inner hits)参数中的`docvalue_fields`属性
 
 ##### Stored fields
 
-&emsp;&emsp;
+&emsp;&emsp;可以使用mapping 参数[store](#store(mapping parameter))来存储域值。你可以使用`stored_fields`参数在响应中包含存储域的域值。
+
+> WARNING：`stored_fields`用于那些在mapping中显示使用`stroed`的域，默认是不启动并且通常不建议启用。建议使用[source fitlering](#The _source option)从原始数据（也就是`_source`）中获取选择的域。
+
+&emsp;&emsp;运行在查询中选择指定文档中的存储域。
+
+```text
+GET /_search
+{
+  "stored_fields" : ["user", "postDate"],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+&emsp;&emsp;`*`可以用来获取文档中所有的存储域。
+
+&emsp;&emsp;空的数组只能返回`_id`和`_type`这两个存储域，例如：
+
+```text
+GET /_search
+{
+  "stored_fields" : [],
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+&emsp;&emsp;想要查询的域如果没有存储（mapping参数`store`设置为`false`），这些域则会忽略。
+
+&emsp;&emsp;从文档中获取的存储域总是以数组形式返回。相反，像`_routing`这样的元数据字段从不以数组形式返回。
+
+&emsp;&emsp;此外，只有leaf field可以通过`stored_fields`选项返回。如果指定了一个对象字段，它将被忽略。
+
+> NOTE：单独使用`stored_fields`无法加载嵌套对象中的字段——如果一个字段在其路径中包含一个嵌套对象，那么该存储字段将不会返回任何数据。要访问嵌套字段，必须在[inner_hits](#Retrieve inner hits)块内使用stored_fields。
+
+##### Disable stored fields
+
+&emsp;&emsp;若要完全禁用存储域（以及元数据字段）可以使用：`_none_`：
+
+```text
+GET /_search
+{
+  "stored_fields": "_none_",
+  "query" : {
+    "term" : { "user" : "kimchy" }
+  }
+}
+```
+
+> NOTE：如果使用了`_none，`[\_srouce](#The _source option)跟[version](#Search API)也不能使用
 
 ##### Script fields
+
+&emsp;&emsp;你可以使用`script_fields`参数获取一个[script evaluation](#Scripting)（基于不同的域），例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "script_fields": {
+    "test1": {
+      "script": {
+        "lang": "painless",
+        "source": "doc['price'].value * 2"
+      }
+    },
+    "test2": {
+      "script": {
+        "lang": "painless",
+        "source": "doc['price'].value * params.factor",
+        "params": {
+          "factor": 2.0
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;Script fields可以应用在非存储域上（比如上面的`price`）并且允许返回自定义的值（脚本中计算出的值）
+
+&emsp;&emsp;Script fields同样可以访问实际的`_source`文档并且通过`params['_source']`提取指定的内容。例子：
+
+```text
+GET /_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "script_fields": {
+    "test1": {
+      "script": "params['_source']['message']"
+    }
+  }
+}
+```
+
+&emsp;&emsp;注意的是，请求中的关键字`_source`用来导出类似json的模型（json-like model）
+
+&emsp;&emsp;理解`doc['my_field'].value`和`params['_source']['my_field']`之间的区别很重要。首先，使用doc关键字，将导致该字段的术语被加载到内存中（缓存），这将导致执行速度更快，但消耗更多内存。此外，doc[...]表示法仅允许简单值字段（你不能从中返回一个json对象）并且只对`non-analyzed`或single term的字段有意义。然而，如果可能的话，使用doc仍然是访问文档内容的推荐方式，因为每次使用时都必须加载和解析\_source。使用\_source是非常慢的。
 
 ### Retrieve inner hits
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/inner-hits.html)
@@ -17287,7 +17389,7 @@ GET my-index/_msearch/template
 
 #### Get search templates
 
-&emsp;&emsp;可以使用[get stored script API](#Get stored script API)检索search template。
+&emsp;&emsp;可以使用[get stored script API](#Get stored script API)获取search template。
 
 ```text
 GET _scripts/my-search-template
@@ -24423,7 +24525,7 @@ GET /exams/_search
 }
 ```
 
-&emsp;&emsp;聚合的名称（上文中的`grades_stats`）可以作为key，使得返回的响应中作为key来检索聚合结果。
+&emsp;&emsp;聚合的名称（上文中的`grades_stats`）可以作为key，使得返回的响应中作为key来获取聚合结果。
 
 ##### Standard Deviation Bounds
 
@@ -24531,7 +24633,7 @@ POST /sales/_search?size=0
   }
 }
 ```
-&emsp;&emsp;由此可见，上文中聚合的名称`max_price`可以作为一个key，用于在返回的响应中检索聚合结果。
+&emsp;&emsp;由此可见，上文中聚合的名称`max_price`可以作为一个key，用于在返回的响应中获取聚合结果。
 
 ##### Script
 
@@ -24667,7 +24769,7 @@ POST /sales/_search?size=0
   }
 }
 ```
-&emsp;&emsp;由此可见，上文中聚合的名称`min_price`可以作为一个key，用于在返回的响应中检索聚合结果。
+&emsp;&emsp;由此可见，上文中聚合的名称`min_price`可以作为一个key，用于在返回的响应中获取聚合结果。
 
 ##### Script
 
@@ -25270,7 +25372,7 @@ POST my-index-000001/_update/1
 - Content：你想要查询的items集合，比如产品目录。
 - Time series data：不断产生并且带有时间戳的数据流，比如日志（log entry）。
 
-&emsp;&emsp;Content可能会经常更新，但是Content的价值随着时间的流逝仍然是相对不变的。你可能想要快速的检索items，并且不关心这些数据的新旧。
+&emsp;&emsp;Content可能会经常更新，但是Content的价值随着时间的流逝仍然是相对不变的。你可能想要快速的获取items，并且不关心这些数据的新旧。
 
 &emsp;&emsp;时序数据（Time series data）随着时间的流逝（over time）不断的增长（accumulate），所以你需要平衡存储开销和数据的价值的策略。这些数据随着时间的推移（as it ages），变的不重要并且很少被访问。所以你可以将数据移动到更低成本，更低性能的硬件中。对于最旧的数据（for your oldest data），最重要的是你仍然可以访问它，但是如果查询时间很长也是可以接受的。
 
@@ -25639,7 +25741,7 @@ PUT timeseries-000001
 
 #### Check lifecycle progress(index)
 
-&emsp;&emsp;对管理中的索引检索其状态信息类似于data stream，见[check progress section ](#Check lifecycle progress)了解更多信息。唯一的不同是 indices namespace，so retrieving the progress will entail the following api call:
+&emsp;&emsp;对管理中的索引获取其状态信息类似于data stream，见[check progress section ](#Check lifecycle progress)了解更多信息。唯一的不同是 indices namespace，so retrieving the progress will entail the following api call:
 
 ```text
 GET timeseries-*/_ilm/explain
@@ -27412,7 +27514,7 @@ PUT _cluster/settings
 
 5. 使用相同的alias恢复索引新的数据。
 
-&emsp;&emsp;使用这个alias进行查询时会检索你的新数据跟所有的reindex的数据。
+&emsp;&emsp;使用这个alias进行查询时会获取你的新数据跟所有的reindex的数据。
 
 6. 一旦你已经验证了在新的managed index中所有的reindex数据都是可用的，你就可以安全的移除旧的索引。
 
@@ -28467,7 +28569,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 #### When to use transforms
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/transform-usage.html)
 
-&emsp;&emsp;Elasticsearch的aggregation是一个强有力并且非常灵活的功能，可以让你汇总（summarize）并且检索出你的数据中的complex insight。你可以在一个busy website上汇总每天请求网页的数量这类复杂的事情，并可以按地理位置和浏览器类型细分（break down）。 如果你使用相同的数据集来尝试计算一些东西比如说计算页面访问的会话（visitor web session）的平均时间，然而，这样很快会出现OOM。
+&emsp;&emsp;Elasticsearch的aggregation是一个强有力并且非常灵活的功能，可以让你汇总（summarize）并且获取出你的数据中的complex insight。你可以在一个busy website上汇总每天请求网页的数量这类复杂的事情，并可以按地理位置和浏览器类型细分（break down）。 如果你使用相同的数据集来尝试计算一些东西比如说计算页面访问的会话（visitor web session）的平均时间，然而，这样很快会出现OOM。
 
 &emsp;&emsp;为什么会发生OOM呢？网页会话（web session）的持续时间是behavior attribute的一个例子，它不被记录于任何一条日志中。只有从weblogs中找到每一个session的第一条跟最后一条才能衍生出来。这种衍生（derivation）数据要求复杂的查询表达式以及很多的内存来连接（connect）所有指向的数据。如果你有一个持续处理的后台程序将相关的事件融合（fuse）到entity-centric并汇总到另一个索引，你就可以得到一个更实用、连贯的图（joined-up picture）。这个新索引有时被称为数据帧（data frame）。
 
@@ -28662,7 +28764,7 @@ _transform/
 #### Tutorial: Transforming the eCommerce sample data
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ecommerce-transforms.html)
 
-&emsp;&emsp;[Transforms](#Transforming data)能让你检索Elasticsearch的索引，然后进行转化（transform）并存放到另一个索引中。我们将使用[Kibana sample data](https://www.elastic.co/guide/en/kibana/8.2/add-sample-data.html)来演示如何使用transform来pivot以及summarize。
+&emsp;&emsp;[Transforms](#Transforming data)能让你获取Elasticsearch的索引，然后进行转化（transform）并存放到另一个索引中。我们将使用[Kibana sample data](https://www.elastic.co/guide/en/kibana/8.2/add-sample-data.html)来演示如何使用transform来pivot以及summarize。
 
 1. 先验证下你的环境是否设置正确以便使用transform。如果开启了Elasticsearch Security Feature，你需要一个有预览和创建transform权限的用户来完成此次教程。你同样需要有source index和destination index这些指定的索引权限。见[Setup](#Set up transforms)。
 2. 选择source index
@@ -33795,7 +33897,7 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Prerequisites
 
-- 如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#Cluster privileges)来使用这个API。你也必须要有`monitor`或者`manage` [index privilege](#Indices privileges)用于你需要检索的data stream、Index、或者alias。
+- 如果开启了Elasticsearch security features，你必须有`monitor`或者`manage`的[cluster privilege](#Cluster privileges)来使用这个API。你也必须要有`monitor`或者`manage` [index privilege](#Indices privileges)用于你需要获取的data stream、Index、或者alias。
 
 ##### Path parameters
 
