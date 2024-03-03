@@ -24957,7 +24957,21 @@ POST /exams/_search?size=0
 
 
 ### How to write scripts
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-using.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-using.html)
+
+&emsp;&emsp;Painless是一种高性能、安全的脚本语言，专门为Elasticsearch设计。你可以在Elasticsearch支持脚本的任何地方安全地编写内联和存储脚本。
+
+&emsp;&emsp;Painless提供了许多功能，围绕以下核心原则：
+
+- Safety：确保集群的安全是至关重要的。为此，Painless使用了细粒度的允许列表，粒度细至类的成员。任何不在允许列表中的内容都会导致编译错误。请参阅[Painless API](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-api-reference.html)参考，以获取每个脚本上下文可用的完整类、方法和字段列表。
+- Performance：Painless直接编译成JVM字节码，以利用JVM提供的所有可能优化。此外，Painless通常避免需要在运行时进行额外较慢检查的功能。
+- Simplicity：Painless实现了一种对任何有基础编码经验的人都自然熟悉的语法。Painless使用Java语法的子集，并增加了一些改进，以增强可读性和去除样板代码（boilerplate）。
+
+#### Start scripting
+
+&emsp;&emsp;准备开始使用Painless编写脚本了吗，见[how to write your first script.](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-api-reference.html)。
+
+&emsp;&emsp;如果你已经熟悉了Painless，可以查看[Painless Language Specification ](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-lang-spec.html)了解Painless语法和功能的详细介绍。
 
 #### Scripts, caching, and search speed
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scripts-and-search-speed.html)
