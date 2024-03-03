@@ -24778,6 +24778,60 @@ POST /metrics_index/_search?size=0&filter_path=aggregations
 #### Percentiles aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-percentile-aggregation.html)
 
+&emsp;&emsp;它属于multi-value metrics aggregation，对从文档中提出的数值类型的值计算一个或多个百分位数。可以对文档中数值类型或者[histogram field](#Histogram field type)的值计算。
+
+&emsp;&emsp;百分位数展示了观察值中某一特定百分比的点。例如，第95百分位数是大于95%观察值的值。
+
+&emsp;&emsp;百分位数常用于发现异常值。在正态分布中，第0.13和第99.87百分位数代表了距离平均值三个标准差。任何落在三个标准差之外的数据通常被认为是异常的。
+
+&emsp;&emsp;当获取一系列百分位数时，它们可以用来估计数据分布并确定数据是否偏斜（skewed）、双峰（bimodal）等。
+
+&emsp;&emsp;假设你的数据包含了网站加载时间。平均和中位数加载时间对管理员来说并不特别有用。最大值可能很有趣，但它很容易被单一的慢响应所偏斜。
+
+&emsp;&emsp;我们看下代表加载时间的百分位数范围：
+
+```text
+GET latency/_search
+{
+  "size": 0,
+  "aggs": {
+    "load_time_outlier": {
+      "percentiles": {
+        "field": "load_time" 
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第7行，`load_time`域必须是数值类型的域。
+
+&emsp;&emsp;默认情况下，`percentile` aggregation会生成一个百分位数的范围：`[ 1, 5, 25, 50, 75, 95, 99 ]`。上面对应的响应可能就是：
+
+```text
+{
+  ...
+
+ "aggregations": {
+    "load_time_outlier": {
+      "values": {
+        "1.0": 10.0,
+        "5.0": 30.0,
+        "25.0": 170.0,
+        "50.0": 445.0,
+        "75.0": 720.0,
+        "95.0": 940.0,
+        "99.0": 980.0
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;可见该聚合在一个默认的范围内计算每一个百分位数。如果我们假设响应时间的单位是毫秒，那么就能立刻观察到网页加载时间通常在10~725ms内，偶尔945-985ms。
+
+（未完成）
+
 #### Scripted metric aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-scripted-metric-aggregation.html)
 
@@ -24884,7 +24938,23 @@ POST /exams/_search?size=0
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-bucket-selector-aggregation.html)
 
 ## Scripting 
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html)
+
+&emsp;&emsp;通过编写脚本，你可以在Elasticsearch中计算自定义的表达式。比如，你可以使用脚本为一个域返回域值或者为一个query计算自定义的打分。
+
+&emsp;&emsp;默认的脚本语言是[Painless](#Painless)。另外`lang`插件允许运行其他的余燕语言。你可以任何运行脚本的地方指定脚本语言。
+
+#### Available scripting languages
+
+&emsp;&emsp;Painless是专为Elasticsearch设计的，可以在脚本API中用于任何目的，并提供最大的灵活性。其他语言则不那么灵活，但对于特定的用途可能很有用。
+
+| Language                                                     | Sandboxed                                                    | Required plugin | Purpose                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | --------------- | ------------------------------- |
+| [`painless`](#Painless scripting language) | ![Yes](http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/icon-yes.png) | Built-in        | Purpose-built for Elasticsearch |
+| [`expression`](#Lucene expressions language) | ![Yes](http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/icon-yes.png) | Built-in        | Fast custom ranking and sorting |
+| [`mustache`](#Search templates) | ![Yes](http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/icon-yes.png) | Built-in        | Templates                       |
+| [`java`](#Advanced scripts using script engines) | ![No](http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/icon-no.png) | You write it!   | Expert API                      |
+
 
 ### How to write scripts
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-using.html)
