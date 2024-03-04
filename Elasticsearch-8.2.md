@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/04）
+# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/04）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -3835,7 +3835,7 @@ PUT test/_settings
 
 &emsp;&emsp;无论什么原因，有意为之，或者其他原因导致节点离开集群后，master的反应是：
 
-- 将副本分片（replica shard）提升为主分片（primary）来代替在那个节点上的主分片
+- 将副本分片提升为主分片来代替在那个节点上的主分片
 - 分配副本分片来代替缺失的副本分片（假设有足够的节点）
 - 在剩余的节点上均匀地平衡分片
 
@@ -18533,22 +18533,13 @@ GET /_search
 
 ##### Top-level parameters for boosting
 
-###### positive
-
-&emsp;&emsp;（Required,query object）你想要执行的query。所有的文档都必须匹配这个query。
-
-###### negative
-
-&emsp;&emsp;（Required,query object）用来降低匹配到的文档的[relevance score](#Relevance scores)。
-
-&emsp;&emsp;如果返回的文档匹配了`positive`并且`negative` query，`boosting` query会按照下面的方式来计算[relevance score](#Relevance scores)：
-
-1. 从`positive` query中获取原始的相关性分数
-2. 与`negative_boost`的值做乘法
-
-###### negative_boost
-
-&emsp;&emsp;（Required,float）该值0~1.0范围内的浮点数。用来降低匹配了`negative` query 的文档的[relevance score](#Relevance scores)。
+- positive：（Required,query object）你想要执行的query。所有的文档都必须匹配这个query。
+- negative：（Required,query object）用来降低匹配到的文档的[relevance score](#Relevance scores)。
+  - 如果返回的文档匹配了`positive`并且`negative` query，`boosting` query会按照下面的方式来计算[relevance score](#Relevance scores)：
+  1. 从`positive` query中获取原始的相关性分数
+  2. 与`negative_boost`的值做乘法
+  
+- negative_boost：（Required,float）该值0~1.0范围内的浮点数。用来降低匹配了`negative` query 的文档的[relevance score](#Relevance scores)。
 
 #### Constant score query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-constant-score-query.html)
@@ -18579,7 +18570,7 @@ GET /_search
 
 ###### boost
 
-&emsp;&emsp;（Optional，float）一个浮点型的数字用于作为满足`filter` query的所有文档固定的[relevance score](#Relevance scores)。默认值是`1.0`。
+&emsp;&emsp;（Optional,float）一个浮点型的数字用于作为满足`filter` query的所有文档固定的[relevance score](#Relevance scores)。默认值是`1.0`。
 
 #### Disjunction max query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-dis-max-query.html)
@@ -18711,20 +18702,20 @@ POST _search
 &emsp;&emsp;`match`规则匹配被分词后的文本（analyzed text）
 
 - query：（Required，string）你想要从`<field>`中查找的内容
-- max_gaps：（Optional，integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
+- max_gaps：（Optional,integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
-- ordered：（Optional，Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
-- analyzer：（Optional，string）[analyzer](#Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
-- filter：（Optional，[interval filter](#Intervals query) 规则对象）可选的interval filter
-- use_field：（Optional，string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的域值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
+- ordered：（Optional,Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
+- analyzer：（Optional,string）[analyzer](#Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
+- filter：（Optional,[interval filter](#Intervals query) 规则对象）可选的interval filter
+- use_field：（Optional,string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的域值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
 
 ##### prefix rule parameters
 
 &emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
 - prefix：（Required，string）你想要从顶层的`<field>`中以这个参数为前缀的term
-- analyzer：（Optional，string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### wildcard rule parameters
@@ -18738,8 +18729,8 @@ POST _search
 
 > WARNING：最高避免以`*`或者`?`为开头的通配符。为了能找到匹配 的term会会增加迭代次数，使得降低查询性能
 
-- analyzer：（Optional，string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### fuzzy rule parameters
@@ -18747,11 +18738,11 @@ POST _search
 &emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](#Fuzziness（Common options）)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
 
 - term：（Required，string）待匹配的term
-- prefix_length：（Optional，integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
-- transpositions：（Optional，Boolean）
-- fuzziness：（Optional，Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
-- analyzer：（Optional，string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional，string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- prefix_length：（Optional,integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
+- transpositions：（Optional,Boolean）
+- fuzziness：（Optional,Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
+- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### all_of rule parameters
@@ -18759,17 +18750,17 @@ POST _search
 &emsp;&emsp;`all_of`规则中由多个其他规则组成，这些规则都满足则返回对应文档
 
 - intervals：(Required, array of rule objects)：由规则数组组成。对于某篇文档，所有的规则必须匹配
-- max_gaps：（Optional，integer）匹配到的term之间最大的位置距离。超过这个距离不会被匹配。默认值为`-1`
+- max_gaps：（Optional,integer）匹配到的term之间最大的位置距离。超过这个距离不会被匹配。默认值为`-1`
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
 - ordered：如果为`true`，每一个规则要按照在定义中的先后顺序依次匹配。默认值为`false`
-- filter：（Optional，[interval filter](#Intervals query) 规则对象）用来过滤返回的`intervals`的规则
+- filter：（Optional,[interval filter](#Intervals query) 规则对象）用来过滤返回的`intervals`的规则
 
 ##### any_of rule parameters
 
 &emsp;&emsp;`any_of`规则返回它包含的规则中的任意一个。
 
 - intervals：(Required, array of rule objects)：用于匹配的规则数组
-- filter：（Optional，[interval filter](#Intervals query) 规则对象）用来过滤返回的`intervals`的规则
+- filter：（Optional,[interval filter](#Intervals query) 规则对象）用来过滤返回的`intervals`的规则
 
 ##### filter rule parameters
 
@@ -18949,72 +18940,30 @@ GET /_search
 
 ##### Parameters for \<field>
 
-###### query
-
-&emsp;&emsp;（Required）你想要从`<field>`中查询的文本、数值、布尔值或者日期。
-
-&emsp;&emsp;`match` query在执行查询前会对`query`中的文本进行[analyze](#Text analysis)，意味着`match` query可以对分词后的token进行[text](#Text type family)域的查询而不是进行精确匹配。
-
-###### analyzer
-
-&emsp;&emsp;（Optional, string）使用[Analyzer](#Text analysis)将`query`中的文本转化为tokens。默认使用在[index-time analyzer](#How Elasticsearch determines the index analyzer)时`<field>`使用的分词器。如果没有指定分词器，则使用索引默认的分词器。
-
-###### auto_generate_synonyms_phrase_query
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会为multi-term synonyms自动创建[match phrase](#Match phrase query) 。默认值为`true`。
-
-&emsp;&emsp;见[Use synonyms with match query](#Synonyms(match))给出的例子。
-
-###### fuzziness
-
-&emsp;&emsp;（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](#Fuzziness（Common options）)了解更多信息。见[Fuzziness in the match query](#Fuzziness in the match query)给出的例子。
-
-###### max_expansions
-
-&emsp;&emsp;（Optional, integer）query扩展（expand）出的term数量最大值。默认值为`50`。
-
-###### prefix_length
-
-&emsp;&emsp;（Optional, integer）模糊匹配时，不变的（unchange）起始字符的数量。默认值为`0`。
-
-###### fuzzy_transpositions
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
-
-###### fuzzy_rewrite
-
-&emsp;&emsp;（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
-
-&emsp;&emsp;如果`fuzziness`参数为0，`match` query默认使用`top_terms_blended_freqs_${max_expansions}`的`fuzzy_rewrite`方法。
-
-###### lenient
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
-
-###### operator
-
-&emsp;&emsp;（Optional, string）用于`query`中值之间的布尔关系。该参数的可选值为：
-
-- OR（Default）
-  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
-- AND
+- query：（Required）你想要从`<field>`中查询的文本、数值、布尔值或者日期。
+  - `match` query在执行查询前会对`query`中的文本进行[analyze](#Text analysis)，意味着`match` query可以对分词后的token进行[text](#Text type family)域的查询而不是进行精确匹配。
+- analyzer：（Optional, string）使用[Analyzer](#Text analysis)将`query`中的文本转化为tokens。默认使用在[index-time analyzer](#How Elasticsearch determines the index analyzer)时`<field>`使用的分词器。如果没有指定分词器，则使用索引默认的分词器。
+- auto_generate_synonyms_phrase_query：（Optional, Boolean）如果为`true`，会为multi-term synonyms自动创建[match phrase](#Match phrase query) 。默认值为`true`。
+  - 见[Use synonyms with match query](#Synonyms(match))给出的例子。
+- fuzziness：（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](#Fuzziness（Common options）)了解更多信息。见[Fuzziness in the match query](#Fuzziness in the match query)给出的例子。
+- max_expansions：（Optional, integer）query扩展（expand）出的term数量最大值。默认值为`50`。
+- prefix_length：（Optional, integer）模糊匹配时，不变的（unchange）起始字符的数量。默认值为`0`。
+- fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+- fuzzy_rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
+  - 如果`fuzziness`参数为0，`match` query默认使用`top_terms_blended_freqs_${max_expansions}`的`fuzzy_rewrite`方法。
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- operator：（Optional, string）用于`query`中值之间的布尔关系。该参数的可选值为：
+  - OR（Default）
+    - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+  - AND
   - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
-
-###### minimum_should_match
-
-&emsp;&emsp;（Optional, string）返回的文档必须至少匹配到term的数量（`query`分词后的token）。见[minimum_should_match parameter](#minimum_should_match parameter)了解更多信息。
-
-###### zero_terms_query
-
-（Optional, string）如果分词（`analyzer`）之后移除了所有的token（比如使用了`stop`过滤器），是否要返回文档。可选值：
-
-- none（default）
-  - 如果在分词后移除了所有的token不返回任何文档
-
-- all
-  - 返回所有的文档，类似[match_all](#Match all query)
-
-&emsp;&emsp;见[Zero terms query](#Zero terms query)中的例子。
+- minimum_should_match：（Optional, string）返回的文档必须至少匹配到term的数量（`query`分词后的token）。见[minimum_should_match parameter](#minimum_should_match parameter)了解更多信息。
+- zero_terms_query：（Optional, string）如果分词（`analyzer`）之后移除了所有的token（比如使用了`stop`过滤器），是否要返回文档。可选值：
+  - none（default）
+    - 如果在分词后移除了所有的token不返回任何文档
+  - all
+    - 返回所有的文档，类似[match_all](#Match all query)
+  - 见[Zero terms query](#Zero terms query)中的例子。
 
 ##### Notes
 
@@ -19245,38 +19194,20 @@ GET /_search
 
 ##### Top-level parameters for match_phrase_prefix
 
-###### \<field>
-
-&emsp;&emsp;（Required, object）待查询的域。
+-  `<field>`：（Required, object）待查询的域。
 
 ##### Parameters for \<field>
 
-###### query
-
-&emsp;&emsp;（Required, string）你想要在`<field>`中查找的文本。
-
-&emsp;&emsp;`match_phrase_prefix` query在执行查询前会[analyze](#Text analysis) `query`中的文本。最后一个term会作为一个[prefix](#Prefix query)，匹配以这个term开头的其他term。
-
-###### analyzer
-
-&emsp;&emsp;（Optional, string）用于将`query`中的文本转化为token的[Analyzer](#Text analysis)。默认是`<field>`这个域的[index-time analyzer](#How Elasticsearch determines the index analyzer)。如果在mapping中没有指定analyzer，则使用索引默认的分词器。
-
-###### max_expansions
-
-&emsp;&emsp;（Optional, integer）最后一个term扩展出其他term的数量最大值。默认值为`50`。
-
-###### slop
-
-&emsp;&emsp;匹配到的token之间的最大位置距离。默认为`0`。Transposed terms的slop为`2`。
-
-###### zero_terms_query
-
-&emsp;&emsp;（Optional, string）当`analyzer`解析`query`后移除了所有的token，比如使用了`stop` filter，是否不返回任何文档。可选值为：
-
-- none（Default）
-  - 如果`analyzer`移除了所有的token，不返回任何文档
-- all
-  - 返回所有的文档，相当于[match_all](#Match all query) query
+- query：（Required, string）你想要在`<field>`中查找的文本。
+  - `match_phrase_prefix` query在执行查询前会[analyze](#Text analysis) `query`中的文本。最后一个term会作为一个[prefix](#Prefix query)，匹配以这个term开头的其他term。
+- analyzer：（Optional, string）用于将`query`中的文本转化为token的[Analyzer](#Text analysis)。默认是`<field>`这个域的[index-time analyzer](#How Elasticsearch determines the index analyzer)。如果在mapping中没有指定analyzer，则使用索引默认的分词器。
+- max_expansions：（Optional, integer）最后一个term扩展出其他term的数量最大值。默认值为`50`。
+- slop：匹配到的token之间的最大位置距离。默认为`0`。Transposed terms的slop为`2`。
+- zero_terms_query：（Optional, string）当`analyzer`解析`query`后移除了所有的token，比如使用了`stop` filter，是否不返回任何文档。可选值为：
+  - none（Default）
+    - 如果`analyzer`移除了所有的token，不返回任何文档
+  - all
+    - 返回所有的文档，相当于[match_all](#Match all query) query
 
 ##### Notes
 
@@ -19808,112 +19739,43 @@ GET /_search
 
 ##### Top-level parameters for query_string
 
-###### query
-
-&emsp;&emsp;（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Query string syntax](#Query string syntax)。
-
-###### default_field
-
-&emsp;&emsp;（Required, string）如果没有在query string指定域，那么就使用这个默认域进行查询。支持通配符（\*）。
-
-&emsp;&emsp;默认是index setting中的[index.query.default_field](#index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
-
-&emsp;&emsp;查询会跨所有符合的域但是不包括[nested documents](#Nested field type)，可以使用[nested query](#Nested query)来查询。
-
-&emsp;&emsp;对于定义了大量字段的mapping，在所有符合的（eligible）域上进行搜索的开销是很大的。
-
-&emsp;&emsp;单次查询有clause数量（域的数量 \* term数量）的限制，在[search setting](#Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
-
-###### allow_leading_wildcard
-
-&emsp;&emsp;（Optional, Boolean)）如果为`true`，通配符`*`以及`?`允许作为query string的首个字符。默认值是`true`。
-
-###### analyze_wildcard
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
-
-###### analyzer
-
-&emsp;&emsp;（Optional, string） [Analyzer](#Text analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](#Specify an analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
-
-###### auto_generate_synonyms_phrase_query
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，[match phrase](#Match phrase query)会自动的创建同义词的查询。默认值为`true`。见[Synonyms and the query_string query](#Synonyms and the query_string query)。
-
-###### boost
-
-&emsp;&emsp;（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
-
-&emsp;&emsp;boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
-
-###### default_operator
-
-&emsp;&emsp;（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
-
-- OR（Default）
-  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
-- AND
-  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
-
-###### enable_position_increments
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，在`query_string`查询中构造的query中，开启position increments。默认值为`true`。
-
-###### fields
-
-&emsp;&emsp;（Optional, array of strings）待查询的域的列表。支持通配符（`*`）。
-
-&emsp;&emsp;你可以使用这个参数跨多个域进行查询。见[Search multiple fields](#Search multiple fields（query string）)。
-
-###### fuzziness
-
-&emsp;&emsp;（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](#Fuzziness（query string）)了解fuzzy语法。
-
-###### fuzzy_max_expansions
-
-&emsp;&emsp;（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
-
-###### fuzzy_prefix_length
-
-&emsp;&emsp;（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
-
-###### fuzzy_transpositions
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
-
-###### lenient
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
-
-###### max_determinized_states
-
-&emsp;&emsp;（Optional, integer）查询所需最大自动机状态（[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)）数。默认值为`10000`。
-
-&emsp;&emsp;Elasticsearch使用Apache Lucene解析正则表达式。Lucene将正则表达式转化为一个有一定状态数的[有限自动状态机](https://amazingkoala.com.cn/unsupported/Automaton.html)。
-
-&emsp;&emsp;可以使用这个参数防止这个转化过程造成资源的过度使用。当然你可能需要提高这个限制来允许复杂的正则表达式。
-
-###### minimum_should_match
-
-&emsp;&emsp;（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](#minimum_should_match parameter)查看更多信息。见[How minimum_should_match works](#How minimum_should_match works)中的例子。
-
-###### quote_analyzer
-
-&emsp;&emsp;（Optional, string）[Analyzer](#Text analysis)用来将query string中引用的文本（比如说"\\"The Great Gatsby\\""）转化为token。默认使用`default_field`映射的[search_quote_analyzer](#search_quote_analyzer)。
-
-&emsp;&emsp;对于引用的文本，这个参数会覆盖`analyzer`参数中指定的分词器。
-
-###### phrase_slop
-
-&emsp;&emsp;（Optional, integer）短语中的token之间最大的距离。默认是`0`。如果是`0`，需要匹配精准的短语。位置颠倒的term的`slop`为2。
-
-###### quote_field_suffix
-
-&emsp;&emsp;（Optional, string）query string中引用的文本对应的后缀名。
-
+- query：（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Query string syntax](#Query string syntax)。
+- default_field：（Required, string）如果没有在query string指定域，那么就使用这个默认域进行查询。支持通配符（\*）。
+  - 默认是index setting中的[index.query.default_field](#index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
+  - 查询会跨所有符合的域但是不包括[nested documents](#Nested field type)，可以使用[nested query](#Nested query)来查询。
+  - 对于定义了大量字段的mapping，在所有符合的（eligible）域上进行搜索的开销是很大的。
+  - 单次查询有clause数量（域的数量 \* term数量）的限制，在[search setting](#Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
+- allow_leading_wildcard：（Optional, Boolean)）如果为`true`，通配符`*`以及`?`允许作为query string的首个字符。默认值是`true`。
+- analyze_wildcard：（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
+- analyzer：（Optional, string） [Analyzer](#Text analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](#Specify an analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
+- auto_generate_synonyms_phrase_query：（Optional, Boolean）如果为`true`，[match phrase](#Match phrase query)会自动的创建同义词的查询。默认值为`true`。见[Synonyms and the query_string query](#Synonyms and the query_string query)。
+- boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
+  - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+- default_operator：（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
+  - OR（Default）
+    - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+  - AND
+    - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
+- enable_position_increments：（Optional, Boolean）如果为`true`，在`query_string`查询中构造的query中，开启position increments。默认值为`true`。
+- fields：（Optional, array of strings）待查询的域的列表。支持通配符（`*`）。
+  - 你可以使用这个参数跨多个域进行查询。见[Search multiple fields](#Search multiple fields（query string）)。
+- fuzziness：（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](#Fuzziness（query string）)了解fuzzy语法。
+- fuzzy_max_expansions：（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
+- fuzzy_prefix_length：（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
+- fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- max_determinized_states：（Optional, integer）查询所需最大自动机状态（[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)）数。默认值为`10000`。
+  - Elasticsearch使用Apache Lucene解析正则表达式。Lucene将正则表达式转化为一个有一定状态数的[有限自动状态机](https://amazingkoala.com.cn/unsupported/Automaton.html)。
+  - 可以使用这个参数防止这个转化过程造成资源的过度使用。当然你可能需要提高这个限制来允许复杂的正则表达式。
+- minimum_should_match：（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](#minimum_should_match parameter)查看更多信息。见[How minimum_should_match works](#How minimum_should_match works)中的例子。
+- quote_analyzer：（Optional, string）[Analyzer](#Text analysis)用来将query string中引用的文本（比如说"\\"The Great Gatsby\\""）转化为token。默认使用`default_field`映射的[search_quote_analyzer](#search_quote_analyzer)。
+  - 对于引用的文本，这个参数会覆盖`analyzer`参数中指定的分词器。
+- phrase_slop：（Optional, integer）短语中的token之间最大的距离。默认是`0`。如果是`0`，需要匹配精准的短语。位置颠倒的term的`slop`为2。
+- quote_field_suffix：（Optional, string）query string中引用的文本对应的后缀名。
 &emsp;&emsp;例如说有一个mapping：
 
-```text"mappings": {
+```text
+"mappings": {
     "properties": {
       "body": {
         "type": "text",
@@ -19929,19 +19791,12 @@ GET /_search
   }
 ```
 
-&emsp;&emsp;这个例子中，`quote_field_suffix`的值就是`exact`。如果指定了 `quote_field_suffix`。那么相当于在`body.exact`域上查询query string。
+  - ​	这个例子中，`quote_field_suffix`的值就是`exact`。如果指定了 `quote_field_suffix`。那么相当于在`body.exact`域上查询query string。
+    - 你可以根据后缀来使用一个不同的分词器使得可以进行精准匹配。见[Mixing exact search with stemming](#Mixing exact search with stemming)。
 
-&emsp;&emsp;你可以根据后缀来使用一个不同的分词器使得可以进行精准匹配。见[Mixing exact search with stemming](#Mixing exact search with stemming)。
-
-###### rewrite
-
-&emsp;&emsp;（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](#rewrite parameter)。
-
-###### time_zone
-
-&emsp;&emsp;（Optional, string）使用[Coordinated Universal Time (UTC) offset ](https://en.wikipedia.org/wiki/List_of_UTC_offsets)或者[IANA time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)将query string中的`date`值转化为UTC。
-
-&emsp;&emsp;Valid values are ISO 8601 UTC offsets, such as +01:00 or -08:00, and IANA time zone IDs, such as America/Los_Angeles.
+- rewrite：（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](#rewrite parameter)。
+- time_zone：（Optional, string）使用[Coordinated Universal Time (UTC) offset ](https://en.wikipedia.org/wiki/List_of_UTC_offsets)或者[IANA time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)将query string中的`date`值转化为UTC。
+  &emsp;&emsp;Valid values are ISO 8601 UTC offsets, such as +01:00 or -08:00, and IANA time zone IDs, such as America/Los_Angeles.
 
 > NOTE：`time_zone`参数不会影响`now`这种[date math](#Date Math)。`now`始终是UTC的当前系统时间。但是，`time_zone`参数会转换使用now和[date math rounding](#Date Math)计算出的日期。例如，使用`time_zone`参数会转换`now/d`的值。
 
@@ -21182,9 +21037,7 @@ GET /_search
 
 ##### Top-level parameters for ids
 
-###### values
-
-&emsp;&emsp;（Required，String数组）[document IDs](#_id-field)数组。
+- values：（Required，String数组）[document IDs](#_id-field)数组。
 
 
 ### minimum_should_match parameter
@@ -25878,7 +25731,7 @@ node.roles: [ data_warm ]
 2. [Create an index template](#Create an index template to create the data stream and apply the lifecycle policy)来创建data stream以及应用ILM策略， 为backing index配置索引设置和mapping
 3. [Verify indices are moving through the lifecycle phases ](#Check lifecycle progress) as expected
 
-&emsp;&emsp;见[rollover](#Rollover(concept))了解rolling indices。
+&emsp;&emsp;见[rollover](#Rollover（concept）)了解rolling indices。
 
 > IMPORTANT：When you enable index lifecycle management for Beats or the Logstash Elasticsearch output plugin, lifecycle policies are set up automatically. You do not need to take any other actions. You can modify the default policies through [Kibana Management](#Tutorial: Customize built-in ILM policies) or the ILM APIs.
 
@@ -26325,7 +26178,7 @@ GET /my-index-000001,my-index-000002
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-concepts.html)
 
 - [Index lifecycle](#Index lifecycle)
-- [Rollover](#Rollover(concept))
+- [Rollover](#Rollover（concept）)
 - [Policy updates](#Lifecycle policy updates)
 
 #### Index lifecycle
@@ -26370,7 +26223,7 @@ GET /my-index-000001,my-index-000002
 - Hot
   - [Set Priority](#Set priority)
   - [Unfollow](#Unfollow)
-  - [Rollover](#Rollover)
+  - [Rollover](#Rollover（action）)
   - [Read-Only](#Read only)
   - [Shrink](#Shrink)
   - [Force Merge](#Force merge)
@@ -26400,7 +26253,7 @@ GET /my-index-000001,my-index-000002
   - [Wait For Snapshot](#Wait for snapshot)
   - [Delete](#Delete)
 
-#### Rollover(concept)
+#### Rollover（concept）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-rollover.html)
 
 &emsp;&emsp;当索引日志或者指标这类时序数据的时候，你不能往单个索引中无限的写入。为了能满足你的索引和查询性能要求以及资源使用的管理，你往一个索引中写入数据直到满足阈值，然后再创建一个新的索引，并开始写到这个索引中。使用 rolling indices可以让你：
@@ -26457,7 +26310,7 @@ GET /my-index-000001,my-index-000002
 | [Allocate](#Allocate) | 将分片移到性能特征（performance characteristic）不同的节点上并减少副本的数量 |
 | :------: | ---- |
 | [Delete](#Delete) | 永久移除索引 |
-| [Force Merge](#Force merge(1)) | 减少索引中段的数量并且清楚（purge）被删除的文档。索引被置为只读 |
+| [Force Merge](#Force merge（action）) | 减少索引中段的数量并且清楚（purge）被删除的文档。索引被置为只读 |
 | [Migrate](#Migrate) | 将索引的分片迁移到当前ILM阶段对应的数据层（[data tier](#Data tiers)）中 |
 | [Read-Only](#Read only) | 阻塞索引的写入操作 |
 | [Rollover](#Rollover（action）) | 为rollover alias移除作为write index的索引，并开始为新索引建立索引 |
@@ -26478,7 +26331,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;不允许在hot阶段执行这个allocate动作。索引最初的分配必须通过手动或者[index template](#Index templates)实现。
 
-&emsp;&emsp;你可以配置这个动作来同时修改分配规则（allocation rules）和副本数量，只修改分配规则或者只修改副本数量。见[Scalability and resilience](#Scalability and resilience: clusters, nodes, and shards)了解更多Elasticsearch如何使用副本来实现伸缩性（scaling）的信息。见[index-level shard allocation filtering](#Index-level shard allocation filtering)了解更多Elasticsearch如何控制指定索引的分片（shard）分配。
+&emsp;&emsp;你可以配置这个动作来同时修改分配规则（allocation rules）和副本数量，只修改分配规则或者只修改副本数量。见[Scalability and resilience](#Scalability and resilience: clusters, nodes, and shards)了解更多Elasticsearch如何使用副本来实现伸缩性（scaling）的信息。见[index-level shard allocation filtering](#Index-level shard allocation filtering)了解更多Elasticsearch如何控制指定索引的分片分配。
 
 ##### Options
 
@@ -26486,25 +26339,11 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;见[Index-level shard allocation filtering](#Index-level shard allocation filtering)了解更多使用自定义属性进行分片分配的信息。
 
-###### number_of_replicas
-
-&emsp;&emsp;（Optional，integer）索引的副本分片数量。
-
-###### total_shards_per_node
-
-&emsp;&emsp;（Optional，integer）在单个Elasticsearch节点上索引的分片数量最大值
-
-###### include
-
-&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点至少包含一个指定的自定义的属性。
-
-###### exclude
-
-&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点不包含任何自定义的属性。
-
-###### require
-
-&emsp;&emsp;（Optional，object）分配一个索引到一些节点，这些节点包含所有自定义的属性。
+- number_of_replicas：（Optional,integer）索引的副本分片数量。
+- total_shards_per_node：（Optional,integer）在单个Elasticsearch节点上索引的分片数量最大值
+- include：（Optional,object）分配一个索引到一些节点，这些节点至少包含一个指定的自定义的属性。
+- exclude：（Optional,object）分配一个索引到一些节点，这些节点不包含任何自定义的属性。
+- require：（Optional,object）分配一个索引到一些节点，这些节点包含所有自定义的属性。
 
 ##### Example
 
@@ -26612,9 +26451,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-###### delete_searchable_snapshot
-
-&emsp;&emsp;（Optional，布尔值）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](#Searchable snapshot)这个动作。
+- delete_searchable_snapshot：（Optional,Boolean）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](#Searchable snapshot)这个动作。
 
 ##### Example
 
@@ -26633,7 +26470,7 @@ PUT _ilm/policy/my_policy
 }
 ```
 
-#### Force merge(1)
+#### Force merge（action）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ilm-forcemerge.html)
 
 &emsp;&emsp;可以在hot、warm阶段使用该动作。
@@ -26657,13 +26494,8 @@ PUT _ilm/policy/my_policy
 
 ##### Option
 
-###### max_num_segemnts
-
-&emsp;&emsp;（必选，integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
-
-###### inde_codec
-
-&emsp;&emsp;（Optional，字符串）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
+- max_num_segemnts：（Required,integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
+- inde_codec：（Optional,string）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
 
 >WARNING：如果使用`best_compression`，ILM将在force merge之前先[close](#Close index API)并且[re-open](#Open index API)。当关闭后，索引的读写操作将不可见。
 
@@ -26706,9 +26538,7 @@ PUT _ilm/policy/my_policy
 
 ##### Option
 
-###### enabled
-
-&emsp;&emsp;（Optional，布尔）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
+- enabled：（Optional,Boolean）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
 
 ##### Example
 
@@ -26829,31 +26659,19 @@ PUT my-index-000001
 
 &emsp;&emsp;你必须至少指定一个rollover条件。没有条件的rollover动作是非法的。
 
-###### max_age
+- max_age：（Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+- max_docs：（Optional,integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+- max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
 
-&emsp;&emsp;（Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+  > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
 
-###### max_docs
+- max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
 
-&emsp;&emsp;（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+  > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
 
-###### max_size
+- max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
 
-&emsp;&emsp;（Optional，[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
-
-> TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
-
-###### max_primary_shard_size
-
-&emsp;&emsp;（Optional，[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
-
-> TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
-
-###### max_primary_shard_docs
-
-&emsp;&emsp;（Optional，integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
-
-> TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
+  > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
 
 ##### Example
 
@@ -27035,15 +26853,10 @@ PUT /_ilm/policy/rollover_policy
 
 ##### Options
 
-##### snapshot_repository
+- snapshot_repository：（Required,string）存储snapshot的[repository](#Register a snapshot repository)。
+- force_merge_index：（Optional,Boolean）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](#Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
 
-&emsp;&emsp;（必须，字符串）存储snapshot的[repository](#Register a snapshot repository)。
-
-##### force_merge_index
-
-&emsp;&emsp;（Optional，布尔）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](#Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
-
->NOTE：forcemerge这个动作属于best effort。这个动作有可能在一些分片正在分配时执行，在这种情况下这些分片不会进行合并。如果不是所有的分片都执行了forcemerge，那么searchable_snapshot动作会继续执行。
+  >NOTE：forcemerge这个动作属于best effort。这个动作有可能在一些分片正在分配时执行，在这种情况下这些分片不会进行合并。如果不是所有的分片都执行了forcemerge，那么searchable_snapshot动作会继续执行。
 
 &emsp;&emsp;合并操作在`searchable_snapshot`动作之前执行。如果在`hot`阶段使用`searchable_snapshot`动作，force merge将在hot节点上执行。如果在`cold`阶段使用`searchable_snapshot`动作，force merge将在`hot`或者`warm`阶段执行。
 
@@ -27077,9 +26890,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-###### priority
-
-&emsp;&emsp;（必选，integer）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
+- priority：（Required,integer）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
 
 ##### Example
 
@@ -27117,13 +26928,8 @@ PUT _ilm/policy/my_policy
 
 ##### Shrink options
 
-###### number_of_shards
-
-&emsp;&emsp;（Optional，integer）收缩后分片的数量。必须是源索引的分片数量的因子值（factor）。这个参数跟下文的`max_primary_shard_size`冲突，只能设置一个值。
-
-###### max_primary_shard_size
-
-&emsp;&emsp;（Optional，[byte units](#Byte size units)）目标索引（target index）的主分片大小的最大值。用来找到目标索引的最适宜的（optimum）分片大小。当设置了这个参数后，目标索引中每一个分片大小（shard's storage）不会超过这个参数值。目标索引的分片数量将仍然是源索引（source index）的因子值（factor）。如果这个参数值比源索引中的分片大小还要小，那么目标索引中的分片数量将和源索引中的分片数量相等。比如说参数设置为50gb，如果源索引有60个主分片，一共100gb，那么目标索引将有2个主分片，每个分片的大小为50gb；如果源索引有60个主分片，一共1000gb，那么目标索引将有20个主分片，每个分片的大小为50gb，如果源索引有60个主分片，一共4000gb，那么目标索引仍然有60个主分片。这个参数跟上文中的`number_of_shards`存在冲突，只能选择一个对其设置。
+- number_of_shards：（Optional,integer）收缩后分片的数量。必须是源索引的分片数量的因子值（factor）。这个参数跟下文的`max_primary_shard_size`冲突，只能设置一个值。
+- max_primary_shard_size：（Optional,[byte units](#Byte size units)）目标索引（target index）的主分片大小的最大值。用来找到目标索引的最适宜的（optimum）分片大小。当设置了这个参数后，目标索引中每一个分片大小（shard's storage）不会超过这个参数值。目标索引的分片数量将仍然是源索引（source index）的因子值（factor）。如果这个参数值比源索引中的分片大小还要小，那么目标索引中的分片数量将和源索引中的分片数量相等。比如说参数设置为50gb，如果源索引有60个主分片，一共100gb，那么目标索引将有2个主分片，每个分片的大小为50gb；如果源索引有60个主分片，一共1000gb，那么目标索引将有20个主分片，每个分片的大小为50gb，如果源索引有60个主分片，一共4000gb，那么目标索引仍然有60个主分片。这个参数跟上文中的`number_of_shards`存在冲突，只能选择一个对其设置。
 
 ##### Example
 
@@ -27232,9 +27038,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-###### policy
-
-&emsp;&emsp;（必选，字符串）SLM策略的名称，delete动作执行前需要等待执行这个策略。
+-  policy：（Required,string）SLM策略的名称，delete动作执行前需要等待执行这个策略。
 
 ##### Example
 
@@ -27260,7 +27064,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;为了让ILM能够管理一个索引，必须在索引设置 `index.lifecycle.name`中指定一个合法的策略。
 
-&emsp;&emsp;若要为[rolling indices](#Rollover(concept))配置一个生命周期策略，你需要创建一个策略然后添加到[index template](#Index templates)中。
+&emsp;&emsp;若要为[rolling indices](#Rollover（concept）)配置一个生命周期策略，你需要创建一个策略然后添加到[index template](#Index templates)中。
 
 &emsp;&emsp;若要使用策略来管理一个不进行roll over的索引，你可以在创建索引的时候指定一个生命周期策略，或者将一个策略应用到已存在的索引上。
 
@@ -34101,10 +33905,10 @@ POST my-data-stream/_async_search
 
 ##### Query parameter
 
-- bytes：（Optional，[byte size units](#Byte size units)）展示字节值的单位。
-- format：（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
-- full_id：（Optional，Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
-- h：（Optional，string）需要展示的列名，使用逗号分隔。
+- bytes：（Optional,[byte size units](#Byte size units)）展示字节值的单位。
+- format：（Optional,string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
+- full_id：（Optional,Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
+- h：（Optional,string）需要展示的列名，使用逗号分隔。
   - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
   - 可选的列包括：
     - ip、i：（default）IP地址，比如`127.0.1.1`
@@ -34274,15 +34078,15 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Path parameters
 
-- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameter
 
-- bytes：（Optional，[byte size units](#Byte size units)）展示字节值的单位。
+- bytes：（Optional,[byte size units](#Byte size units)）展示字节值的单位。
 
-- format：（Optional，string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
+- format：（Optional,string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
 
-- h：（Optional，string）需要展示的列名，使用逗号分隔。
+- h：（Optional,string）需要展示的列名，使用逗号分隔。
   - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
   - 可选的列包括：
     - index、i、idx：（default）索引的名称
@@ -34540,15 +34344,15 @@ GET _cluster/allocation/explain
 
 ##### Query parameters
 
-- include_disk_info：（Optional，Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
-- include_yes_decisions：（Optional，Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
+- include_disk_info：（Optional,Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
+- include_yes_decisions：（Optional,Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
 
 ##### Request body
 
-- current_node：（Optional，string）指定节点的ID或者名称，只返回在指定节点上的分片的分配信息。
-- index：（Optional，string）指定你想要了解的索引的名称。
-- primary：（Optional，Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
-- shard：（Optional，integer）指定你要了解的分片ID。
+- current_node：（Optional,string）指定节点的ID或者名称，只返回在指定节点上的分片的分配信息。
+- index：（Optional,string）指定你想要了解的索引的名称。
+- primary：（Optional,Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
+- shard：（Optional,integer）指定你要了解的分片ID。
 
 ##### Example
 
@@ -34797,8 +34601,8 @@ GET /_cluster/settings
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -34819,19 +34623,19 @@ GET /_cluster/settings
 
 &emsp;&emsp;cluster health API返回一个集群较简明的状态。你可以通过这个api只获取指定的data stream和index。对于data stream，该API会检索（retrieve）流中backing index的健康状态。
 
-&emsp;&emsp;集群健康状态是`green`，`yellow`，或者`red`。在分片层，`red`说明分片没有被分配到集群中，`yellow`说明主分片（primary）已经被分配了，但是副本分片（replica）没有分配。`green`说明所有的分片（主分片和副本分片）都已经被分配。index level的状态由最差的分片状态决定。cluster level的状态由最差的index level的状态决定。
+&emsp;&emsp;集群健康状态是`green`，`yellow`，或者`red`。在分片层，`red`说明分片没有被分配到集群中，`yellow`说明主分片已经被分配了，但是副本分片（replica）没有分配。`green`说明所有的分片（主分片和副本分片）都已经被分配。index level的状态由最差的分片状态决定。cluster level的状态由最差的index level的状态决定。
 
 &emsp;&emsp;这个API最重要的好处能够等待集群达到某个特定的（a certain high water-mark）健康状态。例如，下面的请求会等等待集群变成`yellow`状态，最多等待50秒（如果在50秒之前就达到了`green`或者`yellow`，那么就马上返回）。
 
 
 ##### Path parameters
 
-- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameters
 - level：（Optional, string）可以是`cluster`、`indices`或者`shards`。用来控制健康信息的详细层级。默认值：`cluster`
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_active_shards：（Optional, string）用来控制等待多个active shard（正在初始化、恢复、关闭属于不活跃的分片），如果是`all`则是等待集群中所有的分片为active，或者是`0`则不等待。默认是`0`
 - wait_for_events：（Optional, string）可以是`immediate`、`urgent`、`high`、`normal`、`low`、`languid`。该参数选择事件优先级，等待集群中这些优先级的事件完成后才返回（能让返回的健康状态信息更加准确和实时）
@@ -34936,7 +34740,7 @@ GET /_cluster/health/my-index-000001?level=shards
   - routing_table：显示响应中`routing_tabel`部分的内容
   - version：显示集群状态版本
 - retry_failed：（Optional, Boolean）如果为`true`，会重试那些因为之前多次分配失败而被阻塞的分片的分配。（这是一种有用的手段来快速恢复集群正常状态，尤其是在紧急修复了阻止分片分配的问题之后）
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
@@ -35022,17 +34826,17 @@ POST /_cluster/reroute
   - `routing_nodes`：显示响应的`routing_nodes`部分的内容
   - `routing_table`：显示响应的`routing_table`部分的内容。果你提供了用逗号隔开的索引列表，返回的结果中只包含这些索引的routing_table（索引的分片路由信息。它包含了该索引所有分片的分配和位置信息，诸如哪些分片是主分片、哪些是副本分片，以及这些分片分布在集群中的哪些节点上）
   - `version`：显示集群状态版本
-- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameters
 - allow_no_indices：（Optional, Boolean）如果为`true`。如果通配符索引表达式没有解析为任何具体的索引，这种情况将被忽略（不会报错）。这包括使用`\_all` 字符串或没有指定任何索引的情况。默认值为`true`
 - expand_wildcards：（Optional, string）通配符索引表达式解析为具体的索引可以是open、closed或者全部。Optional为：`open`、`closed`、`none`、`all`
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - wait_for_metadata_version：（Optional, integer）等待元数据的版本号大于等于指定的版本号
-- wait_for_timeout：（Optional，[time units](#Time units)）指定wait_for_metadata_version中等待超时时间。
+- wait_for_timeout：（Optional,[time units](#Time units)）指定wait_for_metadata_version中等待超时时间。
 
 ##### Examples
 
@@ -35094,9 +34898,9 @@ GET /_cluster/state/blocks
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -35198,7 +35002,7 @@ PUT /_cluster/settings
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -35270,7 +35074,7 @@ GET _nodes/usage
 - interval：(Optional, [time units](#API conventions)) 采样线程的时间间隔，默认为 `500ms`。
 - snapshots：（Optional, integer）线程堆栈跟踪（thread stacktrace）的样本数量，默认为 10。
 - threads：（Optional, integer）提供信息的热线程数量，默认为 `3`。用于故障排除时，可以将此参数设置为较大数值（如 9999）以获取系统中所有线程的信息。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - type：（Optional, string）采样的类型，Optional包括 `block`、`cpu` 和 `wait`。默认为 cpu
 
@@ -35356,8 +35160,8 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 
 ##### Query Parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -35533,7 +35337,7 @@ GET /_nodes/ingest
 
 ##### Path Parameters
 
-- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的Optional，见[Node specification](#Node-specification)。
+- `<node_id>`：（Optional, string）集群中特定的节点目标。例如`nodeId1，nodeId2`。对于节点的Optional,见[Node specification](#Node-specification)。
 
 > NOTE：Elasticsearch要求集群节点的安全设置一致性，但是这个一致性不是强制的。因此，重新加载指定节点不是标准做法。通常用于重载操作失败后使用这种方法比较合理
 
@@ -35646,7 +35450,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - indices
   - shards
 - types：（Optional, string）用逗号隔开的文档类型用于`indexing`的索引指标
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - include_segment_file_sizes：（Optional, Boolean）如果为`true`，该调用生成每一个Lucene索引文件的聚合后的磁盘使用量（只有请求Segment stats时才生效）。默认值为`false`
 - include_unloaded_segments：（Optional, Boolean）如果为`true`，响应中包含未加载到内存的段的信息。默认值为`false`
@@ -35954,7 +35758,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
 ##### Path Parameters
 
 - `local`：（Optional, Boolean）如果为`true`，该请求只从本地节点获取信息。默认是`false`。即从master node获取
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
 
@@ -36065,7 +35869,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
   - none：不对任务进行分组
 - node_id：（Optional, string）用逗号隔开的节点ID或节点名称列表，用来限制返回的信息
 - parent_task_id：（Optional, string）父级任务ID，用来限制返回的信息。若要返回所有的任务，不使用这个参数或者另该值为`-1`
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`。请求会阻塞直到操作完成。默认值为`false`
 
@@ -36362,7 +36166,7 @@ PUT /_internal/desired_nodes/<history_id>/<version>
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Description
 
@@ -37850,7 +37654,7 @@ POST /_data_stream/_modify
 
 &emsp;&emsp;Elasticsearch中的每一个索引会[divided into shards](#Scalability and resilience: clusters, nodes, and shards)并且每一个分片都有多个拷贝。这些拷贝就是所谓的replication group并且当文档添加或者删除后，每一个replica都要保持同步。如果无法做到同步，那么可能就会导致从不同的拷贝中读取的结果各不相同。保持副本分片间的同步以及读取副本分片的处理过程称为`data replication model`。
 
-&emsp;&emsp;Elasticsearch的data replication model基于主备模式（primary-backup model），微软的一篇论文[PacificA paper](https://www.microsoft.com/en-us/research/publication/pacifica-replication-in-log-based-distributed-storage-systems/)很好的描述了这种模式。这个模型就是从replication group中拿出一个拷贝作为主分片（primary shard），其他的拷贝作为副本分片（replica shard）。主分片用于服务所有索引操作的入口点（entry point）。主分片负责非法检查并保证索引操作的正确性。一旦主分片接受了某个索引操作，主分片负责对其他的副本分片复制这次索引操作。
+&emsp;&emsp;Elasticsearch的data replication model基于主备模式（primary-backup model），微软的一篇论文[PacificA paper](https://www.microsoft.com/en-us/research/publication/pacifica-replication-in-log-based-distributed-storage-systems/)很好的描述了这种模式。这个模型就是从replication group中拿出一个拷贝作为主分片（primary shard），其他的拷贝作为副本分片。主分片用于服务所有索引操作的入口点（entry point）。主分片负责非法检查并保证索引操作的正确性。一旦主分片接受了某个索引操作，主分片负责对其他的副本分片复制这次索引操作。
 
 &emsp;&emsp;本章的内容从high level的视角来了解Elasticsearch的replication model并讨论读操作与写操作之间不同的交互（interaction）带来的影响（implication）。
 
@@ -38676,7 +38480,7 @@ POST _aliases
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
@@ -39524,11 +39328,11 @@ PUT <target>/_aliases/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待更新的别名。如果别名不存在，这个请求则会创建。索引别名支持[date math](#Date-math-support-in-system-and-index-alias-names-1)
-- `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
@@ -39610,8 +39414,8 @@ PUT /_component_template/<component-template>
 
 ##### Query parameters
 
-- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
 
@@ -39761,8 +39565,8 @@ PUT /_index_template/<index-template>
 
 ##### Query parameters
 
-- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
 
@@ -40018,13 +39822,13 @@ PUT _template/template_1
 &emsp;&emsp;见[Get index template (legacy)](#Get index template API)。
 
 ##### Path parameters
-- `<index-template>`：（必选，字符串）用于创建index template的名称。
+- `<index-template>`：（Required,string）用于创建index template的名称。
 
 ##### Query parameters
 
-- create：（Optional，布尔值）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
-- order：（Optional，integer）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- order：（Optional,integer）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 &emsp;&emsp;（未完成）
 
@@ -40174,7 +39978,7 @@ DELETE /_component_template/<component-template>
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete dangling index API
@@ -40200,14 +40004,12 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-`<index-uuid>`
-
-&emsp;&emsp;（Required，string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required，string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query parameters
 
 - accept_data_loss：（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete alias API
@@ -40232,11 +40034,11 @@ DELETE <target>/_aliases/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`
-- `<target>`：（Optional，string）用逗号隔开的data stream、Index来限制请求。支持通配符(`*`)。支持通配符（`*`）
+- `<target>`：（Optional,string）用逗号隔开的data stream、Index来限制请求。支持通配符(`*`)。支持通配符（`*`）
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
@@ -40279,7 +40081,7 @@ DELETE /<index>
   - none：不展开通配符模式
   默认值为`open, closed`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 
@@ -40314,7 +40116,7 @@ DELETE /_index_template/<index-template>
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Exists API
@@ -40337,7 +40139,7 @@ HEAD <target>
 
 ##### Path parameters
 
-- `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。
+- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。
 
 ##### Query parameters
 
@@ -40349,9 +40151,9 @@ HEAD <target>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`open`。
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
 ##### Response codes
@@ -40401,7 +40203,7 @@ GET <target>/_alias/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`。
-- `<target>`：（Optional，string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
 
 ##### Query parameters
 - allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
@@ -40440,9 +40242,9 @@ GET /_component_template/<component-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Example
 
@@ -40495,7 +40297,7 @@ GET /<target>/_mapping/field/<field>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
-  - include_defaults：（Optional，Boolean）如果为`true`，响应中包含默认的mapping值。默认值为`false`
+  - include_defaults：（Optional,Boolean）如果为`true`，响应中包含默认的mapping值。默认值为`false`
 
 ##### Examples
 
@@ -40688,9 +40490,9 @@ GET /<target>
   - none：不展开通配符模式
   默认值为`open`。
 - feature：（Optional, string）返回索引的指定特性。支持用逗号隔开。可选值为`aliases`、`mappings`以及`settings`。默认是`aliases`，`mappings`，`settings`
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
@@ -40725,9 +40527,9 @@ GET /<target>/_settings/<setting>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`all`。
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional，Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
@@ -40779,9 +40581,9 @@ GET /_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Example
 
@@ -40829,9 +40631,9 @@ GET /_index_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Example
 
@@ -40884,7 +40686,7 @@ GET /<target>/_mapping
   
 - ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - 
 
 ##### Example
@@ -40938,7 +40740,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 ##### Query Parameters
 
 - accept_data_loss：（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -41033,7 +40835,7 @@ POST /<rollover-target>/_rollover/<target-index>
 
 - dry_run：（Optional, Boolean）如果为`true`，请求只是模拟操作并返回产生的状态
 - wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
@@ -41050,16 +40852,16 @@ POST /<rollover-target>/_rollover/<target-index>
 - condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
   > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rollover（action）)
 
-  - max_age：(Optional，[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
-  - max_docs：（Optional，integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
-  - max_size：（Optional，[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
+  - max_age：(Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+  - max_docs：（Optional,integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+  - max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
   > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
 
-  - max_primary_shard_size：（Optional，[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
+  - max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
 
-  - max_primary_shard_docs：（Optional，integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
+  - max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
 
@@ -41559,8 +41361,8 @@ POST /_index_template/_simulate/<index-template>
 
 ##### Query parameters
 
-- create：（Optional，布尔值）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`
+- create：（Optional,Boolean）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`
 
 ##### Request body
 
@@ -41960,9 +41762,9 @@ HEAD /_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response codes
 
@@ -42248,7 +42050,7 @@ PUT /<target>/_settings
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`all`。
-- flat_settings：（Optional，Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - preserve_existing：（Optional, Boolean）如果为`true`，现有的索引设置不会发生变更。默认为`false`
 - master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
@@ -43686,7 +43488,7 @@ GET <target>/_ilm/explain
 
 ##### Path parameters
 
-- `<target>`：（Optional，string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`
+- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`
 - 
 ##### Query parameters
 
@@ -44279,7 +44081,7 @@ POST /sales*/_async_search?size=0
 
 &emsp;&emsp;你也可以通过`keep_alive`参数指定异步查询应该保持多久，默认是`5d`（5天）。以后的异步查询和其他保存的查询结果将在这个周期后删除。
 
-> NOTE：当你对搜索结果进行排序，而这些结果的排序依据（即主要排序字段）是一个已经被索引的字段时，Elasticsearch可以根据每个分片（shard）持有该字段的最小值和最大值来对这些分片进行排序。因此，根据你请求的排序标准，部分结果可以变得可用，即使搜索还没有完全完成。
+> NOTE：当你对搜索结果进行排序，而这些结果的排序依据（即主要排序字段）是一个已经被索引的字段时，Elasticsearch可以根据每个分片持有该字段的最小值和最大值来对这些分片进行排序。因此，根据你请求的排序标准，部分结果可以变得可用，即使搜索还没有完全完成。
 
 &emsp;&emsp;异步搜索支持跟Search API相同的[参数](#Search API)，但有些参数的默认值是不同的：
 
@@ -45134,7 +44936,7 @@ GET /_snapsho
 ##### Query parameters
 
 - `local`：（Optional, Boolean）如果为`true`，该请求只从本地节点获取信息。默认是`false`。即从master node获取，默认是`false`。
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
 
@@ -45272,7 +45074,7 @@ POST /_snapshot/<repository>/<snapshot>
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`，当快照完成后才返回一个响应。如果为`false`，当快照初始化结束就返回一个响应。默认值是`false`
 
 ##### Request body
@@ -46045,7 +45847,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`，当恢复操作完成后才返回一个响应。当所有要恢复的索引中的所有主分片都尝试恢复（[recover primary shards](#Monitor a restore)）完成后，这个操作才算是完成。如果一个或者多个恢复尝试失败也是如此
   - 如果为`false`，当恢复操作初始化结束就返回一个响应。默认值是`false`
 
@@ -46166,7 +45968,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
@@ -46511,7 +46313,7 @@ POST /_slm/start
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
@@ -46555,7 +46357,7 @@ POST /_slm/stop
 
 ##### Query parameters
 
-- master_timeout：（Optional，[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
+- master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
