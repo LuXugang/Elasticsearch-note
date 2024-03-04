@@ -20346,71 +20346,29 @@ GET /_search
 }
 ```
 ##### Top-level parameters for simple_query_string
+- query：（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Simple query string syntax](#Simple query string syntax)。
+- fields：（Optional, array of string）你想要查询的域名数组。
+  - 域名可以使用通配符表达式。你也可以对特定的域使用`^`符号来提高（boost）匹配时的相关性。见[Wildcards and per-field boosts in the fields parameter](#Wildcards and per-field boosts in the fields parameter)。
+  - 默认使用索引设置中的`index.query.default_field`，该参数默认值为`*`，`*`值会提取出所有满足term query的域，会过滤掉元数据域（[metadata field](#Metadata fields)）。提取出的域组成一个query，如果没有指定`prefix`的话。
 
-###### query
+  > WARNING：域的数量在查询时候有一定的限制。该值定义在[search setting](#Search settings)中的`indices.query.bool.max_clause_count`中，默认值为`1024`。
 
-&emsp;&emsp;（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Simple query string syntax](#Simple query string syntax)。
-
-###### fields
-
-&emsp;&emsp;（Optional, array of string）你想要查询的域名数组。
-
-&emsp;&emsp;域名可以使用通配符表达式。你也可以对特定的域使用`^`符号来提高（boost）匹配时的相关性。见[Wildcards and per-field boosts in the fields parameter](#Wildcards and per-field boosts in the fields parameter)。
-
-&emsp;&emsp;默认使用索引设置中的`index.query.default_field`，该参数默认值为`*`，`*`值会提取出所有满足term query的域，会过滤掉元数据域（[metadata field](#Metadata fields)）。提取出的域组成一个query，如果没有指定`prefix`的话。
-
-> WARNING：域的数量在查询时候有一定的限制。该值定义在[search setting](#Search settings)中的`indices.query.bool.max_clause_count`中，默认值为`1024`。
-
-###### default_operator
-
-&emsp;&emsp;（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
-
-- OR（Default）
-  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
-- AND
-  - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
-
-###### analyze_wildcard
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
-
-###### analyzer
-
-&emsp;&emsp;（Optional, string） [Analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#text-analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#specify-an-analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
-
-###### auto_generate_synonyms_phrase_query
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，会为每一个[multi-position token](#Multi-position tokens)创建一个[match_phrase](#Match phrase query) query。见[Multi-position tokens](#Multi-position tokens（Simple query string query）)。
-
-###### flags
-
-&emsp;&emsp;（Optional, Boolean）[simple query string syntax](#Simple query string syntax)中允许生效的操作符列表。默认是`ALL`（所有的操作符）。见[LImit operator](#Limit operators)中的合法值。
-
-###### fuzzy_max_expansions
-
-&emsp;&emsp;（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
-
-###### fuzzy_prefix_length
-
-&emsp;&emsp;（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
-
-###### fuzzy_transpositions
-
-&emsp;&emsp;（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
-
-###### lenient
-
-&emsp;&emsp;（Optional, Boolean）如果`为true`，例如当在一个[numeric](#Numeric field types)域中，query的内容为文本时会忽略format-based的错误，默认值为`false`。
-
-###### minimum_should_match
-
-&emsp;&emsp;（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](#minimum_should_match parameter)查看更多信息。
-
-###### quote_field_suffix
-
-&emsp;&emsp;（Optional, string）query string中引用的文本对应的后缀名。
-
-&emsp;&emsp;例如说有一个mapping：
+- default_operator：（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
+  - OR（Default）
+    - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
+  - AND
+    - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
+- analyze_wildcard：（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
+- analyzer：（Optional, string） [Analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#text-analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](https://amazingkoala.com.cn/Elasticsearch/elasticsearch-8.2.html#specify-an-analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
+- auto_generate_synonyms_phrase_query：（Optional, Boolean）如果为`true`，会为每一个[multi-position token](#Multi-position tokens)创建一个[match_phrase](#Match phrase query) query。见[Multi-position tokens](#Multi-position tokens（Simple query string query）)。
+-  flags：（Optional, Boolean）[simple query string syntax](#Simple query string syntax)中允许生效的操作符列表。默认是`ALL`（所有的操作符）。见[LImit operator](#Limit operators)中的合法值。
+- fuzzy_max_expansions：（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
+- fuzzy_prefix_length：（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
+- fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
+- lenient：（Optional, Boolean）如果`为true`，例如当在一个[numeric](#Numeric field types)域中，query的内容为文本时会忽略format-based的错误，默认值为`false`。
+- minimum_should_match：（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](#minimum_should_match parameter)查看更多信息。
+- quote_field_suffix：（Optional, string）query string中引用的文本对应的后缀名。
+  - 例如说有一个mapping：
 
 ```text
     "properties": {
@@ -20429,7 +20387,6 @@ GET /_search
 ```
 
 &emsp;&emsp;这个例子中，`quote_field_suffix`的值就是`exact`。如果指定了 `quote_field_suffix`。那么相当于在`body.exact`域上查询query string。
-
 &emsp;&emsp;你可以根据后缀来使用一个不同的分词器使得可以进行精准匹配。见[Mixing exact search with stemming](#mixing-exact-search-with-stemming)。
 
 ##### Note
@@ -39830,8 +39787,6 @@ PUT _template/template_1
 - order：（Optional,integer）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
-&emsp;&emsp;（未完成）
-
 ##### Request body
 
 - index_patterns：（array）被替代的模板中定义的`index_pattern`内容
@@ -40733,9 +40688,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-`<index-uuid>`
-
-&emsp;&emsp;（Required，string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required，string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query Parameters
 
