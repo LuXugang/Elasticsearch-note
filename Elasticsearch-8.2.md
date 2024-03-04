@@ -28186,7 +28186,7 @@ PUT /_template/custom_monitoring
 ### Rolling up historical data
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/xpack-rollup.html)
 
->WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+>WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;保留历史数据用于分析是非常实用的，但由于归档大量的数据带来的财政开销（financial cost）而不会保留。因此保留时间由财政现实（financial realities）决定而不是根据历史数据的用处。
 
@@ -28202,7 +28202,7 @@ PUT /_template/custom_monitoring
 #### Rollup overview
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-overview.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;基于时间（time-based）（主要由时间戳标识的文档）的数据经常有相关的保留策略（retention policy）来管理数据的成长。比如说，你的系统可能生成每秒生成500篇文档，那么一天会有4300万篇文章，一年有接近16亿篇文档。
 
@@ -28247,7 +28247,7 @@ PUT /_template/custom_monitoring
 #### Rollup API quick reference
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-api-quickref.html#rollup-api-quickref)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;大多数rollup endpoint都有下面的前缀：
 
@@ -28276,7 +28276,7 @@ PUT /_template/custom_monitoring
 #### Getting started with rollups
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-getting-started.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;你需要创建一个或多个"Rollup jobs"来使用rollup功能。这些job会在后台持续不断的运行，将你指定的index或者indices进行rollup操作。那些被rolled的文档会被放到二级索引（secondary index）中。
 
@@ -28526,7 +28526,7 @@ GET /sensor_rollup/_rollup_search
 #### Understanding groups
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-understanding-groups.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;为了能提供灵活性（flexibility），Rollup的定义会基于以后的数据查询对应的query。通常来说，系统会要求管理员在配置rollup时要决定好metric以及时间间隔。比如说按小时的间隔（hourly interval）并且是`cpu_time`的average。这种方式存在局限性。在以后的日子里，管理员可能想要查询按小时的间隔并且是`cpu_time`的average同时还要根据`host_name`分组，这时候就做不到了。
 
@@ -28717,7 +28717,7 @@ PUT _rollup/job/combined
 #### Rollup aggregation limitations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-agg-limitations.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;对域进行rollup up/aggregated存在一些限制。这一章强调了你需要注意的主要的限制（major limitation）。
 
@@ -28740,7 +28740,7 @@ PUT _rollup/job/combined
 #### Rollup search limitations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rollup-search-limitations.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;当我们觉得Rollup功能非常的灵活（flexible）时，汇总数据（summarize data）的本质是有局限的。一旦live data（raw data）被丢弃后，你总是会丢失一些灵活性。
 
@@ -38969,7 +38969,7 @@ GET /analyze_sample/_analyze
 #### Analyze index disk usage API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-disk-usage.html)
 
->WARNING：这个功能属于技术预览（technical preview ），可能在未来的发行版中变更或者移除。
+>WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;分析index或data stream中每一个域的磁盘使用情况。这个API可能不支持在旧版本中创建的索引。对于较小的索引，由于 API 可能无法分析索引的某些部分，结果可能不准确。
 
@@ -41402,7 +41402,7 @@ POST /my_source_index/_shrink/my_target_index
 #### Simulate index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-simulate-index.html)
 
-> WARNING：这个功能是属于技术预览，可能在未来的版本中移除或者更改。Elastic会尽力修复任何的问题，but features in technical preview are not subject to the support SLA of official GA features。
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
 &emsp;&emsp;返回索引的配置，这些配置从匹配到的[Index template](#Index templates)索引模板中获得。
 
@@ -44913,7 +44913,7 @@ GET /_searchable_snapshots/cache/stats
 #### Searchable snapshot statistics API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-stats.html)
 
-> WARNING：This functionality is in technical preview and may be changed or removed in a future release. Elastic will work to fix any issues, but features in technical preview are not subject to the support SLA of official GA features.
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束.
 
 &emsp;&emsp;获取searchable snapshots的统计信息。
 
@@ -44943,7 +44943,7 @@ GET /my-index/_searchable_snapshots/stats
 #### Clear cache API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-clear-cache.html)
 
-> WARNING：This functionality is in technical preview and may be changed or removed in a future release. Elastic will work to fix any issues, but features in technical preview are not subject to the support SLA of official GA features.
+> WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束.
 
 &emsp;&emsp;为[partially mounted indices](#Partially mounted index)清除shared cache中的indices和data streams。
 
