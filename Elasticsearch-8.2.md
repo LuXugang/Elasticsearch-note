@@ -44941,7 +44941,37 @@ GET /my-index/_searchable_snapshots/stats
 ```
 
 #### Clear cache API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-clear-cache.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-clear-cache.html)
+
+> WARNING：This functionality is in technical preview and may be changed or removed in a future release. Elastic will work to fix any issues, but features in technical preview are not subject to the support SLA of official GA features.
+
+&emsp;&emsp;为[partially mounted indices](#Partially mounted index)清除shared cache中的indices和data streams。
+
+##### Request
+
+```text
+POST /_searchable_snapshots/cache/clear
+POST /<target>/_searchable_snapshots/cache/clear
+```
+
+##### Prerequisites
+
+- 如果开启了Elasticsearch security features，你必须有`manage`的[cluster privilege](#Cluster privileges)以及`manage`的index privilege来使用这个API。更多信息见[Security privileges](#Security privileges)
+
+##### Path parameters
+
+- `<target>`：（Optional, string）用逗号隔开的待获取的data streams、indices列表。若要获取所有data streams、indices的统计信息，则忽略这个参数
+
+##### Example
+
+&emsp;&emsp;清除名为`my-index`的缓存：
+
+```text
+POST /my-index/_searchable_snapshots/cache/clear
+```
+
+### Security APIs
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api.html)
 
 &emsp;&emsp;
 ##### Request
@@ -44951,9 +44981,6 @@ GET /my-index/_searchable_snapshots/stats
 ##### Query parameters
 ##### Response body
 ##### Example
-
-### Security APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api.html)
 
 #### Role mappings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api.html#security-role-mapping-apis)
