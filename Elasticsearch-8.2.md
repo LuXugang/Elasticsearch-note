@@ -8411,7 +8411,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;如果你需要索引对象数组并且还要维护数组中每一个对象相对独立，那么使用`nested`数据类型而不是[object](#Object field type)数据类型。
 
-&emsp;&emsp;在内部，nested object会将数组中每一个对象分别索引到一个hidden document（即在Lucene层每一个对象对应一个文档），意思是每一个nested object可以使用[nested query](#Nested query)独立于其他对象进行查询“
+&emsp;&emsp;在内部，nested object会将数组中每一个对象分别索引到一个hidden document（即在Lucene层每一个对象对应一个文档），意思是每一个nested object可以使用[nested query](#Nested query)独立于其他对象进行查询
 
 ```text
 PUT my-index-000001
@@ -20716,7 +20716,7 @@ GET /_search
 
 &emsp;&emsp;封装了其他query，用于查询[nested](#Nested field type)域的一种query。
 
-&emsp;&emsp;`nested` query查询nested域对象时，就像这些对象分别索引在不同的文档中一样（见下面中`must_not clauses and nested queries
+&emsp;&emsp;`nested` query查询nested对象时，就像这些对象分别索引在不同的文档中一样（见下面中`must_not clauses and nested queries
 `的介绍）。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
 
 ##### Example request
@@ -20926,7 +20926,7 @@ GET /drivers/_search
 
 ##### must_not clauses and nested queries
 
-&emsp;&emsp;如果`nested` query匹配了文档中的一个或多个nested 对象（因为把对象数组中的每一个对象看成了独立的对象，就像这些对象属于独立的文档中），就返回命中的文档。即使对象数组中的其他对象不满足匹配也会返回。当在`nested` query中使用[must_not clause](#Boolean query)时要额外注意。
+&emsp;&emsp;如果`nested` query匹配了文档中的一个或多个nested 对象（因为把对象数组中的每一个对象看成了独立的对象，就像这些对象各自属于独立的文档），就返回命中的文档。即使对象数组中的其他对象不满足匹配也会返回。当在`nested` query中使用[must_not clause](#Boolean query)时要额外注意。
 
 > TIP：使用[inner_hits](#Retrieve inner hits)参数了解`nested` query匹配了哪些nested对象
 
@@ -44777,19 +44777,63 @@ POST _render/template/<template-id>
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-vector-tile-api.html)
 
 ### Searchable snapshots APIs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-apis.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-apis.html)
+
+&emsp;&emsp;你可以使用下面的API执行searchable snapshots的操作。
+
+- [Mount snapshot](#Mount snapshot API)
+- [Cache statistics](#Cache stats API)
+- [Shard statistics](#Searchable snapshot statistics API)
+- [Clear cache](#Clear cache API)
+
 
 #### Mount snapshot API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-mount-snapshot.html)
 
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Cache stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-cache-stats.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 #### Searchable snapshot statistics API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-stats.html)
 
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Clear cache API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-clear-cache.html)
+
+&emsp;&emsp;
+##### Request
+##### Prerequisites
+##### Description
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 ### Security APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api.html)
