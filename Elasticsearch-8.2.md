@@ -1469,6 +1469,8 @@ PUT /_cluster/settings
 #### Index recovery settings
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/recovery.html)
 
+##### Recovery settings
+
 #### Indexing buffer settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indexing-buffer.html)
 
@@ -13090,6 +13092,36 @@ PUT /my-index-000001
 #### Synonym token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-synonym-tokenfilter.html)
 
+&emsp;&emsp;`synonym` token filter允许在解析过程（analysis process）中处理同义词。通过一个配置文件来配置同义词。例子：
+
+```text
+PUT /test_index
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "synonym": {
+            "tokenizer": "whitespace",
+            "filter": [ "synonym" ]
+          }
+        },
+        "filter": {
+          "synonym": {
+            "type": "synonym",
+            "synonyms_path": "analysis/synonym.txt"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子中配置了一个带有`analysis/synonym.txt`路径的`synonym` filter（相对于`config`目录）。`synonym`分词器然后使用这个filter。
+
+&emsp;&emsp;（未完成）
+
 #### Synonym graph token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-synonym-graph-tokenfilter.html)
 
@@ -13515,11 +13547,11 @@ POST /_index_template/_simulate
 
 &emsp;&emsp;[rollover](#Rollover API)操作会创建一个新的backing index，这个索引成为数据流中新的write index。
 
-&emsp;&emsp;我们建议使用[ILM](#ILM: Manage the index lifecycle)，它能在write index达到一个指定的寿命（age）或者大小后自动的转存（roll over）数据流。如果有必要的话，你也可以[manually roll over](#Manually roll over a data stream)一个数据流。
+&emsp;&emsp;我们建议使用[ILM](#ILM: Manage the index lifecycle)，它能在write index达到一个指定的寿命（age）或者大小后自动的滚动（roll over）数据流。如果有必要的话，你也可以[manually roll over](#Manually roll over a data stream)一个数据流。
 
 #### Generation
 
-&emsp;&emsp;每一个数据流会追踪它的generation：一个六位数字，0作为填充值的整数，用来累计（cumulative）数据流转存次数，从`000001`开始。
+&emsp;&emsp;每一个数据流会追踪它的generation：一个六位数字，0作为填充值的整数，用来累计（cumulative）数据流滚动次数，从`000001`开始。
 
 &emsp;&emsp;当创建一个backing index后，这个索引按下面的方式约定命名
 
@@ -25611,13 +25643,13 @@ POST my-index-000001/_update/1
 
 &emsp;&emsp;你想要将日志文件发送给Elasticsearch集群用于可视化和分析数据，这些数据有下列的保留需求（retention requirement）
 
-- 当write index达到50GB或者30天，转存（roll over）到一个新的索引
-- 在转存后，在hot tier保留30天
-- 30天以后转存
+- 当write index达到50GB或者30天，滚动（roll over）到一个新的索引
+- 在滚动后，在hot tier保留30天
+- 30天以后滚动
   - 将索引移动到warm tier
   - 将副本分片数量设置为1
   - [Force merge](#Force merge API)索引的段来释放被删除的文档占用的空间
-- 在转存90后天删除索引
+- 在滚动90后天删除索引
 
 #### Prerequisites
 
@@ -25658,7 +25690,7 @@ node.roles: [ data_warm ]
 &emsp;&emsp;默认的`logs`策略设计为防止生成很多小的按日创建的索引。你可以修改这个策略来满足你的性能要求以及资源使用管理。
 
 1. 激活warm阶段并点击**Advanced settings**
-   1. 设置**Move data into phase when**为**30 days old**。这个索引在转存后的30天移动到warm阶段
+   1. 设置**Move data into phase when**为**30 days old**。这个索引在滚动后的30天移动到warm阶段
    2. 开启**Set replicas**并修改**Number of replicas**为**1**
    3. 开启**Force merge data**并设置**Number of segments**为**1**
 
@@ -25669,7 +25701,7 @@ node.roles: [ data_warm ]
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/tutorial-ilm-enable-delete-phase.png"> 
 
-&emsp;&emsp;在delete阶段，将**Move data into phase when**设置为**90 days old**。这个索引在转存后30天被删除。
+&emsp;&emsp;在delete阶段，将**Move data into phase when**设置为**90 days old**。这个索引在滚动后30天被删除。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/tutorial-ilm-delete-rollover.png"> 
 
@@ -25678,7 +25710,7 @@ node.roles: [ data_warm ]
 ### Tutorial: Automate rollover with ILM
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/getting-started-index-lifecycle-management.html#manage-time-series-data-without-data-streams)
 
-&emsp;&emsp;当你不停的将带有时间戳的文档索引到Elasticsearch中，你通常会使用[data stream](#Data streams)，使得你可以周期性的转存（roll over）到一个新的索引。能让你实现一个 hot-warm-cold的架构，为你的最新数据满足性能要求，控制随着时间增加的成本，执行保留策略，并且能最大力度利用你的数据（get the most out of  your data）。
+&emsp;&emsp;当你不停的将带有时间戳的文档索引到Elasticsearch中，你通常会使用[data stream](#Data streams)，使得你可以周期性的滚动（roll over）到一个新的索引。能让你实现一个 hot-warm-cold的架构，为你的最新数据满足性能要求，控制随着时间增加的成本，执行保留策略，并且能最大力度利用你的数据（get the most out of  your data）。
 
 > TIP：Data streams最适合用于[append-only](#Append-only)的用例。如果你需要跨多个索引经常更新或者删除现有的文档，我们建议你使用一个index alias和index template。你仍然可以用ILM来管理并且rollover alias indices。直接跳到[Manage time series data without data streams](#Manage time series data without data streams)。
 
@@ -25698,10 +25730,10 @@ node.roles: [ data_warm ]
 
 &emsp;&emsp;例如，你可能定义了一个`timeseries_policy`，它有两个阶段：
 
-- `hot`阶段定义了一个rollover动作：当索引的大小达到为50GB（`max_primary_shard_size`）或者达到30天（`max-age`）就进行转存（roll over）
-- `delete`阶段定义了在转存后的90天（`min_age`）就移除索引
+- `hot`阶段定义了一个rollover动作：当索引的大小达到为50GB（`max_primary_shard_size`）或者达到30天（`max-age`）就进行滚动（roll over）
+- `delete`阶段定义了在滚动后的90天（`min_age`）就移除索引
 
-> NOTE：`min_age`是相对于转存的时间而不是索引的创建时间。
+> NOTE：`min_age`是相对于滚动的时间而不是索引的创建时间。
 
 &emsp;&emsp;你可以通过Kibana或者[create or update policy ](#Create or update lifecycle policy API) API来创建策略。若要通过Kibana创建策略，打开菜单并进入**Stack Management > Index Lifecycle Policies**，点击**Create policy**。
 
@@ -25735,7 +25767,7 @@ PUT _ilm/policy/timeseries_policy
 
 &emsp;&emsp;第5行，`min_age`默认值是`0ms`，所以新的索引会马上进入到`hot`阶段
 &emsp;&emsp;第8行，满足任意一个后就触发`rollover`动作
-&emsp;&emsp;第14行，转存后90天将索引移动到`delete`阶段
+&emsp;&emsp;第14行，滚动后90天将索引移动到`delete`阶段
 &emsp;&emsp;第16行，当索引进入到delete阶段后触发`delete`动作
 
 #### Create an index template to create the data stream and apply the lifecycle policy
@@ -25902,7 +25934,7 @@ PUT _index_template/timeseries_template
 
 #### Bootstrap the initial time series index with a write index alias
 
-&emsp;&emsp;你需要引导一个最开始的索引并且为你模板中的rollover alias将这个索引指为write index。这个索引的名称必须匹配模板中的index pattern并且以数字结尾。在转存时，这个数字会递增用于生成新的索引的名称。
+&emsp;&emsp;你需要引导一个最开始的索引并且为你模板中的rollover alias将这个索引指为write index。这个索引的名称必须匹配模板中的index pattern并且以数字结尾。在滚动时，这个数字会递增用于生成新的索引的名称。
 
 &emsp;&emsp;例如，下面的请求创建了一个名为`timeseries-000001`的索引，并且让它作为名为 `timeseries` 的alias的write index。
 
@@ -26114,7 +26146,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;你可以这么指定：
 
-- 当达到分片大小、包含的文档数量、寿命的最大值时转存（rollover）到一个新的索引
+- 当达到分片大小、包含的文档数量、寿命的最大值时滚动（rollover）到一个新的索引
 - 当索引不再更新，可以减少主分片的数量
 - 通过force merge永久的移除被标记为删除的文档
 - 将索引移动到性能较低的硬件中
@@ -26123,7 +26155,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;例如，当你将成群的ATMs的指标数据写入到Elasticsearch中时，可以定义下面的策略：
 
-- 当索引主分片的大小达到50GB时，转存到新的索引中
+- 当索引主分片的大小达到50GB时，滚动到新的索引中
 - 将老的索引（old index）移到[warm phase](#Index lifecycle)，标记为只读，并且收缩（shrink）为单个分片。
 - 7天以后把索引移到[cold phase](#Index lifecycle)，并且移到成本较低的硬件中。
 - 当达到30天的保留周期时就删除索引。
@@ -26151,7 +26183,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;一个索引的生命周期策略指定了哪个阶段是适用的（applicable）、在每一个阶段执行哪些动作、什么时候转变阶段（transition between phases）。
 
-&emsp;&emsp;在你创建索引时可以手动应用一个生命周期策略。对于时序索引（time series indices），你需要用index template在时序中创建新的索引，并且将生命周期策略关联到index template。当转存（rollover）索引时，手动应用的策略不会自动应用到新索引。
+&emsp;&emsp;在你创建索引时可以手动应用一个生命周期策略。对于时序索引（time series indices），你需要用index template在时序中创建新的索引，并且将生命周期策略关联到index template。当（rollover）索引时，手动应用的策略不会自动应用到新索引。
 
 &emsp;&emsp;如果你使用Elasticsearch的安全功能。ILM将以最后更新策略的用户的身份执行操作。ILM only has the [roles](#Defining roles) assigned to the user at the time of the last policy update。
 
@@ -26171,7 +26203,7 @@ GET /my-index-000001,my-index-000002
 
 &emsp;&emsp;当索引进入到一个阶段，ILM缓存索引元数据（index metadata）中的阶段定义（phase definition）。这使得不会因为更新策略将索引置入一个用于无法退出阶段的状态。如果可以安全的应用变更，ILM会更新已经缓存的阶段定义。如果不能，则使用缓存的定义继续执行下去。
 
-&emsp;&emsp;ILM会周期的运行检查某个索引是否满足策略规则（policy criteria）并执行必要的步骤。为了避免race condition，ILM可能需要执行多次才能执行所有的步骤，每一个步骤都需要完成一个动作。例如，如果ILM检测到一个索引满足转存规则，它开始执行这个步骤并且要求完成这个转存动作。如果它到达了一个点使得不能安全的进行入到下一步骤，那么终止执行。下一次ILM运行后，它会继续执行（pick up execution where it left off）。这意味着即使`indices.lifecycle.poll_interval`设置为10分钟并且索引满足转存规则。也有可能需要20分钟来完成转存。
+&emsp;&emsp;ILM会周期的运行检查某个索引是否满足策略规则（policy criteria）并执行必要的步骤。为了避免race condition，ILM可能需要执行多次才能执行所有的步骤，每一个步骤都需要完成一个动作。例如，如果ILM检测到一个索引满足滚动规则，它开始执行这个步骤并且要求完成这个滚动动作。如果它到达了一个点使得不能安全的进行入到下一步骤，那么终止执行。下一次ILM运行后，它会继续执行（pick up execution where it left off）。这意味着即使`indices.lifecycle.poll_interval`设置为10分钟并且索引满足滚动规则。也有可能需要20分钟来完成滚动。
 
 ##### Phase actions
 
@@ -26236,9 +26268,9 @@ GET /my-index-000001,my-index-000002
 
 ##### Automatic rollover
 
-&emsp;&emsp;ILM能让你自动的基于索引大小（index size）、文档数量（document count），寿命（age）转存（roll over）到一个新的索引。当触发了一个rollover，就会创建一个新的索引。write alias会被更新指向新的索引，接下来的更新都会写入到新的索引中。
+&emsp;&emsp;ILM能让你自动的基于索引大小（index size）、文档数量（document count），寿命（age）滚动（roll over）到一个新的索引。当触发了一个rollover，就会创建一个新的索引。write alias会被更新指向新的索引，接下来的更新都会写入到新的索引中。
 
-> TIP：基于大小，文档数量，或者寿命的转存比基于时间（time-based）的更可取（prefer）。在任意的时间（arbitrary time）进行rolling over经常会生成小的索引，对性能和资源使用有负面的影响。
+> TIP：基于大小，文档数量，或者寿命的滚动比基于时间（time-based）的更可取（prefer）。在任意的时间（arbitrary time）进行rolling over经常会生成小的索引，对性能和资源使用有负面的影响。
 
 #### Lifecycle policy updates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/update-lifecycle-policy.html)
@@ -26583,16 +26615,16 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;可以在hot阶段使用该动作。
 
-&emsp;&emsp;当现有的索引满足一个或者多个转存（rollover）条件后转存到一个新的索引。
+&emsp;&emsp;当现有的索引满足一个或者多个滚动（rollover）条件后滚动到一个新的索引。
 
-> IMPORTANT：如果rollover动作应用在一个[follower index](#Create follower API)，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
+> IMPORTANT：如果rollover动作应用在一个[follower index](#Create follower API)，执行策略前需要等待leader index滚动结束（或者[otherwise marked complete](#Skip rollover)），然后通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
 
-&emsp;&emsp;转存对象可以是[data stream](#Data Streams)或者[index alias](#Aliases)。当转存对象是数据流（data stream）时，新的索引会变成数据流的write index并且提高它的generation。
+&emsp;&emsp;滚动对象可以是[data stream](#Data Streams)或者[index alias](#Aliases)。当滚动对象是数据流（data stream）时，新的索引会变成数据流的write index并且提高它的generation。
 
-&emsp;&emsp;要转存一个index alias，alias和它的的write index必须满足下面的条件：
+&emsp;&emsp;要滚动一个index alias，alias和它的的write index必须满足下面的条件：
 
 - 索引名称必须满足这个pattern `^.*-\d+$`，例如（my-index-00001）
-- `index.lifecycle.rollover_alias`必须配置为alias进行转存
+- `index.lifecycle.rollover_alias`必须配置为alias进行滚动
 - 索引必须是alias的[write index](#Write index（Alias）)
 
 &emsp;&emsp;例如如果`my-index-000001`是名为`my_data`的alias。那么必须配置下面的设置：
@@ -26616,17 +26648,17 @@ PUT my-index-000001
 
 &emsp;&emsp;你必须至少指定一个rollover条件。没有条件的rollover动作是非法的。
 
-- max_age：（Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
-- max_docs：（Optional,integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
-- max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
+- max_age：（Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发滚动动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+- max_docs：（Optional,integer）当达到指定的文档数量最大值时触发滚动。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+- max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发滚动。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
 
   > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
 
-- max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
+- max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发滚动。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
 
-- max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
+- max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发滚动。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
 
@@ -26634,7 +26666,7 @@ PUT my-index-000001
 
 ###### Roll over based on largest primary shard size
 
-&emsp;&emsp;下面的例子中，当最大的主分片的大小达到50gb则转存这个索引。
+&emsp;&emsp;下面的例子中，当最大的主分片的大小达到50gb则滚动这个索引。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26655,7 +26687,7 @@ PUT _ilm/policy/my_policy
 
 ###### Roll over based on index size
 
-&emsp;&emsp;下面的例子中，当索引大小至少100g则转存这个索引。
+&emsp;&emsp;下面的例子中，当索引大小至少100g则滚动这个索引。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26676,7 +26708,7 @@ PUT _ilm/policy/my_policy
 
 ###### Roll over based on document count
 
-&emsp;&emsp;下面的例子中，当索引中包含了至少了100000000篇文档后转存这个索引。
+&emsp;&emsp;下面的例子中，当索引中包含了至少了100000000篇文档后滚动这个索引。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26697,7 +26729,7 @@ PUT _ilm/policy/my_policy
 
 ###### Roll over based on document count of the largest primary shard
 
-&emsp;&emsp;在这个例子中，当这个索引中最大的主分片中的文档数量至少有一千万时转存这个索引。
+&emsp;&emsp;在这个例子中，当这个索引中最大的主分片中的文档数量至少有一千万时滚动这个索引。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26718,7 +26750,7 @@ PUT _ilm/policy/my_policy
 
 ###### Roll over based on index age
 
-&emsp;&emsp;在这个例子中，索引在创建后已经至少过了7天后转存这个索引。
+&emsp;&emsp;在这个例子中，索引在创建后已经至少过了7天后滚动这个索引。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26739,7 +26771,7 @@ PUT _ilm/policy/my_policy
 
 ###### Roll over using multiple conditions
 
-&emsp;&emsp;当你指定了多个转存条件时，任何一个条件满足都会触发转存。这个例子中，要么索引在创建后已经至少过了7天后或者当索引大小至少100g时触发转存。
+&emsp;&emsp;当你指定了多个滚动条件时，任何一个条件满足都会触发滚动。这个例子中，要么索引在创建后已经至少过了7天后或者当索引大小至少100g时触发滚动。
 
 ```text
 PUT _ilm/policy/my_policy
@@ -26761,9 +26793,9 @@ PUT _ilm/policy/my_policy
 
 ###### Rollover condition blocks phase transition
 
-&emsp;&emsp;只有至少一个转存条件满足才会完成rollover动作，这意味着任何接下来的阶段在转存成功前都会被阻塞住。
+&emsp;&emsp;只有至少一个滚动条件满足才会完成rollover动作，这意味着任何接下来的阶段在滚动成功前都会被阻塞住。
 
-&emsp;&emsp;例如，下面的策略在索引转存后就删除索引。在索引创建后的一天内不会去删除这个索引。
+&emsp;&emsp;例如，下面的策略在索引滚动后就删除索引。在索引创建后的一天内不会去删除这个索引。
 
 ```text
 PUT /_ilm/policy/rollover_policy
@@ -26802,7 +26834,7 @@ PUT /_ilm/policy/rollover_policy
 
 &emsp;&emsp;如果在hot阶段使用了`searchable_snapshot`动作，那么接下来的阶段中不能包含`shrink`或者`forcemerge`动作。
 
-&emsp;&emsp;这个动作不能在数据流的write index上执行。尝试这种操作会导致失败。为了可以将数据流中的索引转化为searchable snapshot，可以先[manually roll over](#Manually roll over a data stream)数据流，这将创建一个新的write index。因为这个索引不再是流的write index，所以当前动作可以将其转化为searchable snapshot。使用一个策略，在这个策略中的hot阶段使用[rollover](#Rollover)动作可以避免这种情况以及不需要为未来被管理的索引作手动转存。
+&emsp;&emsp;这个动作不能在数据流的write index上执行。尝试这种操作会导致失败。为了可以将数据流中的索引转化为searchable snapshot，可以先[manually roll over](#Manually roll over a data stream)数据流，这将创建一个新的write index。因为这个索引不再是流的write index，所以当前动作可以将其转化为searchable snapshot。使用一个策略，在这个策略中的hot阶段使用[rollover](#Rollover)动作可以避免这种情况以及不需要为未来被管理的索引作手动滚动。
 
 > IMPORTANT：挂载并且重分配searchable snapshot的分片涉及到从snapshot仓库中拷贝分片内容。This may incur different costs from the copying between nodes that happens with regular indices。这些开销通常很低，但是在有些环境可能会很高。见[Reduce costs with searchable snapshots](#Reduce costs with searchable snapshots)了解更多内容。
 
@@ -26881,7 +26913,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;shrink动作会移除索引的`index.routing.allocation.total_shards_per_node`设置，意味着将取消限制。这个操作能保证索引的所有分片都被拷贝到同一个节点上。This setting change will persist on the index even after the step completes。
 
-> IMPORTANT：如果收缩动作在[follower index](#Create follower API)上使用，执行策略前需要等待leader index转存结束（或者[otherwise marked complete](#Skip rollover)），然后在执行shrink动作前先通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
+> IMPORTANT：如果收缩动作在[follower index](#Create follower API)上使用，执行策略前需要等待leader index滚动结束（或者[otherwise marked complete](#Skip rollover)），然后在执行shrink动作前先通过[unfollow](#Unfollow)动作将follower index转化为一个常规索引（regular index）。
 
 ##### Shrink options
 
@@ -26955,7 +26987,7 @@ PUT _ilm/policy/my_policy
 
 &emsp;&emsp;这个动作会一直等到安全的将一个follower index转化为常规索引才会执行，必须满足下面的条件：
 
-- lead index必须已经将`index.lifecycle.indexing_complete`设置为`true`。如果leader index使用[rollover](#Rollover)动作转存结束，这个设置会自动完成。并且也可以使用[index settings API](#Update index settings API)来手动设置。
+- lead index必须已经将`index.lifecycle.indexing_complete`设置为`true`。如果leader index使用[rollover](#Rollover)动作滚动结束，这个设置会自动完成。并且也可以使用[index settings API](#Update index settings API)来手动设置。
 - leader index上的所有操作都已经在follower index上执行。这个保证了当索引转变结束后不会丢失任何的操作。
 
 &emsp;&emsp;一旦满足条件，unfollow动作将执行下面的操作：
@@ -27063,8 +27095,8 @@ PUT _ilm/policy/my_policy
 }
 ```
 
-&emsp;&emsp;第8行，当索引大小达到25G后进行转存（roll over）
-&emsp;&emsp;第16行，在转存后的30天后删除索引
+&emsp;&emsp;第8行，当索引大小达到25G后进行滚动（roll over）
+&emsp;&emsp;第16行，在滚动后的30天后删除索引
 
 #### Apply lifecycle policy with an index template
 
@@ -27501,7 +27533,7 @@ Problems with rollover aliases are a common cause of errors. Consider using [dat
 
 ##### High disk watermark [x] exceeded on [y]
 
-&emsp;&emsp;说明cluster的磁盘空间快满了。当你的ILM中没有设置从hot节点转存到warm节点时可能会发生。
+&emsp;&emsp;说明cluster的磁盘空间快满了。当你的ILM中没有设置从hot节点滚动到warm节点时可能会发生。
 
 &emsp;&emsp;考虑添加节点，更新你的硬件，或者删除不要的索引。
 
@@ -40067,7 +40099,7 @@ DELETE /_index_template/<index-template>
 
 ##### Path parameters
 
-`<index-template>`：（Required, string）用逗号隔开的索引模板名称用来限制请求。可以使用通配符（`*`）表达式
+- `<index-template>`：（Required, string）用逗号隔开的索引模板名称用来限制请求。可以使用通配符（`*`）表达式
 
 ##### Query parameters
 
@@ -40805,16 +40837,16 @@ POST /<rollover-target>/_rollover/<target-index>
 - condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
   > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rollover（action）)
 
-  - max_age：(Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发转存动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
-  - max_docs：（Optional,integer）当达到指定的文档数量最大值时触发转存。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
-  - max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发转存。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
+  - max_age：(Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发滚动动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+  - max_docs：（Optional,integer）当达到指定的文档数量最大值时触发滚动。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
+  - max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发滚动。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
   > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
 
-  - max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发转存。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
+  - max_primary_shard_size：（Optional,[byte units](#Byte size units)）当索引中的最大的主分片的大小达到某个值就触发滚动。它是索引中主分片大小的最大值。跟`max_size`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`store`值显示了每一个分片的大小，`prirep`值指示了一个分片是主分片还是副本分片。
 
-  - max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发转存。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
+  - max_primary_shard_docs：（Optional,integer）当索引中最大的主分片的文档数量达到某个值就触发滚动。这是索引中主分片中的文档数量最大值。跟`max_doc`一样，副本分片则忽略这个参数。
 
   > TIP：可以通过[\_cat shard API](#cat shards API)查看当前分片的大小。`doc`值显示了每个分片中的文档数量。
 
