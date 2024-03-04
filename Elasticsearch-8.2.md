@@ -44786,18 +44786,62 @@ POST _render/template/<template-id>
 - [Shard statistics](#Searchable snapshot statistics API)
 - [Clear cache](#Clear cache API)
 
-
 #### Mount snapshot API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-mount-snapshot.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-mount-snapshot.html)
 
-&emsp;&emsp;
+&emsp;&emsp;挂载一个快照使其成为一个searchable snapshot index。
+
 ##### Request
+
+```text
+POST /_snapshot/<repository>/<snapshot>/_mount
+```
+
 ##### Prerequisites
-##### Description
+
+- 如果开启了Elasticsearch security features，你必须有`manage`的[cluster privilege](#Cluster privileges)以及`manage`的index privilege来使用这个API。更多信息见[Security privileges](#Security privileges)
+
 ##### Path parameters
+
+- `<repository>`：（Required,string）包含待挂载为索引的快照的仓库名称
+- `<snapshot>`：（Required,string）待挂载为索引的快照名称
+
 ##### Query parameters
-##### Response body
+
+- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_completion：（Optional, Boolean）如果为`true`，当快照完成后才返回一个响应。如果为`false`，当快照初始化结束就返回一个响应。默认值是`false`
+- storage：（Optional,string）searchable snapshot index的[Mount option](#Mount options)，可选值有：
+  - full_copy (Default)：[Fully mounted index](#Fully mounted index)
+  - shard_cache：[Partially mounted index.](#Partially mounted index)
+
+##### Request body
+
+- index：（Required,string）被挂载的快照中索引的名称
+  - 如果未指定`renamed_index`，那么`index`的名称将用于创建新的索引
+- renamed_index：（Optional,string）将被创建的索引名称
+- index_settings：（Optional,object）挂载后，索引的settings
+- ignore_index_settings：（Optional,array of strings）挂载后，需要被移除的索引settings
+
 ##### Example
+
+&emsp;&emsp;从名为`my_repository`的快照仓库中挂载一个现有的名为`my_snapshot`的快照中的名为`my_docs`的索引。
+
+```text
+POST /_snapshot/my_repository/my_snapshot/_mount?wait_for_completion=true
+{
+  "index": "my_docs", 
+  "renamed_index": "docs", 
+  "index_settings": { 
+    "index.number_of_replicas": 0
+  },
+  "ignore_index_settings": [ "index.refresh_interval" ] 
+}
+```
+
+&emsp;&emsp;第3行，挂载的快照中的索引名称
+&emsp;&emsp;第4行，待创建的索引名称
+&emsp;&emsp;第5行，添加到新的索引的settings
+&emsp;&emsp;第8行，挂载快照中的索引后，需要移除这个索引的settings
 
 #### Cache stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-cache-stats.html)
