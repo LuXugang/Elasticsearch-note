@@ -44844,16 +44844,71 @@ POST /_snapshot/my_repository/my_snapshot/_mount?wait_for_completion=true
 &emsp;&emsp;第8行，挂载快照中的索引后，需要移除这个索引的settings
 
 #### Cache stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-cache-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-cache-stats.html)
 
-&emsp;&emsp;
+&emsp;&emsp;为[partially mounted indices](#Partially mounted index)获取关于shared cache的统计信息。
+
 ##### Request
+
+```text
+GET /_searchable_snapshots/cache/stats
+GET /_searchable_snapshots/<node_id>/cache/stats
+```
+
 ##### Prerequisites
-##### Description
+
+- 如果开启了Elasticsearch security features，你必须有`manage`的[cluster privilege](#Cluster privileges)来使用这个API。更多信息见[Security privileges](#Security privileges)
+
 ##### Path parameters
+
+- `<node_id>`：（Optional,string）集群中目标节点的名称。例如，`nodeId1`、`nodeId2`。对于节点的选择选项，见[Node specification](#Node specification)
+
 ##### Query parameters
+
+- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+
 ##### Response body
+
+- nodes：（object）包含请求中指定的节点的统计信息
+  - `<node_id>`：（object）包含带有节点标识符的统计信息
+    - `shared_cache`：（object）包含shard cache file的信息
+      - reads：（long）shared cache被用来读取数据的次数
+      - bytes_read_in_bytes：（long）shared cache中读取的总字节数
+      - writes：（long）表示有多少次数据从blob存储库写入shared cache
+      - bytes_written_in_bytes：（long）写入shared cache的总字节数
+      - evictions：（long）从shared cache文件中驱逐（reject）的区域（region，shared cache file（共享缓存文件）被划分的小块或段）数量
+      - num_regions：（integer）shared cache文件中的区域数量
+      - size_in_bytes：（long）shared cache文件的总大小（以字节为单位）
+      - region_size_in_bytes：（long）shared cache文件中一个区域的大小（以字节为单位）
+
 ##### Example
+
+&emsp;&emsp;从所有节点中为partially mounted indices获取shared cache的统计信息：
+
+```text
+GET /_searchable_snapshots/cache/stats
+```
+
+&emsp;&emsp;响应如下：
+
+```text
+{
+  "nodes" : {
+    "eerrtBMtQEisohZzxBLUSw" : {
+      "shared_cache" : {
+        "reads" : 6051,
+        "bytes_read_in_bytes" : 5448829,
+        "writes" : 37,
+        "bytes_written_in_bytes" : 1208320,
+        "evictions" : 5,
+        "num_regions" : 65536,
+        "size_in_bytes" : 1099511627776,
+        "region_size_in_bytes" : 16777216
+      }
+    }
+  }
+}
+```
 
 #### Searchable snapshot statistics API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-stats.html)
