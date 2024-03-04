@@ -44911,16 +44911,34 @@ GET /_searchable_snapshots/cache/stats
 ```
 
 #### Searchable snapshot statistics API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-stats.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-stats.html)
 
-&emsp;&emsp;
+> WARNING：This functionality is in technical preview and may be changed or removed in a future release. Elastic will work to fix any issues, but features in technical preview are not subject to the support SLA of official GA features.
+
+&emsp;&emsp;获取searchable snapshots的统计信息。
+
 ##### Request
+
+```text
+GET /_searchable_snapshots/stats
+GET /<target>/_searchable_snapshots/stats
+```
+
 ##### Prerequisites
-##### Description
+
+- 如果开启了Elasticsearch security features，你必须有`manage`的[cluster privilege](#Cluster privileges)以及`manage`的index privilege来使用这个API。更多信息见[Security privileges](#Security privileges)
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<target>`：（Optional, string）用逗号隔开的待获取的data streams、indices列表。若要获取所有data streams、indices的统计信息，则忽略这个参数
+
 ##### Example
+
+&emsp;&emsp;获取名为`my-index`的索引的统计信息：
+
+```text
+GET /my-index/_searchable_snapshots/stats
+```
 
 #### Clear cache API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/searchable-snapshots-api-clear-cache.html)
