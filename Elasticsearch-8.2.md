@@ -27038,7 +27038,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
--  policy：（Required,string）SLM策略的名称，delete动作执行前需要等待执行这个策略。
+- policy：（Required,string）SLM策略的名称，delete动作执行前需要等待执行这个策略。
 
 ##### Example
 
