@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/02/27）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/04）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -20712,7 +20712,380 @@ GET /_search
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/joining-queries.html)
 
 #### Nested query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-nested-query.html#query-dsl-nested-query)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-nested-query.html#query-dsl-nested-query)
+
+&emsp;&emsp;封装了其他query，用于查询[nested](#Nested field type)域的一种query。
+
+&emsp;&emsp;`nested` query查询nested域对象时，就像这些对象分别索引在不同的文档中一样（见下面中`must_not clauses and nested queries
+`的介绍）。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
+
+##### Example request
+
+##### Index setup
+
+&emsp;&emsp;若要使用`nested` query，你必须有一个mapping类型为[nested](#Nested field type)的域。例如：
+
+```text
+PUT /my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "obj1": {
+        "type": "nested"
+      }
+    }
+  }
+}
+```
+
+##### Example query
+
+```text
+GET /my-index-000001/_search
+{
+  "query": {
+    "nested": {
+      "path": "obj1",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "obj1.name": "blue" } },
+            { "range": { "obj1.count": { "gt": 5 } } }
+          ]
+        }
+      },
+      "score_mode": "avg"
+    }
+  }
+}
+```
+
+#### Top-level parameters for nested
+
+- path：（Required, string）你想要查询的nested对象的路径
+- query：（Required, query object）你想要对`path`中指定的域使用的query。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
+  - 你可以使用符号`.`给出完整的路径进行查询，比如`obj1.name`
+  - 一个嵌套里面还有嵌套，Elasticsearch可以自动识别并处理这种多级嵌套。这就意味着，如果你的查询是在一个嵌套查询里面的嵌套对象上，Elasticsearch会智能地把查询应用在正确的嵌套层级上，而不是只在最顶层或者根部进行搜索。
+  - 见[Multi-level nested queries](#Multi-level nested queries)
+- score_mode：（Optional, string）child object匹配到后如何影响root parent document的[relevance score](#Relevance scores)
+  - avg（default）：所有满足匹配的child object的平均相关打分
+  - max：所有满足匹配的child object中最高的相关打分
+  - min：所有满足匹配的child object中最低的相关打分
+  - none：不是用满足匹配的child object的相关打分。提供给parent document的分数为`0`
+  - sum：所有满足匹配的child object的相关打分累加
+- ignore_unmapped：（Optional, Boolean）`path`路径错误时，不返回任何文档而不是返回错误。默认是`false`
+  - 如果为`false`，如果`path`路径错误，Elasticsearch则返回一个错误
+  - 你可以使用这个参数查询多个索引，并且有些索引可能不包含`path`中指定的路径
+
+#### Notes
+
+##### Context of script queries
+
+&emsp;&emsp;如果在nested query中运行[script query](#Script query)，你只能访问nested文档中的doc value，而不能parent或者root document中获取。
+
+##### Multi-level nested queries
+
+&emsp;&emsp;若要了解multi-level的nested query是如何工作的，首先你有一个含有nested类型的域的索引。下面的请求在索引`drivers`中定义了含有`make`和`model` nested域的mapping。
+
+```text
+PUT /drivers
+{
+  "mappings": {
+    "properties": {
+      "driver": {
+        "type": "nested",
+        "properties": {
+          "last_name": {
+            "type": "text"
+          },
+          "vehicle": {
+            "type": "nested",
+            "properties": {
+              "make": {
+                "type": "text"
+              },
+              "model": {
+                "type": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下一步，像`drivers`中索引一些文档。
+
+```text
+PUT /drivers/_doc/1
+{
+  "driver" : {
+        "last_name" : "McQueen",
+        "vehicle" : [
+            {
+                "make" : "Powell Motors",
+                "model" : "Canyonero"
+            },
+            {
+                "make" : "Miller-Meteor",
+                "model" : "Ecto-1"
+            }
+        ]
+    }
+}
+
+PUT /drivers/_doc/2?refresh
+{
+  "driver" : {
+        "last_name" : "Hudson",
+        "vehicle" : [
+            {
+                "make" : "Mifune",
+                "model" : "Mach Five"
+            },
+            {
+                "make" : "Miller-Meteor",
+                "model" : "Ecto-1"
+            }
+        ]
+    }
+}
+```
+
+&emsp;&emsp;你可以基于`make`和`model`使用multi-level的nested query。
+
+```text
+GET /drivers/_search
+{
+  "query": {
+    "nested": {
+      "path": "driver",
+      "query": {
+        "nested": {
+          "path": "driver.vehicle",
+          "query": {
+            "bool": {
+              "must": [
+                { "match": { "driver.vehicle.make": "Powell Motors" } },
+                { "match": { "driver.vehicle.model": "Canyonero" } }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;查询请求返回下面的响应：
+
+```text
+{
+  "took" : 5,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 3.7349272,
+    "hits" : [
+      {
+        "_index" : "drivers",
+        "_id" : "1",
+        "_score" : 3.7349272,
+        "_source" : {
+          "driver" : {
+            "last_name" : "McQueen",
+            "vehicle" : [
+              {
+                "make" : "Powell Motors",
+                "model" : "Canyonero"
+              },
+              {
+                "make" : "Miller-Meteor",
+                "model" : "Ecto-1"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+##### must_not clauses and nested queries
+
+&emsp;&emsp;如果`nested` query匹配了文档中的一个或多个nested 对象（因为把对象数组中的每一个对象看成了独立的对象，就像这些对象属于独立的文档中），就返回命中的文档。即使对象数组中的其他对象不满足匹配也会返回。当在`nested` query中使用[must_not clause](#Boolean query)时要额外注意。
+
+> TIP：使用[inner_hits](#Retrieve inner hits)参数了解`nested` query匹配了哪些nested对象
+
+&emsp;&emsp;例如，下面的查询使用了一个外层的`nested` query并且使用了`must_not`。
+
+```text
+PUT my-index
+{
+  "mappings": {
+    "properties": {
+      "comments": {
+        "type": "nested"
+      }
+    }
+  }
+}
+
+PUT my-index/_doc/1?refresh
+{
+  "comments": [
+    {
+      "author": "kimchy"
+    }
+  ]
+}
+
+PUT my-index/_doc/2?refresh
+{
+  "comments": [
+    {
+      "author": "kimchy"
+    },
+    {
+      "author": "nik9000"
+    }
+  ]
+}
+
+PUT my-index/_doc/3?refresh
+{
+  "comments": [
+    {
+      "author": "nik9000"
+    }
+  ]
+}
+
+POST my-index/_search
+{
+  "query": {
+    "nested": {
+      "path": "comments",
+      "query": {
+        "bool": {
+          "must_not": [
+            {
+              "term": {
+                "comments.author": "nik9000"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "hits" : {
+    ...
+    "hits" : [
+      {
+        "_index" : "my-index",
+        "_id" : "1",
+        "_score" : 0.0,
+        "_source" : {
+          "comments" : [
+            {
+              "author" : "kimchy"
+            }
+          ]
+        }
+      },
+      {
+        "_index" : "my-index",
+        "_id" : "2",
+        "_score" : 0.0,
+        "_source" : {
+          "comments" : [
+            {
+              "author" : "kimchy"              
+            },
+            {
+              "author" : "nik9000"             
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+&emsp;&emsp;第25行，这个nested对象满足匹配，因此，会将这个对象的parent document返回
+&emsp;&emsp;第28行，这个nested对象不满足匹配。由于其他的nested object满足匹配，因此这个查询仍然返回parent document
+
+&emsp;&emsp;若任意一个nested对象不满足匹配就排除这篇文档，可以使用另一个外层的`must_not`。
+
+```text
+POST my-index/_search
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "nested": {
+            "path": "comments",
+            "query": {
+              "term": {
+                "comments.author": "nik9000"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  ...
+  "hits" : {
+    ...
+    "hits" : [
+      {
+        "_index" : "my-index",
+        "_id" : "1",
+        "_score" : 0.0,
+        "_source" : {
+          "comments" : [
+            {
+              "author" : "kimchy"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
 
 ### Match all query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-match-all-query.html)
