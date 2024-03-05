@@ -14862,7 +14862,7 @@ PUT _ingest/pipeline/my-pipeline
 }
 ```
 
-&emsp;&emsp;The set processor above tells ES to use the dynamic template named geo_point for the field address if this field is not defined in the mapping of the index yet. This processor overrides the dynamic template for the field address if already defined in the bulk request, but has no effect on other dynamic templates defined in the bulk request.
+&emsp;&emsp;上面的`set processor`告诉ES如果字段address在索引的映射中还未定义，则使用名为geo_point的动态模板。如果在批量请求中已经定义了address字段的动态模板，这个处理器会覆盖它，但对批量请求中定义的其他动态模板没有影响。
 
 > WARNING： 如果你[automatically generate](#Create document IDs automatically) document id，你不能在processor中使用`{{{_id}}}`，因为Elasticsearch在ingest之后才会自动分配`_id`值。
 
@@ -15345,6 +15345,21 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 }
 ```
 
+### Enrich your data
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
+
+#### Set up an enrich processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-setup.html)
+
+#### Example: Enrich your data based on geolocation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-match-enrich-policy-type.html)
+
+#### Example: Enrich your data based on exact values
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/match-enrich-policy-type.html)
+
+#### Example: Enrich your data by matching a value to a range
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range-enrich-policy-type.html)
+
 ### Ingest processor reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
 
@@ -15371,7 +15386,138 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/lowercase-processor.html)
 
 #### Set processor
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-processor.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-processor.html)
+
+&emsp;&emsp;设置某个域为指定的值。如果域已经存在，那么域值会被替换。
+
+##### Table 36. Set Options
+
+- field：（Required）待插入、插入更新（upsert）、更新的域。支持[template snippets](#Access source fields in a processor)
+- value：（Required）用于设置域值。支持[template snippets](#Access source fields in a processor)。域值可以通过`value`或者`copy_from`指定
+- copy_from：（Optional）从某个域拷贝到`field`中，不能同时设置`value`。支持的数据类型有`boolean`, `number`, `array`, `object`, `string`, `date`等等
+- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
+- ignore_empty_value：（Optional）（默认值：false）如果为`true`并且`value`是[template snippets](#Access source fields in a processor)并计算出`null`值或者是空的字符串时，processor就不会更改这篇文档
+- media_type：（Optional）（默认值：application/json）用来对`value`编码的media Type。只有当`value`是[template snippets](#Access source fields in a processor)时才应用。可能是`application/json`, `text/plain`, 或者 `application/x-www-form-urlencoded`其中一个
+- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
+- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
+- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
+- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
+- tag：（Optional）processor的标识符。对debugging或作为指标有用
+
+```text
+{
+  "description" : "sets the value of count to 1",
+  "set": {
+    "field": "count",
+    "value": 1
+  }
+}
+```
+
+&emsp;&emsp;这个processor也可以从一个域拷贝域值到另一个域。例如：
+
+```text
+PUT _ingest/pipeline/set_os
+{
+  "description": "sets the value of host.os.name from the field os",
+  "processors": [
+    {
+      "set": {
+        "field": "host.os.name",
+        "value": "{{{os}}}"
+      }
+    }
+  ]
+}
+
+POST _ingest/pipeline/set_os/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "os": "Ubuntu"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_index" : "_index",
+        "_id" : "_id",
+        "_source" : {
+          "host" : {
+            "os" : {
+              "name" : "Ubuntu"
+            }
+          },
+          "os" : "Ubuntu"
+        },
+        "_ingest" : {
+          "timestamp" : "2019-03-11T21:54:37.909224Z"
+        }
+      }
+    }
+  ]
+}
+
+```
+
+&emsp;&emsp;包含复杂类型的值比如数组跟对象，也可以使用`copy_from`从一个域拷贝到另一个域：
+
+```text
+PUT _ingest/pipeline/set_bar
+{
+  "description": "sets the value of bar from the field foo",
+  "processors": [
+    {
+      "set": {
+        "field": "bar",
+        "copy_from": "foo"
+      }
+    }
+  ]
+}
+
+POST _ingest/pipeline/set_bar/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "foo": ["foo1", "foo2"]
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;响应：
+
+```text
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_index" : "_index",
+        "_id" : "_id",
+        "_source" : {
+          "bar": ["foo1", "foo2"],
+          "foo": ["foo1", "foo2"]
+        },
+        "_ingest" : {
+          "timestamp" : "2020-09-30T12:55:17.742795Z"
+        }
+      }
+    }
+  ]
+}
+```
 
 #### User agent processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/user-agent-processor.html)
@@ -46525,6 +46671,11 @@ POST _slm/stop
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-snapshots.html)
 
 &emsp;&emsp;见[Snapshot and restore](#Snapshot and restore)
+
+### Stored scripts-1
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-stored-scripts.html)
+
+&emsp;&emsp;见[Store and retrieve scripts](#How to write scripts)
 
 #### Repository plugins
 
