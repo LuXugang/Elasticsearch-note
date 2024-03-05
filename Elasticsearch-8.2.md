@@ -31160,6 +31160,25 @@ Cluster A
 ### Register a snapshot repository
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshots-register-repository.html)
 
+#### Azure repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repository-azure.html)
+
+#### Google Cloud Storage repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repository-gcs.html)
+
+#### S3 repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/repository-s3.html)
+
+#### Shared file system repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshots-filesystem-repository.html)
+
+#### Read-only URL repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshots-read-only-repository.html)
+
+#### Source-only repository
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshots-source-only-repository.html)
+
+
 ### Create a snapshot
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/snapshots-take-snapshot.html#automate-snapshots-slm)
 
