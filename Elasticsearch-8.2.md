@@ -38503,6 +38503,17 @@ POST /_reindex
 #### ?refresh(api)
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/docs-refresh.html#docs-refresh)
 
+### Enrich APIs
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-apis.html)
+
+&emsp;&emsp;下面enrich API用来管理 [enrich policies](#enrich policy)。
+
+- [Create enrich policy](#Create enrich policy API) 创建或替换enrich policy
+- [Delete enrich policy](#Delete enrich policy API) 删除一个enrich policy
+- [Get enrich policy](#Get enrich policy API) 返回enrich policy的信息
+- [Execute enrich policy](#Execute enrich policy API) 执行一个 enrich policy
+- [Enrich stats](#Enrich stats API) 获取 enrich-related 的统计信息
+
 ### EQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/eql-apis.html)
 
