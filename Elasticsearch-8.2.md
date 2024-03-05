@@ -15376,6 +15376,26 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 #### Dot expander processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dot-expand-processor.html)
 
+#### Enrich processor
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-processor.html)
+
+&emsp;&emsp;`enrich` processor可以将一个索引中的数据丰富到文档中。见[enrich data](#Enrich your data)了解更多关于设置信息。
+
+##### Table 16. Enrich Options
+
+- policy_name：（Required）enrich policy的名称
+- field：（Required）匹配了enrich policy中`match_field`的，被丰富的文档中的域。用来获取丰富数据（enrichment data）支持[template snippets](#Access source fields in a processor)
+- target_field：（Required）被丰富的文档（incoming document）的域，enrich policy中指定的`match_field`和`enrich_fields`中所有的域将作为`target_field`的字段
+- ignore_missing：（Optional）（默认值：false）如果为`true`并且`field`不存在，那么不会修改文档
+- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
+- max_matches：（Optional）（默认值：1）匹配到的文档数量最大值。如果`max_matches` 大于1，那么`target_field`字段变成json array否则就是json object。为了避免文档过大。最大值只能到128
+- shape_relation：（Optional）（默认值：INTERSECTS）一个空间关系操作符，用于将传入文档的[geoshape](#Geoshape field type)与富集索引（enrich index）中的文档进行匹配。这个选项仅用于`geo_match` enrich policy 类型。有关操作符和更多信息，请参见[Spatial Relations](#Spatial Relations)。
+- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
+- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
+- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
+- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
+- tag：（Optional）processor的标识符。对debugging或作为指标有用
+
 #### GeoIP processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-processor.html)
 
@@ -15393,7 +15413,7 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 ##### Table 36. Set Options
 
 - field：（Required）待插入、插入更新（upsert）、更新的域。支持[template snippets](#Access source fields in a processor)
-- value：（Required）用于设置域值。支持[template snippets](#Access source fields in a processor)。域值可以通过`value`或者`copy_from`指定
+- value：（Required，但是不能跟`copy_from`同时指定）用于设置域值。支持[template snippets](#Access source fields in a processor)。域值可以通过`value`或者`copy_from`指定
 - copy_from：（Optional）从某个域拷贝到`field`中，不能同时设置`value`。支持的数据类型有`boolean`, `number`, `array`, `object`, `string`, `date`等等
 - override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
 - ignore_empty_value：（Optional）（默认值：false）如果为`true`并且`value`是[template snippets](#Access source fields in a processor)并计算出`null`值或者是空的字符串时，processor就不会更改这篇文档
