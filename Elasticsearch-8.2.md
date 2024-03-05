@@ -38514,6 +38514,21 @@ POST /_reindex
 - [Execute enrich policy](#Execute enrich policy API) 执行一个 enrich policy
 - [Enrich stats](#Enrich stats API) 获取 enrich-related 的统计信息
 
+#### Create enrich policy API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-enrich-policy-api.html)
+
+#### Delete enrich policy API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-enrich-policy-api.html)
+
+#### Get enrich policy API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-enrich-policy-api.html)
+
+#### Execute enrich policy API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-stats-api.html)
+
+#### Enrich stats API
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
+
 ### EQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/eql-apis.html)
 
