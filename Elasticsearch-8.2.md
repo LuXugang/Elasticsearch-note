@@ -38756,14 +38756,48 @@ GET /_enrich/policy
 ```
 
 #### Execute enrich policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-stats-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-stats-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;执行一个现有的[enrich policy](#enrich policy)。
+
+```text
+PUT /_enrich/policy/my-policy/_execute
+```
 
 ##### Request
+
+```text
+PUT /_enrich/policy/<enrich-policy>/_execute
+POST /_enrich/policy/<enrich-policy>/_execute
+```
+
 ##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有：
+
+- 被使用到的索引的`read` index privilege
+- [built-in role](#Built-in roles) `enrich_user`
+
+##### Description
+
+&emsp;&emsp;使用该接口为现有的enrich policy创建enrich index。
+
+&emsp;&emsp;enrich index中包含了策略中的source index。enrich index 的名称总是以`.enrich-*`开头，只读索引，并且[force merged](#Force merge API)。
+
+> WARNING：enrich index应该只被[enrich processor](#Enrich processor)使用，避免使用enrich index用于其他目的。
+
+&emsp;&emsp;创建之后，你不能向enrich Index中更新或者添加文档。而是更新你的source index然后再次[execute](#Execute enrich policy API) enrich policy。这样会从更新后的source Index中创建新的enrich index。之前的enrich index会使用一个maintenance job稍后删除。默认是每15分钟。
+
+&emsp;&emsp;由于这个接口执行好多操作，可能需要等一段时间才会返回。
+
 ##### Path parameters
+
+- `<enrich-policy>`：（Required,string）待执行的enrich policy
+
 ##### Query parameters
+
+- `wait_for_completion`：（Required,Boolean）如果为`true`，该接口会阻塞其他enrich policy的执行，直到它自己完成。默认为`true`
+
 ##### Response body
 ##### Example
 
