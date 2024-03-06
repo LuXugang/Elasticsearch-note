@@ -15533,9 +15533,126 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 &emsp;&emsp;最大并发执行的enrich policy数量。默认值为50。
 
 #### Example: Enrich your data based on geolocation
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-match-enrich-policy-type.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-match-enrich-policy-type.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`geo_match`类型的[enrich policies](#enrich policy)基于一个geographic location，使用[gep_shape](#Geoshape query) query，将匹配到的丰富数据添加到incoming document中。
+
+&emsp;&emsp;下面的例子中创建了一个`geo_match`类型的enrich policy，基于坐标集（a set of coordinates）将`postal code`的信息添加到incoming document中。然后将`geo_match`类型的enrich policy添加到一个ingest pipeline中。
+
+&emsp;&emsp;使用[create index API](##Create index API)创建一个source index，索引中至少包含一个`geo_shape`域。
+
+```text
+PUT /postal_codes
+{
+  "mappings": {
+    "properties": {
+      "location": {
+        "type": "geo_shape"
+      },
+      "postal_code": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;使用[index API](#Index API))将enrich data添加到source index中
+
+```text
+PUT /postal_codes/_doc/1?refresh=wait_for
+{
+  "location": {
+    "type": "envelope",
+    "coordinates": [ [ 13.0, 53.0 ], [ 14.0, 52.0 ] ]
+  },
+  "postal_code": "96598"
+}
+```
+
+&emsp;&emsp;使用create enrich policy API创建一个`geo_match`类型的enrich policy。这个策略包含：
+
+- 一个或多个source index
+- 一个source index中的`match_field`以及`geo_shape`，用来跟incoming document进行匹配
+- source Index中的enrich field，将追加到incoming document中。
+
+```text
+PUT /_enrich/policy/postal_policy
+{
+  "geo_match": {
+    "indices": "postal_codes",
+    "match_field": "location",
+    "enrich_fields": [ "location", "postal_code" ]
+  }
+}
+```
+
+&emsp;&emsp;使用[create or update pipeline API](#Create or update pipeline API)创建一个ingest pipeline。在这个pipeline中，添加一个包含以下内容的[enrich processor](#Enrich processor)：
+
+- enrich policy
+- incoming document的`field`用来匹配enrich Index的文档中的geoshape
+- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+- `shape_relation`用来告知processor如何匹配incoming document和enrich index中的geoshapes。见[Spatial Relations ](#Geoshape query)了解更多可选参数以及介绍。
+
+```text
+PUT /_ingest/pipeline/postal_lookup
+{
+  "processors": [
+    {
+      "enrich": {
+        "description": "Add 'geo_data' based on 'geo_location'",
+        "policy_name": "postal_policy",
+        "field": "geo_location",
+        "target_field": "geo_data",
+        "shape_relation": "INTERSECTS"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;使用ingest pipeline索引一篇文档。incoming document中应该包含enrich processor中指定的`field`：
+
+```text
+PUT /users/_doc/0?pipeline=postal_lookup
+{
+  "first_name": "Mardy",
+  "last_name": "Brown",
+  "geo_location": "POINT (13.5 52.5)"
+}
+```
+
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+
+```text
+GET /users/_doc/0
+```
+
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "found": true,
+  "_index": "users",
+  "_id": "0",
+  "_version": 1,
+  "_seq_no": 55,
+  "_primary_term": 1,
+  "_source": {
+    "geo_data": {
+      "location": {
+        "type": "envelope",
+        "coordinates": [[13.0, 53.0], [14.0, 52.0]]
+      },
+      "postal_code": "96598"
+    },
+    "first_name": "Mardy",
+    "last_name": "Brown",
+    "geo_location": "POINT (13.5 52.5)"
+  }
+}
+
+```
 
 #### Example: Enrich your data based on exact values
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/match-enrich-policy-type.html)
