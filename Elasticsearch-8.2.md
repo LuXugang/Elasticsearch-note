@@ -15652,7 +15652,7 @@ GET /my-index-000001/_doc/my_id
 
 &emsp;&emsp;一个`range`类型的[enrich policy](#enrich policy)使用一个[term query](#Term query)匹配incoming document中的数值、日期或者IP地址类型的域，使用匹配到的域值去enrich Index中执行同一个域的范围查询。不支持range到range的匹配。
 
-&emsp;&emsp;下面的例子中创建了一个`range`类型的enrich policy，该策略基于IP地址向incoming document中添加描述性网络名称（descriptive network name）和负责部门（responsible department）。然后，它将enrich policy添加到ingest pipeline中的一个processor。
+&emsp;&emsp;下面的例子中创建了一个`range`类型的enrich policy，该策略基于IP地址向incoming document中添加描述性网络名称（descriptive network name）和负责部门（responsible department）。然后，它将enrich policy添加到ingest pipeline的一个processor中。
 
 &emsp;&emsp;使用[create index API](#Create index API)以及合适的mapping创建一个source index。
 
@@ -38965,7 +38965,7 @@ PUT /_enrich/policy/<enrich-policy>
 - `<policy-type>`：（Required,object）配置enrich policy。key是enrich policy的类型。value可以是以下选项：
   - geo_match：基于[geo_shape query](#Geoshape query)丰富数据到incoming document中。例如，见[Example: Enrich your data based on geolocation](#Example: Enrich your data based on geolocation)
   - match：基于[term query](#Term query)丰富数据到IMcoming document中。例如，见[Example: Enrich your data based on exact values](#Example: Enrich your data based on exact values)
-  - range：基于[term query](#Term query)当incoming document中数值、日期或者IP地址落在enrich index中某个文档定义的范围内时则匹配。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
+  - range：基于[term query](#Term query)去incoming document中匹配数值、日期或者IP地址类型的域，然后使用匹配到的域值去enrich index使用相同的域执行一个范围查询。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
   - indices：（Required, string or array of strings）用来创建enrich index的一个或多个source index
     - 如果指定了多个索引，他们必须有一个共同的`match_field`
   - match_field：（Required,string）source index中的域，用来跟incoming document匹配
