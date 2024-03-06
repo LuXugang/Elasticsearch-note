@@ -15361,11 +15361,11 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 
 &emsp;&emsp;大多数processor是自包含的（self-contained，也就是processor都是独立的，它们不依赖于外部数据或其他processor来执行其任务），仅改变incoming document中的现有数据。
 
-<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-process.png">
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-process.svg">
 
 &emsp;&emsp;enrich processor则是添加新的数据到incoming document中并且要求一些特殊的组件：
 
-<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-process.png">
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-process.svg">
 
 ###### enrich policy
 
@@ -15425,7 +15425,7 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 
 ##### Add enrich data
 
-&emsp;&emsp;首先，添加文档到一个或多个source index中。这些文档必须应该包含你最终想要添加到incoming document中的丰富数据
+&emsp;&emsp;首先，添加文档到一个或多个source index中。这些文档应该包含你最终想要添加到incoming document中的丰富数据
 
 &emsp;&emsp;你可以使用[document](#Document APIs)和[index](#Index APIs) API，跟Elasticsearch中其他常规索引一样，管理source index。
 
@@ -15463,7 +15463,7 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 
 &emsp;&emsp;你可以使用`max_matches`选项设置一个incoming document可以匹配的丰富文档的数量。如果设置为默认值的`1`。那么`target_field`字段变成json object否则就是json array。
 
-&emsp;&emsp;见[Enrich](#Enrich processor)了解全部的可配置的选项
+&emsp;&emsp;见[Enrich](#Enrich processor)了解全部的可配置的选项。
 
 &emsp;&emsp;你也可以在ingest pipeline中添加其他的[processor](#Ingest processor reference)。
 
@@ -15535,11 +15535,123 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 #### Example: Enrich your data based on geolocation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-match-enrich-policy-type.html)
 
+&emsp;&emsp;
+
 #### Example: Enrich your data based on exact values
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/match-enrich-policy-type.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/match-enrich-policy-type.html)
+
+&emsp;&emsp;匹配[enrich policies](#enrich policy)，将匹配到的enrich data基于精确值添加到incoming document中，比如email地址或者ID，使用的是[term query](#Term query)。
+
+&emsp;&emsp;下面的例子中创建了一个`match`类型的enrich policy，基于一个email地址将用户名（user name）和联系方式（contact）添加到incoming document中。然后将这个`match` policy添加到ingest pipeline的processor中。
+
+&emsp;&emsp;使用[create index API](#Create index API)和[index API](#Index API)创建一个source index。
+
+&emsp;&emsp;下面的index API创建了一个source index，然后向这个索引中索引了一个新的文档。
+
+```text
+PUT /users/_doc/1?refresh=wait_for
+{
+  "email": "mardy.brown@asciidocsmith.com",
+  "first_name": "Mardy",
+  "last_name": "Brown",
+  "city": "New Orleans",
+  "county": "Orleans",
+  "state": "LA",
+  "zip": 70116,
+  "web": "mardy.asciidocsmith.com"
+}
+```
+
+&emsp;&emsp;使用create enrich policy API创建一个`match`类型的enrich policy。这个策略包含：
+
+- 一个或多个source index
+- 一个source index中的`match_field`，用来跟incoming document进行匹配
+- source Index中的enrich field，将追加到incoming document中。
+
+```text
+PUT /_enrich/policy/users-policy
+{
+  "match": {
+    "indices": "users",
+    "match_field": "email",
+    "enrich_fields": ["first_name", "last_name", "city", "zip", "state"]
+  }
+}
+```
+
+&emsp;&emsp;使用[execute enrich policy API](#Execute enrich policy API)为这个策略创建一个enrich Index。
+
+```text
+POST /_enrich/policy/users-policy/_execute
+```
+
+&emsp;&emsp;使用[create or update pipeline API](#Create or update pipeline API)创建一个ingest pipeline。在这个pipeline中，添加一个包含以下内容的[enrich processor](#Enrich processor)：
+
+- enrich policy
+- incoming document的`field`用来匹配enrich Index中的文档
+- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+
+```text
+PUT /_ingest/pipeline/user_lookup
+{
+  "processors" : [
+    {
+      "enrich" : {
+        "description": "Add 'user' data based on 'email'",
+        "policy_name": "users-policy",
+        "field" : "email",
+        "target_field": "user",
+        "max_matches": "1"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;使用ingest pipeline索引一篇文档。incoming document中应该包含enrich processor中指定的`field`：
+
+```text
+PUT /my-index-000001/_doc/my_id?pipeline=user_lookup
+{
+  "email": "mardy.brown@asciidocsmith.com"
+}
+```
+
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+
+```text
+GET /my-index-000001/_doc/my_id
+```
+
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "found": true,
+  "_index": "my-index-000001",
+  "_id": "my_id",
+  "_version": 1,
+  "_seq_no": 55,
+  "_primary_term": 1,
+  "_source": {
+    "user": {
+      "email": "mardy.brown@asciidocsmith.com",
+      "first_name": "Mardy",
+      "last_name": "Brown",
+      "zip": 70116,
+      "city": "New Orleans",
+      "state": "LA"
+    },
+    "email": "mardy.brown@asciidocsmith.com"
+  }
+}
+```
 
 #### Example: Enrich your data by matching a value to a range
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range-enrich-policy-type.html)
+
+
+
 
 ### Ingest processor reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
@@ -38978,9 +39090,6 @@ POST /_enrich/policy/<enrich-policy>/_execute
 ##### Query parameters
 
 - `wait_for_completion`：（Required,Boolean）如果为`true`，该接口会阻塞其他enrich policy的执行，直到它自己完成。默认为`true`
-
-##### Response body
-##### Example
 
 #### Enrich stats API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
