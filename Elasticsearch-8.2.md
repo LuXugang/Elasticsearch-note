@@ -38570,7 +38570,7 @@ PUT /_enrich/policy/<enrich-policy>
 #### Delete enrich policy API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-enrich-policy-api.html)
 
-&emsp;&emsp;删除一个现有的[enrich policy]()和它的[enrich index]()。
+&emsp;&emsp;删除一个现有的[enrich policy](#enrich policy)和它的[enrich index](#enrich index)。
 
 ```text
 DELETE /_enrich/policy/my-policy
@@ -38601,16 +38601,159 @@ DELETE /_enrich/policy/<enrich-policy>
 
 
 #### Get enrich policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-enrich-policy-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-enrich-policy-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;返回[enrich policy](#enrich policy)的信息。
+
+```text
+GET /_enrich/policy/my-policy
+```
 
 ##### Request
+
+```text
+GET /_enrich/policy/<name>
+GET /_enrich/policy
+GET /_enrich/policy/policy1,policy2
+```
+
 ##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有：
+
+- 被使用到的索引的`read` index privilege
+- [built-in role](#Built-in roles) `enrich_user`
+
 ##### Path parameters
-##### Query parameters
-##### Response body
+
+- `<name>`：（Optional,string）用逗号隔开的enrich policy的名称来限制请求。若要返回所有的enrich policy，则忽略这个参数
+
 ##### Example
+
+###### Get a single policy
+
+```text
+GET /_enrich/policy/my-policy
+```
+
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "policies": [
+    {
+      "config": {
+        "match": {
+          "name": "my-policy",
+          "indices": [ "users" ],
+          "match_field": "email",
+          "enrich_fields": [
+            "first_name",
+            "last_name",
+            "city",
+            "zip",
+            "state"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+###### Get multiple policies
+
+```text
+GET /_enrich/policy/my-policy,other-policy
+```
+
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "policies": [
+    {
+      "config": {
+        "match": {
+          "name": "my-policy",
+          "indices": [ "users" ],
+          "match_field": "email",
+          "enrich_fields": [
+            "first_name",
+            "last_name",
+            "city",
+            "zip",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "config": {
+        "match": {
+          "name": "other-policy",
+          "indices": [ "users" ],
+          "match_field": "email",
+          "enrich_fields": [
+            "first_name",
+            "last_name",
+            "city",
+            "zip",
+            "state"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+###### Get all policies
+
+```text
+GET /_enrich/policy
+```
+
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "policies": [
+    {
+      "config": {
+        "match": {
+          "name": "my-policy",
+          "indices": [ "users" ],
+          "match_field": "email",
+          "enrich_fields": [
+            "first_name",
+            "last_name",
+            "city",
+            "zip",
+            "state"
+          ]
+        }
+      }
+    },
+    {
+      "config": {
+        "match": {
+          "name": "other-policy",
+          "indices": [ "users" ],
+          "match_field": "email",
+          "enrich_fields": [
+            "first_name",
+            "last_name",
+            "city",
+            "zip",
+            "state"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
 
 #### Execute enrich policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-stats-api.html)
