@@ -38515,19 +38515,126 @@ POST /_reindex
 - [Enrich stats](#Enrich stats API) 获取 enrich-related 的统计信息
 
 #### Create enrich policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-enrich-policy-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/put-enrich-policy-api.html)
+
+&emsp;&emsp;创建一个enrich policy。
+
+```text
+PUT /_enrich/policy/my-policy
+{
+  "match": {
+    "indices": "users",
+    "match_field": "email",
+    "enrich_fields": ["first_name", "last_name", "city", "zip", "state"]
+  }
+}
+```
+
+##### Request
+
+```text
+PUT /_enrich/policy/<enrich-policy>
+```
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有：
+
+- 被使用到的索引的`read` index privilege
+- [built-in role](#Built-in roles) `enrich_user`
+
+##### Description
+
+&emsp;&emsp;使用该接口来创建一个[enrich policy](#enrich policy)。
+
+> WARNNING：enrich policy一旦创建完毕，你就不能更新或者修改，不过你可以：
+> - 创建并且[execute](#Execute enrich policy API)一个新的enrich policy
+> - 在使用中的enrich processor中用新的enrich policy替换之前的
+> - 使用[delete enrich policy](#Delete enrich policy API)删除之前的enrich policy
+
+##### Path parameters
+
+- `<enrich-policy>`：（Required,string）待创建/更新enrich policy
+
+##### Request body
+
+- `<policy-type>`：（Required,object）配置enrich policy。key是enrich policy的类型。value可以是以下选项：
+  - geo_match：基于[geo_shape query](#Geoshape query)丰富数据到incoming document中。例如，见[Example: Enrich your data based on geolocation](#Example: Enrich your data based on geolocation)
+  - match：基于[term query](#Term query)丰富数据到IMcoming document中。例如，见[Example: Enrich your data based on exact values](#Example: Enrich your data based on exact values)
+  - range：基于[term query](#Term query)当incoming document中数值、日期或者IP地址落在enrich index中某个文档定义的范围内时则匹配。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
+  - indices：（Required, string or array of strings）用来创建enrich index的一个或多个source index
+    - 如果指定了多个索引，他们必须有一个共同的`match_field`
+  - match_field：（Required,string）source index中的域，用来跟incoming document匹配
+  - enrich_fields：（Required, array of strings）将`enrich_fields`中指定的域添加到匹配到的incoming document中。source index中必须存在这些域
+  - query：（Optional, [Query DSL query object)](#Query DSL)）用来过滤enrich index中的每一篇文档。enrich policy只使用匹配这个query的文档去丰富incoming document。默认是[match_all](#Match all query) query
 
 #### Delete enrich policy API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-enrich-policy-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/delete-enrich-policy-api.html)
+
+&emsp;&emsp;删除一个现有的[enrich policy]()和它的[enrich index]()。
+
+```text
+DELETE /_enrich/policy/my-policy
+```
+
+##### Request
+
+```text
+DELETE /_enrich/policy/<enrich-policy>
+```
+
+##### Prerequisites
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有：
+
+- 被使用到的索引的`read` index privilege
+- [built-in role](#Built-in roles) `enrich_user`
+
+##### Description
+
+&emsp;&emsp;使用该接口删除一个现有的enrich policy和enrich index。
+
+> IMPORTANT：删除之前，你必须从ingest Pipeline中移除该策略。你不能移除一个正在被使用的enrich policy
+
+##### Path parameters
+
+- `<enrich-policy>`：（Required,string）待删除的enrich policy
+
 
 #### Get enrich policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-enrich-policy-api.html)
 
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Execute enrich policy API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-stats-api.html)
 
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
+
 #### Enrich stats API
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
+
+&emsp;&emsp;
+
+##### Request
+##### Prerequisites
+##### Path parameters
+##### Query parameters
+##### Response body
+##### Example
 
 ### EQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/eql-apis.html)
