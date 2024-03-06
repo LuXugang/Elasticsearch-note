@@ -15648,10 +15648,122 @@ GET /my-index-000001/_doc/my_id
 ```
 
 #### Example: Enrich your data by matching a value to a range
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range-enrich-policy-type.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range-enrich-policy-type.html)
 
+&emsp;&emsp;一个`range`类型的[enrich policy](#enrich policy)使用一个[term query](#Term query)匹配incoming document中的数值、日期或者IP地址类型的域，使用匹配到的域值去enrich Index中执行同一个域的范围查询。不支持range到range的匹配。
 
+&emsp;&emsp;下面的例子中创建了一个`range`类型的enrich policy，该策略基于IP地址向incoming document中添加描述性网络名称（descriptive network name）和负责部门（responsible department）。然后，它将enrich policy添加到ingest pipeline中的一个processor。
 
+&emsp;&emsp;使用[create index API](#Create index API)以及合适的mapping创建一个source index。
+
+```text
+PUT /networks
+{
+  "mappings": {
+    "properties": {
+      "range": { "type": "ip_range" },
+      "name": { "type": "keyword" },
+      "department": { "type": "keyword" }
+    }
+  }
+}
+```
+
+&emsp;&emsp;下面的请求index API的请求向source Index中添加了一篇新文档。
+
+```text
+PUT /networks/_doc/1?refresh=wait_for
+{
+  "range": "10.100.0.0/16",
+  "name": "production",
+  "department": "OPS"
+}
+```
+
+&emsp;&emsp;使用create enrich policy API创建一个`range`类型的enrich policy。这个策略必须包含：
+
+- 一个或多个source index
+- 一个source index中的`match_field`，用来跟incoming document进行匹配
+- source Index中的enrich field，将追加到incoming document中。
+
+&emsp;&emsp;由于我们计划基于IP地址来丰富文档，因此策略中的`match_field`必须是`ip_range`域
+
+```text
+PUT /_enrich/policy/networks-policy
+{
+  "range": {
+    "indices": "networks",
+    "match_field": "range",
+    "enrich_fields": ["name", "department"]
+  }
+}
+```
+
+&emsp;&emsp;使用[execute enrich policy API ](#Execute enrich policy API)创建一个enrich Index。
+
+```text
+POST /_enrich/policy/networks-policy/_execute
+```
+
+&emsp;&emsp;使用[create or update pipeline API](#Create or update pipeline API)创建一个ingest pipeline。在这个pipeline中，添加一个包含以下内容的[enrich processor](#Enrich processor)：
+
+- enrich policy
+- incoming document的`field`用来匹配enrich Index中的文档
+- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+
+```text
+PUT /_ingest/pipeline/networks_lookup
+{
+  "processors" : [
+    {
+      "enrich" : {
+        "description": "Add 'network' data based on 'ip'",
+        "policy_name": "networks-policy",
+        "field" : "ip",
+        "target_field": "network",
+        "max_matches": "10"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;使用ingest pipeline索引一篇文档。incoming document中应该包含enrich processor中指定的`field`：
+
+```text
+PUT /my-index-000001/_doc/my_id?pipeline=networks_lookup
+{
+  "ip": "10.100.34.1"
+}
+```
+
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+
+```text
+GET /my-index-000001/_doc/my_id
+```
+&emsp;&emsp;该接口返回以下响应：
+
+```text
+{
+  "_index" : "my-index-000001",
+  "_id" : "my_id",
+  "_version" : 1,
+  "_seq_no" : 0,
+  "_primary_term" : 1,
+  "found" : true,
+  "_source" : {
+    "ip" : "10.100.34.1",
+    "network" : [
+      {
+        "name" : "production",
+        "range" : "10.100.0.0/16",
+        "department" : "OPS"
+      }
+    ]
+  }
+}
+```
 
 ### Ingest processor reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
