@@ -15912,7 +15912,7 @@ GET /my-index-000001/_doc/my_id
       "name": "Main St"
     }
   }
-}
+  }
   ```
   
 - override：（Optional）（默认值：false）如果扩展后跟现有的字段冲突，是否进行覆盖。如果为`true`，则覆盖，否则生成一个数组同时保留这两个值
@@ -15958,7 +15958,7 @@ GET /my-index-000001/_doc/my_id
 }
 ```
 
-&emsp;&emsp;如果`bar`已经是`foo`的子域，那么processor合并这两个值。如果这个域是可扩展的域，那么就将这两个域值用数组表示
+&emsp;&emsp;如果`bar`已经是`foo`的子域，那么processor合并这两个值。如果这个域属于标量字段（scalar field，即只包含单个值的字段），那么就将这两个域值用数组表示
 
 &emsp;&emsp;比如有以下的文档：
 
@@ -16065,7 +16065,7 @@ GET /my-index-000001/_doc/my_id
 }
 ```
 
-&emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个可扩展的域转化为一个对象域。
+&emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个标量字段（scalar field）的域转化为一个对象域。
 
 #### Enrich processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-processor.html)
