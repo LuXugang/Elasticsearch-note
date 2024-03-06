@@ -15557,7 +15557,7 @@ PUT /postal_codes
 }
 ```
 
-&emsp;&emsp;使用[index API](#Index API))将enrich data添加到source index中
+&emsp;&emsp;使用[index API](#Index API)将enrich data添加到source index中
 
 ```text
 PUT /postal_codes/_doc/1?refresh=wait_for
@@ -15896,7 +15896,176 @@ GET /my-index-000001/_doc/my_id
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dissect-processor.html)
 
 #### Dot expander processor
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dot-expand-processor.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dot-expand-processor.html)
+
+&emsp;&emsp;将用点`.`表示的域名扩展成一个对象域。这个processor使得可以让点域（field with dot）能在pipeline中被其他processor访问。否则这些点域无法被任何processor访问。
+
+##### Table 14. Dot Expand Options
+
+- field：（Required）待扩展的点域。如果设置为`*`，那么top-level上所有的域都会被扩展。
+- path：（Optional）点域中包含了需要展开的点域。如果你需要展开的点域是另一个对象域的key需要将path指定为对象域的key，因为`field`域无法理解leaf fields
+  
+  ```text
+  {
+  "address": {
+    "street": {
+      "name": "Main St"
+    }
+  }
+}
+  ```
+  
+- override：（Optional）（默认值：false）如果扩展后跟现有的字段冲突，是否进行覆盖。如果为`true`，则覆盖，否则生成一个数组同时保留这两个值
+
+  ```text
+  {
+    "foo.bar" : "value2",
+    "foo" : {
+      "bar" : "value1"
+    }
+  }
+  ```
+
+- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
+- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
+- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
+- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
+- tag：（Optional）processor的标识符。对debugging或作为指标有用
+
+```text
+{
+  "dot_expander": {
+    "field": "foo.bar"
+  }
+}
+```
+
+&emsp;&emsp;该processor会将下面的内容：
+
+```text
+{
+  "foo.bar" : "value"
+}
+```
+
+&emsp;&emsp;扩展为：
+
+```text
+{
+  "foo" : {
+    "bar" : "value"
+  }
+}
+```
+
+&emsp;&emsp;如果`bar`已经是`foo`的子域，那么processor合并这两个值。如果这个域是可扩展的域，那么就将这两个域值用数组表示
+
+&emsp;&emsp;比如有以下的文档：
+
+```text
+{
+  "foo.bar" : "value2",
+  "foo" : {
+    "bar" : "value1"
+  }
+}
+```
+
+&emsp;&emsp;会被`dot_expander`扩展为：
+
+```text
+
+  "foo" : {
+    "bar" : ["value1", "value2"]
+  }
+}
+```
+
+&emsp;&emsp;如果将`override`选项设置为`true`：
+
+```text
+{
+  "dot_expander": {
+    "field": "foo.bar",
+    "override": true
+  }
+}
+```
+
+&emsp;&emsp;这种情况下就进行覆盖：
+
+```text
+{
+  "foo" : {
+    "bar" : "value2"
+  }
+}
+```
+
+&emsp;&emsp;`field`选项可以设置为`*`将top-level的字段都进行扩展：
+
+```text
+{
+  "dot_expander": {
+    "field": "*"
+  }
+}
+```
+
+&emsp;&emsp;该processor会将下面这篇文档：
+
+```text
+{
+  "foo.bar" : "value",
+  "baz.qux" : "value"
+}
+```
+
+&emsp;&emsp;变成：
+
+```text
+{
+  "foo" : {
+    "bar" : "value"
+  },
+  "baz" : {
+    "qux" : "value"
+  }
+}
+```
+
+&emsp;&emsp;如果leaf field上一层的域跟现有的域冲突，那么需要先重命名。
+
+&emsp;&emsp;如果有以下的文档：
+
+```text
+{
+  "foo": "value1",
+  "foo.bar": "value2"
+}
+```
+
+&emsp;&emsp;`foo`需要在`dot_expander` processor处理之前进行重命名。这样`foo.bar`才能将`bar`扩展到`foo`下：
+
+```text
+{
+  "processors" : [
+    {
+      "rename" : {
+        "field" : "foo",
+        "target_field" : "foo.bar"
+      }
+    },
+    {
+      "dot_expander": {
+        "field": "foo.bar"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个可扩展的域转化为一个对象域。
 
 #### Enrich processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-processor.html)
