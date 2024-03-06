@@ -1,4 +1,4 @@
-# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/04）
+# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/06）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -16223,6 +16223,138 @@ POST _ingest/pipeline/set_bar/_simulate
         },
         "_ingest" : {
           "timestamp" : "2020-09-30T12:55:17.742795Z"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### Script processor
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-processor.html)
+
+&emsp;&emsp;在incoming document上运行脚本，可以是内联脚本，也可以是存储的脚本（[stored script](#Stored script APIs)）。脚本运行在[ingest](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-ingest-processor-context.html)的上下文中。
+
+&emsp;&emsp;该processor使用[script cache](#Scripts, caching, and search speed)来避免处理每一个文档时重复编译脚本内容。若要提高性能，确保在生产中在使用script processor时，script cache有一个合适的大小。
+
+##### Table 35. Script options
+
+- lang：（Optional）（默认值：Painless）[脚本语言](#Scripting)
+- id：（Optional）存储的脚本的ID。如果未指定`source`，那这个参数必须指定
+- source：（Optional），内联脚本，如果`id`未指定，那这个参数必须指定
+- params：（Optional）脚本使用的参数
+- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
+- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
+- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
+- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
+- tag：（Optional）processor的标识符。对debugging或作为指标有用
+
+##### Access source fields
+
+&emsp;&emsp;script processor将每一篇JSON格式的文档解析为map集合,列表，原始类型（primitives）。若要使用Painless 脚本访问这些域，使用[map access operator](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-operators-reference.html#map-access-operator)：`ctx['my-field']`。你也可以使用简化的`ctx.<my-field>`语法。
+
+> NOTE：script processor不支持`ctx['_source']['my-field']`或`ctx._source.<my-field>`语法
+
+&emsp;&emsp;下面的processor使用了Painless脚本从`evf`域中提取出`tags`域。
+
+```text
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "script": {
+          "description": "Extract 'tags' from 'env' field",
+          "lang": "painless",
+          "source": """
+            String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
+            ArrayList tags = new ArrayList();
+            tags.add(envSplit[params['position']].trim());
+            ctx['tags'] = tags;
+          """,
+          "params": {
+            "delimiter": "-",
+            "position": 1
+          }
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_source": {
+        "env": "es01-prod"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;这个processor会生成：
+
+```text
+{
+  "docs": [
+    {
+      "doc": {
+        ...
+        "_source": {
+          "env": "es01-prod",
+          "tags": [
+            "prod"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+##### Access metadata fields
+
+&emsp;&emsp;你也可以使用这个processor访问元数据域（[metadata field](#Metadata fields)），下面的processor使用Painless脚本设置了incoming document的`_index`的值。
+
+```text
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "script": {
+          "description": "Set index based on `lang` field and `dataset` param",
+          "lang": "painless",
+          "source": """
+            ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
+          """,
+          "params": {
+            "dataset": "catalog"
+          }
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_index": "generic-index",
+      "_source": {
+        "lang": "fr"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;processor将文档的`_index`域从`generic-index`修改为`fr-catalog`。
+
+```text
+{
+  "docs": [
+    {
+      "doc": {
+        ...
+        "_index": "fr-catalog",
+        "_source": {
+          "lang": "fr"
         }
       }
     }
