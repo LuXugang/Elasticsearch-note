@@ -4332,22 +4332,22 @@ PUT my-index-000001
 
 &emsp;&emsp;每一个排序域的排序规则：
 
-  - `asc`: 升序
-  - `desc`：降序
+- `asc`: 升序
+- `desc`：降序
 
 `index.sort.mode`
 
 &emsp;&emsp;Elasticsearch支持使用mutil-values的域用于排序。这个参数描述的是使用哪个值用于文档排序。两个参数值可选：
 
-  - `min`：选择最小的值
-  - `max`：选择最大的值
+- `min`：选择最小的值
+- `max`：选择最大的值
 
 `index.sort.missing`
 
 &emsp;&emsp;这个参数描述的是，如果文档中缺失用于排序的域该如何对这篇文档进行排序。两个参数值可选：
 
-  - `_last`：没有用于排序的域的文档排在最后面
-  - `_first`：没有用于排序的域的文档排在最前面
+- `_last`：没有用于排序的域的文档排在最后面
+- `_first`：没有用于排序的域的文档排在最前面
 
 > WARNING：Index Sorting只有定义在创建索引时。不能对现有的索引添加或者更新排序。Index Sorting在索引期间有一定的开销，因为文档必须在flush和merge时进行排序。你应该在启动这个功能前测试下对你的应用的影响
 
@@ -15346,7 +15346,57 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 ```
 
 ### Enrich your data
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
+
+&emsp;&emsp;你可以在ingest过程中使用[enrich processor](#Enrich processor)将现有的索引中的数据添加到incoming document（传入文档）中。
+
+&emsp;&emsp;例如，你可以使用enrich processor来实现以下目标：
+
+- 根据已知的IP地址识别网络服务或供应商
+- 根据产品ID添加零售订单的产品信息
+- 根据电子邮件地址补充联系信息
+- 根据用户坐标添加邮政编码
+
+##### How the enrich processor works
+
+&emsp;&emsp;大多数processor是自包含的（self-contained，也就是processor都是独立的，它们不依赖于外部数据或其他processor来执行其任务），仅改变incoming document中的现有数据。
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ingest-process.png">
+
+&emsp;&emsp;enrich processor则是添加新的数据到incoming document中并且要求一些特殊的组件：
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-process.png">
+
+###### enrich policy
+
+&emsp;&emsp;使用一些配置选项将正确的enrich data添加到正确的incoming document中。
+
+&emsp;&emsp;一个enrich policy中包含以下内如：
+
+- 一个或多个source index的列表，他们以文档形式存储enrich data
+- policy type决定了processor如何匹配enrich data到incoming document中
+- source index中的match field用来与incoming document匹配
+- enrich field包含了source index中的enrich data，将被添加到incoming document中
+
+&emsp;&emsp;enrich policy可以被processor使用之前需要先被[executed](#Execute enrich policy API)。执行后，enrich policy使用策略中source index中的enrich data来创建一个名为enrich index的streamlined（简化） system index。processor使用这个索引匹配以及丰富incoming document。
+
+###### source index
+
+&emsp;&emsp;source index中包含了你想要添加到incoming document中的enrich data。你可以跟Elasticsearch中其他常规索引（regular index，系统索引就不属于常规索引）一样创建并且管理这些索引 。你可以在一个enrich policy中指定多个source index。你可以在多个enrich policy中使用相同的source index。
+
+##### enrich Index
+
+&emsp;&emsp;一种特殊的系统索引跟一个特定的enrich policy关联
+
+&emsp;&emsp;直接通过文档（source index中的document）到文档（incoming document）的方式会很慢，并且属于资源密集型的操作。为了提高速度，enrich processor使用了enrich index。
+
+&emsp;&emsp;enrich index中包含了来自source index中的丰富数据，但是有一些特殊的属性来帮助简化（streamline）处理过程：
+
+- 他们都是系统索引，意味着由Elasticsearch管理并且只被enrich processor使用
+- 他们都是以`.enrich-*`开头
+- 他们是只读的，意味着你不能直接修改他们
+- 他们都[force merged](#Force merge API)，使得能被快速检索
+
 
 #### Set up an enrich processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-setup.html)
