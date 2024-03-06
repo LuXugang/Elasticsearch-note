@@ -15399,7 +15399,138 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 
 
 #### Set up an enrich processor
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-setup.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-setup.html)
+
+&emsp;&emsp;按照以下步骤创建一个enrich processor：
+
+1. Check the [prerequisites](#Prerequisites（Set up an enrich processor）).
+2. [Add enrich data](#Add enrich data).
+3. [Create an enrich policy](#Create an enrich policy).
+4. [Execute the enrich policy](#Execute the enrich policy).
+5. [Add an enrich processor to an ingest pipeline](#Add an enrich processor to an ingest pipeline).
+6. [Ingest and enrich documents](#Ingest and enrich documents).
+
+&emsp;&emsp;一旦你设置好了一个enrich processor，你可以[update your enrich data](#Update an enrich index)和[update your enrich policies](#Update an enrich policy)。
+
+> IMPORTANT：enrich processor会执行很多操作，可能会影响ingest Pipeline的速度
+> 强烈建议在生产中部署进行测试和基准测试
+> 我们不建议使用enrich processor处理实时数据。enrich processor最合适处理很少更改的数据
+
+##### Prerequisites（Set up an enrich processor）
+
+&emsp;&emsp;如果开启了Elasticsearch security features，你必须要有：
+
+- 被使用到的索引的`read` index privilege
+- [built-in role](#Built-in roles) `enrich_user`
+
+##### Add enrich data
+
+&emsp;&emsp;首先，添加文档到一个或多个source index中。这些文档必须应该包含你最终想要添加到incoming document中的丰富数据
+
+&emsp;&emsp;你可以使用[document](#Document APIs)和[index](#Index APIs) API，跟Elasticsearch中其他常规索引一样，管理source index。
+
+&emsp;&emsp;你也可以设置[Beats](https://www.elastic.co/guide/en/beats/libbeat/8.2/getting-started.html)，例如[Filebeat](https://www.elastic.co/guide/en/beats/filebeat/8.2/filebeat-installation-configuration.html)，来自动的发送/索引你的source Index。见[Getting started with Beats](https://www.elastic.co/guide/en/beats/libbeat/8.2/getting-started.html)。
+
+##### Create an enrich policy
+
+&emsp;&emsp;source index中添加完丰富数据后，然后使用[create enrich policy API](#Create enrich policy API)创建一个enrich policy。
+
+> WARNING：enrich policy一旦创建结束，你不能更新/更改。见[Update an enrich policy](#Update an enrich policy)。
+
+##### Execute the enrich policy
+
+&emsp;&emsp;enrich policy创建后，你可以使用[execute enrich policy API](#Execute enrich policy API)执行该策略来创建[enrich index](#enrich index)。
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-policy-index.svg">
+
+&emsp;&emsp;enrich index中包含了策略中的source index。enrich index 的名称总是以`.enrich-*`开头，只读索引，并且[force merged](#Force merge API)。
+
+> WARNING：enrich index应该只被[enrich processor](#Enrich processor)使用，避免使用enrich index用于其他目的。
+
+##### Add an enrich processor to an ingest pipeline
+
+&emsp;&emsp;一旦你拥有了source Index、enrich policy以及相关的enrich Index，你就可以设置一个包含带有策略的enrich processor的ingest pipeline。
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-processor.svg">
+
+&emsp;&emsp;定义一个[enrich processor](#Enrich processor)，然后使用[create or update pipeline API](#Create or update pipeline API)将它添加到一个ingest pipeline中。
+
+&emsp;&emsp;在定义enrich processor时，你必须至少包含下面的内容：
+
+- 需要使用的enrich policy
+- 用来enrich Index与incoming document匹配的域
+- 添加到incoming document的target Field。enrich policy中指定的`match_field`和`enrich_fields`中所有的域将作为`target_field`的字段
+
+&emsp;&emsp;你可以使用`max_matches`选项设置一个incoming document可以匹配的丰富文档的数量。如果设置为默认值的`1`。那么`target_field`字段变成json object否则就是json array。
+
+&emsp;&emsp;见[Enrich](#Enrich processor)了解全部的可配置的选项
+
+&emsp;&emsp;你也可以在ingest pipeline中添加其他的[processor](#Ingest processor reference)。
+
+##### Ingest and enrich documents
+
+&emsp;&emsp;你现在可以使用ingest pipeline丰富并索引文档了。
+
+<img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/enrich-process.svg">
+
+&emsp;&emsp;在生产中使用pipeline之前，我们建议你先写入一些测试文档然后使用[get API](#Get API)验证enrich data是否被正确的添加。
+
+##### Update an enrich index
+
+&emsp;&emsp;创建之后，你不能向enrich Index中更新或者添加文档。而是更新你的source index然后再次[execute](#Execute enrich policy API) enrich policy。这样会从更新后的source Index中创建新的enrich index。之前的enrich index会使用一个maintenance job稍后删除。默认是每15分钟。
+
+&emsp;&emsp;如果有必要的话，你可以使用ingest pipeline[reindex](#Reindex API)或者[update](#Update By Query API)已经提取的文档（ingested document）。
+
+##### Update an enrich policy
+
+&emsp;&emsp;enrich policy一旦创建完毕，你就不能更新或者修改，不过你可以：
+
+- 创建并且[execute](#Execute enrich policy API)一个新的enrich policy
+- 在使用中的enrich processor中用新的enrich policy替换之前的
+- 使用[delete enrich policy](#Delete enrich policy API)删除之前的enrich policy
+
+##### Enrich components
+
+&emsp;&emsp;enrich coordinator是一个组件，负责管理和执行每个ingest node上所需的搜索以丰富文档。它将所有pipeline中所有enrich processor的搜索合并成批量[multi-searches](#Multi search API)。
+
+&emsp;&emsp;enrich policy executor是一个组件，负责管理所有enrich policies的执行。当执行一个enrich policies时，此组件将创建一个新的enrich index并移除之前的enrich index。enrich policies的执行由elected master node管理。这些策略的执行发生在不同的节点上。
+
+##### Node Settings
+
+&emsp;&emsp;`enrich` processor有enrich coordinator和enrich policy executor相关的节点设置。
+
+&emsp;&emsp;enrich coordinator支持下面的节点设置：
+
+###### enrich.cache_size
+
+&emsp;&emsp;用于enriching documents的搜索的最大缓存数量。默认值为1000。整个集群的所有enrich processors共用一个缓存。此设置确定该缓存的大小。
+
+
+###### enrich.coordinator_proxy.max_concurrent_requests
+
+&emsp;&emsp;enriching documents时运行的最大并发[multi-search requests](#Multi search API)请求数量。默认值为8。
+
+###### enrich.coordinator_proxy.max_lookups_per_request
+
+&emsp;&emsp;enriching documents时在一个[multi-search requests](#Multi search API)请求中包含的最大搜索数量。默认值为128。
+
+&emsp;&emsp;enrich policy executor支持下面的节点设置：
+
+###### enrich.fetch_size
+
+&emsp;&emsp;将source index reindex到enrich index时的最大批量大小。默认值为10000。
+
+###### enrich.max_force_merge_attempts
+
+&emsp;&emsp;允许在enrich index上进行的最大[force merge](#Force merge API) 尝试次数。默认值为3。
+
+###### enrich.cleanup_period
+
+&emsp;&emsp;Elasticsearch检查是否可以删除未使用的enrich index的频率。默认值为15分钟。
+
+###### enrich.max_concurrent_policy_executions
+
+&emsp;&emsp;最大并发执行的enrich policy数量。默认值为50。
 
 #### Example: Enrich your data based on geolocation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geo-match-enrich-policy-type.html)
