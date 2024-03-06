@@ -38802,16 +38802,86 @@ POST /_enrich/policy/<enrich-policy>/_execute
 ##### Example
 
 #### Enrich stats API
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
 
-&emsp;&emsp;
+&emsp;&emsp;返回当前执行中的[enrich policy](#enrich polic)的信息以及[enrich coordinator](#Node roles)的信息。
+
+```text
+GET /_enrich/_stats
+```
 
 ##### Request
-##### Prerequisites
-##### Path parameters
-##### Query parameters
+
+```text
+GET /_enrich/_stats
+```
+
 ##### Response body
+
+- executing_policies：（Array of objects）包含当前正在运行中的每一个enrich policy的信息
+  - name：（String）enrich policy的名称
+  - task：（[Task object](#Task management API)）策略执行任务的详细信息
+- coordinator_stats：（Array of objects）包含每一个配置的enrich processor的[coordinating ingest node](#Node roles)的信息
+  - node_id：（String）为配置的enrich processor协调执行搜索请求的节点标识符
+  - queue_size：（Integer）队列中查询请求的数量
+  - remote_requests_current：（Integer）正在执行的远程请求的数量（其他节点的搜索请求，这些请求是为了获取富集数据）
+  - remote_requests_total：（Integer）节点启动以来执行的远程请求的总数
+    - 大多数情况下，一个远端请求包含了多次查询请求。取决于当远端请求执行后，队列中查询请求的数量
+  - executed_searches_total：（Integer）节点启动以后enrich processor执行的查询请求总数
+- cache_stats：（Array of objects）包含每一个ingest node上enrich cache统计信息
+  - node_id：（String）有enrich cahe的ingest node的标识符
+  - count：（Integer）缓存的entry数量
+  - hits：（Integer）从缓存中获取的次数
+  - missed：（integer）无法从缓存中获取的次数
+  - evictions：（integer）从缓存中移除的entry数量
+
 ##### Example
+
+```text
+GET /_enrich/_stats
+```
+
+&emsp;&emsp;接口返回以下响应：
+
+```text
+{
+  "executing_policies": [
+    {
+      "name": "my-policy",
+      "task": {
+        "id": 124,
+        "type": "direct",
+        "action": "cluster:admin/xpack/enrich/execute",
+        "start_time_in_millis": 1458585884904,
+        "running_time_in_nanos": 47402,
+        "cancellable": false,
+        "parent_task_id": "oTUltX4IQMOUUVeiohTt8A:123",
+        "headers": {
+          "X-Opaque-Id": "123456"
+        }
+      }
+    }
+  ],
+  "coordinator_stats": [
+    {
+      "node_id": "1sFM8cmSROZYhPxVsiWew",
+      "queue_size": 0,
+      "remote_requests_current": 0,
+      "remote_requests_total": 0,
+      "executed_searches_total": 0
+    }
+  ],
+  "cache_stats": [
+    {
+      "node_id": "1sFM8cmSROZYhPxVsiWew",
+      "count": 0,
+      "hits": 0,
+      "misses": 0,
+      "evictions": 0
+    }
+  ]
+}
+```
 
 ### EQL APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/eql-apis.html)
