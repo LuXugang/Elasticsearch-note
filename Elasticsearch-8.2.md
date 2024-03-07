@@ -15592,6 +15592,7 @@ PUT /_enrich/policy/postal_policy
 - enrich policy
 - incoming document的`field`用来匹配enrich Index的文档中的geoshape
 - `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+  - target_field可以是一个新的域名（如果是incoming document中已有的域，会被覆盖）
 - `shape_relation`用来告知processor如何匹配incoming document和enrich index中的geoshapes。见[Spatial Relations ](#Geoshape query)了解更多可选参数以及介绍。
 
 ```text
@@ -15704,7 +15705,7 @@ POST /_enrich/policy/users-policy/_execute
 
 &emsp;&emsp;使用[create or update pipeline API](#Create or update pipeline API)创建一个ingest pipeline。在这个pipeline中，添加一个包含以下内容的[enrich processor](#Enrich processor)：
 
-- enrich policy
+- enrich polic
 - incoming document的`field`用来匹配enrich Index中的文档
 - `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
 

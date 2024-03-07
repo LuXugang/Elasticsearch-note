@@ -3,6 +3,7 @@
 GET kibana_sample_data_flights/_mapping
 GET kibana_sample_data_ecommerce/_mapping
 GET kibana_sample_data_logs/_mapping
+GET mytime34/_mapping
 
 POST kibana_sample_data_flights/_search
 {
@@ -25,6 +26,220 @@ POST kibana_sample_data_logs/_search
   },
   "track_total_hits": true
 }
+
+# start ----- Define and use a dynamic template that satisfies a given set of requirements----
+#将域值为string类型,并且域名是string开头的定义为text
+PUT mydynamictemplateindex-1/
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "strings_as_ip": {
+          "match_mapping_type": "string",
+          "match": "string*",
+          "mapping": {
+            "type": "text"
+          }
+        }
+      }
+    ]
+  }
+}
+# 写入文档，string_1应该只是text，而不会有Keyword子域
+POST mydynamictemplateindex-1/_doc
+{
+  "string_1":"abc",
+  "non-string-prefix":"dfd"
+}
+# 查看mapping
+GET mydynamictemplateindex-1/_mapping
+
+# 使用模板变量
+PUT mydynamictemplateindex-2/
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "strings_as_ip": {
+          "match_mapping_type": "*",
+          "mapping": {
+            "type": "{dynamic_type}"
+          }
+        }
+      }
+    ]
+  }
+}
+# 写入文档
+POST mydynamictemplateindex-2/_doc
+{
+  "string_1":"1990-12-23",
+  "non-string-prefix":"dfd",
+  "number_1": 3
+}
+# 查看mapping
+GET mydynamictemplateindex-2/_mapping
+
+# 通过模版将字段定义为runtime field
+PUT mydynamictemplateindex-3/
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "strings_as_ip": {
+          "match_mapping_type": "string",
+          "match": "ip*",
+          "runtime": {
+            "type": "keyword"
+          }
+        }
+      }
+    ]
+  }
+}
+# 写入文档
+POST mydynamictemplateindex-3/_doc
+{
+  "string_1":"1990-12-23",
+  "ipsdf":"dfd",
+  "number_1": 3
+}
+# 查看mapping
+GET mydynamictemplateindex-3/_mapping
+
+# end ----- Define and use a dynamic template that satisfies a given set of requirements----
+
+# start ----Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents---
+# 创建一个索引，至少包含source index中的一个域
+PUT enrichindex
+{
+  "mappings": {
+    "properties": {
+      "DestAirportID":{
+        "type": "keyword"
+      }
+    }
+  }
+}
+
+# 写入数据
+POST enrichindex/_doc
+{
+  "DestAirportID": "SYD"
+}
+POST enrichindex/_doc
+{
+  "DestAirportID": "VE05"
+}
+
+
+#定义一个enrich policy
+PUT /_enrich/policy/my-policy-1
+{
+  "match": {
+    "indices": ["kibana_sample_data_flights"],
+    "match_field": "DestAirportID",
+    "enrich_fields": ["FlightDelayType", "OriginCountry", "DistanceKilometers", "DestLocation", "Carrier"]
+  }
+}
+# 执行策略生成enrich index
+PUT /_enrich/policy/my-policy-1/_execute?wait_for_completion=true
+# 创建pipeline 包含 enrich index
+PUT _ingest/pipeline/my-pipeline-1
+{
+  "description" : "use enrich processor rich data",
+  "processors" : [
+    {
+      "enrich": {
+        "policy_name": "my-policy-1",
+        "field": "DestAirportID",
+        "target_field": "mynewdata"
+      }
+    }
+  ]
+}
+# 测试这个pipeline
+POST /_ingest/pipeline/my-pipeline-1/_simulate
+{
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "DestAirportID": "SYD",
+        "abc":"dfd"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "DestAirportID": "VE05",
+        "abc":"dfd"
+      }
+    }
+  ]
+}
+
+# 测试成功后，enrichindex索引写入数据后，就会执行ingest
+POST enrichindex/_doc?pipeline=my-pipeline-1
+{
+  "DestAirportID": "SYD"
+}
+# 查询enrichindex索引
+GET enrichindex/_search
+# 查看当前enrichindex的mappings，会自动添加mapping
+GET enrichindex/_mapping
+# 不使用pipeline再次写入数据
+POST enrichindex/_doc
+{
+  "DestAirportID": "SYD"
+}
+
+# 使用script processor修改文档的值
+PUT _ingest/pipeline/script-pipeline
+{
+  "description": "sdf",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": "ctx['Carrier'] = \"abc\";\nctx['FlightDelayType'] = \"efg\";"
+      }
+    }
+  ]
+}
+# 测试这个pipeline
+POST /_ingest/pipeline/script-pipeline/_simulate
+{
+  "docs": [
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "Carrier": "sdf",
+        "FlightDelayType":"sdfsdf"
+      }
+    },
+    {
+      "_index": "index",
+      "_id": "id",
+      "_source": {
+        "foo": "rab"
+      }
+    }
+  ]
+}
+# 新增文档时使用script-pipeline这个Pipeline
+POST enrichindex/_doc?pipeline=script-pipeline
+{
+  "DestAirportID": "SYD"
+}
+# 查看丰富后的文档
+POST enrichindex/_search
+
+
+# end ---- Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents---
 
 # start----- Sort the results of a query by a given set of requirements  -----
 
