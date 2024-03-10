@@ -5613,7 +5613,7 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;我们从结果中可以看到，经过计算的`measures.voltage`的域值分别是`7.14`和`6.8`。That’s more like it！。runtime field作为查询请求的一部分进行域值计算，而不修改索引值仍，索引值仍然在响应中返回：
+&emsp;&emsp;我们从结果中可以看到，经过计算的`measures.voltage`的域值分别是`7.14`和`6.8`。That’s more like it！。runtime field作为查询请求的一部分进行域值计算，而不修改索引值，索引值仍然在响应中返回：
 
 ```text
 {
@@ -12307,7 +12307,7 @@ POST my-index-000001/_analyze
 - By text field, index, or query
 - [Index and search analysis](#Index and search analysis)
 
-> TIP: Keep it simply
+> TIP: Keep it simple
 > 在不同的level（filed-level，index-level）和不同的时间点（索引或查询期间）能够灵活的指定分词器is good，但只有必要时才这么做。
 > 
 > 大多数情况下，简单的方式可以work well：为每一个`text`域指定分词器。见[Specify the analyzer for a field](#Specify the analyzer for a field)。
