@@ -16163,7 +16163,7 @@ GET /my-index-000001/_doc/my_id
 #### Drop processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/drop-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;丢弃文档并且不会抛出任何的错误。如果基于某些条件不索引某些文档时，这个processor就非常有用。
 
 #### Enrich processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-processor.html)
@@ -16185,22 +16185,25 @@ GET /my-index-000001/_doc/my_id
 - on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
 - tag：（Optional）processor的标识符。对debugging或作为指标有用
 
-#### GeoIP processor
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-processor.html)
-
-#### Grok processor
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/grok-processor.html)
-
 
 #### Fail processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/fail-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;抛出一个异常，当你预期某个pipeline会失败并且将指定的消息回复给请求方。
 
 #### Fingerprint processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/fingerprint-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;计算文档的hash值，你可以使用这个hash值用于[content fingerprinting](https://en.wikipedia.org/wiki/Fingerprint_(computing))。
+
+#### Foreach processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/foreach-processor.html)
+
+&emsp;&emsp;对数组或者对象中的每一个元素运行ingest processor。
+
+&emsp;&emsp;所有的ingest processor可以运行在数组或对象的院上。然而如果元素的数量未知，用相同的方法逐一处理它们可能会变得繁琐。
+
+&emsp;&emsp;`foreach` processor可以让你指定一个包含数组或者对象的域，以及一个`processor`运行在域中的每一个元素上。
 
 #### GeoIP processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-processor.html)
@@ -16215,37 +16218,49 @@ GET /my-index-000001/_doc/my_id
 #### Gsub processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/gsub-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;对一个string类型的域根据一个正则表达式以及替换值进行转化。如果该域是数组类型，则数组中所有的元素会被转化。如果遇到了non-string的域，则抛出一个异常。
 
 #### HTML strip processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/htmlstrip-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;移除域中的HTML标签。如果该域是数组类型的，将移除数组中所有元素的HTML tags。
 
 #### Inference processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/inference-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;在Pipeline中被提取的数据上使用预训练的数据框架分析模型或为自然语言处理任务部署的模型进行推断。
 
 #### Join processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/join-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将数组中每一个元素通过分隔符组成单个字符串。如果该域不是数组类型则会抛出异常。
 
 #### JSON processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/json-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将一个JSON字符串转化为一个JSON对象。
 
 #### KV processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/kv-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;这个processor用于自动解析`foo-bar`这类日志（或者特定时间类型）类型。
+
+&emsp;&emsp;例如，如果log message中包含`ip=1.2.3.4 error=REFUSED`，你可以通过以下配置自动解析出这些域：
+
+```text
+{
+  "kv": {
+    "field": "message",
+    "field_split": " ",
+    "value_split": "="
+  }
+}
+```
 
 #### Lowercase processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/network-direction-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将字符串转化为小写。如果该域是数组类型，则数组中所有的元素会被转化。
 
 #### Network direction processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/lowercase-processor.html)
@@ -16255,7 +16270,7 @@ GET /my-index-000001/_doc/my_id
 #### Pipeline processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/pipeline-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;执行另一个pipeline（在pipeline中使用其他pipeline）。
 
 #### Registered domain processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/registered-domain-processor.html)
@@ -16265,12 +16280,12 @@ GET /my-index-000001/_doc/my_id
 #### Remove processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/remove-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;移除现有的域。如果待移除的域不存在，则抛出一个异常。
 
 #### Rename processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rename-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;重命名一个现有的域。如果该域不存在或者新的名字已被使用，则抛出一个异常。
 
 #### Script processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-processor.html)
@@ -16547,32 +16562,35 @@ POST _ingest/pipeline/set_bar/_simulate
 #### Sort processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;对数组中的元素进行升序或降序排序。数字的同类（Homogeneous）数组将按数字顺序排序，而字符串数组或字符串+数字的异类（heterogeneous）数组将按字典顺序排序。当字段不是数组时抛出错误。
 
 #### Split processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/split-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;使用一个分隔符对域值进行分割，写入到一个数组中。只能对string类型的域处理。
 
 #### Trim processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/trim-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;移除域值首尾的空格。。。。。如果是数值类型的域，则数组中的所有元素都会被处理
 
 #### Uppercase processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/uppercase-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将字符串转化为大写。如果该域是数组类型，则数组的元素都会被处理。
 
 #### URL decode processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/urldecode-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将编码后的URL解码为字符串。如果该域是数组类型，则数组的元素都会被处理。
+
+- 例如，如果一个字段的值被编码为 "Hello%20World"，使用URL解码处理器后，该值会被转换为 "Hello World"。
 
 #### URI parts processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/uri-parts-processor.html)
 
-&emsp;&emsp;
+&emsp;&emsp;URI部分处理器用于解析统一资源标识符（URI）字符串，并将其组成部分提取为一个对象。这个URI对象包含了URI的多个属性，如域（domain）、路径（path）、片段（fragment）、端口（port）、查询参数（query）、方案（scheme）、用户信息（user info）、用户名（username）和密码（password）。
+
 
 #### User agent processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/user-agent-processor.html)
