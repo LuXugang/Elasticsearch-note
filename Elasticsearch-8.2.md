@@ -15886,15 +15886,107 @@ GET /my-index-000001/_doc/my_id
 ### Ingest processor reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/processors.html)
 
+#### Append processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/append-processor.html)
+
+&emsp;&emsp;如果待追加的域存在，并且是域值是数组类型，那么追加一个或多个值到现有的数组中。如果待追加的域存在，并且域值是标量（scalar）类型，那么将其转化为数组类型，然后追加到数组中。如果待追加的域不存在，那么创建一个数组类型的域值并且追加到这个数组中。可以追加单个值或者数组。
+
+#### Bytes processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/append-processor.html)
+
+&emsp;&emsp;将易于理解（human readable）的字节值（比如 1kb）转化为其字节值（比如  1024）。如果字段是string数组，那么数组中所有元素都会被转化。
+
+&emsp;&emsp;支持的易于理解的单位有`b`、`kb`、`mb`、`gb`、`tb`、`pb`。不区分大小写。如果有不支持的格式或者转化后的值超过2^63则会发生错误。
+
+#### Circle processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-circle-processor.html)
+
+&emsp;&emsp;将圆形定义转化为近似的正多边形。
+
+#### Community ID processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/community-id-processor.html)
+
+&emsp;&emsp;根据社区ID（[Community ID Specification](https://github.com/corelight/community-id-spec)）规范计算网络流数据的社区ID。您可以使用社区ID来关联与单个流相关的网络事件。
+
+&emsp;&emsp;社区ID处理器默认从相关的[Elastic Common Schema（ECS）](https://www.elastic.co/guide/en/ecs/8.2/index.html)字段读取网络流数据。如果您使用ECS，则无需配置。
+
+#### Convert processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/convert-processor.html)
+
+&emsp;&emsp;将当前被提取的文档中的域转化为不同的类型。比如将string转化为Integer。如果域值是个数组，那么所有数组元素都被转化。
+
+&emsp;&emsp;支持的类型有：`integer`, `long`, `float`, `double`, `string`, `boolean`, `ip`以及`auto`。
+
+&emsp;&emsp;转化为`boolean`时，如果字符串的值为`true`（不区分大小）则转化为true，如果是`false`则转化为false。如果是其他值则抛出异常。
+
+&emsp;&emsp;如果包含了一个有效的IPv4或者IPv6地址可以转化为`ip`类型，并且使用[IP](#IP field type)的mapping类型进行索引。
+
+&emsp;&emsp;如果使用了`auto`，那么会将字符串类型的域值转化为最接近的non-string、non-IP类型。比如，域值为`true`时会转化为`boolean`类型。注意的转化为float的优先级高于double。比如`242.15`会自动转化为float类型。如果无法正确的自动转化，这个processor仍然算作处理成功并且域值保持原样。这样，`target_field`将被更新为转化前的值。
+
+#### CSV processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/csv-processor.html)
+
+&emsp;&emsp;从文档中的单个文本字段提取CSV行的字段。CSV中的任何空字段都将被跳过。
+
 #### Date processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-processor.html)
 
+&emsp;&emsp;解析域中的日期。然后使用日期或者时间戳作为文档的timestamp。默认情况下，`date processor`将解析出的日期作为一个名为`@timestamp`的新域。你可以通过`target_field`指定一个不同的域名。可以在同一个date processor中定义多个format。它们将在处理过程中按照定义中的顺序依次用于尝试解析日期。
 
 #### Date index name processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-index-name-processor.html)
 
+&emsp;&emsp;这个processor的目的是使用[date math index name support.](#Date math support in system and index alias names-1)，基于文档中日期或者时间字段，将文档指向正确的基于时间的索引。
+
+&emsp;&emsp;processor根据提供的索引名称前缀、正在处理的文档中的日期或时间戳字段以及提供的日期舍入，设置带有日期数学索引名称表达式的`_index`元数据字段。
+
+&emsp;&emsp;首先processor获取处理中的文档中的日期或者时间戳字段的信息。然后（可选）将字段中的值根据format进行解析。然后，将此日期、提供的索引名称前缀和提供的日期舍入格式化为一个日期数学索引名称表达式（date math index name expression）。此处也可以可选地指定日期格式化，以指定日期应如何格式化为日期数学索引名称表达式。
+
 #### Dissect processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dissect-processor.html)
+
+&emsp;&emsp;跟[Grok processor](#Grok processor)类型，`dissect`同样从文档中单个文本域中提取出结构化的域。跟[Grok processor](#Grok processor)不同的是，它不使用[Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression)。这使得dissect的语法更简单并且有些情况下性能快于[Grok processor](#Grok processor)。
+
+&emsp;&emsp;Dissect根据定义的模式去匹配某个单文本的域。
+
+&emsp;&emsp;比如有下面的模式：
+
+```text
+%{clientip} %{ident} %{auth} [%{@timestamp}] \"%{verb} %{request} HTTP/%{httpversion}\" %{status} %{size}
+```
+
+&emsp;&emsp;将会匹配下面的一行日志：
+
+```text
+1.2.3.4 - - [30/Apr/1998:22:00:52 +0000] \"GET /english/venues/cities/images/montpellier/18.gif HTTP/1.0\" 200 3171
+```
+
+&emsp;&emsp;将会生成下面的域：
+
+```text
+"doc": {
+  "_index": "_index",
+  "_type": "_type",
+  "_id": "_id",
+  "_source": {
+    "request": "/english/venues/cities/images/montpellier/18.gif",
+    "auth": "-",
+    "ident": "-",
+    "verb": "GET",
+    "@timestamp": "30/Apr/1998:22:00:52 +0000",
+    "size": "3171",
+    "clientip": "1.2.3.4",
+    "httpversion": "1.0",
+    "status": "200"
+  }
+}
+```
+
+&emsp;&emsp;dissect pattern由字符串中部分被丢弃的值定义，比如上面的例子中，第一个被丢弃的部分就是单个空格。Dissect会从头开始找到这个空格，然后将这个空前的所有值设置为`clientio`。后面dissect又匹配了`[`以及`]`，然后将`[`跟`]`中所有的值设置为`@timestamp`。特别注意要丢弃的字符串部分将帮助构建成功的解析模式。
+
+&emsp;&emsp;成功的匹配要求模式中的所有key都必须有一个value。如果模式中定义的任何`%{keyname}`没有值，则会抛出异常，并且可能通过[on_failure](#Handling pipeline failures)指令进行处理。可以使用空键`%{}`或[named skip key ](#Named skip key (?))匹配值，但从最终文档中排除该值。所有匹配的值都表示为字符串数据类型。可以使用[convert processor](#Convert processor)将其转换为预期的数据类型。
+
+&emsp;&emsp;Dissect还支持可以改变dissect默认行为的[key modifiers](#Dissect key modifiers)。例如，你可以指示dissect忽略某些字段、追加字段、跳过填充等。更多信息请见下文
 
 #### Dot expander processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dot-expand-processor.html)
@@ -16068,6 +16160,11 @@ GET /my-index-000001/_doc/my_id
 
 &emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个标量字段（scalar field）的域转化为一个对象域。
 
+#### Drop processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/drop-processor.html)
+
+&emsp;&emsp;
+
 #### Enrich processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enrich-processor.html)
 
@@ -16094,8 +16191,218 @@ GET /my-index-000001/_doc/my_id
 #### Grok processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/grok-processor.html)
 
+
+#### Fail processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/fail-processor.html)
+
+&emsp;&emsp;
+
+#### Fingerprint processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/fingerprint-processor.html)
+
+&emsp;&emsp;
+
+#### GeoIP processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-processor.html)
+
+&emsp;&emsp;
+
+#### Grok processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/grok-processor.html)
+
+&emsp;&emsp;
+
+#### Gsub processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/gsub-processor.html)
+
+&emsp;&emsp;
+
+#### HTML strip processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/htmlstrip-processor.html)
+
+&emsp;&emsp;
+
+#### Inference processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/inference-processor.html)
+
+&emsp;&emsp;
+
+#### Join processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/join-processor.html)
+
+&emsp;&emsp;
+
+#### JSON processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/json-processor.html)
+
+&emsp;&emsp;
+
+#### KV processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/kv-processor.html)
+
+&emsp;&emsp;
+
 #### Lowercase processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/network-direction-processor.html)
+
+&emsp;&emsp;
+
+#### Network direction processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/lowercase-processor.html)
+
+&emsp;&emsp;
+
+#### Pipeline processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/pipeline-processor.html)
+
+&emsp;&emsp;
+
+#### Registered domain processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/registered-domain-processor.html)
+
+&emsp;&emsp;
+
+#### Remove processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/remove-processor.html)
+
+&emsp;&emsp;
+
+#### Rename processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rename-processor.html)
+
+&emsp;&emsp;
+
+#### Script processor
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-processor.html)
+
+&emsp;&emsp;在incoming document上运行脚本，可以是内联脚本，也可以是存储的脚本（[stored script](#Stored script APIs)）。脚本运行在[ingest](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-ingest-processor-context.html)的上下文中。
+
+&emsp;&emsp;该processor使用[script cache](#Scripts, caching, and search speed)来避免处理每一个文档时重复编译脚本内容。若要提高性能，确保在生产中在使用script processor时，script cache有一个合适的大小。
+
+##### Table 35. Script options
+
+- lang：（Optional）（默认值：Painless）[脚本语言](#Scripting)
+- id：（Optional）存储的脚本的ID。如果未指定`source`，那这个参数必须指定
+- source：（Optional），内联脚本，如果`id`未指定，那这个参数必须指定
+- params：（Optional）脚本使用的参数
+- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
+- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
+- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
+- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
+- tag：（Optional）processor的标识符。对debugging或作为指标有用
+
+##### Access source fields
+
+&emsp;&emsp;script processor将每一篇JSON格式的文档解析为map集合,列表，原始类型（primitives）。若要使用Painless 脚本访问这些域，使用[map access operator](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-operators-reference.html#map-access-operator)：`ctx['my-field']`。你也可以使用简化的`ctx.<my-field>`语法。
+
+> NOTE：script processor不支持`ctx['_source']['my-field']`或`ctx._source.<my-field>`语法
+
+&emsp;&emsp;下面的processor使用了Painless脚本从`evf`域中提取出`tags`域。
+
+```text
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "script": {
+          "description": "Extract 'tags' from 'env' field",
+          "lang": "painless",
+          "source": """
+            String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
+            ArrayList tags = new ArrayList();
+            tags.add(envSplit[params['position']].trim());
+            ctx['tags'] = tags;
+          """,
+          "params": {
+            "delimiter": "-",
+            "position": 1
+          }
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_source": {
+        "env": "es01-prod"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;这个processor会生成：
+
+```text
+{
+  "docs": [
+    {
+      "doc": {
+        ...
+        "_source": {
+          "env": "es01-prod",
+          "tags": [
+            "prod"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+##### Access metadata fields
+
+&emsp;&emsp;你也可以使用这个processor访问元数据域（[metadata field](#Metadata fields)），下面的processor使用Painless脚本设置了incoming document的`_index`的值。
+
+```text
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "script": {
+          "description": "Set index based on `lang` field and `dataset` param",
+          "lang": "painless",
+          "source": """
+            ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
+          """,
+          "params": {
+            "dataset": "catalog"
+          }
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_index": "generic-index",
+      "_source": {
+        "lang": "fr"
+      }
+    }
+  ]
+}
+```
+
+&emsp;&emsp;processor将文档的`_index`域从`generic-index`修改为`fr-catalog`。
+
+```text
+{
+  "docs": [
+    {
+      "doc": {
+        ...
+        "_index": "fr-catalog",
+        "_source": {
+          "lang": "fr"
+        }
+      }
+    }
+  ]
+}
+```
 
 #### Set processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-processor.html)
@@ -16231,141 +16538,46 @@ POST _ingest/pipeline/set_bar/_simulate
 }
 ```
 
-#### Script processor
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-processor.html)
 
-&emsp;&emsp;在incoming document上运行脚本，可以是内联脚本，也可以是存储的脚本（[stored script](#Stored script APIs)）。脚本运行在[ingest](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-ingest-processor-context.html)的上下文中。
+#### Set security user processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/ingest-node-set-security-user-processor.html)
 
-&emsp;&emsp;该processor使用[script cache](#Scripts, caching, and search speed)来避免处理每一个文档时重复编译脚本内容。若要提高性能，确保在生产中在使用script processor时，script cache有一个合适的大小。
+&emsp;&emsp;
 
-##### Table 35. Script options
+#### Sort processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-processor.html)
 
-- lang：（Optional）（默认值：Painless）[脚本语言](#Scripting)
-- id：（Optional）存储的脚本的ID。如果未指定`source`，那这个参数必须指定
-- source：（Optional），内联脚本，如果`id`未指定，那这个参数必须指定
-- params：（Optional）脚本使用的参数
-- description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
-- if：（Optional）有条件的运行processor。见[Conditionally run a processor](#Conditionally run a processor)
-- ignore_failure：（Optional）（默认值：false）忽略processor的报错。见[Handling pipeline failures](#Handling pipeline failures)
-- on_failure：（Optional）处理processor的报错。[Handling pipeline failures](#Handling pipeline failures)
-- tag：（Optional）processor的标识符。对debugging或作为指标有用
+&emsp;&emsp;
 
-##### Access source fields
+#### Split processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/split-processor.html)
 
-&emsp;&emsp;script processor将每一篇JSON格式的文档解析为map集合,列表，原始类型（primitives）。若要使用Painless 脚本访问这些域，使用[map access operator](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-operators-reference.html#map-access-operator)：`ctx['my-field']`。你也可以使用简化的`ctx.<my-field>`语法。
+&emsp;&emsp;
 
-> NOTE：script processor不支持`ctx['_source']['my-field']`或`ctx._source.<my-field>`语法
+#### Trim processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/trim-processor.html)
 
-&emsp;&emsp;下面的processor使用了Painless脚本从`evf`域中提取出`tags`域。
+&emsp;&emsp;
 
-```text
-POST _ingest/pipeline/_simulate
-{
-  "pipeline": {
-    "processors": [
-      {
-        "script": {
-          "description": "Extract 'tags' from 'env' field",
-          "lang": "painless",
-          "source": """
-            String[] envSplit = ctx['env'].splitOnToken(params['delimiter']);
-            ArrayList tags = new ArrayList();
-            tags.add(envSplit[params['position']].trim());
-            ctx['tags'] = tags;
-          """,
-          "params": {
-            "delimiter": "-",
-            "position": 1
-          }
-        }
-      }
-    ]
-  },
-  "docs": [
-    {
-      "_source": {
-        "env": "es01-prod"
-      }
-    }
-  ]
-}
-```
+#### Uppercase processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/uppercase-processor.html)
 
-&emsp;&emsp;这个processor会生成：
+&emsp;&emsp;
 
-```text
-{
-  "docs": [
-    {
-      "doc": {
-        ...
-        "_source": {
-          "env": "es01-prod",
-          "tags": [
-            "prod"
-          ]
-        }
-      }
-    }
-  ]
-}
-```
+#### URL decode processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/urldecode-processor.html)
 
-##### Access metadata fields
+&emsp;&emsp;
 
-&emsp;&emsp;你也可以使用这个processor访问元数据域（[metadata field](#Metadata fields)），下面的processor使用Painless脚本设置了incoming document的`_index`的值。
+#### URI parts processor
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/uri-parts-processor.html)
 
-```text
-POST _ingest/pipeline/_simulate
-{
-  "pipeline": {
-    "processors": [
-      {
-        "script": {
-          "description": "Set index based on `lang` field and `dataset` param",
-          "lang": "painless",
-          "source": """
-            ctx['_index'] = ctx['lang'] + '-' + params['dataset'];
-          """,
-          "params": {
-            "dataset": "catalog"
-          }
-        }
-      }
-    ]
-  },
-  "docs": [
-    {
-      "_index": "generic-index",
-      "_source": {
-        "lang": "fr"
-      }
-    }
-  ]
-}
-```
-
-&emsp;&emsp;processor将文档的`_index`域从`generic-index`修改为`fr-catalog`。
-
-```text
-{
-  "docs": [
-    {
-      "doc": {
-        ...
-        "_index": "fr-catalog",
-        "_source": {
-          "lang": "fr"
-        }
-      }
-    }
-  ]
-}
-```
+&emsp;&emsp;
 
 #### User agent processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/user-agent-processor.html)
 
+&emsp;&emsp;
 
 ## Aliases
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/aliases.html#write-index)
