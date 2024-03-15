@@ -13052,7 +13052,9 @@ PUT /apostrophe_example
 #### ASCII folding token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-asciifolding-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;ASCII folding token filter将不在Basic Latin Unicode block（基本拉丁字母Unicode块）（前127个ASCII字符）中的字母、数字和符号字符转换为它们的等价的ASCII（如果存在的话）。例如，这个过滤器会将`à`转换为`a`。
+
+&emsp;&emsp;这个filter使用的是Lucene中的[ASCIIFoldingFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/miscellaneous/ASCIIFoldingFilter.html)。
 
 #### CJK bigram token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-cjk-bigram-tokenfilter.html)
@@ -13067,8 +13069,6 @@ PUT /apostrophe_example
 #### Classic token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-classic-tokenfilter.html)
 
-&emsp;&emsp;
-
 #### Common grams token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-common-grams-tokenfilter.html#analysis-common-grams-tokenfilter)
 
@@ -13077,7 +13077,9 @@ PUT /apostrophe_example
 #### Conditional token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-condition-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;定义token filter集合，应用到满足脚本中条件的token上。
+
+&emsp;&emsp;这个filter使用的是Lucene中的[ConditionalTokenFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/miscellaneous/ConditionalTokenFilter.html)。
 
 #### Decimal digit token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-decimal-digit-tokenfilter.html)
@@ -13104,6 +13106,17 @@ PUT /apostrophe_example
 
 &emsp;&emsp;
 
+#### Fingerprint token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-fingerprint-tokenfilter.html)
+
+&emsp;&emsp;对一个token stream进行排序和去重，让将这个stream中的token进行拼接，最后作为单个token输出。
+
+&emsp;&emsp;例如，这个filter会对`[ the, fox, was, very, very, quick ]`这个token stream进行如下更改：
+
+1. 根据字母排序：`[ fox, quick, the, very, very, was ]`
+2. 移除重复的`very` 这个token
+3. 将这个token stream拼接成单个token：`[fox quick the very was ]`
+
 #### Flatten graph token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-flatten-graph-tokenfilter.html)
 
@@ -13122,12 +13135,12 @@ PUT /apostrophe_example
 #### Keep types token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keep-types-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;保留或移除指定的类型。比如你可以使用这个filter通过只保留`<ALPHANUM>`将`3 quick foxes`修改为`quick foxes`。
 
 #### Keep words token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keep-words-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;指定一个word list，只保留在这个列表中的word。
 
 #### Keyword marker token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-marker-tokenfilter.html)
@@ -13147,12 +13160,14 @@ PUT /apostrophe_example
 #### Length token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-length-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;指定token中字符数量的min跟max，小于min或者大于max的token会被移除。比如你可以使用这个filter过滤掉小于2个字符以及大于5个字符的token。
 
 #### Limit token count token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-limit-token-count-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;限制输出的token数量。这个filter通常用于根据token的数量来限制文档域值的大小。
+
+&emsp;&emsp;默认情况下，这个filter只保留token stream中的第一个token。比如，这个filter可以将`[ one, two, three ]`这个token filter改为`[ one ]`。
 
 #### Lowercase token filter
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lowercase-tokenfilter.html)
@@ -13284,17 +13299,59 @@ PUT custom_lowercase_example
 #### Predicate script token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-predicatefilter-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;移除不满足脚本条件的token。这个filter只支持内联的[Painless](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/index.html)脚本。脚本在[analysis predicate context](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-analysis-predicate-context.html)中计算。
 
 #### Remove duplicates token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-remove-duplicates-tokenfilter.html)
 
-&emsp;&emsp;
-
 #### Reverse token filter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-reverse-tokenfilter.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-reverse-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将stream中的每一个token进行颠倒（反转）。比如，你可以使用这个filter将`cat`改成`tac`。
+
+&emsp;&emsp;基于后缀查询，比如找到以`-ion`为后缀的词或者根据扩展名查询的场景使用这个filter就非常有用。
+
+&emsp;&emsp;这个filter使用了Lucene中的[ReverseStringFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/reverse/ReverseStringFilter.html)。
+
+##### Example
+
+&emsp;&emsp;下面的[analyze API](#Analyze API)请求中使用了`reverse` filter将`quick for jumps`中的每一个token进行了颠倒：
+
+```text
+GET _analyze
+{
+  "tokenizer" : "standard",
+  "filter" : ["reverse"],
+  "text" : "quick fox jumps"
+}
+```
+
+&emsp;&emsp;下面的filter生成了以下的token：
+
+```text
+[ kciuq, xof, spmuj ]
+```
+
+#####  Add to an analyzer
+
+&emsp;&emsp;下面的[create index API](#Create index API)请求使用了这个filter来配置一个全新的[custom analyzer](#Create a custom analyzer)。
+
+```text
+PUT reverse_example
+{
+  "settings" : {
+    "analysis" : {
+      "analyzer" : {
+        "whitespace_reverse" : {
+          "tokenizer" : "whitespace",
+          "filter" : ["reverse"]
+        }
+      }
+    }
+  }
+}
+```
+
 
 #### Shingle token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-shingle-tokenfilter.html)
@@ -13587,19 +13644,137 @@ PUT /test_index
 &emsp;&emsp;
 
 #### Truncate token filter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-truncate-tokenfilter.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-truncate-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;对超过字符数量限制的token进行截断。这个限制值默认是`10`，可以通过参数`length`参数配置。
+
+&emsp;&emsp;例如，你可以使用这个filter将所有的token中的字符数量限制到3或者更少的值。`jumping fox`修改为`jum fox`。
+
+&emsp;&emsp;这个filter使用的是Lucene中的[TruncateTokenFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/miscellaneous/TruncateTokenFilter.html)。
+
+#### Example
+
+&emsp;&emsp;下面的[analyze API](#Analyze API)请求使用这个filter将`he quinquennial extravaganza carried on`中超过10个字符的token进行了截断：
+
+```text
+GET _analyze
+{
+  "tokenizer" : "whitespace",
+  "filter" : ["truncate"],
+  "text" : "the quinquennial extravaganza carried on"
+}
+```
+
+&emsp;&emsp;下面的filter生成以下的tokens：
+
+```text
+[ the, quinquenni, extravagan, carried, on ]
+```
+
+##### Add to analyzer
+
+&emsp;&emsp;下面的[create index API](#Create index API)请求使用这个filter用来配置一个全新的[custom analyzer](#Create a custom analyzer)。
+
+```text
+PUT custom_truncate_example
+{
+  "settings" : {
+    "analysis" : {
+      "analyzer" : {
+        "standard_truncate" : {
+        "tokenizer" : "standard",
+        "filter" : ["truncate"]
+        }
+      }
+    }
+  }
+}
+```
+
+##### Configurable parameters
+
+- length：（Optional, integer）每一个token包含的字符数量限制。超过这个值会被截断。默认为`10`
+
+##### Customize
+
+&emsp;&emsp;要自定义这个filter，需要创建一个新的custom token filter所需要的基本要素。你可以使用可配置的参数来更改filter。
+
+&emsp;&emsp;例如，下面的请求创建了一个名为`5_char_trunc`的`truncate` filter，会将token中的字符限制到5个或者5个以下。
+
+```text
+PUT 5_char_words_example
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "lowercase_5_char": {
+          "tokenizer": "lowercase",
+          "filter": [ "5_char_trunc" ]
+        }
+      },
+      "filter": {
+        "5_char_trunc": {
+          "type": "truncate",
+          "length": 5
+        }
+      }
+    }
+  }
+}
+```
 
 #### Unique token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-unique-tokenfilter.html)
 
-&emsp;&emsp;
 
 #### Uppercase token filter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uppercase-tokenfilter.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uppercase-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;将token转化为大写。比如你可以使用这个filter将`the Lazy DoG`修改为`THE LAZY DOG`。
+
+&emsp;&emsp;这个filter使用的是Lucene中的[UpperCaseFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/core/UpperCaseFilter.html)。
+
+> WARNING：某些语言中大写字符能映射多个小写字符。因此使用这个filter可能导致失去小写字符的信息。
+> 若要避免这种损失但仍保持一致的字母大小写，可以改用[lowercase](#Lowercase token filter) filter。
+
+##### Example
+
+&emsp;&emsp;下面的[analyze API](#Analyze API)请求使用这个filter将`the Quick FoX JUMPs`修改为大写。
+
+```text
+GET _analyze
+{
+  "tokenizer" : "standard",
+  "filter" : ["uppercase"],
+  "text" : "the Quick FoX JUMPs"
+}
+```
+
+&emsp;&emsp;这个filter生成以下的tokens：
+
+```text
+[ THE, QUICK, FOX, JUMPS ]
+```
+
+##### Add to an analyzer
+
+&emsp;&emsp;下面的[create index API](#Create index API)请求使用这个filter来配置一个全新的[customer analyzer](#Create a custom analyzer)。
+
+```text
+PUT uppercase_example
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "whitespace_uppercase": {
+          "tokenizer": "whitespace",
+          "filter": [ "uppercase" ]
+        }
+      }
+    }
+  }
+}
+```
 
 #### Word delimiter token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-word-delimiter-graph-tokenfilter.html)
