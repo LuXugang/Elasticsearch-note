@@ -13395,7 +13395,92 @@ PUT /test_index
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-charfilters.html)
 
 #### HTML strip character filter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-htmlstrip-charfilter.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-htmlstrip-charfilter.html)
+
+&emsp;&emsp;将HTML元素从文本中移除并且将HTML实体替换成解码后的值（比如`&amp;`替换为`&`）。
+
+&emsp;&emsp;`html_strip` filter使用的是Lucene中的[HTMLStripCharFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/charfilter/HTMLStripCharFilter.html)。
+
+##### Example
+
+&emsp;&emsp;下面的[analyzer API](#Analyze API)使用`html_strip` filter 将文本`<p>I&apos;m so <b>happy</b>!</p>` 修改为`\nI'm so happy!\n`。
+
+```text
+GET /_analyze
+{
+  "tokenizer": "keyword",
+  "char_filter": [
+    "html_strip"
+  ],
+  "text": "<p>I&apos;m so <b>happy</b>!</p>"
+}
+```
+
+&emsp;&emsp;这个filter生成下面的文本：
+
+```text
+[ \nI'm so happy!\n ]
+```
+
+##### Add to an analyzer
+
+&emsp;&emsp;下面的[create index API](#Create index API)请求使用`html_strip` filter来配置一个全新的[custom analyzer](#Create a custom analyzer)。
+
+```text
+PUT /my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "html_strip"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+##### Configurable parameters
+
+- escaped_tags：（Optional，array of strings）没有尖括号（`< >`）修饰的HTML元素列表。这个filter从文本中移除HTML元素的过程中会跳过这些。比如说配置了`["p"]`则会跳过`<p>`这个HTML元素
+
+##### Customize
+
+&emsp;&emsp;若要自定义`html_strip` filter，则将其作为一个全新自定义的filter的组成部分，你可以使用可配置的参数来修改filter。
+
+&emsp;&emsp;下面的[create index API](#Create index API)使用了一个名为`my_custom_html_strip_char_filter`的自定义`html_strip` filter，并且配置到[custom analyzer ](#Create a custom analyzer)中。
+
+&emsp;&emsp;`my_custom_html_strip_char_filter`跳过了`<b>`这个HTML 元素。
+
+```text
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "my_custom_html_strip_char_filter"
+          ]
+        }
+      },
+      "char_filter": {
+        "my_custom_html_strip_char_filter": {
+          "type": "html_strip",
+          "escaped_tags": [
+            "b"
+          ]
+        }
+      }
+    }
+  }
+}
+```
 
 #### Mapping character filter
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-mapping-charfilter.html)
@@ -13500,6 +13585,9 @@ GET /my-index-000001/_analyze
 ```text
 [ I'm delighted about it _sad_ ]
 ```
+
+#### Pattern replace character filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-replace-charfilter.html)
 
 
 ### Normalizers
