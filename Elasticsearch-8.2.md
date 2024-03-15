@@ -13003,21 +13003,116 @@ POST my-index-000001/_analyze
 ### Token filter reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-tokenfilters.html)
 
+#### Apostrophe token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-apostrophe-tokenfilter.html)
+
+&emsp;&emsp;
+
+
 #### ASCII folding token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-asciifolding-tokenfilter.html)
 
+&emsp;&emsp;
+
+#### CJK bigram token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-cjk-bigram-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### CJK width token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-cjk-width-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Classic token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-classic-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Common grams token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-common-grams-tokenfilter.html#analysis-common-grams-tokenfilter)
+
+&emsp;&emsp;
 
 #### Conditional token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-condition-tokenfilter.html)
 
+&emsp;&emsp;
+
+#### Decimal digit token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-decimal-digit-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Delimited payload token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-delimited-payload-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Dictionary decompounder token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-dict-decomp-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Edge n-gram token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-edgengram-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Elision token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-elision-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Flatten graph token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-flatten-graph-tokenfilter.html)
+
+&emsp;&emsp;
+
 #### Hunspell token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-hunspell-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Hyphenation decompounder token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-hyp-decomp-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Keep types token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keep-types-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Keep words token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keep-words-tokenfilter.html)
+
+&emsp;&emsp;
 
 #### Keyword marker token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-marker-tokenfilter.html)
 
+&emsp;&emsp;
+
+#### Keyword repeat token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-repeat-tokenfilter.html)
+
+&emsp;&emsp;
+
 #### KStem token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-kstem-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Length token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-length-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Limit token count token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-limit-token-count-tokenfilter.html)
+
+&emsp;&emsp;
 
 #### Lowercase token filter
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lowercase-tokenfilter.html)
@@ -13106,11 +13201,65 @@ PUT custom_lowercase_example
 }
 ```
 
+#### MinHash token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-minhash-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Multiplexer token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-multiplexer-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### N-gram token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-ngram-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Normalization token filters
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-normalization-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Pattern capture token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-capture-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Pattern replace token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern_replace-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Phonetic token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-phonetic-tokenfilter.html)
+
+&emsp;&emsp;
+
 #### Porter stem token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-porterstem-tokenfilter.html)
 
+&emsp;&emsp;
+
+#### Predicate script token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-predicatefilter-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Remove duplicates token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-remove-duplicates-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Reverse token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-reverse-tokenfilter.html)
+
+&emsp;&emsp;
+
 #### Shingle token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-shingle-tokenfilter.html)
+
+&emsp;&emsp;
 
 #### Snowball token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-snowball-tokenfilter.html)
@@ -13382,14 +13531,45 @@ PUT /test_index
 
 &emsp;&emsp;（未完成）
 
+#### Synonym token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-synonym-tokenfilter.html)
+
+&emsp;&emsp;
+
 #### Synonym graph token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-synonym-graph-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Trim token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-trim-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Truncate token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-truncate-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Unique token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-unique-tokenfilter.html)
+
+&emsp;&emsp;
+
+#### Uppercase token filter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uppercase-tokenfilter.html)
+
+&emsp;&emsp;
 
 #### Word delimiter token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-word-delimiter-graph-tokenfilter.html)
 
+&emsp;&emsp;
+
 #### Word delimiter graph token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-word-delimiter-graph-tokenfilter.html)
+
+&emsp;&emsp;
 
 ### Character filters reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-charfilters.html)
@@ -13589,6 +13769,7 @@ GET /my-index-000001/_analyze
 #### Pattern replace character filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-replace-charfilter.html)
 
+&emsp;&emsp;
 
 ### Normalizers
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-normalizers.html)
