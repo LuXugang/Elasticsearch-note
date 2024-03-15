@@ -1,4 +1,4 @@
-# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/06）
+# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/15）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -13004,10 +13004,50 @@ POST my-index-000001/_analyze
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-tokenfilters.html)
 
 #### Apostrophe token filter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-apostrophe-tokenfilter.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-apostrophe-tokenfilter.html)
 
-&emsp;&emsp;
+&emsp;&emsp;移除撇号后所有的字符，包括撇号自身。
 
+&emsp;&emsp;这个filter被包含在Elasticsearch内置的[Turkish language analyzer](#turkish analyzer)。它使用的是Lucene中的[ApostropheFilter](https://lucene.apache.org/core/9_1_0/analysis/common/org/apache/lucene/analysis/tr/ApostropheFilter.html)，为Turkish语言构建的。
+
+##### Example
+
+&emsp;&emsp;下面的[analyze API](#Analyze API)请求中展示了apostrophe token filter是如何工作的。
+
+```text
+GET /_analyze
+{
+  "tokenizer" : "standard",
+  "filter" : ["apostrophe"],
+  "text" : "Istanbul'a veya Istanbul'dan"
+}
+```
+
+&emsp;&emsp;这个filter生成下面的tokens：
+
+```text
+[ Istanbul, veya, Istanbul ]
+```
+
+##### Add to an analyzer
+
+&emsp;&emsp;下面的[create index API](#Create index API)请求中使用这个filter来配置一个全新的[custom analyzer](#Create a custom analyzer)。
+
+```text
+PUT /apostrophe_example
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "standard_apostrophe": {
+          "tokenizer": "standard",
+          "filter": [ "apostrophe" ]
+        }
+      }
+    }
+  }
+}
+```
 
 #### ASCII folding token filter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-asciifolding-tokenfilter.html)
