@@ -12621,7 +12621,57 @@ PUT /keyword_example
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-analyzer.html)
 
 #### Simple analyzer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simple-analyzer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simple-analyzer.html)
+
+&emsp;&emsp;`simple`分词器根据任意非字母（non-letter）的字符对文本进行划分。比如数字、空格、连字符和撇号，丢弃非字母字符，并将大写字母转换为小写字母。
+
+##### Example
+
+```text
+POST _analyze
+{
+  "analyzer": "simple",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;`simple`分词器解析上面的句子并且生成下面的token：
+
+```text
+[ the, quick, brown, foxes, jumped, over, the, lazy, dog, s, bone ]
+```
+
+##### Definition
+
+&emsp;&emsp;`simple`分词器包含以下内容：
+
+##### Tokenizer：
+
+- [Lowercase Tokenizer](#Lowercase tokenizer)
+
+##### Customize
+
+&emsp;&emsp;如果你需要自定义`simple`分词器，你可以重新创建一个名为`custom`分词器然后修改它，通常添加token filter：
+
+```text
+PUT /my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_custom_simple_analyzer": {
+          "tokenizer": "lowercase",
+          "filter": [                          
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，在这里添加token filter。
+
 
 #### Standard analyzer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-standard-analyzer.html)
@@ -12724,7 +12774,107 @@ PUT /standard_example
 
 
 #### Stop analyzer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-stop-analyzer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-stop-analyzer.html)
+
+&emsp;&emsp;`stop` 分词器和[simple analyzer](#Simple analyzer)是一样的，但是增加了支持移除停用词。默认使用`_english_`停用词。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "analyzer": "stop",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的句子将生成以下term：
+
+```text
+[ quick, brown, foxes, jumped, over, lazy, dog, s, bone ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`stop`分词器接受以下的参数：
+
+- stopwords：预先定义的类似`_english_`的停用词列表或者包含通用词的数组。默认是`_english_`
+- stopwords_path：包含的通用词的文件路径
+
+&emsp;&emsp;见[Stop Token Filter](#Stop token filter)了解更多关于停用词配置的信息。
+
+##### Example configuration
+
+&emsp;&emsp;在这个例子中，我们配置`stop`分词器来使用一个指定的停用词列表：
+
+```text
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_stop_analyzer": {
+          "type": "stop",
+          "stopwords": ["the", "over"]
+        }
+      }
+    }
+  }
+}
+
+POST my-index-000001/_analyze
+{
+  "analyzer": "my_stop_analyzer",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的例子生成下面的term：
+
+```text
+[ quick, brown, foxes, jumped, lazy, dog, s, bone ]
+```
+
+##### Definition
+
+&emsp;&emsp;包含以下内容：
+
+###### Tokenizer：
+
+- [Lower Case Tokenizer](#Lowercase tokenizer)
+
+###### Token filters
+
+- [Stop Token Filter](#Stop token filter)
+
+&emsp;&emsp;如果你需要自定义`stop`分词器，你可以重新创建一个名为`custom`分词器然后修改它，通常添加token filter，这将重建内置的`stop`分词器，你可以使用它，将其作为进一步的自定义作为一个起始点：
+
+```text
+PUT /stop_example
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "english_stop": {
+          "type":       "stop",
+          "stopwords":  "_english_" 
+        }
+      },
+      "analyzer": {
+        "rebuilt_stop": {
+          "tokenizer": "lowercase",
+          "filter": [
+            "english_stop"          
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，默认的停用出可以用`stopwords`或者`stopwords_path`参数覆盖
+&emsp;&emsp;第15行，你可以在`english_stop`后面添加任意的token filter
 
 #### Whitespace analyzer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-whitespace-analyzer.html)
