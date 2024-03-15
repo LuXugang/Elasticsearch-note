@@ -13177,31 +13177,15 @@ PUT /my-index-000001
 
 ##### Configurable parameters
 
-###### stopwords
-
-&emsp;&emsp;（Optional, string or array of strings）。用于指定语言类型，例如`_arabic_`或者`_thai_`。默认值是[\_english\_](#_english_)。
-
-&emsp;&emsp;每一种语言对应一个预设的停用词列表，在Lucene中提供。见[Stop words by language](#Stop words by language)查看支持的语言以及其停用词。
-
-&emsp;&emsp;也接受停用词数组。
-
-&emsp;&emsp;若要使用空的停用词，使用`_none_`。
-
-###### stopwords_path
-
-&emsp;&emsp;（Optional, string) 文件路径，该文件中包含待移除的停用词。
-
-&emsp;&emsp;这个路径必须是绝对路径或者是`config`下的相对路径。文件的字符编码必须是UTF-8。文件中每一个停用词必须用换行符分隔。
-
-###### ignore_case
-
-&emsp;&emsp;（Optional, Boolean) 如果为`true`，停用词的匹配是大小写不敏感的。例如，如果该参数为`true`，那么`the`这个停用词会会移除`the`，`THE`，或者`The`。默认值是`false`。
-
-###### remove_trailing
-
-&emsp;&emsp;（Optional, Boolean) 如果为`true`，并且token stream的最后一个token是停用词，则移除这个token。默认值是`true`。
-
-&emsp;&emsp;当使用[completion suggester](#Completion Suggester)时，这个参数应该要设置为`false`。这样能保证`green a`这个query能匹配并且建议出`green apple`并且仍然能够移除其他的停用词。
+- stopwords：（Optional, string or array of strings）。用于指定语言类型，例如`_arabic_`或者`_thai_`。默认值是[\_english\_](#_english_)。
+  - 每一种语言对应一个预设的停用词列表，在Lucene中提供。见[Stop words by language](#Stop words by language)查看支持的语言以及其停用词。
+  - 也接受停用词数组。
+  - 若要使用空的停用词，使用`_none_`。
+- stopwords_path：（Optional, string) 文件路径，该文件中包含待移除的停用词。
+  - 这个路径必须是绝对路径或者是`config`下的相对路径。文件的字符编码必须是UTF-8。文件中每一个停用词必须用换行符分隔。
+- ignore_case：（Optional, Boolean) 如果为`true`，停用词的匹配是大小写不敏感的。例如，如果该参数为`true`，那么`the`这个停用词会会移除`the`，`THE`，或者`The`。默认值是`false`。
+- remove_trailing：（Optional, Boolean) 如果为`true`，并且token stream的最后一个token是停用词，则移除这个token。默认值是`true`。
+  - 当使用[completion suggester](#Completion Suggester)时，这个参数应该要设置为`false`。这样能保证`green a`这个query能匹配并且建议出`green apple`并且仍然能够移除其他的停用词。
 
 ##### Customize
 
@@ -13459,19 +13443,11 @@ GET /_analyze
 
 ##### Configurable parameters
 
-###### mappings
-
-&emsp;&emsp;(Required\*, array of strings) 数组类型的mappings，包含了key到value的映射。
-
-&emsp;&emsp;必须指定这个参数或者`mappings_path`中的一个。
-
-###### mappings_path
-
-&emsp;&emsp;(Required\*, string) 文件的路径，该文件中包含了key到value的映射。
-
-&emsp;&emsp;该路径必须是绝对路径或者是相对于`config`的相对路径。文件中的字符编码必须是UTF-8。文件中每一个key到value必须用换行符区分。
-
-&emsp;&emsp;必须指定这个参数或者`mappings`中的一个。
+- mappings：（Required\*, array of strings）数组类型的mappings，包含了key到value的映射。
+  - 必须指定这个参数或者`mappings_path`中的一个。
+- mappings_path：（Required\*, string）文件的路径，该文件中包含了key到value的映射。
+  - 该路径必须是绝对路径或者是相对于`config`的相对路径。文件中的字符编码必须是UTF-8。文件中每一个key到value必须用换行符区分。
+  - 必须指定这个参数或者`mappings`中的一个。
 
 ##### Customize and add to an analyzer
 
@@ -20090,15 +20066,9 @@ GET /_search
 
 ##### Top-level parameters for constant_score
 
-###### filter
-
-&emsp;&emsp;（required，query object）[Filter query](#Boolean query)是你想要运行的query，任何返回的文档都必须匹配这个query。
-
-&emsp;&emsp;Filter query 不会计算 [relevance score](#Relevance scores)，为了提高性能，Elasticsearch会自动的缓存使用频繁的filter query。
-
-###### boost
-
-&emsp;&emsp;（Optional,float）一个浮点型的数字用于作为满足`filter` query的所有文档固定的[relevance score](#Relevance scores)。默认值是`1.0`。
+- filter：（Required，query object）[Filter query](#Boolean query)是你想要运行的query，任何返回的文档都必须匹配这个query。
+  - Filter query 不会计算 [relevance score](#Relevance scores)，为了提高性能，Elasticsearch会自动的缓存使用频繁的filter query。
+- boost：（Optional,float）一个浮点型的数字用于作为满足`filter` query的所有文档固定的[relevance score](#Relevance scores)。默认值是`1.0`。
 
 #### Disjunction max query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-dis-max-query.html)
@@ -20126,25 +20096,20 @@ GET /_search
 
 ##### Top-level parameters for dis_max
 
-###### queries
+- queries：（Required, array of query objects） 包含一个或者多个query clause。返回的文档必须匹配一个或者多个这些query。如果一篇文档匹配了多个query，Elasticsearch会采用最大的相关性分数（每个query都会对这篇文档打分）。
 
-&emsp;&emsp;(Required, array of query objects) 包含一个或者多个query clause。返回的文档必须匹配一个或者多个这些query。如果一篇文档匹配了多个query，Elasticsearch会采用最大的相关性分数（每个query都会对这篇文档打分）。
+- tie_breaker：（Optional, float） 该值是0~1.0范围内的浮点数，用来增加匹配到了多个query clause的文档的 [relevance score](#Relevance scores)。默认值为`0.0`。
 
-###### tie_breaker
+  - You can use the `tie_breaker` value to assign higher relevance scores to documents that contain the same term in multiple fields than documents that contain this term in only the best of those multiple fields, without confusing this with the better case of two different terms in the multiple fields。
+  - 如果一篇文档匹配了多个clause，`dis_max` query 按照下面的方式为这篇文档计算relevance score：
 
-&emsp;&emsp;(Optional, float) 该值是0~1.0范围内的浮点数，用来增加匹配到了多个query clause的文档的 [relevance score](#Relevance scores)。默认值为`0.0`。
+  1. 从匹配到的clause中选出最高的relevance score
+  2. `tie_breaker`参数的值与其他任何匹配的clause的分数做乘法
+  3. 上述两个结果相加
+     - Lucene中的计算公式：`scoreMax + otherScoreSum * tieBreakerMultiplier`
+     - scoreMax为clause打分最高的，otherScoreSum为其他clause的打分和值，tieBreakerMultiplier即tie_breaker的值
 
-&emsp;&emsp;You can use the `tie_breaker` value to assign higher relevance scores to documents that contain the same term in multiple fields than documents that contain this term in only the best of those multiple fields, without confusing this with the better case of two different terms in the multiple fields。
-
-&emsp;&emsp;如果一篇文档匹配了多个clause，`dis_max` query 按照下面的方式为这篇文档计算relevance score：
-
-1. 从匹配到的clause中选出最高的relevance score
-2. `tie_breaker`参数的值与其他任何匹配的clause的分数做乘法
-3. 上述两个结果相加
-   - Lucene中的计算公式：`scoreMax + otherScoreSum * tieBreakerMultiplier`
-   - scoreMax为clause打分最高的，otherScoreSum为其他clause的打分和值，tieBreakerMultiplier即tie_breaker的值
-
-&emsp;&emsp;如果`tie_breaker`的值大于`0.0`，所有匹配到的clause都有用，但是分数最高的那个clause最重要。（If the tie_breaker value is greater than 0.0, all matching clauses count, but the clause with the highest score counts most）
+  如果`tie_breaker`的值大于`0.0`，所有匹配到的clause都有用，但是分数最高的那个clause最重要。（If the tie_breaker value is greater than 0.0, all matching clauses count, but the clause with the highest score counts most）
 
 #### Function score query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-function-score-query.html)
