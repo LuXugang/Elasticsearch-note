@@ -12485,17 +12485,9 @@ POST _analyze
 
 &emsp;&emsp;`standard`分词器接收下面的参数：
 
-###### max_token_length
-
-&emsp;&emsp;token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行分割。默认值是`255`。
-
-###### stopwords
-
-&emsp;&emsp;预设的停用词，例如`_english_`或者包含了停用词的数组。默认值为`_none_`。
-
-###### stopwords_path
-
-&emsp;&emsp;包含停用词的文件的路径
+- `max_token_length`：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行分割。默认值是`255`。
+- stopwords：预设的停用词，例如`_english_`或者包含了停用词的数组。默认值为`_none_`。
+- stopwords_path：包含停用词的文件的路径
 
 &emsp;&emsp;见[Stop Token Filter](#Stop token filter)查看停用词的配置。
 
@@ -12636,7 +12628,7 @@ PUT /whitespace_example
 &emsp;&emsp;`char_group` tokenizer 接受以下参数：
 
 - `tokenize_on_chars`：包含字符的列表。列表中的字符作为切分的标识。这个参数可以包含单个字符，比如`-`，也可以是字符组，比如`whitespace`, `letter`, `digit`, `punctuation`, `symbol`
-- `max_token_length`：token的最大长度。当超过`max_token_length`的长度，会被分为一个token。默认值为`255`
+- `max_token_length`：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
 
 ##### Example output
 
@@ -12693,9 +12685,66 @@ POST _analyze
 ```
 
 #### Classic tokenizer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-classic-tokenizer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-classic-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`classic` tokenizer是一个基于语法的分词器，适用于英文文档。这个分词器对首字母缩写词、公司名称、电子邮件地址和互联网主机名有特殊处理的启发式（tokenizer）规则。然而，这些规则并非总是有效，而且这个分词器对于英语以外的大多数语言效果不佳：
+
+- 它在大多数标点符号处分割单词，移除标点。但是，如果点号后面没有空白，则认为它是令token的一部分。
+- 它在连字符（`-`）处分割单词，除非token中有数字，在这种情况下，整个token被解释为产品号，不进行分割。
+- 它将电子邮件地址和互联网主机名识别为一个token。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "tokenizer": "classic",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的句子将会生成下面的term：
+
+```text
+[ The, 2, QUICK, Brown, Foxes, jumped, over, the, lazy, dog's, bone ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`classic` tokenizer 接受以下参数：
+
+- `max_token_length`：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
+
+##### Example configuration
+
+&emsp;&emsp;在这个例子中，我们将`max_token_length`的值设置为5（出于演示目的）：
+
+```text
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "my_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "my_tokenizer": {
+          "type": "classic",
+          "max_token_length": 5
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子生成以下的term：
+
+```text
+[ The, 2, QUICK, Brown, Foxes, jumpe, d, over, the, lazy, dog's, bone ]
+```
 
 #### Edge n-gram tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-edgengram-tokenizer.html)
@@ -12705,17 +12754,58 @@ POST _analyze
 #### Keyword tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`keyword` tokenizer是一个`noop`（没有任何操作） tokenizer。无论给定的文本是什么样子，总是将其作为单个term。他可以跟token filter结合来标准化输出，比如将email地址小写。
 
 #### Letter tokenizer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-letter-tokenizer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-letter-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`letter` tokenizer在遇到一个非字母时开始切分。对于大多数的欧洲语言，这种切分方式是合理的，但是对于一些亚洲语言就不行了，因为单词之间不是用空格分隔的。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "tokenizer": "letter",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的例子生成以下的term：
+
+```text
+[ The, QUICK, Brown, Foxes, jumped, over, the, lazy, dog, s, bone ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`letter` tokenizer没有配置项。
 
 #### Lowercase tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lowercase-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`lowercase` tokenizer跟[letter tokenizer](#Letter tokenizer)是一样的，也就是遇到一个非字母时开始切分，区别就是同时将所有的字母小写化。这个tokenizer的功能就相当于组合了[letter tokenizer](#Letter tokenizer)和[lowercase token filter](#Lowercase token filter)，但是性能更好，因为它将这两个步骤同时处理了。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "tokenizer": "lowercase",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的例子生成以下的term：
+
+```text
+[ the, quick, brown, foxes, jumped, over, the, lazy, dog, s, bone ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`lowercase` tokenizer没有配置项。
+
 
 #### N-gram tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-ngram-tokenizer.html)
@@ -12725,12 +12815,13 @@ POST _analyze
 #### Path hierarchy tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pathhierarchy-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`path_hierarchy` tokenizer 用来处理有层级的值，比如说文件系统路径，根据路径符号划分，然后输出不同层的term。
+
 
 #### Pattern tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`Pattern` tokenizer使用正则表达式将文本进行分词，将匹配到的词，或者匹配到一段文本作为term。
 
 #### Simple pattern tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simplepattern-tokenizer.html)
@@ -12767,9 +12858,7 @@ POST _analyze
 
 &emsp;&emsp;`standard` tokenizer接收下面的参数：
 
-###### max_token_length
-
-&emsp;&emsp;token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
+- max_token_length：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
 
 ##### Example configuration
 
@@ -12814,9 +12903,75 @@ POST my-index-000001/_analyze
 &emsp;&emsp;
 
 #### UAX URL email tokenizer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uaxurlemail-tokenizer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uaxurlemail-tokenizer.html)
 
-&emsp;&emsp;
+&emsp;&emsp;`uax_url_email` tokenizer跟[standard tokenizer](#Standard tokenizer)很像，差别是它能识别URLs以及email，并且他们作为单个term。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "tokenizer": "uax_url_email",
+  "text": "Email me at john.smith@global-international.com"
+}
+```
+
+&emsp;&emsp;上面的例子会生成下面的term：
+
+```text
+[ Email, me, at, john.smith@global-international.com ]
+```
+
+&emsp;&emsp;如果是`standard` tokenizer会生成：
+
+```text
+[ Email, me, at, john.smith, global, international.com ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`uax_url_email` tokenizer接受以下参数：
+
+- `max_token_length`：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
+
+##### Example configuration
+
+&emsp;&emsp;在这个例子中，我们将`max_token_length`设置为5（仅演示目的）：
+
+```text
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "my_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "my_tokenizer": {
+          "type": "uax_url_email",
+          "max_token_length": 5
+        }
+      }
+    }
+  }
+}
+
+POST my-index-000001/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "john.smith@global-international.com"
+}
+
+```
+
+&emsp;&emsp;上面的例子会生成下面的term：
+
+```text
+[ john, smith, globa, l, inter, natio, nal.c, om ]
+```
 
 #### Whitespace tokenizer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-whitespace-tokenizer.html)
@@ -12843,9 +12998,7 @@ POST my-index-000001/_analyze
 
 &emsp;&emsp;`whitespace` tokenizer接收下面的参数：
 
-###### max_token_length
-
-&emsp;&emsp;token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
+- `max_token_length`：token的最大长度。如果一个token的长度超过了`max_token_length`，会按照`max_token_length`长度进行划分。默认值是`255`。
 
 ### Token filter reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-tokenfilters.html)
