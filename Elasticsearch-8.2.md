@@ -12557,7 +12557,58 @@ PUT /fingerprint_example
 ```
 
 #### Keyword analyzer
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-analyzer.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-analyzer.html)
+
+&emsp;&emsp;`keyword`分词器是一个"noop"（没有操作）的分词器，它将整个输入的字符串作为单个token。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "analyzer": "keyword",
+  "text": "The 2 QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+```
+
+&emsp;&emsp;上面的句子将会生成以下单个term：
+
+```text
+[ The 2 QUICK Brown-Foxes jumped over the lazy dog's bone. ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`keyword`分词器没有配置项。
+
+##### Definition
+
+&emsp;&emsp;`keyword` 分词器包含以下内容：
+
+###### Tokenizer
+
+- [Keyword Tokenizer](#Keyword tokenizer)
+
+&emsp;&emsp;如果你需要自定义`keyword`分词器，你可以重新创建一个名为`custom`分词器然后修改它，通常添加token filter。通常如果你不需要将字符串切分为token时应该选择[Keyword type ](#Keyword type family)类型，但如果你一定要这么勇，这将重建内置的`fingerprint`分词器，你可以使用它，将其作为进一步的自定义作为一个起始点：
+
+```text
+PUT /keyword_example
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "rebuilt_keyword": {
+          "tokenizer": "keyword",
+          "filter": [         
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，你可以在这里添加任意的token filter。
 
 #### Language analyzers
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lang-analyzer.html)
