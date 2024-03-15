@@ -12449,9 +12449,115 @@ PUT my-index-000001
 - [Language Analyzers](#Language analyzers)：Elasticsearch提供了许多特定语言的分析器，如英语或法语。
 - [Fingerprint Analyzer](#Fingerprint analyzer)：`fingerprint`是一种专门的分词器，用于创建可用于重复检测的指纹。
 
-#### Custom analyzers
+##### Custom analyzers
 
 &emsp;&emsp;如果你没有找到你想要的分词器，那你可以[custom](#Create a custom analyzer)一个分词器，让这个分词器包含合适的[character filter](#Character filters reference)、[tokenizer](#Tokenizer reference)以及[token filters](#Token filter reference)。
+
+#### Fingerprint analyzer
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-fingerprint-analyzer.html)
+
+&emsp;&emsp;`fingerprint` 分词器实现了[fingerprinting algorithm ](https://github.com/OpenRefine/OpenRefine/wiki/Clustering-In-Depth#fingerprint)用于在OpenRefine项目中帮助进行聚类。
+
+&emsp;&emsp;输入的文本会被小写化、标准化来移除扩展的字符，排序、去重并且最后拼接成单个token。如果配置了stopword列表，停用词会被移除。
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "analyzer": "fingerprint",
+  "text": "Yes yes, Gödel said this sentence is consistent and."
+}
+```
+
+&emsp;&emsp;上面的句子生成下面的单个term：
+
+```text
+[ and consistent godel is said sentence this yes ]
+```
+
+##### Configuration
+
+&emsp;&emsp;`fingerprint` 分词器接受以下的参数：
+
+- separator：拼接时使用的字符。默认是空格
+- max_output_size：token数量的最大值。默认是`255`。超过这个大小会被丢弃
+- stopwords：预先定义的类似`_english_`的停用词列表或者包含通用词的数组。默认是`_none_`
+- stopwords_path：包含的通用词的文件路径
+
+&emsp;&emsp;见[Stop Token Filter](#Stop token filter)了解更多关于停用词配置的信息。
+
+##### Example configuration
+
+&emsp;&emsp;下面的例子中，我们为`fingerprint`分词器配置了一个预先定义好的English停用词：
+
+```text
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_fingerprint_analyzer": {
+          "type": "fingerprint",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  }
+}
+
+POST my-index-000001/_analyze
+{
+  "analyzer": "my_fingerprint_analyzer",
+  "text": "Yes yes, Gödel said this sentence is consistent and."
+}
+```
+
+&emsp;&emsp;上面的例子中生成以下的term：
+
+```text
+[ consistent godel said sentence yes ]
+```
+
+##### Definition
+
+&emsp;&emsp;`fingerprint`包含下面的内容：
+
+###### Tokenizer
+
+- [Standard Tokenizer](#Standard tokenizer)
+
+###### Token Filters (in order)
+
+- [Lower Case Token Filter](#Lowercase token filter)
+- [ASCII folding](#ASCII folding token filter)
+- [Stop Token Filter](#Stop token filter) (disabled by default)
+- [Fingerprint](#Fingerprint token filter)
+
+&emsp;&emsp;如果你需要自定义`fingerprint`分词器，你可以重新创建一个名为`custom`分词器然后修改它，通常添加token filter。这将重建内置的`fingerprint`分词器，你可以使用它，将其作为进一步的自定义作为一个起始点：
+
+```text
+PUT /fingerprint_example
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "rebuilt_fingerprint": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "fingerprint"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+#### Keyword analyzer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-analyzer.html)
 
 #### Language analyzers
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lang-analyzer.html)
@@ -12459,6 +12565,12 @@ PUT my-index-000001
 ##### Configuring language analyzers
 
 ###### Excluding words from stemming 
+
+#### Pattern analyzer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-analyzer.html)
+
+#### Simple analyzer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simple-analyzer.html)
 
 #### Standard analyzer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-standard-analyzer.html)
@@ -12559,8 +12671,9 @@ PUT /standard_example
 
 &emsp;&emsp;第9行，你可以在`lowercase`后添加其他的token filter。
 
-#### Language analyzers
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lang-analyzer.html#english-analyzer)
+
+#### Stop analyzer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-stop-analyzer.html)
 
 #### Whitespace analyzer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-whitespace-analyzer.html)
