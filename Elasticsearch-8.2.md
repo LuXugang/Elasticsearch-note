@@ -12626,8 +12626,121 @@ PUT /whitespace_example
 ### Tokenizer reference
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-tokenizers.html)
 
+#### Character group tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-chargroup-tokenizer.html)
+
+&emsp;&emsp;`char_group` tokenizer定义了一组集合，集合中的元素作为文本切分标识。希望自定义一个简单的分词器或者或者无法接受[pattern tokenizer ](#Pattern tokenizer)的开销时，使用这个tokenizer非常有用。
+
+##### Configuration
+
+&emsp;&emsp;`char_group` tokenizer 接受以下参数：
+
+- `tokenize_on_chars`：包含字符的列表。列表中的字符作为切分的标识。这个参数可以包含单个字符，比如`-`，也可以是字符组，比如`whitespace`, `letter`, `digit`, `punctuation`, `symbol`
+- `max_token_length`：token的最大长度。当超过`max_token_length`的长度，会被分为一个token。默认值为`255`
+
+##### Example output
+
+```text
+POST _analyze
+{
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "-",
+      "\n"
+    ]
+  },
+  "text": "The QUICK brown-fox"
+}
+```
+
+&emsp;&emsp;输出：
+
+```text
+{
+  "tokens": [
+    {
+      "token": "The",
+      "start_offset": 0,
+      "end_offset": 3,
+      "type": "word",
+      "position": 0
+    },
+    {
+      "token": "QUICK",
+      "start_offset": 4,
+      "end_offset": 9,
+      "type": "word",
+      "position": 1
+    },
+    {
+      "token": "brown",
+      "start_offset": 10,
+      "end_offset": 15,
+      "type": "word",
+      "position": 2
+    },
+    {
+      "token": "fox",
+      "start_offset": 16,
+      "end_offset": 19,
+      "type": "word",
+      "position": 3
+    }
+  ]
+}
+```
+
+#### Classic tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-classic-tokenizer.html)
+
+&emsp;&emsp;
+
 #### Edge n-gram tokenizer
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-edgengram-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Keyword tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-keyword-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Letter tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-letter-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Lowercase tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-lowercase-tokenizer.html)
+
+&emsp;&emsp;
+
+#### N-gram tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-ngram-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Path hierarchy tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pathhierarchy-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Pattern tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-pattern-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Simple pattern tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simplepattern-tokenizer.html)
+
+&emsp;&emsp;
+
+#### Simple pattern split tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-simplepatternsplit-tokenizer.html)
+
+&emsp;&emsp;
 
 #### Standard tokenizer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-standard-tokenizer.html)
@@ -12694,6 +12807,16 @@ POST my-index-000001/_analyze
 ```text
 [ The, 2, QUICK, Brown, Foxes, jumpe, d, over, the, lazy, dog's, bone ]
 ```
+
+#### Thai tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-thai-tokenizer.html)
+
+&emsp;&emsp;
+
+#### UAX URL email tokenizer
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-uaxurlemail-tokenizer.html)
+
+&emsp;&emsp;
 
 #### Whitespace tokenizer
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/analysis-whitespace-tokenizer.html)
