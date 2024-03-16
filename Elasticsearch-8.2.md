@@ -23245,24 +23245,85 @@ GET /_search
 
 
 ### Term-level queries
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/term-level-queries.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/term-level-queries.html)
+
+&emsp;&emsp;你可以使用**term-level queries**基于结构化数据中精确（precise）的值来查找文档。结构化数据包括日期范围、IP地址、价格或者产品ID。
+
+&emsp;&emsp;跟[full-text queries](#Full text queries)不同的是，term-level queries不会对查询词（search term）分词。而是跟域值精确匹配。
+
+> NOTE：对于mapping类型为`keyword`并且含有`normalizer`属性的域，Term-level queries查询该域时仍然会标准化查询词。更多信息见[normalizer](#normalizer)
+
+##### Types of term-level queries
+
+- [`exists` query](#Exists query)：返回的文档中包含待查询的域，不关心域值是什么
+- [`fuzzy` query](#Fuzzy query)：返回的文档中，，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度
+- [`ids` query](#IDs)：基于[document IDs](#\_id field)返回文档
+- [`prefix` query](#Prefix query)：返回的文档中，待查询的域的域值包含指定的前缀
+- [`range` query](#Range query)：返回的文档中，待查询的域的域值属于指定的范围
+- [`regexp` query](#Regexp query)：返回的文档中，待查询的域的域值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)
+- [`term` query](#Term query)：返回的文档中，待查询的域的域值精确匹配查询词
+- [`terms` query](#Terms query)：返回的文档中，待查询的域的域值精确匹配一个或多个查询词
+- [`terms_set` query](#Terms set query)：返回的文档中，待查询的域的域值精确匹配一个或多个查询词，你可以使用一个域或者脚本定义至少要匹配的查询词数量。
+- [`wildcard` query](#Wildcard query)：返回的文档中，待查询的域的域值匹配了一个通配符模式（wildcard pattern）
 
 #### Exists query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-exists-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-exists-query.html)
 
-#### Prefix query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
+&emsp;&emsp;返回的文档中包含待查询的域，不关心域值是什么。
 
-###### Allow expensive queries（Prefix query）
+&emsp;&emsp;索引一个文档后，文档中的字段没有被索引的原因有以下几种：
 
-#### Range query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
+- 在原始的JSON中，这个字段是`null`或者`[]`
+- 这个域的mapping 参数为`"index" : false`
+- 这个域的域值超过了mapping中`ignore_above`的长度
+- 这个域的域值格式不对并且同时在mapping中定义了`ignore_malformed`
 
-#### Term query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
+##### Example request
 
-#### Terms query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-query.html)
+```text
+GET /_search
+{
+  "query": {
+    "exists": {
+      "field": "user"
+    }
+  }
+}
+```
+
+##### Top-level parameters for exists
+
+- field：（Required, string）待查询的域名
+  - 如果在JSON中的值是`null`或者`[]`，这个域就被认为是不存在的。下面这些值会认为这个域不存在：
+    - 空的字符串，比如`""`或者`-`
+    - 包含`null`跟其他值的数组，比如`[null, "foo"]`
+    - 定义在mapping中，自定义的[null-value](#null_value)
+
+##### Notes
+
+###### Find documents missing indexed values
+
+&emsp;&emsp;若要查找的文档中某个域是缺失的，可以在`must_not` [boolean query](#Boolean query)中使用`exists` query：
+
+&emsp;&emsp;下面的查询返回的文档中缺失了`user.id`域。
+
+```text
+GET /_search
+{
+  "query": {
+    "bool": {
+      "must_not": {
+        "exists": {
+          "field": "user.id"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Fuzzy query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-fuzzy-query.html)
 
 
 #### IDs
@@ -23293,6 +23354,29 @@ GET /_search
 
 ### rewrite parameter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
+
+#### Prefix query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
+
+###### Allow expensive queries（Prefix query）
+
+#### Range query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
+
+#### Regexp query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-regexp-query.html)
+
+#### Term query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
+
+#### Terms set query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-set-query.html)
+
+#### Terms query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-query.html)
+
+#### Wildcard query
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
 
 ## Aggregations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
