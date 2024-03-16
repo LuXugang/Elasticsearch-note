@@ -20995,18 +20995,18 @@ POST _search
 - query：（Required, string）你想要从`<field>`中查找的内容
 - max_gaps：（Optional,integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
-- ordered：（Optional,Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
-- analyzer：（Optional,string）[analyzer](#Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
+- ordered：（Optional, Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
+- analyzer：（Optional, string）[analyzer](#Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
 - filter：（Optional,[interval filter](#Intervals query) 规则对象）可选的interval filter
-- use_field：（Optional,string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的域值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
+- use_field：（Optional, string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的域值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
 
 ##### prefix rule parameters
 
 &emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
 - prefix：（Required, string）你想要从顶层的`<field>`中以这个参数为前缀的term
-- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- analyzer：（Optional, string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional, string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### wildcard rule parameters
@@ -21020,8 +21020,8 @@ POST _search
 
 > WARNING：最高避免以`*`或者`?`为开头的通配符。为了能找到匹配 的term会会增加迭代次数，使得降低查询性能
 
-- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- analyzer：（Optional, string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional, string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### fuzzy rule parameters
@@ -21030,10 +21030,10 @@ POST _search
 
 - term：（Required, string）待匹配的term
 - prefix_length：（Optional,integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
-- transpositions：（Optional,Boolean）
-- fuzziness：（Optional,Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
-- analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
-- use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
+- transpositions：（Optional, Boolean）
+- fuzziness：（Optional, Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
+- analyzer：（Optional, string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
+- use_field：（Optional, string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
 
 ##### all_of rule parameters
@@ -23443,7 +23443,7 @@ GET /_search
 
 - value：（Required, string）待查询的前缀值
 - rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
-- case_insensitive：（Optional,Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
   - 7.10.0新增的参数
 
 ##### Notes
@@ -23649,7 +23649,7 @@ GET /_search
   > WARNING：`regexp` query的性能非常取决于提供的正则表达式。若要提高性能，避免使用通配符模式，比如`.*`或者`.*?+`，没有后缀或前缀。
 
 - flags：（Optional, string）允许使用的正则表达式操作符。对于可用的操作符以及更多信息见[Regular expression syntax]()
-- case_insensitive：（Optional,Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
 - max_determinized_states：（Optional, integer）Query要求[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)的最大值。默认值为`1000`
   - Elasticsearch在内部使用[Lucene](https://lucene.apache.org/core/)的正则表达式。Lucene将每一个正则表达式转化为一个[有限自动状态](https://amazingkoala.com.cn/Lucene/gongjulei/2019/0417/Automaton/)
 - rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
@@ -23696,7 +23696,7 @@ GET /_search
 - boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
   - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
   - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
-- case_insensitive：（Optional,Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
   - 7.10.0新增的参数
 
 ##### NOTES
@@ -24067,7 +24067,7 @@ GET /job-candidates/_search
 
 - terms：（Required, array of strings）这个参数的值是一个term数组，这些term是你希望在`<field>`能匹配到的域值。若要返回一篇文档，必须精确匹配提供的term，包括空格和大小写。
 - minimum_should_match_field：（Optional, string）[Numeric](#Numeric field types)类型的域名，域值为满足匹配的文档必须匹配的term数量
-- minimum_should_match_script：（OPtional, string）自定义的脚本，描述了满足匹配的文档必须匹配的term数量
+- minimum_should_match_script：（Optional, string）自定义的脚本，描述了满足匹配的文档必须匹配的term数量
   - 支持的参数和选项见[Scripting](#Scripting)
   - 见[How to use the minimum_should_match_script parameter](#How to use the minimum_should_match_script parameter)了解使用`minimum_should_match_script`参数的例子
 
@@ -24108,9 +24108,57 @@ GET /job-candidates/_search
 ```
 
 #### Wildcard query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
 
-&emsp;&emsp;
+&emsp;&emsp;返回的文档中，待查询的域的域值匹配了一个通配符模式（wildcard pattern）。
+
+&emsp;&emsp;通配符的操作符是一个占位符来匹配一个或多个字符。例如，通配符操作符`*`匹配0个或多个字符。你可以组合通配符的操作符来创建一个通配符模式。
+
+##### Example request
+
+&emsp;&emsp;下面的请求中，返回满足`user.id`的域值以`k`开头并且以`y`结尾的文档。`.*`操作符匹配任意长度的任意字符，包括没有字符。可以匹配`ky`、`kay`以及`kimchy`。
+
+```text
+GET /_search
+{
+  "query": {
+    "wildcard": {
+      "user.id": {
+        "value": "ki*y",
+        "boost": 1.0,
+        "rewrite": "constant_score"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for wildcard
+
+- `<field>`：（Required, object）待查询的域。
+
+##### Parameters for \<field\>
+
+- boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
+  - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
+  - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+  - 7.10.0新增的参数
+- rewrite：（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](#rewrite parameter)
+- value：（Required, string）你想要从`<field>`中匹配的，带有通配符的term
+  - 这个操作支持两个通配符操作符：
+    - `?`，匹配任意单个字符
+    - `*`，匹配0个或多个字符
+    
+    > WARNING：避免使用通配符时以`*`或者`?`开头。这会增加查找匹配的term的迭代次数使得降低查询性能
+    
+- wildcard：（Required, string）`value`参数的别名。如果你同时指定`value`跟`wildcard`，query会使用请求体中最后一个。
+
+##### NOTES
+
+##### Allow expensive queries（Wildcard query）
+
+&emsp;&emsp;如果[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为false，则不允许执行Wildcard query。
 
 ### minimum_should_match parameter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-minimum-should-match.html)
@@ -24507,7 +24555,7 @@ GET emails/_search
   - `<filter>`：（Required,[Query DSL object](#Query DSL)）key就是过滤条件的名字
   至少要指定一个过滤条件。过滤条件数量不能超过[indices.query.bool.max_clause_count ](#indices.query.bool.max_clause_count)，见[Filter limits](#Filter limits（Adjacency matrix aggregation）)。
   
-- separator：（Optional,string）用来组合过滤名称的符号。默认是`&`
+- separator：（Optional, string）用来组合过滤名称的符号。默认是`&`
 
 ##### Response body
 
@@ -29523,7 +29571,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-- delete_searchable_snapshot：（Optional,Boolean）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](#Searchable snapshot)这个动作。
+- delete_searchable_snapshot：（Optional, Boolean）删除在上一个阶段生成可以用于搜索的快照（searchable snapshot）。默认值为true。这个适用于任意上一个阶段中使用了[searchable snapshot](#Searchable snapshot)这个动作。
 
 ##### Example
 
@@ -29567,7 +29615,7 @@ PUT _ilm/policy/my_policy
 ##### Option
 
 - max_num_segemnts：（Required,integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
-- inde_codec：（Optional,string）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
+- inde_codec：（Optional, string）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
 
 >WARNING：如果使用`best_compression`，ILM将在force merge之前先[close](#Close index API)并且[re-open](#Open index API)。当关闭后，索引的读写操作将不可见。
 
@@ -29610,7 +29658,7 @@ PUT _ilm/policy/my_policy
 
 ##### Option
 
-- enabled：（Optional,Boolean）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
+- enabled：（Optional, Boolean）用于控制是否在migrate阶段自动的执行迁移动作。默认值是true。
 
 ##### Example
 
@@ -29926,7 +29974,7 @@ PUT /_ilm/policy/rollover_policy
 ##### Options
 
 - snapshot_repository：（Required, string）存储snapshot的[repository](#Register a snapshot repository)。
-- force_merge_index：（Optional,Boolean）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](#Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
+- force_merge_index：（Optional, Boolean）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](#Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
 
   >NOTE：forcemerge这个动作属于best effort。这个动作有可能在一些分片正在分配时执行，在这种情况下这些分片不会进行合并。如果不是所有的分片都执行了forcemerge，那么searchable_snapshot动作会继续执行。
 
@@ -36997,9 +37045,9 @@ POST my-data-stream/_async_search
 ##### Query parameter
 
 - bytes：（Optional,[byte size units](#Byte size units)）展示字节值的单位。
-- format：（Optional,string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
-- full_id：（Optional,Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
-- h：（Optional,string）需要展示的列名，使用逗号分隔。
+- format：（Optional, string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
+- full_id：（Optional, Boolean）如果为`true`，返回完整的node ID。如果为`false`，返回较短的node ID，默认值为`false`。
+- h：（Optional, string）需要展示的列名，使用逗号分隔。
   - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
   - 可选的列包括：
     - ip、i：（default）IP地址，比如`127.0.1.1`
@@ -37169,15 +37217,15 @@ veJR 127.0.0.1 59938 8.2.3 *
 
 ##### Path parameters
 
-- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional, string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameter
 
 - bytes：（Optional,[byte size units](#Byte size units)）展示字节值的单位。
 
-- format：（Optional,string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
+- format：（Optional, string）[HTTP accept header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html)的short version。可选值包括JSON、YAML等等。
 
-- h：（Optional,string）需要展示的列名，使用逗号分隔。
+- h：（Optional, string）需要展示的列名，使用逗号分隔。
   - 如果你不指定列名，API会列出默认列。如果你显示的（explicit）指定一个或者更多的列，那只返回指定的列。
   - 可选的列包括：
     - index、i、idx：（default）索引的名称
@@ -37435,14 +37483,14 @@ GET _cluster/allocation/explain
 
 ##### Query parameters
 
-- include_disk_info：（Optional,Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
-- include_yes_decisions：（Optional,Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
+- include_disk_info：（Optional, Boolean）如果为`true`，则返回磁盘使用量和分片大小的信息。默认为`false`。
+- include_yes_decisions：（Optional, Boolean）如果为`true`，在返回的信息中返回YES decisions，默认值为`false`。
 
 ##### Request body
 
-- current_node：（Optional,string）指定节点的ID或者名称，只返回在指定节点上的分片的分配信息。
-- index：（Optional,string）指定你想要了解的索引的名称。
-- primary：（Optional,Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
+- current_node：（Optional, string）指定节点的ID或者名称，只返回在指定节点上的分片的分配信息。
+- index：（Optional, string）指定你想要了解的索引的名称。
+- primary：（Optional, Boolean）如果为`true`，返回给定分片ID对应的主分片的分配信息。
 - shard：（Optional,integer）指定你要了解的分片ID。
 
 ##### Example
@@ -37692,8 +37740,8 @@ GET /_cluster/settings
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional, Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -37721,7 +37769,7 @@ GET /_cluster/settings
 
 ##### Path parameters
 
-- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional, string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameters
 - level：（Optional, string）可以是`cluster`、`indices`或者`shards`。用来控制健康信息的详细层级。默认值：`cluster`
@@ -37917,12 +37965,12 @@ POST /_cluster/reroute
   - `routing_nodes`：显示响应的`routing_nodes`部分的内容
   - `routing_table`：显示响应的`routing_table`部分的内容。果你提供了用逗号隔开的索引列表，返回的结果中只包含这些索引的routing_table（索引的分片路由信息。它包含了该索引所有分片的分配和位置信息，诸如哪些分片是主分片、哪些是副本分片，以及这些分片分布在集群中的哪些节点上）
   - `version`：显示集群状态版本
-- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
+- `<target>`：（Optional, string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`。
 
 ##### Query parameters
 - allow_no_indices：（Optional, Boolean）如果为`true`。如果通配符索引表达式没有解析为任何具体的索引，这种情况将被忽略（不会报错）。这包括使用`\_all` 字符串或没有指定任何索引的情况。默认值为`true`
 - expand_wildcards：（Optional, string）通配符索引表达式解析为具体的索引可以是open、closed或者全部。Optional为：`open`、`closed`、`none`、`all`
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`true`，不可用的索引（missing或者closed）会忽略
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
@@ -37989,8 +38037,8 @@ GET /_cluster/state/blocks
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
-- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- include_defaults：（Optional, Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -38251,7 +38299,7 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 
 ##### Query Parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -39650,7 +39698,7 @@ GET /_ccr/auto_follow/<auto_follow_pattern_name>
 
 ##### Path parameters
 
-- `<auto_follow_pattern_name>`：（Optional,string）指定你想要获取的auto-follow pattern。如果你不指定，则返回所有的集合
+- `<auto_follow_pattern_name>`：（Optional, string）指定你想要获取的auto-follow pattern。如果你不指定，则返回所有的集合
 
 ##### Example
 
@@ -40185,7 +40233,7 @@ PUT /_ccr/auto_follow/<auto_follow_pattern_name>
 - remote_cluster：（Required, string）包含用来匹配的leader index的[remote cluster](#Remote clusters)
 - leader_index_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中匹配leader index的index pattern集合
 - leader_index_exclusion_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中排除匹配到leader index的index pattern集合。远端集群中匹配到一个或者多个`leader_index_patterns`并且匹配到一个或多个`leader_index_exclusion_patterns`的索引不会被跟随
-- follow_index_pattern：（Optional,string）follower index的名称。模版`{{leader_index}}`可以将从leader index的名称衍生到follower Index中。当跟随一个data stream，使用`{{leader_index}}`，CCR不支持修改一个follower data stream中的backing Index
+- follow_index_pattern：（Optional, string）follower index的名称。模版`{{leader_index}}`可以将从leader index的名称衍生到follower Index中。当跟随一个data stream，使用`{{leader_index}}`，CCR不支持修改一个follower data stream中的backing Index
 - settings：（object）覆盖来自leader index 的settings。有些settings是不能被覆盖的（比如`index.number_of_shards`）
 - max_read_request_operation_count：（integer）从远端集群中执行的读请求中，每一个请求中包含的操作数量最大值（设置`max_read_request_operation_count`为1000，那么在执行一次从leader到follower的数据同步时，每一次读取请求将最多包含1000个操作）
 - max_outstanding_read_requests：（long）正在从远端集群中执行读取请求的数量最
@@ -40936,8 +40984,8 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
 - analyze_wildcard（Optional, Boolean）如果为`true`，会对Wildcard和prefix query进行解析。默认是`false`
   - 这个参数只有在指定了`q`参数后才会被使用
 - conflicts：（Optional, string）在更新时遇到版本冲突时该如何处理室：`abort`或`proceed`。默认是`abort`
-- default_operator：（Optional,string）query string query中的默认操作符：AND or OR。默认是`OR`
-- df：（Optional,string）如果在query string中为给定域名则使用这个默认域名
+- default_operator：（Optional, string）query string query中的默认操作符：AND or OR。默认是`OR`
+- df：（Optional, string）如果在query string中为给定域名则使用这个默认域名
   - 这个参数只有在指定了`q`参数后才会被使用
 - expand_wildcards：（Optional, string）通配符模式可以匹配的索引类型。如果请求目标是data stream，还会检测通配符表达式是否会匹配隐藏的data streams。支持多值，例如`open`, `hidden`。合法值有：
   - all：匹配满足通配符模式的所有data streams和indices，包括[hidden](#Multi-target syntax-1)
@@ -40950,22 +40998,22 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
 - max_docs：（Optional, integer）最多可以处理的文档数量。默认是所有的文档。当该值设置了一个不大于`scroll_size`的值时，那么就不会使用scroll机制
-- pipeline：（Optional,string）pipeline的ID，用来预先处理待处理的文档
-- preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
-- q：（Optional,string）Query in Lucene query string syntax
+- pipeline：（Optional, string）pipeline的ID，用来预先处理待处理的文档
+- preference：（Optional, string）指定在哪个节点或分片上执行。默认是随机
+- q：（Optional, string）Query in Lucene query string syntax
 - request_cache：（Optional, Boolean）如果为`true`，会对这个请求使用请求缓存。默认值是index-level的设置
-- refresh：（Optional,string）如果为`true`，Elasticsearch会refresh被更新的分片使得变更可以被搜索到。默认为`false`
+- refresh：（Optional, string）如果为`true`，Elasticsearch会refresh被更新的分片使得变更可以被搜索到。默认为`false`
 - requests_per_second：（Optional,integer）每秒可以执行的子请求数量。默认值为-1，表示不进行节流。
-- routing：（Optional,string）自定义的值用来路由到指定分片
+- routing：（Optional, string）自定义的值用来路由到指定分片
 - scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
 - scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
-- search_type：（Optional,string）搜索操作的类型。可选项有：
+- search_type：（Optional, string）搜索操作的类型。可选项有：
   - `query_then_fetch`
   - `dfs_query_then_fetch`
 - search_timeout：（Optional, [time units](#Time units)）显示指定每一个查询请求的超时时间。默认不超时
 - slices：（Optional, integer）任务中划分出的切片数量。默认为`1`意味着不会切分为多个子任务
-- sort：（Optional,string）用逗号隔开的`<field>:<direction>`列表
-- stats：（Optional,string）Specific tag of the request for logging and statistical purposes.
+- sort：（Optional, string）用逗号隔开的`<field>:<direction>`列表
+- stats：（Optional, string）Specific tag of the request for logging and statistical purposes.
 - terminate_after：（Optional,integer）每一个分片最多收集的文档数量。如果Query达到了上限，elasticsearch则会提前结束这个Query。Elasticsearch先收集文档再排序
 
   > IMPORTANG：用户使用这个参数需要特别注意。Elasticsearch将这个参数应用到每一个分片上来处理请求。如果到达上限时，Elasticsearch会自动的执行提前结束查询。对于查询目标是data  stream并且跨数据层的请求不要指定这个参数
@@ -41543,7 +41591,7 @@ GET /_enrich/policy/policy1,policy2
 
 ##### Path parameters
 
-- `<name>`：（Optional,string）用逗号隔开的enrich policy的名称来限制请求。若要返回所有的enrich policy，则忽略这个参数
+- `<name>`：（Optional, string）用逗号隔开的enrich policy的名称来限制请求。若要返回所有的enrich policy，则忽略这个参数
 
 ##### Example
 
@@ -42268,7 +42316,7 @@ POST /<target>/_disk_usage
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`open`
-- flush：（Optional,Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
+- flush：（Optional, Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
 - run_expensive_tasks：（Required, Boolean）分析域的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
 - wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
@@ -42796,7 +42844,7 @@ PUT <target>/_aliases/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待更新的别名。如果别名不存在，这个请求则会创建。索引别名支持[date math](#Date-math-support-in-system-and-index-alias-names-1)
-- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+- `<target>`：（Optional, string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
 
 ##### Query parameters
 
@@ -42882,7 +42930,7 @@ PUT /_component_template/<component-template>
 
 ##### Query parameters
 
-- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
+- create：（Optional, Boolean）如果为`true`，这个请求不能替换或者更新现有的组件模版。默认值为`false`。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
@@ -43033,7 +43081,7 @@ PUT /_index_template/<index-template>
 
 ##### Query parameters
 
-- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- create：（Optional, Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
 ##### Response body
@@ -43294,7 +43342,7 @@ PUT _template/template_1
 
 ##### Query parameters
 
-- create：（Optional,Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
+- create：（Optional, Boolean）如果为`true`，这个请求不能替换或者更新现有的index template。默认值为`false`。
 - order：（Optional,integer）如果索引匹配到多个模板，Elasticsearch根据order的值来应用模板。首先合并order值较低的模板。order值较高的模板稍后合并，覆盖order值较低的模板。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
@@ -43500,7 +43548,7 @@ DELETE <target>/_aliases/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`
-- `<target>`：（Optional,string）用逗号隔开的data stream、Index来限制请求。支持通配符(`*`)。支持通配符（`*`）
+- `<target>`：（Optional, string）用逗号隔开的data stream、Index来限制请求。支持通配符(`*`)。支持通配符（`*`）
 
 ##### Query parameters
 
@@ -43605,7 +43653,7 @@ HEAD <target>
 
 ##### Path parameters
 
-- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。
+- `<target>`：（Optional, string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。
 
 ##### Query parameters
 
@@ -43617,9 +43665,9 @@ HEAD <target>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`open`。
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional, Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
 ##### Response codes
@@ -43669,7 +43717,7 @@ GET <target>/_alias/<alias>
 ##### Path parameters
 
 - `<alias>`：（Required, string）待获取的、用逗号隔开的别名名称。支持通配符（`*`）。若要获取所有的别名，可以忽略这个参数或者使用`*`、`_all`。
-- `<target>`：（Optional,string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
+- `<target>`：（Optional, string）用逗号隔开的、待添加的一个或多个data stream、Index。支持通配符(`*`)。通配符模式如果同时匹配到的data stream和indices会返回一个错误
 
 ##### Query parameters
 - allow_no_indices：（Optional, Boolean）如果为`false`，当通配符表达式、[index alias](#Aliases)或者`all`匹配缺失索引或者已关闭的索引则返回一个错误。即使请求找到了打开的索引也可能会返回错误。比如，请求中指定了`foo*, bar*`，但如果找到以`foo`开头的索引，但是没找到以`bar`开头的索引则会返回一个错误。默认为`true`
@@ -43708,7 +43756,7 @@ GET /_component_template/<component-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
@@ -43763,7 +43811,7 @@ GET /<target>/_mapping/field/<field>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
-  - include_defaults：（Optional,Boolean）如果为`true`，响应中包含默认的mapping值。默认值为`false`
+  - include_defaults：（Optional, Boolean）如果为`true`，响应中包含默认的mapping值。默认值为`false`
 
 ##### Examples
 
@@ -43956,9 +44004,9 @@ GET /<target>
   - none：不展开通配符模式
   默认值为`open`。
 - feature：（Optional, string）返回索引的指定特性。支持用逗号隔开。可选值为`aliases`、`mappings`以及`settings`。默认是`aliases`，`mappings`，`settings`
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional, Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
@@ -43993,9 +44041,9 @@ GET /<target>/_settings/<setting>
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`all`。
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
-- include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
+- include_defaults：（Optional, Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
@@ -44047,7 +44095,7 @@ GET /_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
@@ -44097,7 +44145,7 @@ GET /_index_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
@@ -44825,7 +44873,7 @@ POST /_index_template/_simulate/<index-template>
 
 ##### Query parameters
 
-- create：（Optional,Boolean）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
+- create：（Optional, Boolean）如果为`true`，如果请求中的模板通过测试并且不存在其他有相同`index patterns`（模版中的`index_patterns`字段）时才会被使用。如果为`false`，则会使用优先级最高的那个模版。注意的是不管是哪个值，都不会将模板永久的添加/更新到集群中，这只是用来模拟。默认为`false`
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`
 
 ##### Request body
@@ -45226,7 +45274,7 @@ HEAD /_template/<index-template>
 
 ##### Query parameters
 
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 
@@ -45514,7 +45562,7 @@ PUT /<target>/_settings
   - hidden：匹配隐藏的data streams和indices。必须和`open`、`closed`中的一个或全部组合使用
   - none：不展开通配符模式
   默认值为`all`。
-- flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
+- flat_settings：（Optional, Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - preserve_existing：（Optional, Boolean）如果为`true`，现有的索引设置不会发生变更。默认为`false`
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
@@ -46952,7 +47000,7 @@ GET <target>/_ilm/explain
 
 ##### Path parameters
 
-- `<target>`：（Optional,string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`
+- `<target>`：（Optional, string）用逗号隔开的一个或多个data stream、Index或者alias。支持通配符(\*)。若要查询所有的data stream、Index，则不指定这个参数或者使用`*`、`_all`
 - 
 ##### Query parameters
 
@@ -47348,10 +47396,10 @@ POST _scripts/<script-id>/<context>
 ##### Path parameters
 
 - `<script-id>`：（Required, string）stored script 或 search template的标识符。在集群中必须是唯一的。
-- `<context>`：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
+- `<context>`：（Optional, string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
 
 ##### Query parameters
-- context：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
+- context：（Optional, string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
   - 如果你同时在请求参数中指定了`<context>`，该接口只使用请求参数中的参数
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
@@ -47826,7 +47874,7 @@ POST _search/template
 
 ##### Path parameters
 
-- `<target>`：（Optional,string）用逗号隔开的data stream、indices以及alias的列表。支持通配符（`*`）。若要查询所有的data streams和indices，可以忽略或者使用`*`
+- `<target>`：（Optional, string）用逗号隔开的data stream、indices以及alias的列表。支持通配符（`*`）。若要查询所有的data streams和indices，可以忽略或者使用`*`
 
 ##### Query parameters
 
@@ -47840,22 +47888,22 @@ POST _search/template
   - none：不展开通配符模式
   默认值为`all`。
 
-- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息并。默认为`false`
-- ignore_throttled：（Optional,Boolean）如果为`true`，当索引被限流时，指定的具体的、展开的或别名的索引将不包括在响应中。默认值为`true`
+- explain：（Optional, Boolean）如果为`true`，响应中会包含额外关于打分计算的信息并。默认为`false`
+- ignore_throttled：（Optional, Boolean）如果为`true`，当索引被限流时，指定的具体的、展开的或别名的索引将不包括在响应中。默认值为`true`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
-- preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
+- preference：（Optional, string）指定在哪个节点或分片上执行。默认是随机
 - rest_total_hits_as_int：（Optional, Boolean）如果为`true`，响应返回整数类型的`hits.total`。如果为`false`，返回object类型的`hits.total`。默认为`false`
-- routing：（Optional,string）自定义的值用来路由到指定分片
+- routing：（Optional, string）自定义的值用来路由到指定分片
 - scroll：（Optional,[time value](#Time units)）为scroll操作保留[search context](#Keeping the search context alive)的保留时间。见[scroll search results](#Scroll search results)
 - scroll_size：（Optional,integer）定义了驱动操作（power operation）的scroll请求的大小。默认值为1000
-- search_type：（Optional,string）搜索操作的类型。可选项有：
+- search_type：（Optional, string）搜索操作的类型。可选项有：
   - `query_then_fetch`
   - `dfs_query_then_fetch`
-- typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
+- typed_keys：（Optional, Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
 
 ##### Response body
 
-- explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`。
+- explain：（Optional, Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`。
   - 如果你同时在请求参数中指定了 `explain`，那接口只使用请求参数中的参数
 - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
 - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
@@ -47897,10 +47945,10 @@ POST _msearch/template
   > max(1, (# of [data nodes](#Data node) * min([search thread pool size](#Thread pools), 10)))
 
 - rest_total_hits_as_int：（Optional, Boolean）如果为`true`，响应返回整数类型的`hits.total`。如果为`false`，返回object类型的`hits.total`。默认为`false`
-- search_type：（Optional,string）搜索操作的类型。可选项有：
+- search_type：（Optional, string）搜索操作的类型。可选项有：
   - `query_then_fetch`
   - `dfs_query_then_fetch`
-- typed_keys：（Optional,Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
+- typed_keys：（Optional, Boolean）如果为`true`，响应会用它们各自的类型作为前缀，来标识aggregation和suggester的名称。默认为`false`
 
 ##### Request  body
 
@@ -47930,14 +47978,14 @@ POST _msearch/template
 
   - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
   - index：（Optional, string or array of strings）待查询的data streams、indices以及alias。支持通配符(`*`)。使用数组指定多个目标
-  - preference：（Optional,string）指定在哪个节点或分片上执行。默认是随机
-  - request_cache：（Optional,Boolean）如果为`true`，该查询可以使用request cache。默认为索引层的settings。见[Shard request cache settings](#Shard request cache settings)
-  - routing：（Optional,string）自定义的[routing value](#_routing field)用来路由到指定分片
-- search_type：（Optional,string）是否使用全局的term以及文档词频用于文档打分。可选项  有：
+  - preference：（Optional, string）指定在哪个节点或分片上执行。默认是随机
+  - request_cache：（Optional, Boolean）如果为`true`，该查询可以使用request cache。默认为索引层的settings。见[Shard request cache settings](#Shard request cache settings)
+  - routing：（Optional, string）自定义的[routing value](#_routing field)用来路由到指定分片
+- search_type：（Optional, string）是否使用全局的term以及文档词频用于文档打分。可选项  有：
     - `query_then_fetch`：（默认）文档打分只基于当前分片中的term以及文档词频。这种类型通常执行很快但不够精确
     - `dfs_query_then_fetch`：文档打分只基于所有分片中的term以及文档词频。这种类型通常执行很慢但是精确
 - `<body>`：（Request,object）用于查询的参数
-  - explain：（Optional,Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`
+  - explain：（Optional, Boolean）如果为`true`，响应中会包含额外关于打分计算的信息。默认为`false`
   - id：（Required\*,string）search template的id。如果未指定`source`，那么必须提供这个参数
   - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
   - profile：（Optional, Boolean）如果为`true`，会描述query的执行过程信息。默认为`false`
@@ -48076,7 +48124,7 @@ POST /_snapshot/<repository>/<snapshot>/_mount
 
 - master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`，当快照完成后才返回一个响应。如果为`false`，当快照初始化结束就返回一个响应。默认值是`false`
-- storage：（Optional,string）searchable snapshot index的[Mount option](#Mount options)，可选值有：
+- storage：（Optional, string）searchable snapshot index的[Mount option](#Mount options)，可选值有：
   - full_copy (Default)：[Fully mounted index](#Fully mounted index)
   - shard_cache：[Partially mounted index.](#Partially mounted index)
 
@@ -48084,7 +48132,7 @@ POST /_snapshot/<repository>/<snapshot>/_mount
 
 - index：（Required, string）被挂载的快照中索引的名称
   - 如果未指定`renamed_index`，那么`index`的名称将用于创建新的索引
-- renamed_index：（Optional,string）将被创建的索引名称
+- renamed_index：（Optional, string）将被创建的索引名称
 - index_settings：（Optional,object）挂载后，索引的settings
 - ignore_index_settings：（Optional,array of strings）挂载后，需要被移除的索引settings
 
@@ -48127,7 +48175,7 @@ GET /_searchable_snapshots/<node_id>/cache/stats
 
 ##### Path parameters
 
-- `<node_id>`：（Optional,string）集群中目标节点的名称。例如，`nodeId1`、`nodeId2`。对于节点的选择选项，见[Node specification](#Node specification)
+- `<node_id>`：（Optional, string）集群中目标节点的名称。例如，`nodeId1`、`nodeId2`。对于节点的选择选项，见[Node specification](#Node specification)
 
 ##### Query parameters
 
