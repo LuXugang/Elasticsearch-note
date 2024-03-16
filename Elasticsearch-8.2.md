@@ -20992,7 +20992,7 @@ POST _search
 
 &emsp;&emsp;`match`规则匹配被分词后的文本（analyzed text）
 
-- query：（Required,string）你想要从`<field>`中查找的内容
+- query：（Required, string）你想要从`<field>`中查找的内容
 - max_gaps：（Optional,integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
 - ordered：（Optional,Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
@@ -21004,7 +21004,7 @@ POST _search
 
 &emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
-- prefix：（Required,string）你想要从顶层的`<field>`中以这个参数为前缀的term
+- prefix：（Required, string）你想要从顶层的`<field>`中以这个参数为前缀的term
 - analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
 - use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
@@ -21013,7 +21013,7 @@ POST _search
 
 &emsp;&emsp;`wildcard`规则使用通配符匹配term。最多可以扩展到128个term。如果匹配出超过128个，Elasticsearch会返回一个错误。
 
-- pattern：（Required,string）用来找到匹配的term的通配符
+- pattern：（Required, string）用来找到匹配的term的通配符
   - 这个参数支持两个通配符字符：
     - `?`：匹配任意的单个字符
     - `*`：匹配一个或多个字符，包括空的情况
@@ -21028,7 +21028,7 @@ POST _search
 
 &emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](#Fuzziness（Common options）)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
 
-- term：（Required,string）待匹配的term
+- term：（Required, string）待匹配的term
 - prefix_length：（Optional,integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
 - transpositions：（Optional,Boolean）
 - fuzziness：（Optional,Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
@@ -23643,7 +23643,7 @@ GET /_search
 
 ##### Parameters for \<field>
 
-- value：（Required,string）用于匹配`<field>`的域值的正则表达式。支持的操作符列表见[Regular expression syntax](#Regular expression syntax)
+- value：（Required, string）用于匹配`<field>`的域值的正则表达式。支持的操作符列表见[Regular expression syntax](#Regular expression syntax)
   - 默认情况下，正则表达式被限制最多1000个字符。你可以使用[index.max_regex_length](#index.max_regex_length)更改上限值。
 
   > WARNING：`regexp` query的性能非常取决于提供的正则表达式。若要提高性能，避免使用通配符模式，比如`.*`或者`.*?+`，没有后缀或前缀。
@@ -23661,7 +23661,144 @@ GET /_search
 &emsp;&emsp;如果[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为false，则不允许执行regexp Query。
 
 #### Term query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值精确匹配查询词
+
+&emsp;&emsp;你可以使用`term` query基于精确的值来超找文档。比如价格、产品ID或者用户名。
+
+> WARNING：避免对[text](#Text type family)类型的域使用`term` query。
+> 默认情况下，默认情况下，`text`类型的域作为[analysis](#Text analysis)的一部分，Elasticsearch 会更改文本字段的值。这可能会使得为`text`类型精确匹配变得困难。
+> 若要查询`text`类型的域，应该使用[match](#Match query)。
+
+##### Example request
+
+```text
+GET /_search
+{
+  "query": {
+    "term": {
+      "user.id": {
+        "value": "kimchy",
+        "boost": 1.0
+      }
+    }
+  }
+}
+```
+##### Top-level parameters for term
+
+- `<field>`：（Required, object）待查询的域
+
+##### Parameters for \<field>
+
+- value：（Required, string）待查询的`<field>`中的域值。若要返回满足匹配的文档，必须精确匹配域值，包括空格和大小写
+- boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
+  - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
+  - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+- case_insensitive：（Optional,Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+  - 7.10.0新增的参数
+
+##### NOTES
+
+###### Avoid using the term query for text fields
+
+&emsp;&emsp;默认情况下，Elasticsearch在分词阶段会修改`text`类型的域的域值。比如，默认的[standard analyzer](#Standard analyzer)对`text`类型的域的域值作以下的修改：
+
+- 移除大部分标点符号
+- 将剩下的内容切分为独立的词，称为[tokens](#Tokenizer reference)
+- 将tokens小写化
+
+&emsp;&emsp;若要更好的查询`text`域，`match`总是在执行查询前先对你提供的查询词（search term）进行分词。意味着`match` query是对分词后的token而不是整个查询词对`text`类型的域查询。
+
+&emsp;&emsp;`term` query不会对查询词分词。`term` query而是根据你提供的查询词作精确匹配。意味着在`text`域上执行`term` query可能返回很差甚至没有结果。
+
+&emsp;&emsp;若要查看两者的区别，可是尝试下下面的例子：
+
+1. 创建一个名为`full_text`的`text`类型的域
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "full_text": { "type": "text" }
+    }
+  }
+}
+```
+
+2. 索引一篇文档，`full_text`的域值为`Quick Brown Foxes!`
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "full_text":   "Quick Brown Foxes!"
+}
+```
+&emsp;&emsp;注意的是，`full_text`是`text`类型，Elasticsearch会在分词阶段将`Quick Brown Foxes!`修改为[`quick`, `brown`, `fox`]。
+
+3. 使用`term` qeury在`full_text`域上查询`Quick Brown Foxes!`，包含`pretty`参数，使得响应中的内容更加易读。
+
+```text
+GET my-index-000001/_search?pretty
+{
+  "query": {
+    "term": {
+      "full_text": "Quick Brown Foxes!"
+    }
+  }
+}
+```
+
+&emsp;&emsp;因为`full_text`中不包含精确的（exact）`Quick Brown Foxes!`，所以`term ` query不会返回结果
+
+4. 使用`match` query在`full_text`上查询`Quick Brown Foxes!`。
+
+```text
+GET my-index-000001/_search?pretty
+{
+  "query": {
+    "match": {
+      "full_text": "Quick Brown Foxes!"
+    }
+  }
+}
+```
+
+&emsp;&emsp;跟`term` query不同的是，`match` query在执行查询前会先对你提供的查询词`Quick Brown Foxes!`进行分词。`match` query会返回`full_field`的域值中包含`quick`、`brown`或者`fox`的文档。
+
+&emsp;&emsp;`match` query的响应中包含了上文中索引的文档。
+
+```text
+{
+  "took" : 1,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 0.8630463,
+    "hits" : [
+      {
+        "_index" : "my-index-000001",
+        "_id" : "1",
+        "_score" : 0.8630463,
+        "_source" : {
+          "full_text" : "Quick Brown Foxes!"
+        }
+      }
+    ]
+  }
+}
+```
 
 #### Terms set query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-set-query.html)
@@ -29485,7 +29622,7 @@ PUT /_ilm/policy/rollover_policy
 
 ##### Options
 
-- snapshot_repository：（Required,string）存储snapshot的[repository](#Register a snapshot repository)。
+- snapshot_repository：（Required, string）存储snapshot的[repository](#Register a snapshot repository)。
 - force_merge_index：（Optional,Boolean）将被管理的索引（managed index）强制合并到一个段。默认值为true。如果被管理的索引已经使用前面的[force merge](#Force merge)动作强制合并过了，那么`searchable snapshot`中的强制合并操作将不会执行。
 
   >NOTE：forcemerge这个动作属于best effort。这个动作有可能在一些分片正在分配时执行，在这种情况下这些分片不会进行合并。如果不是所有的分片都执行了forcemerge，那么searchable_snapshot动作会继续执行。
@@ -29670,7 +29807,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-- policy：（Required,string）SLM策略的名称，delete动作执行前需要等待执行这个策略。
+- policy：（Required, string）SLM策略的名称，delete动作执行前需要等待执行这个策略。
 
 ##### Example
 
@@ -39167,7 +39304,7 @@ POST /<follower_index>/_ccr/pause_follow
 
 ##### Path parameters
 
-- `<follower_index>`：（Required,string）follower index的名称
+- `<follower_index>`：（Required, string）follower index的名称
 
 ##### Example
 
@@ -39268,7 +39405,7 @@ POST /<follower_index>/_ccr/resume_follow
 
 ##### Path parameters
 
-- `<follower_index>`：（Required,string）follower index的名称
+- `<follower_index>`：（Required, string）follower index的名称
 
 ##### Request body
 
@@ -39361,7 +39498,7 @@ POST /<follower_index>/_ccr/unfollow
 
 ##### Path parameters
 
-- `<follower_index>`：（Required,string）follower index的名称
+- `<follower_index>`：（Required, string）follower index的名称
 
 ##### Example
 
@@ -39419,14 +39556,14 @@ POST /<leader_index>/_ccr/forget_follower
 
 ##### Path parameters
 
-- `<leader_index>`：（Required,string）leader index的名称
+- `<leader_index>`：（Required, string）leader index的名称
 
 ##### Request body
 
-- follower_cluster：（Required,string）包含follower index的汲取名称
-- follower_index：（Required,string）follower index的名称
-- follower_index_uuid：（Required,string）follower index的UUID
-- leader_remote_cluster：（Required,string）包含leader index的[remote cluster]()的别名（包含follower index的集群的视角）
+- follower_cluster：（Required, string）包含follower index的汲取名称
+- follower_index：（Required, string）follower index的名称
+- follower_index_uuid：（Required, string）follower index的UUID
+- leader_remote_cluster：（Required, string）包含leader index的[remote cluster]()的别名（包含follower index的集群的视角）
 
 ##### Example
 
@@ -39688,7 +39825,7 @@ DELETE /_ccr/auto_follow/<auto_follow_pattern_name>
 
 ##### Path parameters
 
-- `<auto_follow_pattern_name>`：（Required,string）待删除的auto-follow pattern集合。
+- `<auto_follow_pattern_name>`：（Required, string）待删除的auto-follow pattern集合。
 
 ##### Example
 
@@ -39739,10 +39876,10 @@ PUT /_ccr/auto_follow/<auto_follow_pattern_name>
 
 ##### Path parameters
 
-- `<auto_follow_pattern_name>`：（Required,string）auto-follow patterns集合的名称
+- `<auto_follow_pattern_name>`：（Required, string）auto-follow patterns集合的名称
 
 ##### Request body
-- remote_cluster：（Required,string）包含用来匹配的leader index的[remote cluster](#Remote clusters)
+- remote_cluster：（Required, string）包含用来匹配的leader index的[remote cluster](#Remote clusters)
 - leader_index_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中匹配leader index的index pattern集合
 - leader_index_exclusion_patterns：（Optional,array）用来在远端集群（`remote_cluster`中定义）中排除匹配到leader index的index pattern集合。远端集群中匹配到一个或者多个`leader_index_patterns`并且匹配到一个或多个`leader_index_exclusion_patterns`的索引不会被跟随
 - follow_index_pattern：（Optional,string）follower index的名称。模版`{{leader_index}}`可以将从leader index的名称衍生到follower Index中。当跟随一个data stream，使用`{{leader_index}}`，CCR不支持修改一个follower data stream中的backing Index
@@ -39843,7 +39980,7 @@ POST /_ccr/auto_follow/<auto_follow_pattern_name>/pause
 
 ##### Path parameters
 
-- `<auto_follow_pattern_name>`：（Required,string）待暂停的auto-follow pattern集合
+- `<auto_follow_pattern_name>`：（Required, string）待暂停的auto-follow pattern集合
 
 ##### Example
 
@@ -39881,7 +40018,7 @@ POST /_ccr/auto_follow/<auto_follow_pattern_name>/resume
 
 ##### Path parameters
 
-- `<auto_follow_pattern_name>`：（Required,string）待恢复的auto-follow pattern的名称
+- `<auto_follow_pattern_name>`：（Required, string）待恢复的auto-follow pattern的名称
 
 ##### Example
 
@@ -41030,7 +41167,7 @@ PUT /_enrich/policy/<enrich-policy>
 
 ##### Path parameters
 
-- `<enrich-policy>`：（Required,string）待创建/更新enrich policy
+- `<enrich-policy>`：（Required, string）待创建/更新enrich policy
 
 ##### Request body
 
@@ -41040,7 +41177,7 @@ PUT /_enrich/policy/<enrich-policy>
   - range：基于[term query](#Term query)去incoming document中匹配数值、日期或者IP地址类型的域，然后使用匹配到的域值去enrich index使用相同的域执行一个范围查询。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
   - indices：（Required, string or array of strings）用来创建enrich index的一个或多个source index
     - 如果指定了多个索引，他们必须有一个共同的`match_field`
-  - match_field：（Required,string）source index中的域，用来跟incoming document匹配
+  - match_field：（Required, string）source index中的域，用来跟incoming document匹配
   - enrich_fields：（Required, array of strings）将`enrich_fields`中指定的域添加到匹配到的incoming document中。source index中必须存在这些域
   - query：（Optional, [Query DSL query object)](#Query DSL)）用来过滤enrich index中的每一篇文档。enrich policy只使用匹配这个query的文档去丰富incoming document。默认是[match_all](#Match all query) query
 
@@ -41074,7 +41211,7 @@ DELETE /_enrich/policy/<enrich-policy>
 
 ##### Path parameters
 
-- `<enrich-policy>`：（Required,string）待删除的enrich policy
+- `<enrich-policy>`：（Required, string）待删除的enrich policy
 
 
 #### Get enrich policy API
@@ -41269,7 +41406,7 @@ POST /_enrich/policy/<enrich-policy>/_execute
 
 ##### Path parameters
 
-- `<enrich-policy>`：（Required,string）待执行的enrich policy
+- `<enrich-policy>`：（Required, string）待执行的enrich policy
 
 ##### Query parameters
 
@@ -42850,7 +42987,7 @@ PUT _template/template_1
 &emsp;&emsp;见[Get index template (legacy)](#Get index template API)。
 
 ##### Path parameters
-- `<index-template>`：（Required,string）用于创建index template的名称。
+- `<index-template>`：（Required, string）用于创建index template的名称。
 
 ##### Query parameters
 
@@ -43000,7 +43137,7 @@ DELETE /_component_template/<component-template>
 
 ##### Path parameters
 
-- `<component-template>`：（Required,string）用逗号隔开的，可以是通配符表达式的组件模版名称来限制请求
+- `<component-template>`：（Required, string）用逗号隔开的，可以是通配符表达式的组件模版名称来限制请求
 
 ##### Query parameters
 
@@ -43030,7 +43167,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-- `<index-uuid>`：（Required,string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required, string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query parameters
 
@@ -43759,7 +43896,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-- `<index-uuid>`：（Required,string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required, string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query Parameters
 
@@ -44931,7 +45068,7 @@ GET /_resolve/index/<name>
 
 ##### Path parameters
 
-- `<name>`：（Required,string）用逗号隔开的indices、aliases、data streams的Index pattern或者名称。在[remote clusters](#Remote clusters)上的资源可以使用`<cluster>:<name>`语法来指定
+- `<name>`：（Required, string）用逗号隔开的indices、aliases、data streams的Index pattern或者名称。在[remote clusters](#Remote clusters)上的资源可以使用`<cluster>:<name>`语法来指定
 
 ##### Query parameters
 
@@ -46907,7 +47044,7 @@ POST _scripts/<script-id>/<context>
 
 ##### Path parameters
 
-- `<script-id>`：（Required,string）stored script 或 search template的标识符。在集群中必须是唯一的。
+- `<script-id>`：（Required, string）stored script 或 search template的标识符。在集群中必须是唯一的。
 - `<context>`：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
 
 ##### Query parameters
@@ -46919,7 +47056,7 @@ POST _scripts/<script-id>/<context>
 ##### Request body
 
 - script：（Required,object）包含脚本或search template，参数以及脚本语言
-  - lang：（Required,string）[Script language](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)。对于Search template，使用的是`mustache`
+  - lang：（Required, string）[Script language](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html#scripting-available-languages)。对于Search template，使用的是`mustache`
   - params：（Optional,object）键值对用来替换模板中的Mustache变量。key是变量的名称。值是变量的值
   - source：（Required\*,object）对于脚本来说就是包含脚本的字符串
     - 对于search template来说，是包含了search template的对象。支持跟[search API](#Search API)相同的参数。同样支持[Mustache](https://mustache.github.io/)变量
@@ -46940,7 +47077,7 @@ DELETE _scripts/<script-id>
 
 ##### Path parameters
 
-- `<script-id>`：（Required,string）stored script或search template的标识符
+- `<script-id>`：（Required, string）stored script或search template的标识符
 
 ##### Query parameters
 
@@ -47003,7 +47140,7 @@ GET _scripts/<script-id>
 
 ##### Path parameters
 
-- `<script-id>`：（Required,string）stored script或search template的标识符
+- `<script-id>`：（Required, string）stored script或search template的标识符
 
 ##### Query parameters
 
@@ -47629,8 +47766,8 @@ POST /_snapshot/<repository>/<snapshot>/_mount
 
 ##### Path parameters
 
-- `<repository>`：（Required,string）包含待挂载为索引的快照的仓库名称
-- `<snapshot>`：（Required,string）待挂载为索引的快照名称
+- `<repository>`：（Required, string）包含待挂载为索引的快照的仓库名称
+- `<snapshot>`：（Required, string）待挂载为索引的快照名称
 
 ##### Query parameters
 
@@ -47642,7 +47779,7 @@ POST /_snapshot/<repository>/<snapshot>/_mount
 
 ##### Request body
 
-- index：（Required,string）被挂载的快照中索引的名称
+- index：（Required, string）被挂载的快照中索引的名称
   - 如果未指定`renamed_index`，那么`index`的名称将用于创建新的索引
 - renamed_index：（Optional,string）将被创建的索引名称
 - index_settings：（Optional,object）挂载后，索引的settings
@@ -48199,7 +48336,7 @@ GET /_snapshot/<repository>/<snapshot>
 
 - `<repository>`：（Optional, string）快照仓库名称用逗号隔开来限制请求量。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
   - 若要获取集群中所有注册的快照仓库，移除这个参数或者使用`*`或`_all`
-- `<Snapshot>`：（Required,string）快照名称用逗号隔开。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
+- `<Snapshot>`：（Required, string）快照名称用逗号隔开。支持通配符`*`包括使用以`-`开头进行排除的组合通配符。
   - 若要获取某个已注册的仓库中的所有快照，使用通配符（`*`）或者`_all`
   - 使用`_current`获取当前正在运行的快照
 
@@ -48703,7 +48840,7 @@ GET _snapshot/<repository>/<snapshot>/_status
 ##### Path parameters
 
 - `<repository>`：（Optional, string）快照仓库名称用逗号隔开来限制请求量。如果未指定`<snapshot>`，可以支持通配符`*`。
-- `<Snapshot>`：（Required,string）快照名称用逗号隔开用于获取其状态。默认是当前运行中的快照。不支持通配符（`*`）
+- `<Snapshot>`：（Required, string）快照名称用逗号隔开用于获取其状态。默认是当前运行中的快照。不支持通配符（`*`）
 
 ##### Query parameters
 
@@ -48867,7 +49004,7 @@ GET _index_template/*?filter_path=index_templates.name,index_templates.index_tem
 ##### Path parameters
 
 - `<repository>`：（Optional, string）仓库的名称用来读取待恢复的快照
-- `<Snapshot>`：（Required,string）待恢复的快照名称
+- `<Snapshot>`：（Required, string）待恢复的快照名称
 
 ##### Query parameters
 
