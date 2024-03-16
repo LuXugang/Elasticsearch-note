@@ -22085,9 +22085,9 @@ GET /_search
 
 - rewrite：（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](#rewrite parameter)。
 - time_zone：（Optional, string）使用[Coordinated Universal Time (UTC) offset ](https://en.wikipedia.org/wiki/List_of_UTC_offsets)或者[IANA time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)将query string中的`date`值转化为UTC。
-  &emsp;&emsp;Valid values are ISO 8601 UTC offsets, such as +01:00 or -08:00, and IANA time zone IDs, such as America/Los_Angeles.
+  - 你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`
 
-> NOTE：`time_zone`参数不会影响`now`这种[date math](#Date Math)。`now`始终是UTC的当前系统时间。但是，`time_zone`参数会转换使用now和[date math rounding](#Date Math)计算出的日期。例如，使用`time_zone`参数会转换`now/d`的值。
+  > NOTE：`time_zone`参数不会影响`now`这种[date math](#Date Math)。`now`始终是UTC的当前系统时间。但是，`time_zone`参数会转换使用now和[date math rounding](#Date Math)计算出的日期。例如，使用`time_zone`参数会转换`now/d`的值。
 
 ##### Note
 
@@ -23389,7 +23389,7 @@ GET /_search
 
 ##### Notes
 
-&emsp;&emsp;如果[search.allow_expensive_queries]()设置为`false`则不允许执行这个query。
+&emsp;&emsp;如果[search.allow_expensive_queries](##Allow expensive queries（Query DSL）)设置为`false`则不允许执行这个query。
 
 #### IDs
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-ids-query.html#query-dsl-ids-query)
@@ -23470,7 +23470,144 @@ GET /_search
 &emsp;&emsp;如果将[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为`false`则不允许执行prefix query。然而如果开启了[index_prefixes](#index_prefixes)，则认为构建了优化的Query，不认为这种查询会很慢，因此允许执行。
 
 #### Range query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值属于指定的范围。
+
+##### Example request
+
+&emsp;&emsp;下面的查询中，返回`age`域的域值在`10`和`28`之间的文档。
+
+```text
+GET /_search
+{
+  "query": {
+    "range": {
+      "age": {
+        "gte": 10,
+        "lte": 20,
+        "boost": 2.0
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for range
+
+- `<field>`：（Required, object）待查询的域
+
+##### Parameters for \<field>
+
+- gt：（Optional）大于
+- gte：（Optional）大于等于
+- lt：（Optional）小于
+- lte：（Optional）小于等于
+- format：（Optional, string）日期格式用来解析query中指定的日期，使得Elasticsearch可以理解你提供的日期
+  - 默认情况下Elasticsearch使用`<field>`在mapping中指定的[date  format]()。这个参数可以覆盖mapping中的设置
+  - 更多语法见[format](#format(mapping parameter))
+
+  > WARNING：> WARNING：如果format或者日期值不完整，date range aggregation使用默认值替换缺失的部分。见[Missing date components](#Missing date components)
+
+- relation：（Optional, string）：为`range`域指定如何进行匹配。可选值有：
+  - INTERSECTS (Default)：范围与文档字段值相交的文档将被匹配
+  - CONTAINS：只有当文档字段值完全包含在查询指定的范围内时，文档才会被匹配
+  - WITHIN：只有当查询指定的范围完全包含在文档字段值内时，文档才会被匹配
+- time_zone：（Optional, string）使用[Coordinated Universal Time (UTC) offset ](https://en.wikipedia.org/wiki/List_of_UTC_offsets)或者[IANA time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)将query string中的`date`值转化为UTC。
+  - 你也可以用 ISO 8601 UTC 偏移来指定时区（`+01:00 or -08:00`）或者 IANA time zone ID，比如`America/Los_Angeles`
+  - 见[Time zone in range queries](#Example query using time_zone parameter)查看使用了这个参数的例子
+
+  > NOTE：`time_zone`参数不会影响`now`这种[date math](#Date Math)。`now`始终是UTC的当前系统时间。但是，`time_zone`参数会转换使用now和[date math rounding](#Date Math)计算出的日期。例如，使用`time_zone`参数会转换`now/d`的值。
+
+- boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
+  - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
+  - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+
+##### Notes
+
+###### Using the range query with text and keyword fields
+
+&emsp;&emsp;如果[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为false，则不会运行在[text](#Text type family)或[keyword](#Keyword type family)类型的域上的range query。
+
+###### Using the range query with date fields
+
+&emsp;&emsp;如果`<field>`是[date](#Date field type)类型，下面的参数可以使用[date math](#Date Math)：
+
+- gt
+- gte
+- lt
+- lte
+
+&emsp;&emsp;例如，下面的查询中根据`timestamp`域返回今天跟昨天的文档
+
+```text
+GET /_search
+{
+  "query": {
+    "range": {
+      "timestamp": {
+        "gte": "now-1d/d",
+        "lt": "now/d"
+      }
+    }
+  }
+}
+```
+
+###### Missing date components
+
+&emsp;&emsp;对于range query以及[date range](#Date range aggregation) aggregation，Elasticsearch使用下面的值替换缺失的date components。不能替换缺失的year component：
+
+```text
+MONTH_OF_YEAR:    01
+DAY_OF_MONTH:     01
+HOUR_OF_DAY:      23
+MINUTE_OF_HOUR:   59
+SECOND_OF_MINUTE: 59
+NANO_OF_SECOND:   999_999_999
+```
+
+&emsp;&emsp;比如说如果format是`yyyy-MM`，那么Elasticsearch会将`gt`的`2099-12`转化为`099-12-01T23:59:59.999_999_999Z`。这个日期使用了年（2099）跟月（12）。但是使用了默认的日（`01`）时（`hour`）分（`59`）秒（`59`）以及纳秒（`999_999_999`）。
+
+###### Numeric date range value
+
+&emsp;&emsp;如果没有指定date format并且range query作用在一个date类型的域上，那么在查询中提供了数值类型的值后，它会被用自纪元以来的毫秒数（milliseconds-since-the-epoch）表示。如果你提供的数值希望是用来表示年份，比如说`2020`，那么你需要将其作为字符串，Elasticsearch会根据默认的format或者mapping中定义的format进行转化。
+
+###### Date math and rounding
+
+&emsp;&emsp;Elasticsearch根据以下参数来舌入（round）[date math](#Date Math)值：
+
+- gt：向上舍入至四舍五入值（比如如果是11月份，则四舍五入到12月份）之后的第一个毫秒
+  - 例如，`2014-11-18||/M` 舍入至 `2014-12-01T00:00:00.000`，不包括整个11月份
+- gte：向下舍入至第一个毫秒
+  - 例如，`2014-11-18||/M` 舍入至 `2014-11-01T00:00:00.000`，包括整个月份。
+- lt：向下舍入至四舍五入值（比如如果是11月份，则四舍五入到10月份）之前的最后一个毫秒。
+  - 例如，`2014-11-18||/M` 舍入至 `2014-10-31T23:59:59.999`，不包括整个11月份。
+- lte：在舍入间隔中向上舍入至最后一个毫秒。
+  - 例如，`2014-11-18||/M` 舍入至 `2014-11-30T23:59:59.999`，包括整个月份。
+
+###### Example query using time_zone parameter
+
+&emsp;&emsp;你可以使用`time_zone`参数使用UTC偏移值将其转化为UTC。例如：
+
+```text
+GET /_search
+{
+  "query": {
+    "range": {
+      "timestamp": {
+        "time_zone": "+01:00",        
+        "gte": "2020-01-01T00:00:00", 
+        "lte": "now"                  
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，指明使用`+01:00`这个UTC偏移
+&emsp;&emsp;第9行，根据UTC偏移，Elasticsearch会将这个日期转化为`2019-12-31T23:00:00 UTC`
+&emsp;&emsp;第10行，`time_zone`参数不会影响`now`值
 
 #### Regexp query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-regexp-query.html)
