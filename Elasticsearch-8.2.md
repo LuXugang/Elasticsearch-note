@@ -23610,7 +23610,55 @@ GET /_search
 &emsp;&emsp;第10行，`time_zone`参数不会影响`now`值
 
 #### Regexp query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-regexp-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-regexp-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)。
+
+&emsp;&emsp;正则表达式是一种使用称为操作符的占位符字符来匹配数据中模式的方法。有关 regexp 查询支持的操作符列表，请参见[正则表达式语法](#Regular expression syntax)。
+
+##### Example request
+
+&emsp;&emsp;下面的请求中，返回满足`user.id`的域值以`k`开头并且以`y`结尾的文档。`.*`操作符匹配任意长度的任意字符，包括没有字符。可以匹配`ky`、`kay`以及`kimchy`。
+
+```text
+GET /_search
+{
+  "query": {
+    "regexp": {
+      "user.id": {
+        "value": "k.*y",
+        "flags": "ALL",
+        "case_insensitive": true,
+        "max_determinized_states": 10000,
+        "rewrite": "constant_score"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for regexp
+
+- `<field>`：（Required, object）待查询的域
+
+##### Parameters for \<field>
+
+- value：（Required,string）用于匹配`<field>`的域值的正则表达式。支持的操作符列表见[Regular expression syntax](#Regular expression syntax)
+  - 默认情况下，正则表达式被限制最多1000个字符。你可以使用[index.max_regex_length](#index.max_regex_length)更改上限值。
+
+  > WARNING：`regexp` query的性能非常取决于提供的正则表达式。若要提高性能，避免使用通配符模式，比如`.*`或者`.*?+`，没有后缀或前缀。
+
+- flags：（Optional, string）允许使用的正则表达式操作符。对于可用的操作符以及更多信息见[Regular expression syntax]()
+- case_insensitive：（Optional,Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- max_determinized_states：（Optional, integer）Query要求[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)的最大值。默认值为`1000`
+  - Elasticsearch在内部使用[Lucene](https://lucene.apache.org/core/)的正则表达式。Lucene将每一个正则表达式转化为一个[有限自动状态](https://amazingkoala.com.cn/Lucene/gongjulei/2019/0417/Automaton/)
+- rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
+
+##### NOTES
+
+##### Allow expensive queries（Regexp query）
+
+&emsp;&emsp;如果[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为false，则不允许执行regexp Query。
 
 #### Term query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
