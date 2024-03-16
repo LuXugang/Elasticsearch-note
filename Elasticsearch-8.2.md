@@ -14155,7 +14155,7 @@ PUT /my-index-000001
 
 ##### Configurable parameters
 
-- escaped_tags：（Optional，array of strings）没有尖括号（`< >`）修饰的HTML元素列表。这个filter从文本中移除HTML元素的过程中会跳过这些。比如说配置了`["p"]`则会跳过`<p>`这个HTML元素
+- escaped_tags：（Optional, array of strings）没有尖括号（`< >`）修饰的HTML元素列表。这个filter从文本中移除HTML元素的过程中会跳过这些。比如说配置了`["p"]`则会跳过`<p>`这个HTML元素
 
 ##### Customize
 
@@ -17477,7 +17477,7 @@ POST _ingest/pipeline/_simulate
 ##### Table 36. Set Options
 
 - field：（Required）待插入、插入更新（upsert）、更新的域。支持[template snippets](#Access source fields in a processor)
-- value：（Required，但是不能跟`copy_from`同时指定）用于设置域值。支持[template snippets](#Access source fields in a processor)。域值可以通过`value`或者`copy_from`指定
+- value：（Required,但是不能跟`copy_from`同时指定）用于设置域值。支持[template snippets](#Access source fields in a processor)。域值可以通过`value`或者`copy_from`指定
 - copy_from：（Optional）从某个域拷贝到`field`中，不能同时设置`value`。支持的数据类型有`boolean`, `number`, `array`, `object`, `string`, `date`等等
 - override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
 - ignore_empty_value：（Optional）（默认值：false）如果为`true`并且`value`是[template snippets](#Access source fields in a processor)并计算出`null`值或者是空的字符串时，processor就不会更改这篇文档
@@ -20864,7 +20864,7 @@ GET /_search
 
 ##### Top-level parameters for constant_score
 
-- filter：（Required，query object）[Filter query](#Boolean query)是你想要运行的query，任何返回的文档都必须匹配这个query。
+- filter：（Required,query object）[Filter query](#Boolean query)是你想要运行的query，任何返回的文档都必须匹配这个query。
   - Filter query 不会计算 [relevance score](#Relevance scores)，为了提高性能，Elasticsearch会自动的缓存使用频繁的filter query。
 - boost：（Optional,float）一个浮点型的数字用于作为满足`filter` query的所有文档固定的[relevance score](#Relevance scores)。默认值是`1.0`。
 
@@ -20978,7 +20978,7 @@ POST _search
 
 ##### Top-level parameters for intervals
 
-- `<field>`：（Required，rule object）你想要查询的域名。
+- `<field>`：（Required,rule object）你想要查询的域名。
   - 这个参数的值是一个规则对象（rule object），基于待匹配的terms、顺序以及接近度匹配文档。
   - 可用的规则包括：
     - [match](#match rule parameters)
@@ -20992,7 +20992,7 @@ POST _search
 
 &emsp;&emsp;`match`规则匹配被分词后的文本（analyzed text）
 
-- query：（Required，string）你想要从`<field>`中查找的内容
+- query：（Required,string）你想要从`<field>`中查找的内容
 - max_gaps：（Optional,integer）匹配到的term之间的最大距离。超过这个距离被认为是不满足匹配的。默认值为`-1`。
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
 - ordered：（Optional,Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
@@ -21004,7 +21004,7 @@ POST _search
 
 &emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
-- prefix：（Required，string）你想要从顶层的`<field>`中以这个参数为前缀的term
+- prefix：（Required,string）你想要从顶层的`<field>`中以这个参数为前缀的term
 - analyzer：（Optional,string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
 - use_field：（Optional,string）如果指定，将从该字段（域名）而不是顶层字段`<field>`中匹配间隔。
   - The `prefix` is normalized using the search analyzer from this field, unless a separate analyzer is specified.
@@ -21013,7 +21013,7 @@ POST _search
 
 &emsp;&emsp;`wildcard`规则使用通配符匹配term。最多可以扩展到128个term。如果匹配出超过128个，Elasticsearch会返回一个错误。
 
-- pattern：（Required，string）用来找到匹配的term的通配符
+- pattern：（Required,string）用来找到匹配的term的通配符
   - 这个参数支持两个通配符字符：
     - `?`：匹配任意的单个字符
     - `*`：匹配一个或多个字符，包括空的情况
@@ -21028,7 +21028,7 @@ POST _search
 
 &emsp;&emsp;`fuzzy`规则用来匹配跟提供的term相似的term，基于[Fuzziness](#Fuzziness（Common options）)中的编辑距离实现。如果模糊表达式匹配超过128个term，Elasticsearch会返回一个错误。
 
-- term：（Required，string）待匹配的term
+- term：（Required,string）待匹配的term
 - prefix_length：（Optional,integer）模糊匹配出的term跟`term`中前`prefix_length`个字符相同。默认值为`0`
 - transpositions：（Optional,Boolean）
 - fuzziness：（Optional,Boolean）编辑距离中是否允许相邻的两个字符进行交换（比如ab->ba）
@@ -23392,7 +23392,7 @@ GET /_search
 &emsp;&emsp;如果[search.allow_expensive_queries]()设置为`false`则不允许执行这个query。
 
 #### IDs
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-ids-query.html#query-dsl-ids-query)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-ids-query.html#query-dsl-ids-query)
 
 &emsp;&emsp;基于IDs返回文档，这个查询使用了文档的IDs，IDs被存储在[\_id](#_id-field)字段中。
 
@@ -23411,19 +23411,63 @@ GET /_search
 
 ##### Top-level parameters for ids
 
-- values：（Required，String数组）[document IDs](#_id-field)数组。
-
-
-### minimum_should_match parameter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-minimum-should-match.html)
-
-### rewrite parameter
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
+- values：（Required,array of strings）[document IDs](#_id-field)数组。
 
 #### Prefix query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
+（8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值包含指定的前缀。
+
+##### Example request
+
+&emsp;&emsp;下面的查询中，将返回`user.id`域的域值以`ki`为前缀的文档。
+
+```text
+GET /_search
+{
+  "query": {
+    "prefix": {
+      "user.id": {
+        "value": "ki"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for prefix
+
+- `<field>`：（Required, object）待查询的域
+
+##### Parameters for \<field>
+
+- value：（Required, string）待查询的前缀值
+- rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
+- case_insensitive：（Optional,Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+  - 7.10.0新增的参数
+
+##### Notes
+
+###### Short request example
+
+&emsp;&emsp;你可以通过组合`<field>`和`value`简化`prefix`的语法。
+
+```text
+GET /_search
+{
+  "query": {
+    "prefix" : { "user" : "ki" }
+  }
+}
+```
+
+###### Speed up prefix queries
+
+&emsp;&emsp;你可以通过使用mapping 参数[ndex_prefixes](#index_prefixes)提高prefix query的查询。开启这个参数后，Elasticsearch会将前缀索引到一个域中。这样能让Elasticsearch在大型索引中能更快的执行prefix query。
 
 ###### Allow expensive queries（Prefix query）
+
+&emsp;&emsp;如果将[search.allow_expensive_queries](#Allow expensive queries（Query DSL）)设置为`false`则不允许执行prefix query。然而如果开启了[index_prefixes](#index_prefixes)，则认为构建了优化的Query，不认为这种查询会很慢，因此允许执行。
 
 #### Range query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
@@ -23442,6 +23486,12 @@ GET /_search
 
 #### Wildcard query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
+
+### minimum_should_match parameter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-minimum-should-match.html)
+
+### rewrite parameter
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
 
 ## Aggregations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
@@ -42795,11 +42845,11 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-- `<index-uuid>`：（Required，string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required,string）待删除的索引的UUID。可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query parameters
 
-- accept_data_loss：（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
+- accept_data_loss：（Required,Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -43524,11 +43574,11 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Path parameters
 
-- `<index-uuid>`：（Required，string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
+- `<index-uuid>`：（Required,string）待导入的索引的UUID，你可以使用[List dangling indices API](#List dangling indices API)获取索引的UUID。
 
 ##### Query Parameters
 
-- accept_data_loss：（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
+- accept_data_loss：（Required,Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
