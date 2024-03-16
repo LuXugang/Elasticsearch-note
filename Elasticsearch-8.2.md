@@ -9108,7 +9108,7 @@ PUT my-index-000001
 
 &emsp;&emsp;[\_index](#_index field)：文档所属索引。
 
-&emsp;&emsp;[\_id](#_id field)：文档的ID。
+&emsp;&emsp;[\_id](#\_id field)：文档的ID。
 
 ##### Document source metadata fields
 
@@ -9429,7 +9429,7 @@ shard_num = (hash(_routing) % num_routing_shards) / routing_factor
 
 &emsp;&emsp;num_primary_shards即索引设置中的[index.number_of_shards](#index.number_of_shards)。
 
-&emsp;&emsp;\_routing的默认值是文档的[\_id](#_id field)。自定义的路由模板（routing pattern）可以通过对某个文档指定一个自定义的`routing`值实现。例如：
+&emsp;&emsp;\_routing的默认值是文档的[\_id](#\_id field)。自定义的路由模板（routing pattern）可以通过对某个文档指定一个自定义的`routing`值实现。例如：
 
 ```text
 PUT my-index-000001/_doc/1?routing=user1&refresh=true 
@@ -23800,14 +23800,317 @@ GET my-index-000001/_search?pretty
 }
 ```
 
-#### Terms set query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-set-query.html)
-
 #### Terms query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值精确匹配一个或多个查询词。
+
+&emsp;&emsp;`terms` query跟[term query](#Term query)是相同的，差别就是你可以查询多个值。
+
+##### Example request
+
+&emsp;&emsp;下面的请求中，返回的文档中的`user.id`的域值是`kimchy`或者`elkbee`。
+
+```text
+GET /_search
+{
+  "query": {
+    "terms": {
+      "user.id": [ "kimchy", "elkbee" ],
+      "boost": 1.0
+    }
+  }
+}
+```
+
+##### Top-level parameters for terms
+
+- `<field>`：（Required, object）待查询的域。
+  - 这个参数的值是一个term数组，这些term是你希望在`<field>`能匹配到的域值。若要返回一篇文档，必须精确匹配提供的term，包括空格和大小写。
+  - 默认情况下，Elasticsearch限制`terms`中的数量最大值为`65,536`。你可以使用[index.max_terms_count](#index.max_terms_count)修改这个限制
+  
+  > NOTE：若要使用文档中的域值作为查询词，可以使用[terms lookup](#Terms lookup)参数。
+
+- boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
+  - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
+  - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
+
+##### Notes
+
+###### Highlighting terms queries
+
+&emsp;&emsp;[Highlighting](#Highlighting) is best-effor only。Elasticsearch可能不会为`term` query返回高亮结果的原因可能有：
+
+- Highlighting的类型
+- query中term的数量
+
+###### Terms lookup
+
+&emsp;&emsp;Terms lookup获取现有的文档中的域值。Elasticsearch随后使用这些值作为查询词。当查询大量的term集合时可能比较有用。
+
+&emsp;&emsp;若要运行一个terms lookup。必须开启域的[\_source](#\_source field)。你不能再远端索引中使用cross-cluster search运行terms lookup。
+
+> NOTE：默认情况下，Elasticsearch限制`terms` query的term数量为`65536`。包括通过terms lookup获取的term。你可以使用[index.max_terms_count](#index.max_terms_count)修改这个限制
+
+&emsp;&emsp;为了能降低网络压力，terms lookup会尽可能在本地的分片中获取文档的值。如果你的terms data不是很大，可以考虑使用单个主分片并复制到所有适用的数据节点上来最小化网络流量。
+
+&emsp;&emsp;若要执行一个terms lookup，可以实现下面的参数。
+
+###### Terms lookup Parameters
+
+- index：（Required, string）索引的名字用来获取域值
+- id：（Required, string）文档的[ID](#\_id field)用来获取域值
+- path：（Required, string）域的名字用来获取域值。Elasticsearch使用这些域值作为query的查询词
+  - 如果域值包含嵌套的内部对象，你可以点符号访问这些对象
+- routing：（Optional, string）自定义的文档[routing value](#\_routing field)来获取term值。如果在索引期间这个提供了这个自定义的路由值，那么这个参数是必须要有的
+
+###### Terms lookup example
+
+&emsp;&emsp;若要查看terms lookup是如何工作的，尝试下面的例子：
+
+1. 创建一个索引，包含名为`color`的`keyword`类型的域
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "color": { "type": "keyword" }
+    }
+  }
+}
+```
+
+2. 索引一篇文档，ID为1，`color`域的值为`["blue", "green"]`。
+
+```text
+PUT my-index-000001/_doc/1
+{
+  "color":   ["blue", "green"]
+}
+```
+
+3. 再索引一篇文档，ID为2，`color`的域值为`blue`。
+
+```text
+PUT my-index-000001/_doc/2
+{
+  "color":   "blue"
+}
+```
+
+4. 使用`terms` query以及terms lookup参数找出跟第2篇文档中有一个或多个相同域值的文档。包含`pretty`参数，使得响应中的内容更加易读。
+
+```text
+GET my-index-000001/_search?pretty
+{
+  "query": {
+    "terms": {
+        "color" : {
+            "index" : "my-index-000001",
+            "id" : "2",
+            "path" : "color"
+        }
+    }
+  }
+}
+```
+
+&emsp;&emsp;由于文档2跟文档1在`color`中都包含`blue`，因此Elasticsearch同时返回这两篇文档。
+
+```text
+{
+  "took" : 17,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 2,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "my-index-000001",
+        "_id" : "1",
+        "_score" : 1.0,
+        "_source" : {
+          "color" : [
+            "blue",
+            "green"
+          ]
+        }
+      },
+      {
+        "_index" : "my-index-000001",
+        "_id" : "2",
+        "_score" : 1.0,
+        "_source" : {
+          "color" : "blue"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Terms set query
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-set-query.html)
+
+&emsp;&emsp;返回的文档中，待查询的域的域值精确匹配一个或多个查询词，你可以使用一个域或者脚本定义至少要匹配的查询词数量。
+
+&emsp;&emsp;`terms_set`跟[terms query](#Terms query)是一样的，差别是你可以定义一篇文档至少要匹配term的数量：
+
+- 比如有一个名为`programming_languages`的域，包含了熟知的编程语言，有C++、Java或者php。你可以用这个query来匹配文档，并且要求必须至少匹配到两种编程语言。
+- 比如你有一个`permission`的域，包含某个应用的可能的用户权限。你可以使用这个query来匹配文档，并且要求必须匹配一个权限子集
+
+##### Example request
+
+###### Index setup
+
+&emsp;&emsp;大多数情况下，你需要包含一个[numeric](#Numeric field types)类型的域来使用`terms_set` query。这个域的域值为满足匹配的文档要求匹配的term数量。
+
+&emsp;&emsp;若要查看如何为`terms_set` query设置一个索引，尝试下面的例子
+
+1. 创建一个名为`job-candidates`的索引，该索引有以下的域
+- 名为`name`的[keyword](#Keyword type family)类型的域。域值为求职者的姓名
+- 名为`programming_languages`的[keyword](#Keyword type family)类型的域。域值为求职者熟知的编程语言
+- 名为`required_matches`的[numeric](#Numeric field types)类型的域。域值为满足匹配的文档要求匹配的term数量
+
+```text
+PUT /job-candidates
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "keyword"
+      },
+      "programming_languages": {
+        "type": "keyword"
+      },
+      "required_matches": {
+        "type": "long"
+      }
+    }
+  }
+}
+```
+
+2. 索引一篇文档，ID为1以及这些内容：
+
+- `name`的域值为`Jane Smith`
+- `programming_languages`的域值为`["c++", "java"]`
+- `required_matches`的域值为`2`
+
+&emsp;&emsp;添加?refresh参数使得索引后马上对搜索可见。
+
+```text
+PUT /job-candidates/_doc/1?refresh
+{
+  "name": "Jane Smith",
+  "programming_languages": [ "c++", "java" ],
+  "required_matches": 2
+}
+```
+
+3. 索引另一篇文档，ID为2以及这些内容：
+
+- `name`的域值为`Jason Response`
+- `programming_languages`的域值为`["java", "php"]`
+- `required_matches`的域值为`2`
+
+```text
+PUT /job-candidates/_doc/2?refresh
+{
+  "name": "Jason Response",
+  "programming_languages": [ "java", "php" ],
+  "required_matches": 2
+}
+```
+
+&emsp;&emsp;现在你可以使用`required_matches`作为在`terms_set` query中，满足匹配的文档需要匹配的term数量。
+
+###### Example query
+
+&emsp;&emsp;下面的查询返回的文档中，`programming_languages`中至少包含下面两个term：
+
+- c++
+- java
+- php
+
+&emsp;&emsp;`minimum_should_match_field`为`required_matches`。意味着匹配term的数量为`2`，也就是`required_matches`的域值。
+
+```text
+GET /job-candidates/_search
+{
+  "query": {
+    "terms_set": {
+      "programming_languages": {
+        "terms": [ "c++", "java", "php" ],
+        "minimum_should_match_field": "required_matches"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for terms_set
+
+- `<field>`：（Required, object）待查询的域。
+
+##### Parameters for \<field\>
+
+- terms：（Required, array of strings）这个参数的值是一个term数组，这些term是你希望在`<field>`能匹配到的域值。若要返回一篇文档，必须精确匹配提供的term，包括空格和大小写。
+- minimum_should_match_field：（Optional, string）[Numeric](#Numeric field types)类型的域名，域值为满足匹配的文档必须匹配的term数量
+- minimum_should_match_script：（OPtional, string）自定义的脚本，描述了满足匹配的文档必须匹配的term数量
+  - 支持的参数和选项见[Scripting](#Scripting)
+  - 见[How to use the minimum_should_match_script parameter](#How to use the minimum_should_match_script parameter)了解使用`minimum_should_match_script`参数的例子
+
+##### Notes
+
+###### How to use the minimum_should_match_script parameter
+
+&emsp;&emsp;你可以使用`minimum_should_match_script`，使用脚本定义满足匹配的文档必须匹配的term数量。如果你需要动态的设置数量时，使用这个参数就非常有用。
+
+**Example query using minimum_should_match_script**
+
+&emsp;&emsp;下面的查询返回的文档中，`programming_languages`中至少包含下面两个term：
+
+- c++
+- java
+- php
+
+&emsp;&emsp;参数`source`描述的是：
+
+- 匹配的term数量不能超过`params.num_terms`，也就是`terms`域中term的数量
+- 匹配的term数量为`2`，即`required_matches`的域值
+
+```text
+GET /job-candidates/_search
+{
+  "query": {
+    "terms_set": {
+      "programming_languages": {
+        "terms": [ "c++", "java", "php" ],
+        "minimum_should_match_script": {
+          "source": "Math.min(params.num_terms, doc['required_matches'].value)"
+        },
+        "boost": 1.0
+      }
+    }
+  }
+}
+```
 
 #### Wildcard query
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
+
+&emsp;&emsp;
 
 ### minimum_should_match parameter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-minimum-should-match.html)
