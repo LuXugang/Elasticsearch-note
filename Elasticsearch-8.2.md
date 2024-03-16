@@ -29614,7 +29614,7 @@ PUT _ilm/policy/my_policy
 
 ##### Option
 
-- max_num_segemnts：（Required,integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
+- max_num_segemnts：（Required, integer）合并后的段的数量。通过设置为1来实现完全的合并（fully merge）。
 - inde_codec：（Optional, string）用来对文档存储的codec。唯一可以设置的值是`best_compression`，使用了 [DEFLATE](https://en.wikipedia.org/wiki/Deflate)实现较高的压缩率但是较低的[存储域](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2020/1013/索引文件之fdx&&fdt&&fdm)的性能。不指定该参数则使用默认的[LZ4 codec](https://www.amazingkoala.com.cn/Lucene/yasuocunchu/2019/0226/LZ4)。
 
 >WARNING：如果使用`best_compression`，ILM将在force merge之前先[close](#Close index API)并且[re-open](#Open index API)。当关闭后，索引的读写操作将不可见。
@@ -30010,7 +30010,7 @@ PUT _ilm/policy/my_policy
 
 ##### Options
 
-- priority：（Required,integer）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
+- priority：（Required, integer）索引的优先值。该值必须不小于0.设置为`null`则移除优先值。
 
 ##### Example
 
@@ -41761,7 +41761,7 @@ POST /_enrich/policy/<enrich-policy>/_execute
 
 ##### Query parameters
 
-- `wait_for_completion`：（Required,Boolean）如果为`true`，该接口会阻塞其他enrich policy的执行，直到它自己完成。默认为`true`
+- `wait_for_completion`：（Required, Boolean）如果为`true`，该接口会阻塞其他enrich policy的执行，直到它自己完成。默认为`true`
 
 #### Enrich stats API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/execute-enrich-policy-api.html)
@@ -43522,7 +43522,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Query parameters
 
-- accept_data_loss：（Required,Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
+- accept_data_loss：（Required, Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
@@ -44251,7 +44251,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 ##### Query Parameters
 
-- accept_data_loss：（Required,Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
+- accept_data_loss：（Required, Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
 - timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
