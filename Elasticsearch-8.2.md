@@ -2851,7 +2851,7 @@ PUT _cluster/settings
 POST /_flush
 ```
 
-&emsp;&emsp;2.1 **Temporarily stop the tasks associated with active machine learning jobs and datafeeds** (Optional)
+&emsp;&emsp;2.1 **Temporarily stop the tasks associated with active machine learning jobs and datafeeds**（Optional）
 
 &emsp;&emsp;Machine leanring功能需要[subscription](https://www.elastic.co/cn/subscriptions)。
 
@@ -2931,7 +2931,7 @@ GET _cat/health
 GET _cat/recovery
 ```
 
-7. **Restart machine learning jobs** (Optional)
+7. **Restart machine learning jobs**（Optional）
 
 &emsp;&emsp;如果你临时暂停了machine learning jobs相关的任务，使用[set upgrade mode API](#Set upgrade mode API)将它们返回到活跃状态：
 
@@ -2956,7 +2956,7 @@ PUT _cluster/settings
 }
 ```
 
-2. **Stop non-essential indexing and perform a flush** (Optional)
+2. **Stop non-essential indexing and perform a flush**（Optional）
 
 &emsp;&emsp;尽管你可以在rolling restart期间继续执行索引操作，但如果你临时的停止没有必要的索引操作并执行[flush](#Flush API)可以让分片恢复的更快
 
@@ -2964,7 +2964,7 @@ PUT _cluster/settings
 POST /_flush
 ```
 
-3. **Temporarily stop the tasks associated with active machine learning jobs and datafeeds**  (Optional)
+3. **Temporarily stop the tasks associated with active machine learning jobs and datafeeds** （Optional）
 
 &emsp;&emsp;Machine leanring功能需要[subscription](https://www.elastic.co/cn/subscriptions)。
 
@@ -3028,7 +3028,7 @@ PUT _cluster/settings
 
 &emsp;&emsp;当节点恢复后并且集群已经稳定，对每一个需要变更的节点重复这些步骤。
 
-9. **Restart machine learning jobs** (Optional)
+9. **Restart machine learning jobs**（Optional）
 
 &emsp;&emsp;如果你临时暂停了machine learning jobs相关的任务，使用[set upgrade mode API](# Set upgrade mode API)将它们返回到活跃状态：
 
@@ -8511,7 +8511,7 @@ GET my-index-000001/_search
 
 - [properties](#properties)：nested object中的所有域（这些域被称为properties），这些域可以是任何数据类型[data type](#Field data types)，新的域可能被添加现在有的nested object域中
 
-- include_in_parent：(Optional, Boolean) 如果为`true`，nested object中的所有域同样添加到parent document 作为标准（flat）域。默认是`false`。
+- include_in_parent：（Optional, Boolean） 如果为`true`，nested object中的所有域同样添加到parent document 作为标准（flat）域。默认是`false`。
   - 如果有多层嵌套，那么上一层就是parent。就可以使用普通的query，比如`match`根据上一层父级的字段进行搜索
 - include_in_root：（Optional, Boolean）如果为`true`，nested object中的所有域同样添加到root document 作为标准（flat）域。默认是`false`。
 
@@ -21040,7 +21040,7 @@ POST _search
 
 &emsp;&emsp;`all_of`规则中由多个其他规则组成，这些规则都满足则返回对应文档
 
-- intervals：(Required, array of rule objects)：由规则数组组成。对于某篇文档，所有的规则必须匹配
+- intervals：（Required, array of rule objects）：由规则数组组成。对于某篇文档，所有的规则必须匹配
 - max_gaps：（Optional,integer）匹配到的term之间最大的位置距离。超过这个距离不会被匹配。默认值为`-1`
   - 如果没有指定这个参数或者指定为`-1`，那么就没有距离的限制。如果设置为`0`，这些term必须相互连续出现
 - ordered：如果为`true`，每一个规则要按照在定义中的先后顺序依次匹配。默认值为`false`
@@ -21050,7 +21050,7 @@ POST _search
 
 &emsp;&emsp;`any_of`规则返回它包含的规则中的任意一个。
 
-- intervals：(Required, array of rule objects)：用于匹配的规则数组
+- intervals：（Required, array of rule objects）：用于匹配的规则数组
 - filter：（Optional,[interval filter](#Intervals query) 规则对象）用来过滤返回的`intervals`的规则
 
 ##### filter rule parameters
@@ -21225,9 +21225,7 @@ GET /_search
 
 ##### Top-level parameters for match
 
-###### \<filed>
-
-&emsp;&emsp;(Required, object) 待查询的域。
+- `<filed>`：（Required, object） 待查询的域。
 
 ##### Parameters for \<field>
 
@@ -23256,7 +23254,7 @@ GET /_search
 ##### Types of term-level queries
 
 - [`exists` query](#Exists query)：返回的文档中包含待查询的域，不关心域值是什么
-- [`fuzzy` query](#Fuzzy query)：返回的文档中，，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度
+- [`fuzzy` query](#Fuzzy query)：返回的文档中，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度
 - [`ids` query](#IDs)：基于[document IDs](#\_id field)返回文档
 - [`prefix` query](#Prefix query)：返回的文档中，待查询的域的域值包含指定的前缀
 - [`range` query](#Range query)：返回的文档中，待查询的域的域值属于指定的范围
@@ -23323,8 +23321,75 @@ GET /_search
 ```
 
 #### Fuzzy query
-[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-fuzzy-query.html)
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-fuzzy-query.html)
 
+&emsp;&emsp;返回的文档中，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度。
+
+&emsp;&emsp;编辑距离是将一个term转为其他term时字符变化的数量。这些变化可以是：
+
+- 修改一个字符（**b**ox → **f**ox）
+- 移除一个字符（**b**lack → lack）
+- 插入一个字符（sic → sic**k**）
+- 交换两个相邻的字符（**ac**t → **ca**t）
+
+&emsp;&emsp;若要找到相似的term，`fuzzy` query根据指定的编辑距离创建了查询词一系列可能的变体、扩展。这个query最后返回每一个扩展后的term的精确匹配结果。
+
+##### Example requests
+
+###### Simple example
+
+```text
+GET /_search
+{
+  "query": {
+    "fuzzy": {
+      "user.id": {
+        "value": "ki"
+      }
+    }
+  }
+}
+```
+
+###### Example using advanced parameters
+
+```text
+GET /_search
+{
+  "query": {
+    "fuzzy": {
+      "user.id": {
+        "value": "ki",
+        "fuzziness": "AUTO",
+        "max_expansions": 50,
+        "prefix_length": 0,
+        "transpositions": true,
+        "rewrite": "constant_score"
+      }
+    }
+  }
+}
+```
+
+##### Top-level parameters for fuzzy
+
+- `<field>`：（Required, object）待查询的域
+
+##### Parameters for \<field>
+
+- value：（Required, string）：待查询的term
+- fuzziness：（Optional, string）允许用于匹配的最大编辑距离。见[Fuzziness](#Fuzziness（Common options）)了解更多信息。
+- max_expansions：（Optional, integer）query扩展（expand）出的term数量最大值。默认值为`50`。
+
+  > WARNING：避免将`max_expansions`的值设置的很打，特别是`prefix_length`的值为`0`时，这个参数越大会导致性能变差，因为会处理更多数量的变体
+
+- prefix_length：（Optional, integer）模糊匹配时，不变的（unchange）起始字符的数量。默认值为`0`。
+- transpositions：（Optional, Boolean）模糊匹配中的编辑距离是否包含两个字符交换（ab->ba）。默认值为`true`。
+- rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
+
+##### Notes
+
+&emsp;&emsp;如果[search.allow_expensive_queries]()设置为`false`则不允许执行这个query。
 
 #### IDs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-ids-query.html#query-dsl-ids-query)
@@ -36954,8 +37019,8 @@ GET /_cluster/settings
 
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Cluster health API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/cluster-health.html)
@@ -36987,7 +37052,7 @@ GET /_cluster/settings
 - level：（Optional, string）可以是`cluster`、`indices`或者`shards`。用来控制健康信息的详细层级。默认值：`cluster`
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_active_shards：（Optional, string）用来控制等待多个active shard（正在初始化、恢复、关闭属于不活跃的分片），如果是`all`则是等待集群中所有的分片为active，或者是`0`则不等待。默认是`0`
 - wait_for_events：（Optional, string）可以是`immediate`、`urgent`、`high`、`normal`、`low`、`languid`。该参数选择事件优先级，等待集群中这些优先级的事件完成后才返回（能让返回的健康状态信息更加准确和实时）
 - wait_for_no_initializing_shards：（Optional, Boolean）是否等待集群中没有正在初始化的分片（比如正在启动的分片）后再放回。默认值为`false`，意味着不会等分配初始化结束就返回。
@@ -37092,11 +37157,11 @@ GET /_cluster/health/my-index-000001?level=shards
   - version：显示集群状态版本
 - retry_failed：（Optional, Boolean）如果为`true`，会重试那些因为之前多次分配失败而被阻塞的分片的分配。（这是一种有用的手段来快速恢复集群正常状态，尤其是在紧急修复了阻止分片分配的问题之后）
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
-- commands：(Required, array of objects) 定义了执行的命令，支持以下的命令：
+- commands：（Required, array of objects） 定义了执行的命令，支持以下的命令：
   - move：将一个Started Shard（对应还有Initializing Shards、Unassigned Shards、Relocating Shards）从一个节点移动到另一个节点。使用`index`跟`shard`描述索引名称跟分配编号，以及`from_node`跟`to_node`描述节点移动前后的两个节点。
   - cancel：取消某个分片的分配（或者恢复）。使用`index`跟`shard`描述索引名称跟分配编号。以及`node`描述被取消的分片所在的节点。通过取消副本分片的分配来强制从主分片的重新同步并通过标准的恢复处理来重新初始化副本分片。默认情况下只能取消副本分片的分配。如果需要取消主分片的分配，那么需要在请求中通过`allow_primary`指定
   - allocate_replica：将未分配的副本分片分配到一个节点。使用`index`跟`shard`描述索引名称跟分配编号。以及`node`描述待分配的目标节点。遵循[allocation deciders](#Cluster-level shard allocation and routing settings)。
@@ -37168,7 +37233,7 @@ POST /_cluster/reroute
 
 &emsp;&emsp;集群状态有时候会很大，Elasticsearch计算这个API响应时可能会花费大量资源。若要降低响应的大小，你可以只请求你感兴趣的部分集群状态：
 
-- `<metric>`：(Optional, string)有以下的指标可选，多个指标之间用逗号隔开
+- `<metric>`：（Optional, string）有以下的指标可选，多个指标之间用逗号隔开
   - `_all`：显示所有的指标
   - `blocks`：显示响应的`blocks`部分的内容
   - `master_node`：显示响应的`master_node`部分的内容
@@ -37252,7 +37317,7 @@ GET /_cluster/state/blocks
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -37354,7 +37419,7 @@ PUT /_cluster/settings
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -37422,11 +37487,11 @@ GET _nodes/usage
 ##### Query parameters
 
 - ignore_idle_threads：（Optional, Boolean）如果为 true，则过滤掉已知的（known idle）空闲线程（例如，在 socket select 中等待或从空队列获取任务）。默认为 `true`。
-- interval：(Optional, [time units](#API conventions)) 采样线程的时间间隔，默认为 `500ms`。
+- interval：（Optional, [time units](#API conventions)）采样线程的时间间隔，默认为 `500ms`。
 - snapshots：（Optional, integer）线程堆栈跟踪（thread stacktrace）的样本数量，默认为 10。
 - threads：（Optional, integer）提供信息的热线程数量，默认为 `3`。用于故障排除时，可以将此参数设置为较大数值（如 9999）以获取系统中所有线程的信息。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - type：（Optional, string）采样的类型，Optional包括 `block`、`cpu` 和 `wait`。默认为 cpu
 
 ##### Examples
@@ -37513,7 +37578,7 @@ GET /_nodes/nodeId1,nodeId2/hot_threads
 
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -37802,7 +37867,7 @@ POST _nodes/nodeId1,nodeId2/reload_secure_settings
   - shards
 - types：（Optional, string）用逗号隔开的文档类型用于`indexing`的索引指标
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - include_segment_file_sizes：（Optional, Boolean）如果为`true`，该调用生成每一个Lucene索引文件的聚合后的磁盘使用量（只有请求Segment stats时才生效）。默认值为`false`
 - include_unloaded_segments：（Optional, Boolean）如果为`true`，响应中包含未加载到内存的段的信息。默认值为`false`
 
@@ -38221,7 +38286,7 @@ GET /_nodes/stats?metric=ingest&filter_path=nodes.*.ingest.pipelines
 - node_id：（Optional, string）用逗号隔开的节点ID或节点名称列表，用来限制返回的信息
 - parent_task_id：（Optional, string）父级任务ID，用来限制返回的信息。若要返回所有的任务，不使用这个参数或者另该值为`-1`
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`。请求会阻塞直到操作完成。默认值为`false`
 
 ##### Response codes
@@ -38468,7 +38533,7 @@ content-length: 831
 
 - node_names：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名称，你可能无法指定`?node_ids`
 - node_ids：从voting configuration中移除的节点，用逗号隔开。如果指定了节点名称，你可能无法指定`?node_names`
-- timeout：(Optional, [time units](#API conventions)) 在添加一个voting configuration exclusion时，请求会等待指定的节点从voting configuration中移除后再返回。通过`?timeout`指定时超时时间。如果在满足条件之前超时，请求将失败并返回错误。默认值为 30 秒。
+- timeout：（Optional, [time units](#API conventions)）在添加一个voting configuration exclusion时，请求会等待指定的节点从voting configuration中移除后再返回。通过`?timeout`指定时超时时间。如果在满足条件之前超时，请求将失败并返回错误。默认值为 30 秒。
 - wait_for_removal：（Optional, Boolean）它指定在清除voting configuration 排除列表之前是否等待所有被排除的节点从集群中移除。默认值为 true，这意味着在 API 采取任何行动之前，所有被排除的节点必须从集群中移除。如果设置为 false，则即使一些被排除的节点仍在集群中，voting configuration 排除列表也会被清除。简而言之，这个参数控制了在清除排除列表之前是否需要等待所有标记为排除的节点实际离开集群
 
 ##### Examples
@@ -40236,7 +40301,7 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
   默认是一分钟。它保证Elasticsearch至少会等待这个超时时间后才会失败。真正的等待时间可能更长，特别发生多次等待时。
   
 - version：（Optional, Boolean）如果为`true`，请求返回中会有文档的版本号 
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
 
 ##### Request body
 
@@ -41209,7 +41274,7 @@ POST _aliases
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
@@ -41225,21 +41290,21 @@ POST _aliases
     
     - alias：（Required\*, string）动作的别名。索引别名（index alias）支持[date math](#Date math support in system and index alias names-1)，如果`aliases`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
     - aliases：（Required\*, array of strings）动作的别名。索引别名（index alias）支持[date math](#Date math support in system and index alias names-1)。如果`alias`没有指定，`add`和`remove`动作要求这个参数。对于`remove`动作，这个参数支持通配符（`*`）。`remove_index`动作不支持这个参数
-    - filter：(Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
+    - filter：（Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
       - 只有`add`动作支持这个参数
     - index：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`indices`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
     - indices：（Required\*, string）执行动作的data stream或index。支持通配符（`*`）。如果`index`未指定，这个参数必要指定。对于`add`和`remove_index`动作，通配模式同时匹配到data stream和index会返回一个错误
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
       - 只有`add`动作支持这个参数
-    - is_hidden：(Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_hidden：（Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
       - 只有`add`动作支持这个参数
-    - is_write_index： (Optional, Boolean) 如果为true，则为别名设置writer index或data stream
+    - is_write_index： （Optional, Boolean） 如果为true，则为别名设置writer index或data stream
       - 如果别名指向了多个indices或data stream，并且`is_write_index`未设置，那么会拒绝写请求。如果一个索引别名只向某个索引并且`is_write_index`未指定，那么该索引自动成为writer index。data stream不支持自动设置一个writer data stream。即使别名只指向了一个data stream
       - 只有`add`动作支持这个参数 
     - must_exist：（Optional, Boolean）如果为`true`，别名必须存在才能执行动作。默认是`false`。只有`remove`动作支持这个参数
-    - routing：(Optional, string) 用来索引阶段或查询阶段路由到指定分片
+    - routing：（Optional, string） 用来索引阶段或查询阶段路由到指定分片
       - 只有`add`动作支持这个参数
-    - search_routing：(Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
+    - search_routing：（Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
       - 只有`add`动作支持这个参数
 
 #### Analyze API
@@ -41531,7 +41596,7 @@ POST /<target>/_disk_usage
 - flush：（Optional,Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
 - run_expensive_tasks：（Required, Boolean）分析域的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
 
 ##### Example
 
@@ -41760,20 +41825,20 @@ POST /my_source_index/_clone/my_target_index
 
 ##### Query parameters
 
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
 - aliases：（Optional, object of objects）索引的别名
   - `<alias>`：（Required, object）别名的key，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-    - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+    - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 - settings：（Optional, [index setting object](#Index Settings)）索引的配置，见[Index Settings](#Index modules)
 
 
@@ -41825,9 +41890,9 @@ POST /<index>/_close
   - none：不展开通配符模式
   默认值为`open`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Example
 
@@ -41892,20 +41957,20 @@ PUT /<index>
 
 ##### Query parameters
 
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
 - aliases：（Optional, object of objects）索引的别名
   - `<alias>`：（Required, object）别名的key，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-    - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+    - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 - mappings：（Optional, [mapping object](#Mapping)）
   - Field names
   - [Field data types](#Field data types)
@@ -42061,17 +42126,17 @@ PUT <target>/_aliases/<alias>
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
-- filter：(Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-- index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
-- is_hidden：(Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-- is_write_index： (Optional, Boolean) 如果为true，则为别名设置writer index或data stream
+- filter：（Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+- index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`。data stream不支持这个参数
+- is_hidden：（Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+- is_write_index： （Optional, Boolean） 如果为true，则为别名设置writer index或data stream
   - 如果别名指向了多个indices或data stream，并且`is_write_index`未设置，那么会拒绝写请求。如果一个索引别名只向某个索引并且`is_write_index`未指定，那么该索引自动成为writer index。data stream不支持自动设置一个writer data stream。即使别名只指向了一个data stream
-- routing：(Optional, string) 用来索引阶段或查询阶段路由到指定分片
-- search_routing：(Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
+- routing：（Optional, string） 用来索引阶段或查询阶段路由到指定分片
+- search_routing：（Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`。data stream不支持这个参数
 
 ##### Example
 
@@ -42151,12 +42216,12 @@ PUT /_component_template/<component-template>
   - aliases：（Optional, object of objects）待添加的别名
     - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-        - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-        - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-        - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-        - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-        - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-        - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+        - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+        - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+        - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+        - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+        - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+        - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
   - mappings：（Optional, [mapping object](#Mapping)）
     - Field names
     - [Field data types](#Field data types)
@@ -42311,12 +42376,12 @@ PUT /_index_template/<index-template>
     - aliases：（Optional, object of objects）待添加的别名
       - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
         - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-          - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-          - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-          - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-          - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-          - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-          - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+          - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+          - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+          - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+          - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+          - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+          - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
     - mappings：（Optional, [mapping object](#Mapping)）
       - Field names
       - [Field data types](#Field data types)
@@ -42564,12 +42629,12 @@ PUT _template/template_1
 - aliases：（Optional, object of objects）待添加的别名
   - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
     - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-      - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-      - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-      - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-      - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-      - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-      - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+      - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+      - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+      - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+      - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+      - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+      - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 - mappings：（Optional, [mapping object](#Mapping)）
   - Field names
   - [Field data types](#Field data types)
@@ -42705,7 +42770,7 @@ DELETE /_component_template/<component-template>
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete dangling index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dangling-index-delete.html)
@@ -42736,7 +42801,7 @@ DELETE /_dangling/<index-uuid>?accept_data_loss=true
 
 - accept_data_loss：（Required，Boolean）This field must be set to true in order to carry out the import, since it will no longer be possible to recover the data from the dangling index。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete alias API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
@@ -42765,7 +42830,7 @@ DELETE <target>/_aliases/<alias>
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Delete index API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-delete-index.html)
@@ -42808,7 +42873,7 @@ DELETE /<index>
   默认值为`open, closed`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的index如果缺失的话会返回一个错误。默认是`false`
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 
 #### Delete index template API
@@ -42843,7 +42908,7 @@ DELETE /_index_template/<index-template>
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Exists API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-exists.html)
@@ -43219,7 +43284,7 @@ GET /<target>
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中index如果缺失的话会返回一个错误。默认是`false`
 - include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
 #### Get index settings API
@@ -43256,7 +43321,7 @@ GET /<target>/_settings/<setting>
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - include_defaults：（Optional,Boolean）如果为`true`，返回所有默认的集群设置。默认值为`false`
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - local：（Optional, Boolean）如果为`true`，则只从local node获取信息。默认是`false`，意味着从master node获取信息
 
 ##### Example
@@ -43465,7 +43530,7 @@ POST /_dangling/<index-uuid>?accept_data_loss=true
 
 - accept_data_loss：（Required，Boolean）若要导入一个dangling Index，该参数必须设置为`true`。因为Elasticsearch不知道这个dangling Index的来源，也无法明确分片的新旧（fresh and  stale），不能保证导入的数据代表上一次在集群中最新的状态。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -43558,25 +43623,25 @@ POST /<rollover-target>/_rollover/<target-index>
 ##### Query parameters
 
 - dry_run：（Optional, Boolean）如果为`true`，请求只是模拟操作并返回产生的状态
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
 - aliases：（Optional, object of objects）索引的别名
   - `<alias>`：（Required, object）别名的key，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-    - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+    - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 
 - condition：（Optional, object）rollover的条件。如果指定了该参数，Elasticsearch只会在当前索引满足一个或多个条件后才会执行rollover。如果未指定，则会无条件执行。
   > IMPORTANT：若要触发rollover，当前索引必须满足请求发出时当时的条件，Elasticsearch不会再响应后监控索引。若要自动rollover，应该去使用ILM的[rollover](#Rollover（action）)
 
-  - max_age：(Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发滚动动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
+  - max_age：（Optional,[time units](#Time units)）达到在创建索引后开始流逝的时间（elapsed time）最大值后触发滚动动作。总是从索引的创建时间开始计算流逝的时间，即使索引的原先的数据配置为自定义的数据。比如设置了[index.lifecycle.parse_origination_date](#index.lifecycle.parse_origination_date) 或者 [index.lifecycle.origination_date ](#index.lifecycle.origination_date)。
   - max_docs：（Optional,integer）当达到指定的文档数量最大值时触发滚动。上一次refresh后新增的文档不在文档计数中。副本分片中的文档不在文档计数中。
   - max_size：（Optional,[byte units](#Byte size units)）当索引达到一定的大小时触发滚动。指的是索引中所有主分片的大小总量。副本分片的数量不会参与统计。
   > TIP：可以通过[\_cat indices API](#cat indices API)查看当前索引的大小。`pri.store.size`值显示了所有主分片的大小总量。
@@ -43908,20 +43973,20 @@ POST /my_source_index/_shrink/my_target_index
 
 ##### Query parameters
 
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
 - aliases：（Optional, object of objects）索引的别名
   - `<alias>`：（Required, object）别名的key，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-    - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+    - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 - settings：（Optional, [index setting object](#Index Settings)）索引的配置，见[Index Settings](#Index modules)
 - max_primary_shard_size：（Optional,[byte units](#Byte size units)）目标索引的最大主分片大小。用于找到目标索引的最佳分片数。当设置了此参数时，目标索引中每个分片的存储大小不会超过该参数。目标索引的分片数仍将是源索引分片数的因子，但如果该参数小于源索引中的单个分片大小，则目标索引的分片数将等于源索引的分片数。例如，当将此参数设置为50GB时，如果源索引有60个主分片，总计为100GB，则目标索引将具有2个主分片，每个分片大小为50GB；如果源索引有60个主分片，总计为1000GB，则目标索引将有20个主分片；如果源索引有60个主分片，总计为4000GB，则目标索引仍将有60个主分片。该参数与设置中的 number_of_shards 冲突，只能设置其中一个。
 
@@ -43952,7 +44017,7 @@ POST /_index_template/_simulate_index/<index>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -43963,12 +44028,12 @@ POST /_index_template/_simulate_index/<index>
   - aliases：（Optional, object of objects）待添加的别名
     - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-        - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-        - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-        - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-        - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-        - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-        - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+        - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+        - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+        - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+        - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+        - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+        - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
   - mappings：（Optional, [mapping object](#Mapping)）
     - Field names
     - [Field data types](#Field data types)
@@ -44102,12 +44167,12 @@ POST /_index_template/_simulate/<index-template>
     - aliases：（Optional, object of objects）待添加的别名
       - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
         - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-          - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-          - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-          - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-          - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-          - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-          - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+          - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+          - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+          - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+          - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+          - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+          - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
     - mappings：（Optional, [mapping object](#Mapping)）
       - Field names
       - [Field data types](#Field data types)
@@ -44124,12 +44189,12 @@ POST /_index_template/_simulate/<index-template>
   - aliases：（Optional, object of objects）待添加的别名
     - 如果索引模板中定义了`data_stream`，则它们是data stream别名，否则就是索引别名。Data stream忽略了`index_routing`、`routing`以及`search_routing`选项
       - `<alias>`：（Required, object）别名的名称，索引别名支持[date math](#Date math support in system and index alias names-1)，这个对象中包含了别名的选项。支持空对象
-        - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-        - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-        - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-        - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-        - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-        - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+        - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+        - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+        - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+        - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+        - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+        - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
   - mappings：（Optional, [mapping object](#Mapping)）
     - Field names
     - [Field data types](#Field data types)
@@ -44421,9 +44486,9 @@ POST /my_source_index/_split/my_target_index
 
 ##### Path parameters
 
-- `<index>`：(Required, string)待切分的源索引名称。
+- `<index>`：（Required, string）待切分的源索引名称。
 
-- `<target-index>：(Required, string)目标索引的名称。
+- `<target-index>：（Required, string）目标索引的名称。
   - 索引名称必须满足下面的规范：
     - 只允许小写
     - 不能包含\, /, \*, ?, ", <, >, |, \` \` (space character), `,` , \#
@@ -44435,23 +44500,23 @@ POST /my_source_index/_split/my_target_index
 
 ##### Query parameters
 
-- wait_for_active_shards：(Optional, string) 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 开始切分前处于active状态的主分片数量。设置成`all`或者一个正整数，默认值1. 见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
-- aliases：(Optional, object of objects) 该参数用于生成的索引。
-  - `<alias>`：(Required, object) 这个字段用来描述索引别名，索引别名支持 [date math](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-math-index-names.html)。
+- aliases：（Optional, object of objects）该参数用于生成的索引。
+  - `<alias>`：（Required, object） 这个字段用来描述索引别名，索引别名支持 [date math](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date-math-index-names.html)。
 
-    - filter: (Optional, [Query DSL object](#Query DSL)) 用来限制文档访问的DSL语句。
-    - index_routing（: (Optional, string) 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
-    - is_hidden: (Optional, Boolean) 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
-    - is_write_index: (Optional, Boolean) 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
-    - routing: (Optional, string) 用来索引阶段或查询阶段路由到指定分片
-    - search_routing: (Optional, string) 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
+    - filter: （Optional, [time units](#API conventions)） 用来限制文档访问的DSL语句。
+    - index_routing（: （Optional, string） 用于索引阶段到指定的分片进行写入索引，这个值会覆盖用于写入索引操作的参数`routing`
+    - is_hidden: （Optional, Boolean） 如果为true，那么别名是 [hidden](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-split-index.html#split-index-api-path-params)，默认为false，所有这个别名的索引都要有相同的`is_hidden`值。
+    - is_write_index: （Optional, Boolean） 如果为true，这个索引是这个别名中的[write index](#Aliases)，默认为false。
+    - routing: （Optional, string） 用来索引阶段或查询阶段路由到指定分片
+    - search_routing: （Optional, string） 用于查询阶段到指定的分片进行查询,这个值会覆盖用于查询操作的参数`routing`
 
-- settings：(Optional, [index setting object](#Index Modules)) 为目标索引的一些配置信息，见 [Index Settings](#Index Modules)。
+- settings：（Optional, [index setting object](#Index Modules)）为目标索引的一些配置信息，见 [Index Settings](#Index Modules)。
 
 #### Index template exists API（legacy）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-template-exists-v1.html)
@@ -44589,9 +44654,9 @@ POST /<target>/_open
   - none：不展开通配符模式
   默认值为`open`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
-- wait_for_active_shards：(Optional, string) 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数（`number_of_replicas + 1`）），默认值1，即主分片。见[Active shards](#Index API)。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Example
 
@@ -44777,8 +44842,8 @@ PUT /<target>/_settings
 - flat_settings：（Optional,Boolean）如果为`true`，以铺开的格式返回。默认值为`false`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
 - preserve_existing：（Optional, Boolean）如果为`true`，现有的索引设置不会发生变更。默认为`false`
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -44908,8 +44973,8 @@ PUT /<target>/_mapping
   - none：不展开通配符模式
   默认值为`all`。
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - write_index_only（Optional, Boolean）如果为`true`，mappings只会应用到当前的write index上。默认为`false`
 
 ##### Response body
@@ -45242,8 +45307,8 @@ PUT /_ingest/pipeline/<pipeline>
 ##### Query parameters
 
 - if_version：（Optional, integer）只有pipeline是这个版本号才会执行操作。如果指定了该值并且更新生成，pipeline的版本号会增加
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
@@ -45313,7 +45378,7 @@ GET /_ingest/pipeline
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Example
 
@@ -45368,8 +45433,8 @@ DELETE /_ingest/pipeline/<pipeline>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Example
 
@@ -45493,7 +45558,7 @@ GET /_ingest/pipeline/_simulate
   - `_id`：（Optional, string）文档的唯一标示。这个ID在`_index`中必须是唯一的（相同的`_index`的文档，这个`_id`要唯一）
   - `_index`：（Optional, string）包含文档的索引名称
   - `_routing`：（Optional, string）用来将文档发送到指定主分片的值，见[\_routing](#\_routing field)
-  - `_source`：(Required, object)文档JSON类型的内容
+  - `_source`：（Required, object）文档JSON类型的内容
 
 ##### Example
 
@@ -45807,8 +45872,8 @@ PUT _ilm/policy/<policy_id>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -45880,8 +45945,8 @@ GET _ilm/policy/<policy_id>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -45956,8 +46021,8 @@ DELETE _ilm/policy/<policy_id>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 ##### Examples
 
@@ -46006,8 +46071,8 @@ POST _ilm/move/<index>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -46080,8 +46145,8 @@ POST <target>/_ilm/remove
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -46125,8 +46190,8 @@ POST <index>/_ilm/retry
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -46163,8 +46228,8 @@ GET /_ilm/status
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -46218,8 +46283,8 @@ GET <target>/_ilm/explain
 
 - only_managed：（Optional, Boolean）过滤出只由ILM管理的索引
 - only_errors：（Optional, Boolean）过滤出只由ILM管理的索引并且处于一个错误状态，要么由于在执行策略时遇到了一个错误，要么尝试使用了一个不存在的策略
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -46445,8 +46510,8 @@ POST /_ilm/start
 
 ##### Path parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -46487,8 +46552,8 @@ POST /_ilm/stop
 
 ##### Path parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -46613,8 +46678,8 @@ POST _scripts/<script-id>/<context>
 ##### Query parameters
 - context：（Optional,string）脚本或search template中待运行的内容。为了防止出错，这个接口会马上编译脚本内容或模板
   - 如果你同时在请求参数中指定了`<context>`，该接口只使用请求参数中的参数
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -46644,8 +46709,8 @@ DELETE _scripts/<script-id>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 #### Get script contexts API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/get-script-contexts-api.html)
@@ -46707,7 +46772,7 @@ GET _scripts/<script-id>
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ### Search APIs
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search.html)
@@ -47334,7 +47399,7 @@ POST /_snapshot/<repository>/<snapshot>/_mount
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - wait_for_completion：（Optional, Boolean）如果为`true`，当快照完成后才返回一个响应。如果为`false`，当快照初始化结束就返回一个响应。默认值是`false`
 - storage：（Optional,string）searchable snapshot index的[Mount option](#Mount options)，可选值有：
   - full_copy (Default)：[Fully mounted index](#Fully mounted index)
@@ -47391,7 +47456,7 @@ GET /_searchable_snapshots/<node_id>/cache/stats
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Response body
 
@@ -47569,8 +47634,8 @@ POST /_snapshot/<repository>
 
 > IMPORTANT：这个API的有些选项可以通过请求参数（query parameter）或者请求体（query body）指定。如果同时指定了，那么只会使用请求参数。
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 - verify：（Optional, Boolean）如果为`true`，那么请求会验证是否在所有master和数据节点上都功能正常。如果为`false`，则跳过验证。默认值为`true`
   - 你可以通过[verify snapshot repository API](#Verify snapshot repository API)手动执行验证操作。
 
@@ -47624,8 +47689,8 @@ POST /_snapshot/<repository>/_verify
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 ##### Response bdy
 
@@ -47719,8 +47784,8 @@ DELETE /_snapshot/my_repository
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 #### Clean up snapshot repository API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/clean-up-snapshot-repo-api.html)
@@ -47743,8 +47808,8 @@ POST /_snapshot/<repository>/_cleanup
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 ##### Response body
 
@@ -48693,7 +48758,7 @@ PUT /_slm/policy/<snapshot-lifecycle-policy-id>
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Request body
 
@@ -48957,8 +49022,8 @@ GET /_slm/status
 
 ##### Query parameters
 
-- master_timeout：(Optional, [time units](#API conventions)) 连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- master_timeout：（Optional, [time units](#API conventions)）连接等待master节点一段时间，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`
 
 ##### Prerequisites
 
@@ -49038,7 +49103,7 @@ POST /_slm/start
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
@@ -49082,7 +49147,7 @@ POST /_slm/stop
 ##### Query parameters
 
 - master_timeout：（Optional,[time units](#Time units)）等待连接master节点的周期值。如果超时前没有收到响应，这个请求会失败并且返回一个错误。默认值是`30s`。
-- timeout：(Optional, [time units](#API conventions)) 等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
+- timeout：（Optional, [time units](#API conventions)）等待返回response，如果没有收到response并且超时了，这次请求视为失败并且返回一个错误，默认值`30s`。
 
 ##### Examples
 
