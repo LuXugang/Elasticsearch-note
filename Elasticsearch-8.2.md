@@ -29111,7 +29111,7 @@ GET my-index-000001/_search
 
 #### Doc values
 
-&emsp;&emsp;目前为止在脚本中访问字段最快的方式就是使用`doc['field_name']`语法，它从[doc values](#doc_values)中提取字段值。Doc Values是列式存储除了[analyzed text field](#Text type family)，其他类型字段mapping都是默认开启的。
+&emsp;&emsp;目前为止在脚本中访问字段最快的方式就是使用`doc['field_name']`语法，它从[doc values](#doc_values)中提取字段值。Doc Values是列式存储，除了[analyzed text field](#Text type family)，其他类型字段mapping都是默认开启的。
 
 ```text
 PUT my-index-000001/_doc/1?refresh
@@ -29137,17 +29137,17 @@ GET my-index-000001/_search
 
 &emsp;&emsp;Doc-values可以返回"简单的"字段值比如数值、日期、地理值、term等等或者当字段是多值字段时返回一个数字。不能返回JSON对象。
 
-> NOTE：Missing fields
+> NOTE：**Missing fields**
 > 如果`field`缺失的话，`doc['field']`会抛出异常。在`painless`中，可以首先通过`doc.containsKey('field')`进行检查使得安全访问`doc`。不过无法在`expression`中检查mapping中的字段在文档中是否存在
 
-> NOTE：Doc Values and text fields
+> NOTE：**Doc Values and text fields**
 > `doc['field']`语法同样可以用于[analyzed text fields](##Text type family)，前提是开启了[fielddata](#fielddata mapping parameter-1)。**注意的是**，开启后会将所有的term加载到JVM堆中，对于内存和CPU的开销都很大。在脚本中访问`text`域往往没有什么意义
 
 #### The document \_source
 
 &emsp;&emsp;可以通过`_source.field_name`语法访问文档的[\_source](#\_source field)。`_source`作为map-of-maps的方式加载，因此在对象字段（object field）中的属性也可以访问。比如`_source.name.first`。
 
-> IMPORTANT：Prefer doc-values to\_source
+> IMPORTANT：**Prefer doc-values to\_source**
 > 访问`_source`往往比doc-values要慢，`_source`字段在每一个结果中用于返回一些字段时有优化，而doc values在许多文档中访问某个字段的值时有优化。
 > 
 > 在查询结果中为前10个命中生成[script field](#Retrieve selected fields from a search)时使用`_source`比较合适，而在其他查询和聚合用例中，通常使用doc valus更合适。
