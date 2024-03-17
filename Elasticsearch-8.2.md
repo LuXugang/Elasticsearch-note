@@ -1,4 +1,4 @@
-# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/15）
+# [Elsticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/17）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -24151,7 +24151,7 @@ GET /_search
     - `*`，匹配0个或多个字符
     
     > WARNING：避免使用通配符时以`*`或者`?`开头。这会增加查找匹配的term的迭代次数使得降低查询性能
-    
+  
 - wildcard：（Required, string）`value`参数的别名。如果你同时指定`value`跟`wildcard`，query会使用请求体中最后一个。
 
 ##### NOTES
@@ -28709,6 +28709,346 @@ POST my-index-000001/_update/1
 #### Grokking grok
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/grok.html)
 
+
+### Common scripting use cases
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/common-script-uses.html)
+
+&emsp;&emsp;你可以编写一个脚本做大多数的事情，但有时候它也是一个麻烦。要想知道脚本能做哪些事情是比较有难度的。因此下面的例子争对了真正有帮助的常见例子进行说明：
+
+- [Field extraction](#Field extraction)
+
+#### Field extraction
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scripting-field-extraction.html)
+
+&emsp;&emsp;field extraction的目的简单：你的数据有很多携带了大量信息的域，但你只是想要提取出部分内容。
+
+&emsp;&emsp;你有两个选项可以使用：
+
+- [Grok](#Grokking grok)是一种正则表达式方言，支持你可以复用的别名表达式。因为Grok基于正则表达式（regex），所以任何正则表达式在Grok中都是有效的。
+- [Dissect](#Dissecting data)通过使用分隔符来定义匹配模式，从文本中提取结构化字段。与Grok不同，Dissect不使用正则表达式。
+
+&emsp;&emsp;我们先从一个简单的例子开始，添加`@timestamp`和`message`字段作为索引字段添加到`my-index`索引的mapping中。为了保持灵活，`message`使用`wildcard`类型：
+
+```text
+PUT /my-index/
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "format": "strict_date_optional_time||epoch_second",
+        "type": "date"
+      },
+      "message": {
+        "type": "wildcard"
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;定义了你想要用来检索的字段mapping后，从你的日志数据中索引一些数据到Elasticsearch。下面的请求使用了[bulk API](#Bulk API)将原始的日志数据索引到`my-index`中。你可以使用少量的样例体验下runtime fields而不是使用你所有的日志数据。
+
+```text
+POST /my-index/_bulk?refresh
+{"index":{}}
+{"timestamp":"2020-04-30T14:30:17-05:00","message":"40.135.0.0 - - [30/Apr/2020:14:30:17 -0500] \"GET /images/hm_bg.jpg HTTP/1.0\" 200 24736"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:30:53-05:00","message":"232.0.0.0 - - [30/Apr/2020:14:30:53 -0500] \"GET /images/hm_bg.jpg HTTP/1.0\" 200 24736"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:31:12-05:00","message":"26.1.0.0 - - [30/Apr/2020:14:31:12 -0500] \"GET /images/hm_bg.jpg HTTP/1.0\" 200 24736"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:31:19-05:00","message":"247.37.0.0 - - [30/Apr/2020:14:31:19 -0500] \"GET /french/splash_inet.html HTTP/1.0\" 200 3781"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:31:22-05:00","message":"247.37.0.0 - - [30/Apr/2020:14:31:22 -0500] \"GET /images/hm_nbg.jpg HTTP/1.0\" 304 0"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:31:27-05:00","message":"252.0.0.0 - - [30/Apr/2020:14:31:27 -0500] \"GET /images/hm_bg.jpg HTTP/1.0\" 200 24736"}
+{"index":{}}
+{"timestamp":"2020-04-30T14:31:28-05:00","message":"not a valid apache log"}
+```
+
+##### Extract an IP address from a log message (Grok)
+
+&emsp;&emsp;如果你想要在查询结果中包含`clientip`，你可以在mapping中添加runtime field。下面的runtime脚本定义了一个grok pattern从`messsage`域中提取出结构化的字段。
+
+&emsp;&emsp;这个脚本匹配了`%{COMMONAPACHELOG}`的日志模式，它能理解Apache日志的结构。如果模式匹配了（`clientip != null`）。那么脚本会输出匹配到的IP地址。如果没有匹配只会返回域值而不会出现问题
+
+```text
+PUT my-index/_mappings
+{
+  "runtime": {
+    "http.clientip": {
+      "type": "ip",
+      "script": """
+        String clientip=grok('%{COMMONAPACHELOG}').extract(doc["message"].value)?.clientip;
+        if (clientip != null) emit(clientip); 
+      """
+    }
+  }
+}
+```
+
+&emsp;&emsp;第8行，这个条件保证了即使没有匹配到也不会输出任何信息
+
+&emsp;&emsp;你可以定义一个简单的query来查询指定的IP地址并且返回相关的域。在search API中使用`fields`参数可以返回`http.clientip`这类runtime field。
+
+```text
+GET my-index/_search
+{
+  "query": {
+    "match": {
+      "http.clientip": "40.135.0.0"
+    }
+  },
+  "fields" : ["http.clientip"]
+}
+```
+
+&emsp;&emsp;下面的响应中满足`http.clientip`的值为`40.135.0.0`。
+
+```text
+{
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "my-index",
+        "_id" : "Rq-ex3gBA_A0V6dYGLQ7",
+        "_score" : 1.0,
+        "_source" : {
+          "timestamp" : "2020-04-30T14:30:17-05:00",
+          "message" : "40.135.0.0 - - [30/Apr/2020:14:30:17 -0500] \"GET /images/hm_bg.jpg HTTP/1.0\" 200 24736"
+        },
+        "fields" : {
+          "http.clientip" : [
+            "40.135.0.0"
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+##### Parse a string to extract part of a field (Dissect)
+
+&emsp;&emsp;相比较上面的例子中使用一个log pattern进行匹配，你可以自定义一个dissect pattern来包含你想要丢弃的string。
+
+&emsp;&emsp;比如说，日志数据开头有一个`message`字段。这个字段包含多个数据片段：
+
+```text
+"message" : "247.37.0.0 - - [30/Apr/2020:14:31:22 -0500] \"GET /images/hm_nbg.jpg HTTP/1.0\" 304 0"
+```
+
+&emsp;&emsp;你可以在runtime field定义一个dissect pattern提取出[HTTP response code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)，也就是上面例子中的`304`。
+
+```text
+PUT my-index/_mappings
+{
+  "runtime": {
+    "http.response": {
+      "type": "long",
+      "script": """
+        String response=dissect('%{clientip} %{ident} %{auth} [%{@timestamp}] "%{verb} %{request} HTTP/%{httpversion}" %{response} %{size}').extract(doc["message"].value)?.response;
+        if (response != null) emit(Integer.parseInt(response));
+      """
+    }
+  }
+}
+```
+
+&emsp;&emsp;你随后可以使用`http.response`这个runtime field检索指定的HTTP响应：
+
+```text
+ET my-index/_search
+{
+  "query": {
+    "match": {
+      "http.response": "304"
+    }
+  },
+  "fields" : ["http.response"]
+}
+```
+
+&emsp;&emsp;响应中包含了单个文档，其中HTTP响应为`304`：
+
+```text
+{
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "my-index",
+        "_id" : "Sq-ex3gBA_A0V6dYGLQ7",
+        "_score" : 1.0,
+        "_source" : {
+          "timestamp" : "2020-04-30T14:31:22-05:00",
+          "message" : "247.37.0.0 - - [30/Apr/2020:14:31:22 -0500] \"GET /images/hm_nbg.jpg HTTP/1.0\" 304 0"
+        },
+        "fields" : {
+          "http.response" : [
+            304
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+##### Split values in a field by a separator (Dissect)
+
+&emsp;&emsp;如果你想要像上面的例子一样提取字段中部分内容，但是你想要在指定的值上进行切分。你可以使用一个dissect pattern来只提取你想要的信息，并且以某个制定的格式返回。
+
+&emsp;&emsp;例如，比如Elasticsearch中有一些垃圾回收的日志数据，格式如下：
+
+```text
+[2021-04-27T16:16:34.699+0000][82460][gc,heap,exit]   class space    used 266K, capacity 384K, committed 384K, reserved 1048576K
+```
+
+&emsp;&emsp;你只想要提取`used`、`capacity`以及`committed`对应的数据。我们先索引一些包含日志数据的文档：
+
+```text
+POST /my-index/_bulk?refresh
+{"index":{}}
+{"gc": "[2021-04-27T16:16:34.699+0000][82460][gc,heap,exit]   class space    used 266K, capacity 384K, committed 384K, reserved 1048576K"}
+{"index":{}}
+{"gc": "[2021-03-24T20:27:24.184+0000][90239][gc,heap,exit]   class space    used 15255K, capacity 16726K, committed 16844K, reserved 1048576K"}
+{"index":{}}
+{"gc": "[2021-03-24T20:27:24.184+0000][90239][gc,heap,exit]  Metaspace       used 115409K, capacity 119541K, committed 120248K, reserved 1153024K"}
+{"index":{}}
+{"gc": "[2021-04-19T15:03:21.735+0000][84408][gc,heap,exit]   class space    used 14503K, capacity 15894K, committed 15948K, reserved 1048576K"}
+{"index":{}}
+{"gc": "[2021-04-19T15:03:21.735+0000][84408][gc,heap,exit]  Metaspace       used 107719K, capacity 111775K, committed 112724K, reserved 1146880K"}
+{"index":{}}
+{"gc": "[2021-04-27T16:16:34.699+0000][82460][gc,heap,exit]  class space  used 266K, capacity 367K, committed 384K, reserved 1048576K"}
+```
+
+&emsp;&emsp;我们再次观察下数据，里面有时间戳以及其他一些你不感兴趣的数据，然后才是`used`、`capacity`以及`committed`对应的数据.
+
+```text
+[2021-04-27T16:16:34.699+0000][82460][gc,heap,exit]   class space    used 266K, capacity 384K, committed 384K, reserved 1048576K
+```
+
+&emsp;&emsp;你可以在`gc`字段的数据中每个部分分配一个变量，然后只返回你想要的部分。用`{}`包含内容都是为一个变量。例如，变量`[%{@timestamp}][%{code}][%{desc}] `将会匹配前三个数据块，这些数据都在`[]`中。
+
+```text
+[%{@timestamp}][%{code}][%{desc}]  %{ident} used %{usize}, capacity %{csize}, committed %{comsize}, reserved %{rsize}
+```
+
+&emsp;&emsp;你的dissect pattern可以包含`used`、`capacity`、`committed`这些term而不是使用变量，因为你只想要返回这些term。当然你也可以分配变量给你想要返回的值，比如`%{usize}`、`%{csize}`、`%{comsize}`。在日志中的分隔符是逗号，因此你的dissect pattern同样需要使用这个分隔符。
+
+&emsp;&emsp;现在你有一个dissect pattern，你可以在Painless 脚本呢中包含它并作为runtime field的一部分。这个脚本使用你这个dissect pattern将`gc`字段内容分割，然后返回你在`emit`中定义的丝逆袭。由于dissect使用了简单的语法，你只需要准确告知你想要的东西。
+
+&emsp;&emsp;下面的pattern告诉dissect返回`used`这个term、空格、` gc.usize`的值以及一个逗号，以及其他你想要的数据。虽然这种pattern在生产环境中可能不那么有用，但它提供了大量的灵活性来实验和操作你的数据。在生产环境中，你可能只想使用`emit(gc.usize)`，然后对该值进行汇总或在计算中使用。
+
+```text
+emit("used" + ' ' + gc.usize + ', ' + "capacity" + ' ' + gc.csize + ', ' + "committed" + ' ' + gc.comsize)
+```
+
+&emsp;&emsp;我们将上面的内容一起放在查询请求中。使用[field option](#The fields option)，你可以检索`gc_size`这种runtime field类型的值。这个请求同样包含了一个bucket aggregation对你的数据分组。
+
+```text
+GET my-index/_search
+{
+  "runtime_mappings": {
+    "gc_size": {
+      "type": "keyword",
+      "script": """
+        Map gc=dissect('[%{@timestamp}][%{code}][%{desc}]  %{ident} used %{usize}, capacity %{csize}, committed %{comsize}, reserved %{rsize}').extract(doc["gc.keyword"].value);
+        if (gc != null) emit("used" + ' ' + gc.usize + ', ' + "capacity" + ' ' + gc.csize + ', ' + "committed" + ' ' + gc.comsize);
+      """
+    }
+  },
+  "size": 1,
+  "aggs": {
+    "sizes": {
+      "terms": {
+        "field": "gc_size",
+        "size": 10
+      }
+    }
+  },
+  "fields" : ["gc_size"]
+}
+```
+
+&emsp;&emsp;响应中包含了来自`gc_size`的数据，跟你在dissect pattern中定义的格式完全一样。
+
+```text
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 6,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "my-index",
+        "_id" : "GXx3H3kBKGE42WRNlddJ",
+        "_score" : 1.0,
+        "_source" : {
+          "gc" : "[2021-04-27T16:16:34.699+0000][82460][gc,heap,exit]   class space    used 266K, capacity 384K, committed 384K, reserved 1048576K"
+        },
+        "fields" : {
+          "gc_size" : [
+            "used 266K, capacity 384K, committed 384K"
+          ]
+        }
+      }
+    ]
+  },
+  "aggregations" : {
+    "sizes" : {
+      "doc_count_error_upper_bound" : 0,
+      "sum_other_doc_count" : 0,
+      "buckets" : [
+        {
+          "key" : "used 107719K, capacity 111775K, committed 112724K",
+          "doc_count" : 1
+        },
+        {
+          "key" : "used 115409K, capacity 119541K, committed 120248K",
+          "doc_count" : 1
+        },
+        {
+          "key" : "used 14503K, capacity 15894K, committed 15948K",
+          "doc_count" : 1
+        },
+        {
+          "key" : "used 15255K, capacity 16726K, committed 16844K",
+          "doc_count" : 1
+        },
+        {
+          "key" : "used 266K, capacity 367K, committed 384K",
+          "doc_count" : 1
+        },
+        {
+          "key" : "used 266K, capacity 384K, committed 384K",
+          "doc_count" : 1
+        }
+      ]
+    }
+  }
+}
+```
 
 ## Data management
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-management.html)
