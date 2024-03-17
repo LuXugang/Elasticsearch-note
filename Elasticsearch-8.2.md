@@ -777,19 +777,19 @@ POST _nodes/reload_secure_settings
 
 ###### xpack.security.audit.logfile.emit_node_name
 
-&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点名称[node name](#Important-Elasticsearch-configuration)是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点名称[node name](#Important-Elasticsearch-configuration)是否作为其中的一个字段。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_host_address
 
-&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的地址是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的地址是否作为其中的一个字段。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_host_name
 
-&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的主机名是否作为其中的一个域field。默认值是false。
+&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的主机名是否作为其中的一个字段。默认值是false。
 
 ###### xpack.security.audit.logfile.emit_node_id
 
-&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的id是否作为其中的一个域field。不同于[node name](#Important-Elasticsearch-configuration)，管理员可以在配置文件中修改节点id，节点id在集群启动后将不可变更，默认值是true。
+&emsp;&emsp;（[Dynamic](#Dynamic（settings）)）指定在每一个日志事件中，节点的id是否作为其中的一个字段。不同于[node name](#Important-Elasticsearch-configuration)，管理员可以在配置文件中修改节点id，节点id在集群启动后将不可变更，默认值是true。
 
 ##### Audit Logfile Event Ignore Policies
 
@@ -1431,7 +1431,7 @@ PUT /_cluster/settings
 #### Field data cache settings
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-fielddata.html)
 
-&emsp;&emsp;field data cache中包含了[field data](#fielddata mapping parameter)和[global ordinals](#eager_global_ordinals)，它们都是用来让某些域能够用于聚合。由于是on-heap的数据结构，所以很有必要监控缓存的使用情况。
+&emsp;&emsp;field data cache中包含了[field data](#fielddata mapping parameter)和[global ordinals](#eager_global_ordinals)，它们都是用来让某些字段能够用于聚合。由于是on-heap的数据结构，所以很有必要监控缓存的使用情况。
 
 ##### Cache size
 
@@ -1836,7 +1836,7 @@ path.data:  /var/elasticsearch/data
 
 &emsp;&emsp;这个设置限制了一颗query tree能包含的clause的最大数量。4096这个默认值已经是非常高了，通常来说该值是够用的。这个限制会应用于重写query（rewrite query），所以不仅仅是`bool` query，所有会重写为bool query的query，例如`fuzzy` query，都会有较高数量的clause。这个限制的目的是防止查询的范围变得很大，占用过多的CPU和内存。如果你一定要提高这个值，保证你已经竭尽全力尝试了所有其他的选项，否则就不要这么做。较高的值会导致性能降低以及内存问题，特别是在负载高或者资源较少的集群上。
 
-&emsp;&emsp;Elasticsearch提供了一些工具来防止遇到这个clause数量上限的问题，例如在[terms](#Terms query) query中，它允许查询许多不一样的值，但是它只作为一个clause。或者是带有[index_prefixes](#index_prefixes)选项的[text](#Text type family)域，它会执行prefix query，这个query会膨胀为较高数量的term，但是只作为一个term query。
+&emsp;&emsp;Elasticsearch提供了一些工具来防止遇到这个clause数量上限的问题，例如在[terms](#Terms query) query中，它允许查询许多不一样的值，但是它只作为一个clause。或者是带有[index_prefixes](#index_prefixes)选项的[text](#Text type family)字段，它会执行prefix query，这个query会膨胀为较高数量的term，但是只作为一个term query。
 
 ##### search.max_buckets
 
@@ -3602,7 +3602,7 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 
 ##### index.max_docvalue_fields_search
 
-&emsp;&emsp;某次查询中允许`docvalue_fileds`数量最大值。默认值为`100`。查询Doc-value域有一定的开销因为可能需要查看对每一个域中的每一个文档。
+&emsp;&emsp;某次查询中允许`docvalue_fileds`数量最大值。默认值为`100`。查询Doc-value域有一定的开销因为可能需要查看对每一个字段中的每一个文档。
 
 ##### index.max_script_fields
 
@@ -3638,14 +3638,14 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 
 ##### index.query.default_field
 
-&emsp;&emsp;（string or array of strings）通配模版（Wildcard(`*`) patterns）会匹配到一个或者多个域。下面的请求类型默认查询这些匹配到的域：
+&emsp;&emsp;（string or array of strings）通配模版（Wildcard(`*`) patterns）会匹配到一个或者多个字段。下面的请求类型默认查询这些匹配到的字段：
 
 - [More like this](#More like this query)
 - [Multi-match](#Multi-match query)
 - [Query string](#Query string query)
 - [Simple query string](#Simple query string query)
 
-&emsp;&emsp;默认值为`*`，意味着匹配所有eligible域用于[term-level queries](#Term-level queries)，除了metadata域。
+&emsp;&emsp;默认值为`*`，意味着匹配所有eligible域用于[term-level queries](#Term-level queries)，除了metadata字段。
 
 ##### index.routing.allocation.enable
 
@@ -4293,7 +4293,7 @@ PUT my-index-000001
 &emsp;&emsp;第5行，根据`date`字段排序
 &emsp;&emsp;第6行，降序
 
-&emsp;&emsp;也可以使用多个域进行排序：
+&emsp;&emsp;也可以使用多个字段进行排序：
 
 ```text
 PUT my-index-000001
@@ -4326,28 +4326,28 @@ PUT my-index-000001
 
 `index.sort.field`
 
-&emsp;&emsp;指定用于排序的一个或者多个域。只允许开启`doc_values`的`boolean` 、`numeric`、 `date`、 `keyword`类型的字段。
+&emsp;&emsp;指定用于排序的一个或者多个字段。只允许开启`doc_values`的`boolean` 、`numeric`、 `date`、 `keyword`类型的字段。
 
 `index.sort.order`
 
-&emsp;&emsp;每一个排序域的排序规则：
+&emsp;&emsp;每一个排序字段的排序规则：
 
 - `asc`: 升序
 - `desc`：降序
 
 `index.sort.mode`
 
-&emsp;&emsp;Elasticsearch支持使用mutil-values的域用于排序。这个参数描述的是使用哪个值用于文档排序。两个参数值可选：
+&emsp;&emsp;Elasticsearch支持使用mutil-values的字段用于排序。这个参数描述的是使用哪个值用于文档排序。两个参数值可选：
 
 - `min`：选择最小的值
 - `max`：选择最大的值
 
 `index.sort.missing`
 
-&emsp;&emsp;这个参数描述的是，如果文档中缺失用于排序的域该如何对这篇文档进行排序。两个参数值可选：
+&emsp;&emsp;这个参数描述的是，如果文档中缺失用于排序的字段该如何对这篇文档进行排序。两个参数值可选：
 
-- `_last`：没有用于排序的域的文档排在最后面
-- `_first`：没有用于排序的域的文档排在最前面
+- `_last`：没有用于排序的字段的文档排在最后面
+- `_first`：没有用于排序的字段的文档排在最前面
 
 > WARNING：Index Sorting只有定义在创建索引时。不能对现有的索引添加或者更新排序。Index Sorting在索引期间有一定的开销，因为文档必须在flush和merge时进行排序。你应该在启动这个功能前测试下对你的应用的影响
 
@@ -4428,7 +4428,7 @@ GET /events/_search
 
 &emsp;&emsp;Index sorting对organize Lucene doc id（不要跟`_id`混淆（conflate））非常有用，使得conjunction更加高效（a AND b AND ...）。如果任意一个clause没有匹配到，那么整个conjunction都不会匹配，conjunction可以变的非常高效。通过使用Index sorting，我们可以把没有匹配的文档放一起，有助于在范围很大的ID区间内进行跳跃，跳过那些不匹配的文档。
 
-&emsp;&emsp;这个trick只能在low-cardinality的域上工作。A rule of thumb，你首先应该将拥有low-cardinality以及经常用于过滤的域作为排序字段。The sort order (asc or desc) does not matter as we only care about putting values that would match the same clauses close to each other。
+&emsp;&emsp;这个trick只能在low-cardinality的字段上工作。A rule of thumb，你首先应该将拥有low-cardinality以及经常用于过滤的字段作为排序字段。The sort order (asc or desc) does not matter as we only care about putting values that would match the same clauses close to each other。
 
 &emsp;&emsp;例如，如果你正在索引汽车用于销售，你应该根据fuel type, body type, make, year of registration and finally mileage进行排序。
 
@@ -4470,11 +4470,11 @@ GET /events/_search
 ## Mapping
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping.html)
 
-&emsp;&emsp;Mapping是定义一篇文档中的域（field）如何存储以及索引的过程。
+&emsp;&emsp;Mapping是定义一篇文档中的字段（field）如何存储以及索引的过程。
 
-&emsp;&emsp;每篇文档都是域的集合，每个域都有自己的[date type](#Field data types)。在mapping你的数据时，你要创建一个mapping定义，定义中包含的域的集合跟文档相关（pertinent）。mapping的定义同样包括了[metadata fields](#Metadata fields)。比如`_source`字段，它自定义了文档相关metadata的处理方式。
+&emsp;&emsp;每篇文档都是字段的集合，每个字段都有自己的[date type](#Field data types)。在mapping你的数据时，你要创建一个mapping定义，定义中包含的字段的集合跟文档相关（pertinent）。mapping的定义同样包括了[metadata fields](#Metadata fields)。比如`_source`字段，它自定义了文档相关metadata的处理方式。
 
-&emsp;&emsp;使用`dynamic mapping`和`explicit mapping`来定义你的数据。每一种方式在你使用数据过程中有不同的好处。例如，显示的对域进行映射使得不按照默认方式进行处理，或者你想要获得对域的创建有更多的控制，随后你可以允许Elasticsearch对其他的域进行动态映射。
+&emsp;&emsp;使用`dynamic mapping`和`explicit mapping`来定义你的数据。每一种方式在你使用数据过程中有不同的好处。例如，显示的对域进行映射使得不按照默认方式进行处理，或者你想要获得对字段的创建有更多的控制，随后你可以允许Elasticsearch对其他的字段进行动态映射。
 
 > NOTE：在7.0.0之前，mapping的定义包含一个类型名（type name）。Elasticsearch 7.0.0以及之后的版本再也不接受一个默认的mapping。见[Removal of mapping types](#Removal of mapping types)。
 > 
@@ -4485,7 +4485,7 @@ GET /events/_search
 
 #### Dynamic mapping(overview)
 
-&emsp;&emsp;[Dynamic mapping](#Dynamic field mapping)适合你刚开始接触Elasticsearch/Mapping时体验数据的探索。Elasticsearch会自动的增加新的字段，你只需要索引文档就可以了。你可以添加域到top-level mapping中，以及inner [object](#Object field type)和[nested](#Nested field type)域中。
+&emsp;&emsp;[Dynamic mapping](#Dynamic field mapping)适合你刚开始接触Elasticsearch/Mapping时体验数据的探索。Elasticsearch会自动的增加新的字段，你只需要索引文档就可以了。你可以添加域到top-level mapping中，以及inner [object](#Object field type)和[nested](#Nested field type)字段中。
 
 &emsp;&emsp;使用[dynamic templates](#Dynamic templates)自定义mappings，根据满足的条件动态的添加域。
 
@@ -4502,28 +4502,28 @@ GET /events/_search
 
 #### Settings to prevent mapping explosion
 
-&emsp;&emsp;在一个索引中定义太多的域会导致mapping explosion，引起OOM的错误以及难以恢复的情况。
+&emsp;&emsp;在一个索引中定义太多的字段会导致mapping explosion，引起OOM的错误以及难以恢复的情况。
 
-&emsp;&emsp;想象这么一种场景，每一篇新的文档都会引入新的字段，比如使用了[dynamic mapping](#Dynamic mapping)。每一个域添加到Index mapping中，随着mapping中域的数量的增长便成长为了问题。
+&emsp;&emsp;想象这么一种场景，每一篇新的文档都会引入新的字段，比如使用了[dynamic mapping](#Dynamic mapping)。每一个字段添加到Index mapping中，随着mapping中字段的数量的增长便成长为了问题。
 
-&emsp;&emsp;使用[mapping limit settings](#Mapping limit settings)限制mapping（手动或者动态创建）中域的数量，防止因为文档导致mapping explosion。
+&emsp;&emsp;使用[mapping limit settings](#Mapping limit settings)限制mapping（手动或者动态创建）中字段的数量，防止因为文档导致mapping explosion。
 
 ### Dynamic mapping
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dynamic-mapping.html)
 
-&emsp;&emsp;Elasticsearch最重要的一个功能就是能够让你快速的去探索数据。索引一篇文档，你不需要首先创建一个索引，然后定义好mapping，接着定义每一个域，你只需要直接对一篇文档进行索引，索引名、类型、域都会自动的配置好。
+&emsp;&emsp;Elasticsearch最重要的一个功能就是能够让你快速的去探索数据。索引一篇文档，你不需要首先创建一个索引，然后定义好mapping，接着定义每一个字段，你只需要直接对一篇文档进行索引，索引名、类型、域都会自动的配置好。
 
 ```text
 PUT data/_doc/1 
 { "count": 5 }
 ```
 
-&emsp;&emsp;第1行，创建一个名为data的索引，以及`_doc`类型的mapping，和一个字段名为`count`，数据类型为`long`的域。
+&emsp;&emsp;第1行，创建一个名为data的索引，以及`_doc`类型的mapping，和一个字段名为`count`，数据类型为`long`的字段。
 
 
 &emsp;&emsp;这种自动检测并且添加（addition of）一个新字段的机制称为动态索引dynamic mapping。可以基于下列方法来自定义你的动态索引规则：
 
-- [Dynamic field mappings](#Dynamic field mapping)：用于管理域的检测的规则
+- [Dynamic field mappings](#Dynamic field mapping)：用于管理字段的检测的规则
 - [Dynamic templates](#Dynamic templates)：配置自定义的规则实现自动的添加域
 
 > TIP：[Index templates](#Index templates)允许你为新的索引配置默认的mapping，settings 以及[aliases](#Aliases) ，不管是自动还是显示创建索引。
@@ -4535,7 +4535,7 @@ PUT data/_doc/1
 
 &emsp;&emsp;你可以设置参数`dynamic`的值为`true`或者`runtime`来显示的指引Elasticsearch对于即将到来的文档动态的创建域。当开启了dynamic field mapping ，Elasticsearch会根据下表中的规则决定如何映射为不同类型的字段。
 
-> NOTE：Elasticsearch仅支持下表中域的数据类型（[field data type](#Field data types)）的自动检测，你必须显式的指定其他数据类型。
+> NOTE：Elasticsearch仅支持下表中字段的数据类型（[field data type](#Field data types)）的自动检测，你必须显式的指定其他数据类型。
 
 |                      **JSON data type**                      |                **"dynamic":"true"**                |              **"dynamic":"runtime"**               |
 | :----------------------------------------------------------: | :------------------------------------------------: | :------------------------------------------------: |
@@ -4549,15 +4549,15 @@ PUT data/_doc/1
 | `string` that passes [numeric detection](#Numeric detection) |                 `float` or `long`                  |                 `double` or `long`                 |
 | `string` that doesn’t pass `date`detection or `numeric` detection |         `text` with a `.keyword`sub-field          |                     `keyword`                      |
 
-&emsp;&emsp;你可以同时在文档层或者[object](#Object field type)层来关闭动态mapping。将参数`dynamic`设置为`false`来忽略新的字段，设置为`strict`来当Elasticsearch遇到一个未知的域时就reject这个文档。
+&emsp;&emsp;你可以同时在文档层或者[object](#Object field type)层来关闭动态mapping。将参数`dynamic`设置为`false`来忽略新的字段，设置为`strict`来当Elasticsearch遇到一个未知的字段时就reject这个文档。
 
-> TIP：可以通过[update mapping API](#Update mapping API)来对现有的域的参数`dynamic`的值进行更新。
+> TIP：可以通过[update mapping API](#Update mapping API)来对现有的字段的参数`dynamic`的值进行更新。
 
 &emsp;&emsp;你可以为[Date detection](#Date detection)和[Numeric detection](#Numeric detection)自定义dynamic field mapping的规则。你可以使用[dynamic_templates](#Dynamic templates)来自定义个性化的mapping规则并应用到额外的dynamic fields。
 
 ##### Date detection
 
-&emsp;&emsp;如果开启了`date_detection`（默认开启），新来的string类型的字段会被检测是否其字段值能够被`dynamic_date_formats`中指定的日期模板匹配到。如果匹配到了，就添加对应的新的[date](#Date field type)域。
+&emsp;&emsp;如果开启了`date_detection`（默认开启），新来的string类型的字段会被检测是否其字段值能够被`dynamic_date_formats`中指定的日期模板匹配到。如果匹配到了，就添加对应的新的[date](#Date field type)字段。
 
 &emsp;&emsp;`dynamic_date_formats`的默认值是：
 - [ "strict_date_optional_time","yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"]
@@ -4593,7 +4593,7 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;第8行，`create_date`被添加为[text](#Text type family)域。
+&emsp;&emsp;第8行，`create_date`被添加为[text](#Text type family)字段。
 
 ##### Customizing detected date formats
 
@@ -4632,8 +4632,8 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;第10行，`my_float`被添加为[float](#Numeric field types)域
-&emsp;&emsp;第11行，`my_integer`被添加为[integer](#Numeric field types)域
+&emsp;&emsp;第10行，`my_float`被添加为[float](#Numeric field types)字段
+&emsp;&emsp;第11行，`my_integer`被添加为[integer](#Numeric field types)字段
 
 #### Dynamic templates
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dynamic-templates.html)
@@ -4647,7 +4647,7 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;使用`{name}`和`{dynamic_type}`这些[template variables](#Template variables)作为mapping中的占位符。
 
-> IMPORTANT：只有当某个域包含一个具体的值才能添加Dynamic field mappings。当域中包含`null`或者空的数组时，Elasticsearch不会添加一个dynamic field mapping。如果在`dynamic_template`中使用了`null_value`选项，只有在一篇有具体的值的文档索引后才能应用这个选项。 
+> IMPORTANT：只有当某个字段包含一个具体的值才能添加Dynamic field mappings。当域中包含`null`或者空的数组时，Elasticsearch不会添加一个dynamic field mapping。如果在`dynamic_template`中使用了`null_value`选项，只有在一篇有具体的值的文档索引后才能应用这个选项。 
 
 &emsp;&emsp;Dynamic template由一组带名称的object数组组成：
 
@@ -4665,13 +4665,13 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;第3行，模板的名称可以是任意的string value
 &emsp;&emsp;第4行，匹配条件可以包含: `match_mapping_type`, `match`, `match_pattern`, `unmatch`, `path_match`, `path_unmatch`
-&emsp;&emsp;第5行，匹配到的域应该使用的mapping
+&emsp;&emsp;第5行，匹配到的字段应该使用的mapping
 
 ##### Validating dynamic templates
 
 &emsp;&emsp;如果提供的mapping中包含了一个非法的mapping 片段（snippet），则返回一个validation error。Validation会在索引期间应用dynamic template时发生，并且在大多数情况下发生在dynamic template更新后。提供一个非法的mapping片段可能会因为下面的一些条件导致更新或者dynamic template的校验失败：
 
-- If no `match_mapping_type` has been specified but the template is valid for at least one predefined mapping type, mapping片段式合法的。然而，如果匹配了模板的某个域索引为不同的类型，那么会返回validation error。例如，配置一个没有`match_mapping_type`的dynamic template在索引期间认为string类型是合法的，但是匹配了模板的某个域索引为了long类型，那么会返回一个validation error。建议在mapping片段中配置`mathc_mapping_type`为期望的JSON类型或者想要的`type`
+- If no `match_mapping_type` has been specified but the template is valid for at least one predefined mapping type, mapping片段式合法的。然而，如果匹配了模板的某个字段索引为不同的类型，那么会返回validation error。例如，配置一个没有`match_mapping_type`的dynamic template在索引期间认为string类型是合法的，但是匹配了模板的某个字段索引为了long类型，那么会返回一个validation error。建议在mapping片段中配置`mathc_mapping_type`为期望的JSON类型或者想要的`type`
 - 如果在mapping片段中使用`{name}`占位符，那当更新dynamic template时会跳过validation。这是因为在那个时间点字段名是未知的。在索引期间应用模版时才进行validation。
 
 &emsp;&emsp;模版是有序处理的，使用匹配到的第一个模板。当通过[update mapping](#Update mapping API) API更新新的dynamic template后，所有现有的模板会被覆盖。这使得最开始添加的模板可以被重新排序或者被删除。
@@ -4680,11 +4680,11 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;如果你想要Elasticsearch的动态的映射某些类型的新字段作为runtime field，那么在索引mapping中设置`"dynamic":"runtime"`。这些字段不会被索引，在查询期间从`_source`中获取。
 
-&emsp;&emsp;或者你可以使用默认的动态mapping规则，然后创建dynamic模版将指定的域映射为runtime field。你可以在索引mapping中设置`"dynamic":"true"`然后创建一个dynamic template将某些类型的新字段映射为runtime field。
+&emsp;&emsp;或者你可以使用默认的动态mapping规则，然后创建dynamic模版将指定的字段映射为runtime field。你可以在索引mapping中设置`"dynamic":"true"`然后创建一个dynamic template将某些类型的新字段映射为runtime field。
 
-&emsp;&emsp;比如说你的数据中的每一个域的字段名都是以`ip_`开始的。基于[dynamic mapping rules](#match_mapping_type)，Elasticsearch将通过了`numeric`检测的域映射为`float`或者`long`，然而你可以创建一个dynamic template将string类型的值映射为runtime filed并且域的类型为`ip`。
+&emsp;&emsp;比如说你的数据中的每一个字段的字段名都是以`ip_`开始的。基于[dynamic mapping rules](#match_mapping_type)，Elasticsearch将通过了`numeric`检测的字段映射为`float`或者`long`，然而你可以创建一个dynamic template将string类型的值映射为runtime filed并且字段的类型为`ip`。
 
-&emsp;&emsp;下面的请求中定义了一个名为`strings_as_ip`的dynamic template。当Elasticsearch检测到新的字段值为`string`字段匹配到了`ip*`这个pattern，它就会将这些字段映射为runtime field并且域的类型为[ip](#ip)。因为`ip`字段没有动态映射，你可以使用带`"dynamic":"true"`或者`"dynamic":"runtime"`的模版。
+&emsp;&emsp;下面的请求中定义了一个名为`strings_as_ip`的dynamic template。当Elasticsearch检测到新的字段值为`string`字段匹配到了`ip*`这个pattern，它就会将这些字段映射为runtime field并且字段的类型为[ip](#ip)。因为`ip`字段没有动态映射，你可以使用带`"dynamic":"true"`或者`"dynamic":"runtime"`的模版。
 
 ```text
 PUT my-index-000001/
@@ -4725,7 +4725,7 @@ PUT my-index-000001/
 | array | 取决于数组中第一个不是null的值 | 取决于数组中第一个不是null的值 |
 | string（通过了[Numeric detection](#Numeric detection)的解析） | float或者long | double或者long |
 | string（通过了[date detection](#Date detection)的解析） | date | date |
-| string没有通过date或者numeric的解析 | text以及.keyword的子域 | keyword |
+| string没有通过date或者numeric的解析 | text以及.keyword的子字段 | keyword |
 
 
 &emsp;&emsp;使用通配符(`*`)匹配所有的数据类型。
@@ -4775,7 +4775,7 @@ PUT my-index-000001/_doc/1
 
 ##### match and unmatch
 
-&emsp;&emsp;`match`参数使用pattern来匹配字段名（field name），同时`unmatch`使用pattern排除`match`参数匹配到的域。
+&emsp;&emsp;`match`参数使用pattern来匹配字段名（field name），同时`unmatch`使用pattern排除`match`参数匹配到的字段。
 
 &emsp;&emsp;`match_pattern`参数调整了`match`参数的行为，支持Java regular expression来匹配字段名而不是使用简单的通配符，例如：
 
@@ -4784,7 +4784,7 @@ PUT my-index-000001/_doc/1
   "match": "^profit_\d+$"
 ```
 
-&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的域，但是排除了以`_text`结尾的域，并将它们的字段值映射为`long`：
+&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的字段，但是排除了以`_text`结尾的字段，并将它们的字段值映射为`long`：
 
 ```text
 PUT my-index-000001
@@ -4915,7 +4915,7 @@ PUT my-index-000001/_doc/1
 
 ###### Structured search
 
-&emsp;&emsp;当你设置了`"dynamic":"true"`，Elasticsearch会将string filed映射为`text`字段以及`keyword`的子域。如果你只要索引结构化的内容并且对不需要全文检索，你可以让Elasticsearch只映射为`keyword`字段。然而，你在查询那些被索引的域时，你必须提供精确的关键字。
+&emsp;&emsp;当你设置了`"dynamic":"true"`，Elasticsearch会将string filed映射为`text`字段以及`keyword`的子字段。如果你只要索引结构化的内容并且对不需要全文检索，你可以让Elasticsearch只映射为`keyword`字段。然而，你在查询那些被索引的字段时，你必须提供精确的关键字。
 
 ```text
 PUT my-index-000001
@@ -4957,11 +4957,11 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;或者你可以创建一个dynamic template将你的string field在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且域的类型为`keyword`。
+&emsp;&emsp;或者你可以创建一个dynamic template将你的string field在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且字段的类型为`keyword`。
 
 &emsp;&emsp;尽管你的`string`字段不会被索引，但是它们的值会存储在`_source`中并且可以用于查询请求，聚合，过滤和排序。
 
-&emsp;&emsp;例如下面的请求创建了一个dynamic template将`string`字段映射为runtime field并且域的类型为`keyword`，尽管`runtime`的定义是空白的。但是基于Elasticsearch用于添加域的类型到mapping的[dynamic mapping rules](#Dynamic field mapping)，新的`string`字段会被映射为runtime field并且域的类型为`keyword`。所有没有通过date detection和numeric detection的`string`都会被自动的映射为`keyword`：
+&emsp;&emsp;例如下面的请求创建了一个dynamic template将`string`字段映射为runtime field并且字段的类型为`keyword`，尽管`runtime`的定义是空白的。但是基于Elasticsearch用于添加字段的类型到mapping的[dynamic mapping rules](#Dynamic field mapping)，新的`string`字段会被映射为runtime field并且字段的类型为`keyword`。所有没有通过date detection和numeric detection的`string`都会被自动的映射为`keyword`：
 
 ```text
 PUT my-index-000001
@@ -4989,7 +4989,7 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;当你查看mapping时，你会看到`english`字段是一个runtime field并且域的类型为`keyword`。
+&emsp;&emsp;当你查看mapping时，你会看到`english`字段是一个runtime field并且字段的类型为`keyword`。
 
 ```text
 GET my-index-000001/_mapping
@@ -5051,7 +5051,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;模版中出现的`keyword`字段是dynamic mappings中默认存在的。当然如果你不需要在这个域上执行精确查询或者聚合，你可以不需要它们，你可以正如上文中描述的那样来移除它们。
+&emsp;&emsp;模版中出现的`keyword`字段是dynamic mappings中默认存在的。当然如果你不需要在这个字段上执行精确查询或者聚合，你可以不需要它们，你可以正如上文中描述的那样来移除它们。
 
 ###### Time series
 
@@ -5092,7 +5092,7 @@ PUT my-index-000001
 
 &emsp;&emsp;相较于Elasticsearch猜测你的数据类型，如果你更了解数据类型，你可能想要指定自己的显示的mapping（explicit mapping）。
 
-&emsp;&emsp;你可以在[create an index ](#Create an index with an explicit mapping)或者[add fields to an existing index](#Add a field to an existing mapping)时创建域的mapping（field mapping）。
+&emsp;&emsp;你可以在[create an index ](#Create an index with an explicit mapping)或者[add fields to an existing index](#Add a field to an existing mapping)时创建字段的mapping（field mapping）。
 
 #### Create an index with an explicit mapping
 
@@ -5111,15 +5111,15 @@ PUT /my-index-000001
 }
 ```
 
-&emsp;&emsp;第5行，创建一个名为`age`，类型为[integer](#Numeric field types)的域
-&emsp;&emsp;第6行，创建一个名为`email`，类型为[keyword](#Keyword type family)的域
-&emsp;&emsp;第7行，创建一个名为`name`，类型为[text](#Text type family)的域
+&emsp;&emsp;第5行，创建一个名为`age`，类型为[integer](#Numeric field types)的字段
+&emsp;&emsp;第6行，创建一个名为`email`，类型为[keyword](#Keyword type family)的字段
+&emsp;&emsp;第7行，创建一个名为`name`，类型为[text](#Text type family)的字段
 
 #### Add a field to an existing mapping
 
-&emsp;&emsp;你可以使用[update mapping](#Update mapping API) API在一个现有的（existing）索引中增加一个或者多个域。
+&emsp;&emsp;你可以使用[update mapping](#Update mapping API) API在一个现有的（existing）索引中增加一个或者多个字段。
 
-&emsp;&emsp;下面的例子中创建了一个名为`employee-id`，类型为`keyword`，mapping参数为[index](#index(mapping parameter))的域。这意味着`employee-id`字段的字段值会被存储但是不会被索引，即无法用于查询。
+&emsp;&emsp;下面的例子中创建了一个名为`employee-id`，类型为`keyword`，mapping参数为[index](#index(mapping parameter))的字段。这意味着`employee-id`字段的字段值会被存储但是不会被索引，即无法用于查询。
 
 ```text
 PUT /my-index-000001/_mapping
@@ -5135,13 +5135,13 @@ PUT /my-index-000001/_mapping
 
 #### Update the mapping of a field
 
-&emsp;&emsp;除了支持更新[mapping parameters](#Mapping parameters)，你不能对现有的域更改mapping或者域的类型。更改一个现有的域会invalidate已经写入到索引文件中的数据。
+&emsp;&emsp;除了支持更新[mapping parameters](#Mapping parameters)，你不能对现有的字段更改mapping或者字段的类型。更改一个现有的字段会invalidate已经写入到索引文件中的数据。
 
-&emsp;&emsp;如果你更改data stream的backing index中域的类型，见[Change mappings and settings for a data stream](#Change mappings and settings for a data stream)。
+&emsp;&emsp;如果你更改data stream的backing index中字段的类型，见[Change mappings and settings for a data stream](#Change mappings and settings for a data stream)。
 
-&emsp;&emsp;如果你需要在其他索引中更改域的mapping，那么使用正确的mapping创建一个新的索引，然后[reindex](#Reindex API)你的数据到那个索引中。
+&emsp;&emsp;如果你需要在其他索引中更改字段的mapping，那么使用正确的mapping创建一个新的索引，然后[reindex](#Reindex API)你的数据到那个索引中。
 
-&emsp;&emsp;重命名一个域会invalidate使用旧的字段名索引的数据，你可以增加一个[alias](#Alias field type)域创建一个替换的字段名。
+&emsp;&emsp;重命名一个字段会invalidate使用旧的字段名索引的数据，你可以增加一个[alias](#Alias field type)字段创建一个替换的字段名。
 
 #### View the mapping of an index
 
@@ -5179,9 +5179,9 @@ GET /my-index-000001/_mapping
 
 #### View the mapping of specific fields
 
-&emsp;&emsp;如果你只想指定一个或者多个域并查看它们的mapping，你可以使用[get field mapping](#Get field mapping API) API。
+&emsp;&emsp;如果你只想指定一个或者多个字段并查看它们的mapping，你可以使用[get field mapping](#Get field mapping API) API。
 
-&emsp;&emsp;如果你的索引包含很多的域或者你不需要完整的索引的mapping，这个接口是很有用的。
+&emsp;&emsp;如果你的索引包含很多的字段或者你不需要完整的索引的mapping，这个接口是很有用的。
 
 &emsp;&emsp;下面的请求展示了`employee-id`字段的mapping。
 
@@ -5212,16 +5212,16 @@ GET /my-index-000001/_mapping/field/employee-id
 ### Runtime fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/runtime.html)
 
-&emsp;&emsp;`runtime field`是在查询阶段计算出来的域，可以让你用于：
+&emsp;&emsp;`runtime field`是在查询阶段计算出来的字段，可以让你用于：
 
 - 添加新的字段到现有的文档并且不需要重新索引你的数据
 - 不需要你理解是如何结构化（ how it’s structured）的就可以开始处理你的数据
-- 在查询期间覆盖索引中域的值
-- 在不用修改现有策略情况下，定义用于特殊用途的域
+- 在查询期间覆盖索引中字段的值
+- 在不用修改现有策略情况下，定义用于特殊用途的字段
 
 &emsp;&emsp;你可以通过search API访问`runtime field`，就像访问其他域一样，Elasticsearch不会对`runtime field`区别对待。你可以在[index mapping](#Map a runtime field)或者[search request](#Define runtime fields in a search request)中定义`runtime field`，提供不同的方式体现了`runtime field`内部的灵活性。
 
-&emsp;&emsp;在`_search` API上使用[fields](#Retrieve selected fields from a search)参数来 [retrieve the values of runtime fields](#Retrieve a runtime field)，runtime filed不会在`_source`中展示，但是`fields` API可以在所有域上使用，即使这些字段不在`_source`中。
+&emsp;&emsp;在`_search` API上使用[fields](#Retrieve selected fields from a search)参数来 [retrieve the values of runtime fields](#Retrieve a runtime field)，runtime filed不会在`_source`中展示，但是`fields` API可以在所有字段上使用，即使这些字段不在`_source`中。
 
 &emsp;&emsp;Runtime fields用于处理日志数据（log data）时候特别好用（见[例子](#Explore your data with runtime fields)），特别是当你不确定数据结构时。尽管查询性能会降低，但是你能更快的索引日志数据，并且索引体积较小。
 
@@ -5231,7 +5231,7 @@ GET /my-index-000001/_mapping/field/employee-id
 
 &emsp;&emsp;如果你让一个runtime field成为一个索引域（indexed field），你不需要修改任何请求来指定runtime filed。甚至你可以指定某个字段在某些索引中是runtime field，同时在某个索引中是一个索引域。你可以灵活的选择哪些域作为索引域还是runtime field。
 
-&emsp;&emsp;Runtime fileds最核心、最重要的好处就是它提供了在提取（ingest）文档后可以在这篇文档中添加域的能力。这种能力简化了mapping的设计，因为你不需要提前决定用哪种数据类型进行解析，可以在任何时候修改。使用runtime field使得有更小的索引和更快的提取时间，这将使用更少的资源并降低你的操作成本。
+&emsp;&emsp;Runtime fileds最核心、最重要的好处就是它提供了在提取（ingest）文档后可以在这篇文档中添加字段的能力。这种能力简化了mapping的设计，因为你不需要提前决定用哪种数据类型进行解析，可以在任何时候修改。使用runtime field使得有更小的索引和更快的提取时间，这将使用更少的资源并降低你的操作成本。
 
 ##### Incentives
 
@@ -5249,7 +5249,7 @@ GET /my-index-000001/_mapping/field/employee-id
 
 &emsp;&emsp;Runtime fields使用更少的磁盘空间并且在查询你的数据上提供灵活性，但是会因为runtime脚本中定义的计算而影响查询性能。
 
-&emsp;&emsp;若要平衡性能和灵活性，将那些你常用于查询，过滤，例如timestamp这类域，对这些字段进行索引。在执行查询时，Elasticsearch会自动的使用这些索引域（indexed field）在很快的响应时间内获得结果。随后你可以使用runtime fields来限制Elasticsearch需要用于计算的域的数量。索引域和runtime field的配合使用，可以提供数据弹性以及如何为其他的域定义查询。
+&emsp;&emsp;若要平衡性能和灵活性，将那些你常用于查询，过滤，例如timestamp这类域，对这些字段进行索引。在执行查询时，Elasticsearch会自动的使用这些索引域（indexed field）在很快的响应时间内获得结果。随后你可以使用runtime fields来限制Elasticsearch需要用于计算的字段的数量。索引域和runtime field的配合使用，可以提供数据弹性以及如何为其他的字段定义查询。
 
 &emsp;&emsp;使用[asynchronous search API](#Async search)用于执行包含runtime field的查询。这种查询方法可以抵偿计算每一篇包含runtime field的文档的性能影响。如果query不能同步返回数据集，你将在这些结果变得可见后异步获取到。
 
@@ -5297,7 +5297,7 @@ PUT my-index-000001/
 
 &emsp;&emsp;`date`类型的runtime fileds的字段值格式跟`date`字段接受的[format](#format(mapping parameter))是一致的。
 
-&emsp;&emsp;`lookup`类型的runtime fileds允许从关联的索引中检索域的信息，见[retrieve fields from related indices](#Retrieve a runtime field)。
+&emsp;&emsp;`lookup`类型的runtime fileds允许从关联的索引中检索字段的信息，见[retrieve fields from related indices](#Retrieve a runtime field)。
 
 &emsp;&emsp;如果开启了[dynamic field mapping](#Dynamic field mapping)，并且`dynamic`参数设置了参数值`runtime`，新的字段会作为runtime自动添加到索引mapping中。
 
@@ -5317,7 +5317,7 @@ PUT my-index-000001
 
 ##### Define runtime fields without a script
 
-&emsp;&emsp;Runtime fileds通常使用脚本来管理数据，然后有些情况下可以不使用脚本来使用runtime fileds。比如你想从`_source`中检索出某个域的字段值并不作任何的改变，那你不需要提供脚本，你只需要创建一个不带脚本的runtime fileds：
+&emsp;&emsp;Runtime fileds通常使用脚本来管理数据，然后有些情况下可以不使用脚本来使用runtime fileds。比如你想从`_source`中检索出某个字段的字段值并不作任何的改变，那你不需要提供脚本，你只需要创建一个不带脚本的runtime fileds：
 
 ```text
 PUT my-index-000001/
@@ -5332,11 +5332,11 @@ PUT my-index-000001/
 }
 ```
 
-&emsp;&emsp;当没有提供脚本时，在查询期间，Elasticsearch会从`_source`中查找到跟runtime fields字段名一样的域，如果存在的话就返回该字段值。如果不存在，那么在response中不会包含runtime fields的任何值。
+&emsp;&emsp;当没有提供脚本时，在查询期间，Elasticsearch会从`_source`中查找到跟runtime fields字段名一样的字段，如果存在的话就返回该字段值。如果不存在，那么在response中不会包含runtime fields的任何值。
 
 &emsp;&emsp;在大多数情况下，会优先从[doc_values](#doc_values)中读取。由于在Lucene中不同的存储方式，相较于从`_source`中检索，通过[doc_values](#doc_values)的方式读取速度更快。
 
-&emsp;&emsp;但是有些场景下需要从`_source`中检索域的信息。比如说由于`text`类型默认情况下不会有`doc_values`，所以不得不从`_source`中读取，在其他情况下，可以选择禁用特定域上的doc_values。
+&emsp;&emsp;但是有些场景下需要从`_source`中检索字段的信息。比如说由于`text`类型默认情况下不会有`doc_values`，所以不得不从`_source`中读取，在其他情况下，可以选择禁用特定域上的doc_values。
 
 >NOTE：你可以在`params._source`中添加前缀来检索想要的数据（比如`params._source.day_of_week`）,为了简单起见，定义runtime fields时，建议尽可能在mapping定义中不使用脚本。
 
@@ -5366,7 +5366,7 @@ PUT my-index-000001/_mapping
 
 &emsp;&emsp;在查询请求中定义一个runtime field跟在index mapping中使用的格式是一样的，所以只需要把查询请求中`runtime_mappings`区域中的内容直接拷贝到index mapping的`runtime`区域中。
 
-&emsp;&emsp;下面的查询请求添加了`day_of_week`字段到`runtime_mappings`区域中，这个域的字段值将被自动的计算出来并且只处于这次查询请求的上下文中（only within the context of this search request）。
+&emsp;&emsp;下面的查询请求添加了`day_of_week`字段到`runtime_mappings`区域中，这个字段的字段值将被自动的计算出来并且只处于这次查询请求的上下文中（only within the context of this search request）。
 
 ```text
 GET my-index-000001/_search
@@ -5409,7 +5409,7 @@ POST my-index-000001/_bulk?refresh=true
 {"@timestamp":1516297294000,"model_number":"HG537PU","measures":{"voltage":"4.0","start": "400","end":"8625309"}}
 ```
 
-&emsp;&emsp;你意识到你将数值类型numeric type索引成了`text`类型，你想要在`measures.start`以及`measures.end`字段上进行聚合操作却无法实现，因为你不能在`text`类型上进行聚合。Runtime fields to the rescue!。你可以添加runtime fileds，跟索引域index field（即measures.start和measures.end）的字段名保持一致并且修改域的类型：
+&emsp;&emsp;你意识到你将数值类型numeric type索引成了`text`类型，你想要在`measures.start`以及`measures.end`字段上进行聚合操作却无法实现，因为你不能在`text`类型上进行聚合。Runtime fields to the rescue!。你可以添加runtime fileds，跟索引域index field（即measures.start和measures.end）的字段名保持一致并且修改字段的类型：
 
 ```text
 PUT my-index-000001/_mapping
@@ -5425,7 +5425,7 @@ PUT my-index-000001/_mapping
 }
 ```
 
-&emsp;&emsp;Runtime field的优先级（take precedence over）比相同字段名的索引域高。这种灵活性使得你可以投影（shadow）现有的域（existing fields）并且计算出新值而不用修改域本身的信息。如果你在索引数据的时候犯错了，那么你可以使用runtime field在查询阶段重新计算，将获得的值进行[override values](#Override field values at query time)。
+&emsp;&emsp;Runtime field的优先级（take precedence over）比相同字段名的索引域高。这种灵活性使得你可以投影（shadow）现有的字段（existing fields）并且计算出新值而不用修改域本身的信息。如果你在索引数据的时候犯错了，那么你可以使用runtime field在查询阶段重新计算，将获得的值进行[override values](#Override field values at query time)。
 
 &emsp;&emsp;现在你可以很容易的在`measures.start`和`measures.end`字段上执行[average aggregation](#Avg aggregation)：
 
@@ -5464,7 +5464,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;另外你还可以定义一个runtime field作为查询请求中的一部分来计算出一个值，在相同的query（基于上文中介绍的query）中对这个runtime field进行[stats aggregation](#Metrics aggregations)。
 
-&emsp;&emsp;`duration`这个runtime field不在 index mapping中，当我们仍然可以使用这个域进行查询和聚合计算。下面的请求将返回经过计算的`duration`的值并且从用于聚合的文档中基于数值类型的数据执行stats aggregation来计算统计值（即count、min、max、avg、sum）：
+&emsp;&emsp;`duration`这个runtime field不在 index mapping中，当我们仍然可以使用这个字段进行查询和聚合计算。下面的请求将返回经过计算的`duration`的值并且从用于聚合的文档中基于数值类型的数据执行stats aggregation来计算统计值（即count、min、max、avg、sum）：
 
 ```text
 GET my-index-000001/_search
@@ -5667,7 +5667,7 @@ POST my-index-000001/_search
 #### Retrieve a runtime field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/runtime-retrieving-fields.html)
 
-&emsp;&emsp;在`_search` API中使用参数[fields](#Retrieve selected fields from a search)来检索runtime fields的字段值。`_source`中不会展示runtime fields的信息，但是`fields`可以展示所有域的信息，即使有些域不是`_source`中的一部分。
+&emsp;&emsp;在`_search` API中使用参数[fields](#Retrieve selected fields from a search)来检索runtime fields的字段值。`_source`中不会展示runtime fields的信息，但是`fields`可以展示所有字段的信息，即使有些域不是`_source`中的一部分。
 
 ##### Define a runtime field to calculate the day of week
 
@@ -5725,7 +5725,7 @@ POST /my-index-000001/_bulk?refresh
 
 ##### Search for the calculated day of week
 
-&emsp;&emsp;下面的请求使用 search API检索`day_of_week`字段，这个字段在mapping定义为runtime field。这个域的字段值在查询期间动态的生成，并不需要重新对数据索引，也不需要索引这个域。这种灵活性使得不需要更改索引域的情况下改变映射：
+&emsp;&emsp;下面的请求使用 search API检索`day_of_week`字段，这个字段在mapping定义为runtime field。这个字段的字段值在查询期间动态的生成，并不需要重新对数据索引，也不需要索引这个字段。这种灵活性使得不需要更改索引字段的情况下改变映射：
 
 ```text
 GET my-index-000001/_search
@@ -5857,9 +5857,9 @@ POST logs/_search
 
 &emsp;&emsp;第24行，定义了类型为`lookup`的runtime field，从目标索引中使用[term](#Term query)查询获得的结果作为runtime field的字段值
 &emsp;&emsp;第25行，ip_location即目标索引
-&emsp;&emsp;第26行，host域的字段值将作为term查询条件中的字段值
-&emsp;&emsp;第27行，ip域的字段名将作为term查询条件中的字段名
-&emsp;&emsp;第28行，要求从目标索引ip_location中返回的域，见[fields](#Retrieve selected fields from a search)
+&emsp;&emsp;第26行，host字段的字段值将作为term查询条件中的字段值
+&emsp;&emsp;第27行，ip字段的字段名将作为term查询条件中的字段名
+&emsp;&emsp;第28行，要求从目标索引ip_location中返回的字段，见[fields](#Retrieve selected fields from a search)
 &emsp;&emsp;上述的查询将从ip_location索引中为返回的搜索命中的每个ip地址返回country和city。
 
 ```text
@@ -6055,7 +6055,7 @@ POST my-index-000001/_bulk?refresh=true
 { "timestamp": 1516297294000, "temperature": 202, "voltage": 4.0, "node": "c"}
 ```
 
-&emsp;&emsp;你现在可以搜索查询中检索计算后的值，并且找到精确数值的文档。下面的范围查询返回`voltage_corrected`的值大于等于`16`并且小于等于`20`的所有文档。这里重申一遍，在`_search` API上使用[fields](#Retrieve selected fields from a search)参数来检索你想要查询的域：
+&emsp;&emsp;你现在可以搜索查询中检索计算后的值，并且找到精确数值的文档。下面的范围查询返回`voltage_corrected`的值大于等于`16`并且小于等于`20`的所有文档。这里重申一遍，在`_search` API上使用[fields](#Retrieve selected fields from a search)参数来检索你想要查询的字段：
 
 ```text
 POST my-index-000001/_search
@@ -6136,7 +6136,7 @@ POST my-index-000001/_search
 
 ##### Define indexed fields as a starting point
 
-&emsp;&emsp;你可以先从一个简单的例子开始，将`@timestamp`和`message`添加到名为`my-index-000001`的索引的mapping中，作为indexed filed。To remain flexible，使用[wildcard](#Wildcard field type)作为`message`的域类型：
+&emsp;&emsp;你可以先从一个简单的例子开始，将`@timestamp`和`message`添加到名为`my-index-000001`的索引的mapping中，作为indexed filed。To remain flexible，使用[wildcard](#Wildcard field type)作为`message`的字段类型：
 
 ```text
 PUT /my-index-000001/
@@ -6157,7 +6157,7 @@ PUT /my-index-000001/
 
 ##### Ingest some data
 
-&emsp;&emsp;在添加了用于检索的域的mapping后，开始将你的日志数据索引到Elasticsearch中。下面的请求使用了[bulk API](#Bulk API)将原始日志数据索引到`my-index-000001`中。你可以先用一小部分样例数据来体验runtime field而不是使用所有的日志数据。
+&emsp;&emsp;在添加了用于检索的字段的mapping后，开始将你的日志数据索引到Elasticsearch中。下面的请求使用了[bulk API](#Bulk API)将原始日志数据索引到`my-index-000001`中。你可以先用一小部分样例数据来体验runtime field而不是使用所有的日志数据。
 
 &emsp;&emsp;The final document is not a valid Apache log format, but we can account for that scenario in our script。
 
@@ -6185,7 +6185,7 @@ POST /my-index-000001/_bulk?refresh
 GET /my-index-000001
 ```
 
-&emsp;&emsp;下面的mapping包含了两个域：`@timestamp`和`message`。
+&emsp;&emsp;下面的mapping包含了两个字段：`@timestamp`和`message`。
 
 ```text
 {
@@ -6212,7 +6212,7 @@ GET /my-index-000001
 
 ##### Define a runtime field with a grok pattern
 
-&emsp;&emsp;如果你想要检索结果中包含`clientip`，你可以在mapping中添加这个域并且作为runtime field。下面的runtime script定义了一个[grok pattern](#Grokking-grok)，它从单个文本（single text）的文档中提取出结构化的域。grok pattern类似与正则表达式支持aliased expressions。
+&emsp;&emsp;如果你想要检索结果中包含`clientip`，你可以在mapping中添加这个字段并且作为runtime field。下面的runtime script定义了一个[grok pattern](#Grokking-grok)，它从单个文本（single text）的文档中提取出结构化的字段。grok pattern类似与正则表达式支持aliased expressions。
 
 &emsp;&emsp;脚本会匹配`%{COMMONAPACHELOG}` log pattern，它能处理Apache日志结构。如果pattern匹配到(`clientip != null`)，脚本会emit匹配到的IP地址。如果没有匹配到，脚本直接退出而不是报错。
 
@@ -6258,7 +6258,7 @@ GET my-index-000001/_search
 
 ##### Define a composite runtime field
 
-&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个域。你可以定义类型化的子域（typed subfields）集合然后emit多个值。在查询期间，每一个子域会检索出跟它们名称相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
+&emsp;&emsp;你可以定义一个`composite` runtime filed从单个脚本中emit多个字段。你可以定义类型化的子字段（typed subfields）集合然后emit多个值。在查询期间，每一个子字段会检索出跟它们名称相关的值。意味着你只需要指定一次grok pattern然后就能返回多个值：
 
 ```text
 PUT my-index-000001/_mappings
@@ -6285,7 +6285,7 @@ PUT my-index-000001/_mappings
 
 ###### Search for a specific IP address
 
-&emsp;&emsp;使用`http.clientip` runtime field，你可以定义单个query用于查询指定的IP地址并返回所有相关的域。
+&emsp;&emsp;使用`http.clientip` runtime field，你可以定义单个query用于查询指定的IP地址并返回所有相关的字段。
 
 ```text
 GET my-index-000001/_search
@@ -6299,7 +6299,7 @@ GET my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;上面的API会返回下面的结果。由于`http`是一个`composite` runtime field，响应中的`fields`会包括每一个子域以及匹配到这个query相关的结果。不用提前构建你的数据结构，你就可以查询并以某种方式展示你的数据来体验以及决定索引哪些域。
+&emsp;&emsp;上面的API会返回下面的结果。由于`http`是一个`composite` runtime field，响应中的`fields`会包括每一个子字段以及匹配到这个query相关的结果。不用提前构建你的数据结构，你就可以查询并以某种方式展示你的数据来体验以及决定索引哪些域。
 
 ```text
 {
@@ -6443,7 +6443,7 @@ PUT my-index-000001/_mappings
 }
 ```
 
-&emsp;&emsp;随后你可以使用`http.responses` runtime field执行一个query来检索指定的HTTP response。在`_search`请求中使用`fields`参数指明想要检索的域：
+&emsp;&emsp;随后你可以使用`http.responses` runtime field执行一个query来检索指定的HTTP response。在`_search`请求中使用`fields`参数指明想要检索的字段：
 
 ```text
 GET my-index-000001/_search
@@ -6497,11 +6497,11 @@ GET my-index-000001/_search
 ### Field data types
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-types.html)
 
-&emsp;&emsp;每个域都有一个`field data type`或者`field type`。这个类型指明（indicate）了这个域中包含的数据种类（kind），比如一个string或者boolean值以及预期用途（intended use）。例如，你可以同时将String索引为`text`和`keyword`字段。然而`text`字段会被[analyzed](#Text analysis)用于全文检索，同时`keyword`用于过滤和排序。
+&emsp;&emsp;每个字段都有一个`field data type`或者`field type`。这个类型指明（indicate）了这个字段中包含的数据种类（kind），比如一个string或者boolean值以及预期用途（intended use）。例如，你可以同时将String索引为`text`和`keyword`字段。然而`text`字段会被[analyzed](#Text analysis)用于全文检索，同时`keyword`用于过滤和排序。
 
-&emsp;&emsp;域的类型（Field type）根据家族（family）分组。同一个家族的类型有完全一样的查询行为，但是在空间使用（space usage）或者性能属性（performance characteristic）上有差别。
+&emsp;&emsp;字段的类型（Field type）根据家族（family）分组。同一个家族的类型有完全一样的查询行为，但是在空间使用（space usage）或者性能属性（performance characteristic）上有差别。
 
-&emsp;&emsp;当前有两个类型家族（type family），`keyword`和`text`。其他的type family只有单个域的类型。例如`boolean`类型家族由一个域的类型: `boolean`组成。
+&emsp;&emsp;当前有两个类型家族（type family），`keyword`和`text`。其他的type family只有单个字段的类型。例如`boolean`类型家族由一个字段的类型: `boolean`组成。
 
 ##### Common types
 
@@ -6512,7 +6512,7 @@ GET my-index-000001/_search
 | [Keywords](#Keyword type family) | keyword家族，包括`kewword`、`constant_keyword`以及`wildcard` |
 | [Numbers](#Numeric field types) | 数值类型，例如`long`和`double`，用来表示为数量 |
 | Dates | 时间类型，包括[date](#Date field type)和[date_nanos](#Date nanoseconds field type) |
-| [alias](#Alias field type) | 为现有的域定义一个别名 |
+| [alias](#Alias field type) | 为现有的字段定义一个别名 |
 
 
 ##### Objects and relational types
@@ -6521,7 +6521,7 @@ GET my-index-000001/_search
 | :-----------: | :------------------------------------------: |
 |  [object](#Object field type)   |                 一个JSON对象                 |
 | [flattened](#Flattened field type) |           整个JSON对象作为单个字段值           |
-|  [nested](#Nested field type)   | 一个JSON对象，保留了子域（subfield）间的关系 |
+|  [nested](#Nested field type)   | 一个JSON对象，保留了子字段（subfield）间的关系 |
 |   [join](#Join field type)    |      在同一个索引中定义文档间的父子关系      |
 
 ##### Structured data types
@@ -6576,22 +6576,22 @@ GET my-index-000001/_search
 
 ##### Arrays
 
-&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的域的数据类型。默认情况下每一个域可能包含0个或多个值。然而数组中所有的值必须是相同的域类型。见[Arrays](#Arrays（field Type）)。
+&emsp;&emsp;在Elasticsearch中，数组不要求一个专用的字段的数据类型。默认情况下每一个字段可能包含0个或多个值。然而数组中所有的值必须是相同的字段类型。见[Arrays](#Arrays（field Type）)。
 
 ##### Multi-fields
 
-&emsp;&emsp;通常来说对同一个域使用不同方式索引时很有用的。例如，一个`string`字段可以映射为`text`字段用于全文检索，映射为`keyword`用于排序或者聚合。你还可以索引一个text字段时，使用[standard analyzer](#Standard analyzer)、[english analyzer](#Standard analyzer)以及[french analyzer](#Standard analyzer)。
+&emsp;&emsp;通常来说对同一个字段使用不同方式索引时很有用的。例如，一个`string`字段可以映射为`text`字段用于全文检索，映射为`keyword`用于排序或者聚合。你还可以索引一个text字段时，使用[standard analyzer](#Standard analyzer)、[english analyzer](#Standard analyzer)以及[french analyzer](#Standard analyzer)。
 
-&emsp;&emsp;这就是multi-fields的目的。大多数的域类型通过[fields](#fields)参数来支持multi-fields。
+&emsp;&emsp;这就是multi-fields的目的。大多数的字段类型通过[fields](#fields)参数来支持multi-fields。
 
 #### Aggregate metric field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/aggregate-metric-double.html)
 
-&emsp;&emsp;为[metric aggregations](#Metrics aggregations)存储预先聚合（pre-aggregated）的数值类型的值。`aggregate_metric_double`类型的字段包含了一个或多个这些指标子域（metric sub-field）：`min`、`max`、`sum`、`value_count`。
+&emsp;&emsp;为[metric aggregations](#Metrics aggregations)存储预先聚合（pre-aggregated）的数值类型的值。`aggregate_metric_double`类型的字段包含了一个或多个这些指标子字段（metric sub-field）：`min`、`max`、`sum`、`value_count`。
 
-&emsp;&emsp;当你在`aggregate_metric_double`字段上运行指标聚合时，会使用到对应的指标字段值。例如，在`aggregate_metric_double`字段执行[min aggregation](#Min aggregation)时会返回所有`aggregate_metric_double`的子域`min`中的最小值。
+&emsp;&emsp;当你在`aggregate_metric_double`字段上运行指标聚合时，会使用到对应的指标字段值。例如，在`aggregate_metric_double`字段执行[min aggregation](#Min aggregation)时会返回所有`aggregate_metric_double`的子字段`min`中的最小值。
 
-> IMPORTANT：`aggregate_metric_double`字段中为每一个指标子域使用[doc value](#doc_values)存储一个数值类型的字段值。不支持Array。`min`、`max`、`sum`的值是`doulbe`类型。`value_count`是`long`类型的正数。
+> IMPORTANT：`aggregate_metric_double`字段中为每一个指标子字段使用[doc value](#doc_values)存储一个数值类型的字段值。不支持Array。`min`、`max`、`sum`的值是`doulbe`类型。`value_count`是`long`类型的正数。
 
 
 
@@ -6614,27 +6614,27 @@ PUT my-index
 
 ###### metrics
 
-&emsp;&emsp;（Required, array of strings）存储指标子域的数组。每一个数组元素都对应于[metric aggregation](#Metrics aggregations)。合法的数组元素是[min](#Min aggregation)，[max](#Max aggregation)，[sum](#Sum aggregation)以及[value_count](#Value count aggregation)。你必须至少指定一个值。
+&emsp;&emsp;（Required, array of strings）存储指标子字段的数组。每一个数组元素都对应于[metric aggregation](#Metrics aggregations)。合法的数组元素是[min](#Min aggregation)，[max](#Max aggregation)，[sum](#Sum aggregation)以及[value_count](#Value count aggregation)。你必须至少指定一个值。
 
 ###### default_metric
 
-&emsp;&emsp;（Required, string）默认用于query，script以及聚合的指标子域，该域必须是`metrics`数组中的某个元素。
+&emsp;&emsp;（Required, string）默认用于query，script以及聚合的指标子字段，该字段必须是`metrics`数组中的某个元素。
 
 ###### time_series_metric（预览功能）
 
 &emsp;&emsp;该字段只用于Elastic内部使用。将域作为一个Time series metric。这个值是指标类型（metric type）。默认是`null`（不是一个时间序列指标）。
 
-&emsp;&emsp;对于`aggregate_metric_double`字段，这个参数只可以是`counter`、`gauge`以及`summary`。不能对现有的域更新这个参数。
+&emsp;&emsp;对于`aggregate_metric_double`字段，这个参数只可以是`counter`、`gauge`以及`summary`。不能对现有的字段更新这个参数。
 
 ##### Uses
 
 &emsp;&emsp;设计`aggregate_metric_double`字段是为了用于下面的聚合：
 
-- [min aggregation](#Min aggregation) 返回所有`min`子域中的最小值
-- [max aggregation](#Max aggregation) 返回所有`max`子域中的最大值
-- [sum aggregation](#Sum aggregation) 返回所有`sum`子域中的和
-- [value_count aggregation](#Value count  aggregation) 返回所有`Value count`子域中的和
-- [avg aggregation](#Avg aggregation)。`aggregate_metric_double`字段中并没有指标子域`avg`；`avg` aggregation是通过`sum`和`value_count`两个指标子域计算得来的，因此`metric`数组中必须同时包含`sum`和`value_count`两个指标子域。
+- [min aggregation](#Min aggregation) 返回所有`min`子字段中的最小值
+- [max aggregation](#Max aggregation) 返回所有`max`子字段中的最大值
+- [sum aggregation](#Sum aggregation) 返回所有`sum`子字段中的和
+- [value_count aggregation](#Value count  aggregation) 返回所有`Value count`子字段中的和
+- [avg aggregation](#Avg aggregation)。`aggregate_metric_double`字段中并没有指标子字段`avg`；`avg` aggregation是通过`sum`和`value_count`两个指标子字段计算得来的，因此`metric`数组中必须同时包含`sum`和`value_count`两个指标子字段。
 
 &emsp;&emsp;如果将`aggregate_metric_double`字段用于其他的聚合操作，那么将会使用`default_metric`，相当于一个`doulbe`类型的字段。`default_metric`同样可以用于Script以及下面的query中：
 
@@ -6701,7 +6701,7 @@ POST stats-index/_search?size=0
 }
 ```
 
-&emsp;&emsp;聚合结果基于对应的指标子域的字段值：
+&emsp;&emsp;聚合结果基于对应的指标子字段的字段值：
 
 ```text
 {
@@ -6726,7 +6726,7 @@ POST stats-index/_search?size=0
 }
 ```
 
-&emsp;&emsp;在`aggregate_metric_double`查询会默认使用`default_metric`中定义的域。
+&emsp;&emsp;在`aggregate_metric_double`查询会默认使用`default_metric`中定义的字段。
 
 ```text
 GET stats-index/_search
@@ -6774,7 +6774,7 @@ GET stats-index/_search
 #### Alias field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/field-alias.html)
 
-&emsp;&emsp;`alias`可以给索引中某个域定义一个别名（alternate）。在[search](#Search APIs)请求以及像 [field capabilities API](#Field capabilities API)中可以用来替代为目标域（target filed）。
+&emsp;&emsp;`alias`可以给索引中某个字段定义一个别名（alternate）。在[search](#Search APIs)请求以及像 [field capabilities API](#Field capabilities API)中可以用来替代为目标字段（target filed）。
 
 ```text
 PUT trips
@@ -6807,7 +6807,7 @@ GET _search
 }
 ```
 
-&emsp;&emsp;第10行，目标域的路径。注意的是必须是全路径，包括所有的parent objects（比如：object1.object2.field）。
+&emsp;&emsp;第10行，目标字段的路径。注意的是必须是全路径，包括所有的parent objects（比如：object1.object2.field）。
 
 &emsp;&emsp;几乎所有的查询请求都可以使用alias field。特别是可以用于查询、聚合、以及排序字段，同时还有`docvalue_fields`, `stored_fields`, suggestions, and highlights。脚本同样支持alias来访问它的字段值。见[unsupported APIs](#Unsupported APIs)了解一些不支持的情况。
 
@@ -6819,19 +6819,19 @@ GET trips/_field_caps?fields=route_*,transit_mode
 
 ##### Alias targets
 
-&emsp;&emsp;对于alias的目标域有一些要求限制：
+&emsp;&emsp;对于alias的目标字段有一些要求限制：
 
-- 目标域必须是一个具体的域（concrete field），不能是一个对象或者另一个alias
-- 在alias创建时目标域必须已经存在
-- 如果定义了nested objects，field alias必须要跟目标域有相同的nested scope
+- 目标字段必须是一个具体的字段（concrete field），不能是一个对象或者另一个alias
+- 在alias创建时目标字段必须已经存在
+- 如果定义了nested objects，field alias必须要跟目标字段有相同的nested scope
 
-&emsp;&emsp;另外，alias只能对应一个目标域。意味着不可能使用一个alias在single clause（一个query属于一个clause）中查询多个目标域。
+&emsp;&emsp;另外，alias只能对应一个目标字段。意味着不可能使用一个alias在single clause（一个query属于一个clause）中查询多个目标字段。
 
-&emsp;&emsp;可以通过更新mapping来更改alias指向（refer to）的目标域。已知的一个限制是如果任何已经存储的percolator query包含了alias，它们仍然指向原先的目标。更多信息见[percolator documentation](#Percolator field type)。
+&emsp;&emsp;可以通过更新mapping来更改alias指向（refer to）的目标字段。已知的一个限制是如果任何已经存储的percolator query包含了alias，它们仍然指向原先的目标。更多信息见[percolator documentation](#Percolator field type)。
 
 ##### Unsupported APIs
 
-&emsp;&emsp;不支持往alias中写入字段值：尝试在索引或者更新alias域会产生一个错误。同样的，alias不能作为多个域的[copy_to](#copy_to)的目标。
+&emsp;&emsp;不支持往alias中写入字段值：尝试在索引或者更新alias域会产生一个错误。同样的，alias不能作为多个字段的[copy_to](#copy_to)的目标。
 
 &emsp;&emsp;因为alias的名称没有在输入文档中呈现，所以不能通过用于source filtering。例如下面的请求会返回一个空结果：
 
@@ -6852,7 +6852,7 @@ GET /_search
 #### Arrays（field Type）
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/array.html)
 
-&emsp;&emsp;Elasticsearch中没有专门的`array data type`。默认情况下任意一个域可以包含零个或者多个值 。然而，在数组中的字段值必须是相同的数据类型。例如：
+&emsp;&emsp;Elasticsearch中没有专门的`array data type`。默认情况下任意一个字段可以包含零个或者多个值 。然而，在数组中的字段值必须是相同的数据类型。例如：
 
 - string数组：["one", "two"]
 - integer数组：[1, 2]
@@ -6862,11 +6862,11 @@ GET /_search
 > NOTE：Arrays of objects对象数组
 > 对象数组可能无法按照你的期望工作：不能独立于数组中的其他对象来查询每个对象。如果你需要能够这样做，那么应该使用嵌套（[nested](#Nested field type)）数据类型，而不是对象（[object](#Object field type)）数据类型
 
-&emsp;&emsp;当动态的添加一个域时，数组中的第一个值决定了数组元素的类型。随后所有的值都必须是相同的数据类型或者可以强转（[coerce](#coerce)）为相同的数据类型。
+&emsp;&emsp;当动态的添加一个字段时，数组中的第一个值决定了数组元素的类型。随后所有的值都必须是相同的数据类型或者可以强转（[coerce](#coerce)）为相同的数据类型。
 
 &emsp;&emsp;数组中有不同的数据类型是不支持的: [ 10, "some string" ]。
 
-&emsp;&emsp;数组中可以包含`null`，可以被[null_value](#null_value)(如果配置的话)替换或者跳过。空的数组`[]`被认为是缺失域（missing field）-某个域没有字段值。
+&emsp;&emsp;数组中可以包含`null`，可以被[null_value](#null_value)(如果配置的话)替换或者跳过。空的数组`[]`被认为是缺失字段（missing field）-某个字段没有字段值。
 
 &emsp;&emsp;不需要在文档中有任何预先配置就可以使用数组，这个开箱支持的功能：
 
@@ -6909,13 +6909,13 @@ GET my-index-000001/_search
 
 &emsp;&emsp;第4行，`tags`字段自动添加为`string`字段。
 &emsp;&emsp;第5行，`lists`字段自动添加为`object`字段。
-&emsp;&emsp;第17行，第二篇文档没有包含数组，但是会被索引成相同的域。
+&emsp;&emsp;第17行，第二篇文档没有包含数组，但是会被索引成相同的字段。
 &emsp;&emsp;第31行，这个query在`tags`字段中查找`elasticsearch`，并且匹配到这两篇文档。
 
 #### Binary field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/binary.html)
 
-&emsp;&emsp;`binary`类型用于存储使用[Base64](https://en.wikipedia.org/wiki/Base64)编码的二进制值，默认情况下，这个域不会存储并且无法用于搜索：
+&emsp;&emsp;`binary`类型用于存储使用[Base64](https://en.wikipedia.org/wiki/Base64)编码的二进制值，默认情况下，这个字段不会存储并且无法用于搜索：
 
 ```text
 PUT my-index-000001
@@ -6945,8 +6945,8 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;`binary`字段可以有以下参数：
 
-- [doc_values](#doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [doc_values](#doc_values) : 该字段是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
 
 #### Boolean field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/boolean.html)
@@ -6985,7 +6985,7 @@ GET my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第14行，索引了一篇文档，is_published域的字段值是一个字符串的true，它会被解释为`true`
+&emsp;&emsp;第14行，索引了一篇文档，is_published字段的字段值是一个字符串的true，它会被解释为`true`
 &emsp;&emsp;第21行，使用JSON种的`true`查询文档
 
 &emsp;&emsp;[terms aggregation](#Terms aggregation)中使用`1`和`0`用于`key`的值，并且`"true"`和`"false"`用于`key_as_string`的值。在Script中使用Boolean域时，会返回`true`和
@@ -7028,13 +7028,13 @@ GET my-index-000001/_search
 
 &emsp;&emsp;`boolean`字段有以下参数：
 
-- [doc_values](#doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
-- [index](#index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [doc_values](#doc_values) : 该字段是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [index](#index(mapping parameter))：该字段是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
 - [null_value](#null_value)：参数值可以是上文中列出的各种true或者false的值（JSON，字符串）。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
-- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
-- script：如果设置了这个参数，这个域的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
-- [meta](#meta(mapping parameter))：域的元数据信息
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个字段然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个字段的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [meta](#meta(mapping parameter))：字段的元数据信息
 
 #### Date field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/date.html)
@@ -7049,7 +7049,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;源码中，日期会被转化为UTC（如果指定了时区），存储为一个long类型的数值来表示milliseconds-since-the-epoch。
 
-&emsp;&emsp;日期类型的查询会被表示为一个long类型的范围查询，聚合的结果和stored field会根据该域对应的date format被转回到一个字符串。
+&emsp;&emsp;日期类型的查询会被表示为一个long类型的范围查询，聚合的结果和stored field会根据该字段对应的date format被转回到一个字符串。
 
 >NOTE：日期总是会被表示为字符串，即使在JSON中是long类型
 
@@ -7128,9 +7128,9 @@ PUT my-index-000001
 |            [index](#index(mapping parameter))            | 是否需要被快速的搜索到？该值可以是true（默认值）或者false。日期域date field只有开启[doc_values](#doc_values)才能进行查询，尽管查询速度较慢 |
 |       [null_value](#null_value)       | 可以设置一个满足[format](#format(mapping parameter) )的值，用来替代空值。默认值是null，意味这是一个缺失值。注意的是如果使用了参数`script`，当前参数不会被设置。 |
 |             on_script_error              | 该值描述了通过参数`script`定义的脚本在索引期间发生错误后的行为。可以设置为false（默认值），那么整个文档会被reject。或者设置为`continue`，会通过[ignored field](#\_ignored field)来进行索引并继续进行索引。这个参数只有参数`script`被设置后才能被设置 |
-|                  script                  | 如果设置了该值，将会索引这个脚本生成的值，而不是直接读取source（输入文档中这个域的字段值）。如果输入的文档中已经设置了这个域的值，那么这个脚本会被reject并报错。脚本的格式跟[runtime equivalent](#Map a runtime field)一致，并且应该输出long类型的时间戳。 |
+|                  script                  | 如果设置了该值，将会索引这个脚本生成的值，而不是直接读取source（输入文档中这个字段的字段值）。如果输入的文档中已经设置了这个字段的值，那么这个脚本会被reject并报错。脚本的格式跟[runtime equivalent](#Map a runtime field)一致，并且应该输出long类型的时间戳。 |
 |            [store](#store)            | 是否要额外存储字段值并且可以被检索，不仅仅存储在[_source](#\_source field) 域中，该值可以是true或者false（默认值） |
-|             [meta](#meta)             | 这个域的Metadata                                             |
+|             [meta](#meta)             | 这个字段的Metadata                                             |
 
 
 
@@ -7260,11 +7260,11 @@ GET my-index-000001/_search
 #### Flattened field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/flattened.html)
 
-&emsp;&emsp;默认情况下，对象中每一个子域（sub-field）都单独映射和索引。如果子域的类型或者名称无法提前知晓，那么它们会被自动映射（[mapped dynamically](#Dynamic mapping)）。
+&emsp;&emsp;默认情况下，对象中每一个子字段（sub-field）都单独映射和索引。如果子字段的类型或者名称无法提前知晓，那么它们会被自动映射（[mapped dynamically](#Dynamic mapping)）。
 
-&emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将它们作为keyword索引到一个域中。对象的内容随后可以通过query和aggregation查询。
+&emsp;&emsp;`flattened`提供另外一种方法，它将整个对象映射为单个域。`flattened`会解析出leaf value并且将它们作为keyword索引到一个字段中。对象的内容随后可以通过query和aggregation查询。
 
-&emsp;&emsp;对于很大的或者有未知数量键的对象，使用`flattened`就很有用。只要创建一个域的类型来处理整个JSON对象，有助于防止因太多不同的域的类型导致[mappings explosion](#Settings to prevent mapping explosion)。
+&emsp;&emsp;对于很大的或者有未知数量键的对象，使用`flattened`就很有用。只要创建一个字段的类型来处理整个JSON对象，有助于防止因太多不同的字段的类型导致[mappings explosion](#Settings to prevent mapping explosion)。
 
 &emsp;&emsp;另外，`flattened`在搜索功能存在一种折衷。只允许一些基本的查询，不支持数值类型的范围查询以及高亮。更多的一些局限性见[Supported operations](#Supported operations)。
 
@@ -7327,7 +7327,7 @@ POST bug_reports/_search
 
 ##### Supported operations
 
-&emsp;&emsp;由于索引的方式很类似，所以`flattened`字段跟[keyword](#Keyword type family)域一样有许多相同的mapping和查询功能。
+&emsp;&emsp;由于索引的方式很类似，所以`flattened`字段跟[keyword](#Keyword type family)字段一样有许多相同的mapping和查询功能。
 
 &emsp;&emsp;目前，`flattened`字段可以用于下面的query类型：
 
@@ -7346,9 +7346,9 @@ POST bug_reports/_search
 
 ##### Retrieving flattened fields
 
-&emsp;&emsp;字段值以及固定子域可以通过[fields parameter](#The fields option).content检索。由于`flattened`将整个对象（以及对象中的子域）映射为一个域，响应中的`_source`包含了未更改的结构。
+&emsp;&emsp;字段值以及固定子字段可以通过[fields parameter](#The fields option).content检索。由于`flattened`将整个对象（以及对象中的子字段）映射为一个字段，响应中的`_source`包含了未更改的结构。
 
-&emsp;&emsp;获取单个子域可以在请求中显示的指定。只能对有固定路径的生效，但不能使用wildcards：
+&emsp;&emsp;获取单个子字段可以在请求中显示的指定。只能对有固定路径的生效，但不能使用wildcards：
 
 ```text
 PUT my-index-000001
@@ -7404,9 +7404,9 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;你可以使用[Painless script](#Painless scripting language)读取flattened域的子域的字段值。相比较`doc['<field_name>'].value`。在你的Script中，使用`doc['<field_name>.<sub-field_name>'].value`。例如如果你有一个名为`label`的flattened域以及一个`release`的子域。你的Painless Script中应该是`doc['labels.release'].value`。
+&emsp;&emsp;你可以使用[Painless script](#Painless scripting language)读取flattened字段的子字段的字段值。相比较`doc['<field_name>'].value`。在你的Script中，使用`doc['<field_name>.<sub-field_name>'].value`。例如如果你有一个名为`label`的flattened域以及一个`release`的子字段。你的Painless Script中应该是`doc['labels.release'].value`。
 
-&emsp;&emsp;例如，比如说你的mapping中包含两个域，其中一个是`flattened`类型：
+&emsp;&emsp;例如，比如说你的mapping中包含两个字段，其中一个是`flattened`类型：
 
 ```text
 PUT my-index-000001
@@ -7424,7 +7424,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;索引一些包含你mapping中的域的文档。`labels`字段有三个子域：
+&emsp;&emsp;索引一些包含你mapping中的字段的文档。`labels`字段有三个子字段：
 
 ```text
 POST /my-index-000001/_bulk?refresh
@@ -7436,7 +7436,7 @@ POST /my-index-000001/_bulk?refresh
 {"title":"Not urgent","labels":{"priority":"low","release":["v1.2.0"],"timestamp":{"created":1541458026,"closed":1541457010}}}
 ```
 
-&emsp;&emsp;因为`labels`是一个`flattened`字段，所以整个对象映射到一个域中。若要在一个Painless Script中检索子域，那么使用`doc['<field_name>.<sub-field_name>'].value`。
+&emsp;&emsp;因为`labels`是一个`flattened`字段，所以整个对象映射到一个字段中。若要在一个Painless Script中检索子字段，那么使用`doc['<field_name>.<sub-field_name>'].value`。
 
 ```text
 "script": {
@@ -7454,8 +7454,8 @@ POST /my-index-000001/_bulk?refresh
 - depth_limit：flattened域允许嵌套的最大深度（nested Inner object）。如果超过限制，则会抛出错误。默认值为`20`。注意的是可以通过[update mapping](#Update mapping API)更新`depth_limit`。
 - [doc_values](#doc_values)：- 该字段值是否在磁盘上使用列式存储，使得可以用来进行聚合、排序或者脚本。可选值`true`或者`false`
 - [eager_global_ordinals](#eager_global_ordinals) ：是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
-- [ignore_above](#ignore_above)：leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只应用与flattened的leaf values，而不是整个域的长度
-- [index](#index(mapping parameter))：是否该域需要被快速的搜索到？可选值`true`或者`false`。
+- [ignore_above](#ignore_above)：leaf values的长度超过限制的话则不会被索引。默认情况喜爱没有限制并且都可以被索引。注意的是这个限制只应用与flattened的leaf values，而不是整个字段的长度
+- [index](#index(mapping parameter))：是否该字段需要被快速的搜索到？可选值`true`或者`false`。
 - [index_options](#index_options)：在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
 - [null_value](#null_value)：flattened域中`null`值会被替换为一个string value。默认是`null`。意味着null值被认为是缺失值
 - [similarity](#similarity)：使用哪一个打分算法。默认值为`BM25`。
@@ -7557,7 +7557,7 @@ GET my-index-000001/_search
 
 - [ignore_malformed](#ignore_malformed)：如果为`true`，格式错误的地理点会被忽略。如果为`false`（default），格式错误的地理点会抛出一个异常并且reject整个文档。如果其纬度超出了 -90 至 90 的范围，或者其经度超出了 -180 至 180 的范围，则认为地理点是格式错误的。注意的使如果使用了script参数，则无法设置这个参数。
 - ignore_z_value：如果为`true`(default)，可以索引三维的point（点数据），但是只有经纬度的值会被索引；第三个维度的值被忽略。如果为`false`地理点的维度如果超过了经纬度这两个维度就会抛出异常并且reject文档。注意的使如果使用了script参数，则无法设置这个参数。
-- [index](#index(mapping parameter))：是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](#doc_values)参数的域仍然可以被查询，尽管慢一些（albeit slower）
+- [index](#index(mapping parameter))：是否该字段需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](#doc_values)参数的字段仍然可以被查询，尽管慢一些（albeit slower）
 - [null_value](#null_value)：可是是一个地理点用来替换所有显示为`null`的值。默认是`null`，意味着当前域被认为是一个缺失值。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
 - on_script_error：定义了当使用参数`script`并且在索引期间脚本抛出异常后的行为。默认值为`false`会导致整个文档会被reject，然后被注册到文档的 [\_ignored](#\_ignored field)这个[metadata field](#Metadata fields)中并且继续索引。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
 - script：如果设置了这个参数，字段值会使用脚本生成的值而不是文档中的原始数据。如果使用输入文档（input document）中的数据作为字段值，那么这篇文档会被reject并且返回错误。Script跟[runtime ](#Map a runtime field)的格式是一样的。并且应该抛出double类型的经纬度对值。
@@ -7586,7 +7586,7 @@ def lon      = doc['location'].lon;
 #### Histogram field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/histogram.html)
 
-&emsp;&emsp;用来存放预先聚合、数值类型的数据来代表一个直方图的域。使用下面的成对的两个数组：
+&emsp;&emsp;用来存放预先聚合、数值类型的数据来代表一个直方图的字段。使用下面的成对的两个数组：
 
 - 一个[double](#Numeric field types)类型的**值数组**(value array)，代表直方图的分桶。这些值在数组中必须有序并且是升序。
 - 一个[interger](#Numeric field types)类型的**统计数组**(count array)，代表每个分桶中有多少个值。这些值必须是正数或者零。
@@ -7602,7 +7602,7 @@ def lon      = doc['location'].lon;
 
 &emsp;&emsp;将域作为一个Time series metric。这个值是指标类型（metric type）。默认是`null`（不是一个时间序列指标）。
 
-&emsp;&emsp;对于`histogram`字段，这个参数接收`histogram`。你不能对现有的域更新这个参数
+&emsp;&emsp;对于`histogram`字段，这个参数接收`histogram`。你不能对现有的字段更新这个参数
 
 ##### Uses
 
@@ -7633,7 +7633,7 @@ def lon      = doc['location'].lon;
 
 ##### Examples
 
-&emsp;&emsp;下面的[create index](#Create index API) API请求创建了一个新的索引，mapping中有两个域：
+&emsp;&emsp;下面的[create index](#Create index API) API请求创建了一个新的索引，mapping中有两个字段：
 
 - `my_histogram`是`histogram`字段用于存储百分值
 - `my_text`是`keyword`字段用于存储直方图的标题
@@ -7724,7 +7724,7 @@ GET my-index-000001/_search
   - 如果设置为`true`，数据格式错误的IP地址被忽略。如果设置为`false`（默认值），数据格式错误的IP地址会导致抛出异常并reject整个文档。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
 
 - [index](#index(mapping parameter))
-  - 是否该域需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](#doc_values)参数的域仍然可以使用term or range-based的查询，尽管慢一些（albeit slower）
+  - 是否该字段需要被快速的搜索到？可选值`true`或者`false`。只有[doc_values](#doc_values)参数的字段仍然可以使用term or range-based的查询，尽管慢一些（albeit slower）
 
 - [null_value](#null_value)
   - `ip`字段接受一个IPV4或者IPV6的值，同时也接受显示（explicit）的`null`值，意味着当前域被认为是一个缺失值。注意的是如果使用了下面的参数`script`，那么不能设置当前参数
@@ -7736,7 +7736,7 @@ GET my-index-000001/_search
   - 如果设置了这个参数，字段值会使用脚本生成的值而不是文档中的原始数据。如果使用输入文档（input document）中的数据作为字段值，那么这篇文档会被reject并且返回错误。脚本跟[runtime equivalent](#Map a runtime field)采用一样的格式，并且应该返回IPV4或者IPV6格式的值
 
 - [store](#store)
-  - 当前域是否要存储使得可以从`_source`检索该域。可选值`true`或者`false`
+  - 当前域是否要存储使得可以从`_source`检索该字段。可选值`true`或者`false`
 
 - time_series_dimension
   - 预览功能， 可能会被更改或者移除，目前只在Elasticsearch代码内部使用，暂不介绍。
@@ -7786,7 +7786,7 @@ GET my-index-000001/_search
 #### Join field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/parent-join.html)
 
-&emsp;&emsp;`join`数据类型是一个特殊的域，用来创建同一个索引中文档间的父子关系。`relations`定义了文档之间的关系，它也定义了父文档的名称以及子文档的名称。
+&emsp;&emsp;`join`数据类型是一个特殊的字段，用来创建同一个索引中文档间的父子关系。`relations`定义了文档之间的关系，它也定义了父文档的名称以及子文档的名称。
 
 > WARNING：不要使用[多级父子关系](Multiple levels of parent join)来模拟关系型数据库模型。每增加一级关系，都会在查询时增加内存和计算的开销。为了获得更好的搜索性能，建议denormalize你的数据。
 
@@ -7811,7 +7811,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;第8行，域的名字
+&emsp;&emsp;第8行，字段的名字
 &emsp;&emsp;第11行，定义了单个关系，`question`是`answer`的父级（parent）
 
 &emsp;&emsp;若要使用join索引一篇文档，需要在`_source`中提供关系的名称和父级文档（可选）。例如下面的例子创建了在`question`的上下文中定义了两个`parent`文档：
@@ -7913,7 +7913,7 @@ PUT my-index-000001/_doc/4?routing=1&refresh
 
 &emsp;&emsp;如果文档是子文档（my_child或another_child），此字段包含文档链接到的父`_id`；如果是父文档（my_parent），则包含文档的`_id`。搜索包含join字段的索引时，这两个字段总是返回在搜索响应中。
 
-&emsp;&emsp;当查询一个包含`join`于的索引时，这两个域总是会返回：
+&emsp;&emsp;当查询一个包含`join`于的索引时，这两个字段总是会返回：
 
 ```text
 GET my-index-000001/_search
@@ -8163,10 +8163,10 @@ PUT my-index-000001/_doc/3?routing=1&refresh
 #### Keyword type family
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/keyword.html)
 
-&emsp;&emsp;keyword家族包含下面的域类型：
+&emsp;&emsp;keyword家族包含下面的字段类型：
 
 - [keyword](#Keyword field type)：用于ID，邮件地址，hostname，状态码，zip code，或者标签
-- [constant_keyword](#Constant keyword field type)：keyword类型，并且所有文档中该域的字段值都是相同的
+- [constant_keyword](#Constant keyword field type)：keyword类型，并且所有文档中该字段的字段值都是相同的
 - [wildcard](#Wildcard field type)：用于非结构化的机器自动生成的内容。`wildcard`类型对于large value或者high cardinality的字段值进行了优化
 
 &emsp;&emsp;keyword常用于[sorting](#Sort search results)，[aggregation](#Aggregations)以及[term-level queries](#Term-level queries)，例如[term](#Term query)。
@@ -8191,7 +8191,7 @@ PUT my-index-000001
 ```
 
 > TIP：**Mapping numeric identifiers**
-> 不是所有的数值类型的数据都应该映射为一个[numeric](#Numeric field types)数据类型。Elasticsearch会为数值类型的字段，比如`integer`、`long`针对[range](#Range query)查询优化。然而，[keyword](#Keyword type family)域更适合于[term](#Term query)以及其他[term-level](#Term-level queries) Query。
+> 不是所有的数值类型的数据都应该映射为一个[numeric](#Numeric field types)数据类型。Elasticsearch会为数值类型的字段，比如`integer`、`long`针对[range](#Range query)查询优化。然而，[keyword](#Keyword type family)字段更适合于[term](#Term query)以及其他[term-level](#Term-level queries) Query。
 > 比如一些标识符，ISBN或者产品ID，很少用于`range` query，但是常用于term-level query。
 > 如果有以下的场景，可以考虑将数值类型的标识符映射为`keyword`：
 >
@@ -8204,18 +8204,18 @@ PUT my-index-000001
 
 &emsp;&emsp;`keyword`字段可以使用以下的参数：
 
-- [doc_values](#doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [doc_values](#doc_values) : 该字段是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
 - [eager_global_ordinals](#eager_global_ordinals) ：是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的
 - [fields](#fields)： Multi-fields允许同一个将string value基于不同的目的用多种方式进行索引。比如用于查询或者用于排序聚合
-- [ignore_above](#ignore_above)：不会索引长于该参数的值。默认是`2147483647`。然而注意的是默认的动态映射创建的子域`keyword`会覆盖这个默认的值，并且将`ignore_above`设置为`256`
-- [index](#index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [ignore_above](#ignore_above)：不会索引长于该参数的值。默认是`2147483647`。然而注意的是默认的动态映射创建的子字段`keyword`会覆盖这个默认的值，并且将`ignore_above`设置为`256`
+- [index](#index(mapping parameter))：该字段是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
 - [index_options](#index_options)：在索引中存储哪些信息用于打分目的。默认是`docs`但是可以设置为`freqs`，在打分时会将词频考虑进去。
-- [meta](#meta(mapping parameter))：域的元数据信息
+- [meta](#meta(mapping parameter))：字段的元数据信息
 - [norms](#norms(mapping parameter))：打分时是否考虑字段值的长度。默认false，可以设置为`true`
-- [null_value](#null_value)：参数值可以是一个该域的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
-- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
-- script：如果设置了这个参数，这个域的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [null_value](#null_value)：参数值可以是一个该字段的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个字段然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个字段的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
 - [similarity](#similarity)：使用哪一个打分算法。默认值为`BM25`。
 - [normalizer](#normalizer(mapping parameter))：如何在索引之前预先处理keyword的值，默认为`false`，即使用keyword原有的字段值。
 - split_queries_on_whitespace：执行[full text queries](#Full text queries)时，是否根据空格对输入进行分割。可选值为`true`或`false`（default）
@@ -8248,7 +8248,7 @@ PUT logs-debug
 
 &emsp;&emsp;`constant_keyword`支持跟`keyword`有相同的查询跟聚合，但是会利用所有文档拥有相同的值这个特点来提高查询效率。
 
-&emsp;&emsp;同时还允许文档中不包含这个域或者这个域的字段值跟mapping中的值相同。下面两个索引请求是等价的：
+&emsp;&emsp;同时还允许文档中不包含这个字段或者这个字段的字段值跟mapping中的值相同。下面两个索引请求是等价的：
 
 ```text
 POST logs-debug/_doc
@@ -8265,27 +8265,27 @@ POST logs-debug/_doc
 }
 ```
 
-&emsp;&emsp;然而如果文档中该域的字段值跟mapping中的不一致是不允许。
+&emsp;&emsp;然而如果文档中该字段的字段值跟mapping中的不一致是不允许。
 
-&emsp;&emsp;如果mapping中没有配置`value`，那么该域会基于第一篇文档中该域的值自动的配置。注意的是这意味着如果第一篇文档的值是有问题的，会导致其他的合法的文档被reject。
+&emsp;&emsp;如果mapping中没有配置`value`，那么该字段会基于第一篇文档中该字段的值自动的配置。注意的是这意味着如果第一篇文档的值是有问题的，会导致其他的合法的文档被reject。
 
-&emsp;&emsp;在提供`value`之前（通过mapping或者第一篇文档），任何对该域的查询都不会匹配任何文档。包括[exists](#Exists query) query。
+&emsp;&emsp;在提供`value`之前（通过mapping或者第一篇文档），任何对该字段的查询都不会匹配任何文档。包括[exists](#Exists query) query。
 
-&emsp;&emsp;该域的`value`在设置后就不能变更。
+&emsp;&emsp;该字段的`value`在设置后就不能变更。
 
 ##### Parameters for constant keyword fields
 
 &emsp;&emsp;该类型可以有以下的参数：
 
-- [meta](#meta(mapping parameter))：域的元数据信息
-- value：索引中所有文档的constant keyword fields的字段值。如果没有设置该参数，则是基于第一篇被索引的文档中该域的字段值
+- [meta](#meta(mapping parameter))：字段的元数据信息
+- value：索引中所有文档的constant keyword fields的字段值。如果没有设置该参数，则是基于第一篇被索引的文档中该字段的字段值
 
 ##### Wildcard field type
 
 &emsp;&emsp;`wildcard`字段是一种特殊的keyword类型，用于无结构的机器自动生成的内容，并且你计划使用[wildcard](#Wildcard query)跟[regexp](#Regexp query)这类Query进行查询。`wildcard`类型对于large value和high cardinality有专门的优化。
 
 > **Mapping unstructured content**
-> &emsp;&emsp;你可以将一个无结构的内容使用`text`或者keyword家族域。使用哪一种取决于内容的特点以及你如何查询这个域
+> &emsp;&emsp;你可以将一个无结构的内容使用`text`或者keyword家族域。使用哪一种取决于内容的特点以及你如何查询这个字段
 > 如果有以下的场景，则使用`text`字段：
 >
 > - 内容是可读的（human-readable），比如邮件正文或者产品描述
@@ -8303,7 +8303,7 @@ POST logs-debug/_doc
 > 否则就使用`keyword`类型，这样查询速度更快，索引更快并且占用更少的存储开销。对于深入的比较以及讨论，见related blog post。
 >
 > **Switching from a text field to a keyword field**
-> 如果你之前使用`text`字段处理无结构的机器自动生成的内容。你可以[reindex to update the mapping](https://www.elastic.co/cn/blog/find-strings-within-strings-faster-with-the-new-elasticsearch-wildcard-field)到`keyword`或者`wildcard`字段中。我们还建议，将你们应用或者工作流中在这个域上的[full text queries](#Full text queries)替换为等价的[term-level queries](#Term-level queries)。
+> 如果你之前使用`text`字段处理无结构的机器自动生成的内容。你可以[reindex to update the mapping](https://www.elastic.co/cn/blog/find-strings-within-strings-faster-with-the-new-elasticsearch-wildcard-field)到`keyword`或者`wildcard`字段中。我们还建议，将你们应用或者工作流中在这个字段上的[full text queries](#Full text queries)替换为等价的[term-level queries](#Term-level queries)。
 
 
 &emsp;&emsp;在内部，通配符字段使用 ngram 对整个字段值进行索引，并存储完整字符串。这个索引被用作rough filter，以减少随后通过检索和检查完整值来检查的值数量。这个字段特别适合用于在日志行上运行类似 grep 的查询。存储成本通常低于`keyword`字段，但对完整词项的精确匹配的搜索速度较慢。如果字段值共享许多前缀，如同一个网站的 URL，`wildcard`字段的存储成本可能高于等效的`keyword`字段。
@@ -8358,7 +8358,7 @@ GET my-index-000001/_search
 
 > TIP：当你需要处理包含大量任意键的键值对时，你可能会考虑将每一对键值作为一个独立的嵌套文档进行建模，其中每个文档包含两个字段：一个用于键（key），另一个用于值（value）。
 > - 例如产品A:color: red size: medium  产品B: color: blueweight: 1kg。希望通过color: red size: medium这两个条件才会找到产品A。
-> - 若考虑使用[flattened](#Flattened field type)数据类型，则将整个对象作为一个域的字段值，允许对整个对象的内容做简单的搜索。Nested document和query通常开销昂贵，所以在这种例子中使用`flattened`数据类型是个不错的选择。
+> - 若考虑使用[flattened](#Flattened field type)数据类型，则将整个对象作为一个字段的字段值，允许对整个对象的内容做简单的搜索。Nested document和query通常开销昂贵，所以在这种例子中使用`flattened`数据类型是个不错的选择。
 
 ##### How arrays of objects are flattened
 
@@ -8393,7 +8393,7 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;`user.first`和`user.last`平铺为多值的域，同时`alice`和`white`的关联信息也丢失了（关联信息指的是：它们两个属于同一个对象）。下面`alice AND smith`的这种查询会错误的匹配到这篇文档：
+&emsp;&emsp;`user.first`和`user.last`平铺为多值的字段，同时`alice`和`white`的关联信息也丢失了（关联信息指的是：它们两个属于同一个对象）。下面`alice AND smith`的这种查询会错误的匹配到这篇文档：
 
 ```text
 GET my-index-000001/_search
@@ -8509,11 +8509,11 @@ GET my-index-000001/_search
 
 - [dynamic](#dynamic(mapping parameter))：（Optional, string）是否将新的`properties`写入到已存在的nested object中，可选值为`true` (default)， `runtime`， `false` and `strict`
 
-- [properties](#properties)：nested object中的所有域（这些字段被称为properties），这些字段可以是任何数据类型[data type](#Field data types)，新的字段可能被添加现在有的nested object域中
+- [properties](#properties)：nested object中的所有字段（这些字段被称为properties），这些字段可以是任何数据类型[data type](#Field data types)，新的字段可能被添加现在有的nested object字段中
 
-- include_in_parent：（Optional, Boolean） 如果为`true`，nested object中的所有域同样添加到parent document 作为标准（flat）域。默认是`false`。
+- include_in_parent：（Optional, Boolean） 如果为`true`，nested object中的所有字段同样添加到parent document 作为标准（flat）域。默认是`false`。
   - 如果有多层嵌套，那么上一层就是parent。就可以使用普通的query，比如`match`根据上一层父级的字段进行搜索
-- include_in_root：（Optional, Boolean）如果为`true`，nested object中的所有域同样添加到root document 作为标准（flat）域。默认是`false`。
+- include_in_root：（Optional, Boolean）如果为`true`，nested object中的所有字段同样添加到root document 作为标准（flat）域。默认是`false`。
 
 &emsp;&emsp;这两个参数为true的好处相同点就是可以通过普通query就可以进行查询，而不需要专用的[nested query](#Nested query)。
 
@@ -8532,7 +8532,7 @@ GET my-index-000001/_search
 - scaled_float：一个由长整数（long）支持，通过固定双精度缩放因子缩放的浮点数
 - unsigned_long：无符号的64位整数，最小值为0，最大值为`2^64-1`。
 
-&emsp;&emsp;下面是在mapping中配置数值域的例子：
+&emsp;&emsp;下面是在mapping中配置数值字段的例子：
 
 ```text
 PUT my-index-000001
@@ -8572,7 +8572,7 @@ PUT my-index-000001
 
 
 > TIP：Mapping numeric identifiers
-> 不是所有的数值类型的数据都应该映射为一个[numeric](#Numeric field types)数据类型。Elasticsearch会为数值类型的字段，比如`integer`、`long`针对[range](#Range query)查询优化。然而，[keyword](#Keyword type family)域更适合于[term](#Term query)以及其他[term-level](#Term-level queries) Query。
+> 不是所有的数值类型的数据都应该映射为一个[numeric](#Numeric field types)数据类型。Elasticsearch会为数值类型的字段，比如`integer`、`long`针对[range](#Range query)查询优化。然而，[keyword](#Keyword type family)字段更适合于[term](#Term query)以及其他[term-level](#Term-level queries) Query。
 > 比如一些标识符，ISBN或者产品ID，很少用于`range` query，但是常用于term-level query。
 > 如果有以下的场景，可以考虑将数值类型的标识符映射为`keyword`：
 > - 你不打算将标识符类型的数据用于[range](#Range query) query
@@ -8584,16 +8584,16 @@ PUT my-index-000001
 
 &emsp;&emsp;数值类型的字段可以使用以下的参数：
 
-- [doc_values](#doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [doc_values](#doc_values) : 该字段是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
 - [ignore_malformed](#ignore_malformed)：如果为`true`，忽略格式错误的数值。如果为`false`（default），遇到格式错误的数值会抛出一个异常并且reject整个文档。注意的是如果使用了`script`参数，则不能设置这个参数
-- [index](#index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
-- [meta](#meta(mapping parameter))：域的元数据信息
-- [null_value](#null_value)：参数值可以是一个该域的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
-- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个域然后继续索引。这个参数只有在`script`设置后才能被设置。
-- script：如果设置了这个参数，这个域的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [index](#index(mapping parameter))：该字段是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [meta](#meta(mapping parameter))：字段的元数据信息
+- [null_value](#null_value)：参数值可以是一个该字段的相同类型的数值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
+- on_script_error：该参数定义了当Script在索引期间抛出错误后，该如何处理。默认值为`fail`，会导致整个文档被reject；如果参数值为`continue`，将在[\_ignored](#\_ignored field)字段注册这个字段然后继续索引。这个参数只有在`script`设置后才能被设置。
+- script：如果设置了这个参数，这个字段的字段值会通过script生成，而不是直接从源数据中读取。如果文档中设置了该字段的值，则会reject并且抛出错误。script跟[runtime](#Map a runtime field)中有相同的format。
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
 
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
 - time_series_dimension
   - 预览功能， 可能会被更改或者移除，目前只在Elasticsearch代码内部使用，暂不介绍。
 - time_series_metric
@@ -8675,9 +8675,9 @@ PUT my-index-000001
 
 &emsp;&emsp;下面的参数可以应用于`object`字段
 
-- [dynamic](#dynamic(mapping parameter))：是否将新的字段写入到已存在的object域中，可选值为`true` (default)， `runtime`， `false` and `strict`
-- [enabled](#enabled)：object域的字段值是否要进行解析并且写入到索引中（`true`），或者完全忽略(`false`)
-- [properties](#properties)：object中的所有域（这些字段被称为properties），这些字段可以是任何数据类型[data type](#Field data types)，新的字段可能被添加现在有的object域中（比如dynamic参数置为true的情况下）
+- [dynamic](#dynamic(mapping parameter))：是否将新的字段写入到已存在的object字段中，可选值为`true` (default)， `runtime`， `false` and `strict`
+- [enabled](#enabled)：object字段的字段值是否要进行解析并且写入到索引中（`true`），或者完全忽略(`false`)
+- [properties](#properties)：object中的所有字段（这些字段被称为properties），这些字段可以是任何数据类型[data type](#Field data types)，新的字段可能被添加现在有的object字段中（比如dynamic参数置为true的情况下）
 
 > IMPORTANT：如果不是要索引一个object，而是object数组，请先阅读[Nested](#Nested field type)。
 
@@ -8709,18 +8709,18 @@ PUT my-index-000001
 #### Text type family
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/text.html)
 
-&emsp;&emsp;text family包含的域类型（field type）如下所示：
+&emsp;&emsp;text family包含的字段类型（field type）如下所示：
 
-- [text](#Text field type)，用于全文内容 的传统的域类型，比如email的body或者产品的描述
-- [match_only_text](#Match-only text field type)，经过space-optimized优化的`text`字段的变种，它关闭了打分并且对于需要position的查询执行较慢。这个域最适合索引log messages。
+- [text](#Text field type)，用于全文内容 的传统的字段类型，比如email的body或者产品的描述
+- [match_only_text](#Match-only text field type)，经过space-optimized优化的`text`字段的变种，它关闭了打分并且对于需要position的查询执行较慢。这个字段最适合索引log messages。
 
 ##### Text field type
 
-&emsp;&emsp;索引full-text values的域，例如email的body或者一个产品的描述。字段值会被分词，字段值会被[analyzer](#Text analysis)分词，将一个string值转化为一个一个独立的term，并将这些term进行索引。analysis process允许Elasticsearch在每一个full text filed中查询独立的词（individual Word）。text字段不用于排序或者很少用于聚合（尽管[significant text aggregation](#Significant text aggregation)是一个明显的例外）。
+&emsp;&emsp;索引full-text values的字段，例如email的body或者一个产品的描述。字段值会被分词，字段值会被[analyzer](#Text analysis)分词，将一个string值转化为一个一个独立的term，并将这些term进行索引。analysis process允许Elasticsearch在每一个full text filed中查询独立的词（individual Word）。text字段不用于排序或者很少用于聚合（尽管[significant text aggregation](#Significant text aggregation)是一个明显的例外）。
 
 &emsp;&emsp;`text`字段最适合用于无结构的并且是human-readable的内容。如果你需要索引无结构的machine-generated的内容，见[Mapping unstructured content](#Wildcard field type)。
 
-&emsp;&emsp;如果你需要索引例如email地址，hostnames，状态码，或者tags，你应该选择[keyword](#Keyword type family)域。
+&emsp;&emsp;如果你需要索引例如email地址，hostnames，状态码，或者tags，你应该选择[keyword](#Keyword type family)字段。
 
 &emsp;&emsp;下面是text字段的mapping例子：
 
@@ -8739,7 +8739,7 @@ PUT my-index-000001
 
 ##### Use a field as both text and keyword
 
-&emsp;&emsp;有时候同一个域需要同时有full text(`text`)和keyword(`keyword`)。一个用来全文检索，另一个用于聚合和排序。可以通过 [multi-fields](#fields)实现。
+&emsp;&emsp;有时候同一个字段需要同时有full text(`text`)和keyword(`keyword`)。一个用来全文检索，另一个用于聚合和排序。可以通过 [multi-fields](#fields)实现。
 
 ##### Parameters for text fields
 
@@ -8748,21 +8748,21 @@ PUT my-index-000001
 | [analyzer](#analyzer) | 分词器[analyzer](#Text analysis)y应该同时用于index-time和search-time（除非被[search_analyzer](#search_analyzer)重写（override）），默认是index analyzer或者[standard analyzer](#Standard analyzer). |
 | :----------------------------------------------------------: | :--: |
 | [eager_global_ordinals](#eager_global_ordinals) | 是否在refresh尽快的载入global ordinals？默认是`false`。如果经常用于terms aggregation，开启这个参数是很有必要的 |
-| [fielddata](#fielddata mapping parameter) | 这个域是否用于排序、聚合、或在script中使用？默认是`false` |
+| [fielddata](#fielddata mapping parameter) | 这个字段是否用于排序、聚合、或在script中使用？默认是`false` |
 | [fielddata_frequency_filter](#fielddata_frequency_filter mapping parameter) | （Expert Setting）在开启`fielddata`后，将哪些值载入到内存中，默认值是`false` |
 | [fields](#fields) | Multi-fields允许同一个将string value基于不同的目的索引用多种方式进行索引。比如用于查询或者用于排序聚合，或者使用不同的分词器对string value进行分词 |
-| [index](#index(mapping parameter)) | 这个域是否可以被搜索？默认是`true` |
+| [index](#index(mapping parameter)) | 这个字段是否可以被搜索？默认是`true` |
 | [index_options](#index_options) | 哪些信息需要被存储到索引中用于查询和高亮，默认是`positions` |
-| [index_prefixes](#index_prefixes) | 开启这个参数后，term的2到5个前缀字符会被索引到额外的域（separate filed）。这使得前缀搜索更高效，代价就是索引大小会增加 |
-| [index_phrases](#index_phrases) | 开启这个参数后，2个term组成的字段值会被索引到额外的域（separate filed）中。这使得exact phrase（no slop） 查询可以更高效，代价就是索引大小会增加。注意的是只有移除了停用词后才能达到最佳性能，因为包含了停用词的短语将不会使用subsidiary field并且会回滚到标准的短语查询。默认是`false` |
+| [index_prefixes](#index_prefixes) | 开启这个参数后，term的2到5个前缀字符会被索引到额外的字段（separate filed）。这使得前缀搜索更高效，代价就是索引大小会增加 |
+| [index_phrases](#index_phrases) | 开启这个参数后，2个term组成的字段值会被索引到额外的字段（separate filed）中。这使得exact phrase（no slop） 查询可以更高效，代价就是索引大小会增加。注意的是只有移除了停用词后才能达到最佳性能，因为包含了停用词的短语将不会使用subsidiary field并且会回滚到标准的短语查询。默认是`false` |
 | [norms](#norms) | 执行打分的查询时是否要考虑字段值的长度 |
 | [position_increment_gap](#position_increment_gap) | The number of fake term position which should be inserted between each element of an array of strings. Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`. `100` was chosen because it prevents phrase queries with reasonably large slops (less than 100) from matching terms across field values. |
 | [store](#store) | 是否存储字段值并且可以通过`_source`字段查询。默认是`false` |
 | [search_analyzer](#search_analyzer) | 是否在search-time时使用上文中第一个参数中指定的分词器（默认值）？ |
 | [search_quote_analyzer](#search_quote_analyzer) | 当遇到短语时，是否在search-time使用上文中第一个参数中指定的分词。默认值是上文中`search_analyzer`中指定的分词器 |
 | [similarity](#similarity) | 使用哪种打分算法？默认值是`BM25` |
-| [term_vector](#term_vector) | 是否为这个域存储term vectors？默认值是`false` |
-| [meta](#meta) | 这个域的Metadata |
+| [term_vector](#term_vector) | 是否为这个字段存储term vectors？默认值是`false` |
+| [meta](#meta) | 这个字段的Metadata |
 
 
 ##### fielddata mapping parameter
@@ -8814,13 +8814,13 @@ PUT my-index-000001/_mapping
 }
 ```
 
-&emsp;&emsp;第4行，`my_field`指定的mapping应该由这个域现有的mapping加上`fielddata`参数组成。
+&emsp;&emsp;第4行，`my_field`指定的mapping应该由这个字段现有的mapping加上`fielddata`参数组成。
 
 ##### fielddata_frequency_filter mapping parameter
 
 &emsp;&emsp;FieldData filtering可以用于减少载入到内存的term的数量，因此能降低内存使用量。可以通过frequency来过滤term：
 
-&emsp;&emsp;frequency filter能让你只将frequency在`min`和`max`之间的term载入到内存，`min`和`max`可以是一个确切的数值（absolute number， 数值大于1）或者是一个百分值（比如`0.01`就是`1%`并且`1.0`就是`100%`）。frequency在每个段中进行计算。百分值基于一个段中拥有这个域的文档数量相对于所有文档的数量。
+&emsp;&emsp;frequency filter能让你只将frequency在`min`和`max`之间的term载入到内存，`min`和`max`可以是一个确切的数值（absolute number， 数值大于1）或者是一个百分值（比如`0.01`就是`1%`并且`1.0`就是`100%`）。frequency在每个段中进行计算。百分值基于一个段中拥有这个字段的文档数量相对于所有文档的数量。
 
 &emsp;&emsp;可以通过指定`min_segment_size`，即段中包含的文档数量最小值来排除一些小段：
 
@@ -8845,7 +8845,7 @@ PUT my-index-000001
 
 ##### Match-only text field type
 
-&emsp;&emsp;[text](#Text field type)类型的一个变体是`match_only_text`。它是打分和与位置相关的query的一种折中类型。这个类型的字段跟只索引文档号（index_options: docs）的`text`字段有相同存储数据效率并且关闭了norms（norms: false）。在这个域上执行term query跟在`text`类型的字段上更快，至少也是相等。然而如果在`match_only_text`上执行需要位置信息的query，例如[match_phrase](#Match phrase query)，那性能会降低，因为需要从`_source`中验证短语是否匹配。所有的query返回固定的打分值：1.0。
+&emsp;&emsp;[text](#Text field type)类型的一个变体是`match_only_text`。它是打分和与位置相关的query的一种折中类型。这个类型的字段跟只索引文档号（index_options: docs）的`text`字段有相同存储数据效率并且关闭了norms（norms: false）。在这个字段上执行term query跟在`text`类型的字段上更快，至少也是相等。然而如果在`match_only_text`上执行需要位置信息的query，例如[match_phrase](#Match phrase query)，那性能会降低，因为需要从`_source`中验证短语是否匹配。所有的query返回固定的打分值：1.0。
 
 &emsp;&emsp;不能配置分词器：文本总是用默认的[分词器分词](#Specify the default analyzer for an index)（默认是[standard](#Standard analyzer)）。
 
@@ -8874,7 +8874,7 @@ PUT logs
 &emsp;&emsp;`match_only_text`接受下面的参数：
 
 - [fields](#fields)： Multi-fields允许同一个将string value基于不同的目的索引用多种方式进行索引。比如用于查询或者用于排序聚合，或者使用不同的分词器对string value进行分词
-- [meta](#meta(mapping parameter))：域的元数据信息
+- [meta](#meta(mapping parameter))：字段的元数据信息
 
 #### Token count field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/token-count.html)
@@ -8917,7 +8917,7 @@ GET my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第5行，名为`name`的域是一个[text](#Text type family)域，使用了默认的`standard`分词器。
+&emsp;&emsp;第5行，名为`name`的字段是一个[text](#Text type family)字段，使用了默认的`standard`分词器。
 &emsp;&emsp;第7行，`name.length`字段是一个[multi-field](#fields)的`token_count`字段，它会记录`name`字段中token的数量，
 &emsp;&emsp;第28行，这个query只会匹配包含`Rachel Alice Williams`的文档，因为它会被分为三个token。
 
@@ -8926,11 +8926,11 @@ GET my-index-000001/_search
 &emsp;&emsp;`token_count`字段接收下列的参数：
 - [analyzer](#analyzer(mapping parameter))：[analyzer](#Text analysis)用来对字符串的值分词，必须要指定。处于性能考虑，使用不带token filter的分词器。
 - enable_position_increments：是否要统计position increments。如果你不想要统计被分词器过滤掉（比如[stop](#Stop token filter)）的token的position increments，那么设置为`false`。默认为`true`。
-- [index](#index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
-- [doc_values](#doc_values) : 该域是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
-- [index](#index(mapping parameter))：该域是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [index](#index(mapping parameter))：该字段是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
+- [doc_values](#doc_values) : 该字段是否用基于列式存储于磁盘中，使得可以用于排序、聚合、或者Script。参数值为`true`或者`false`（默认值）
+- [index](#index(mapping parameter))：该字段是否需要被快速的检索？参数值为`true`或者`false`（默认值）。
 - [null_value](#null_value)：参数值是具有相同类型的数值用来替换为`null`的字段值。默认值是`null`，意味着缺失值。注意的是如果使用了`script`参数，则不能设置这个参数
-- [store](#store)：该域是否独立于[\_source](#_source field)域并且可以用于检索。参数值为`true`或者`false`（默认值）
+- [store](#store)：该字段是否独立于[\_source](#_source field)字段并且可以用于检索。参数值为`true`或者`false`（默认值）
 
 #### Unsigned long field type
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/unsigned-long.html)
@@ -9091,13 +9091,13 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;该域提供了跟常规的`keyword`字段相同的搜索能力。比如可以使用`match`或者`term` query来精确匹配并且支持前缀（prefix）和通配符（wildcard）查询。最主要的好处就是`range` query遵循Semver排序，所以"1.0.0"到"1.5.0"的`range`查询会包含"1.2.3"，但是不会包含"1.11.2"。注意的是如果使用keyword存储版本号则排序是不同的，因为排序规则是字典序。
+&emsp;&emsp;该字段提供了跟常规的`keyword`字段相同的搜索能力。比如可以使用`match`或者`term` query来精确匹配并且支持前缀（prefix）和通配符（wildcard）查询。最主要的好处就是`range` query遵循Semver排序，所以"1.0.0"到"1.5.0"的`range`查询会包含"1.2.3"，但是不会包含"1.11.2"。注意的是如果使用keyword存储版本号则排序是不同的，因为排序规则是字典序。
 
 &emsp;&emsp;软件版本号应该遵循[Semantic Versioning rules]的策略和优先级规则，不过有一个显著的例外就是允许主要的版本标识多于或少于三个（例如"1.2"或"1.2.3.4"是有效的（valid）版本号，但没有严格遵循Semver的规则）不满足Semver规则的版本号（例如，“1.2.alpha.4”）仍然会被索引并且可以精确匹配。但是这些版本号会按照字典序排序，并且排在有效版本号之后。空的`version`字段值被认为是无效的，并且排在所有有效版本号之后，其他无效版本号之前。
 
 ##### Parameters for version fields
 
-- [meta](#meta(mapping parameter))：域的元数据信息
+- [meta](#meta(mapping parameter))：字段的元数据信息
 
 ### Metadata fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-fields.html)
@@ -9118,13 +9118,13 @@ PUT my-index-000001
 
 ##### Doc count metadata field
 
-&emsp;&emsp;[\_doc_count](#_doc_count field)：当文档作为pre-aggregation 数据时的一个自定义的用于存储文档计数的域。
+&emsp;&emsp;[\_doc_count](#_doc_count field)：当文档作为pre-aggregation 数据时的一个自定义的用于存储文档计数的字段。
 
 ##### Indexing metadata fields
 
-&emsp;&emsp;[\_field_names](#_field_names field)：文档中所有字段值不为null的域。
+&emsp;&emsp;[\_field_names](#_field_names field)：文档中所有字段值不为null的字段。
 
-&emsp;&emsp;[\_ignored](#_ignored field)：因为[ignore_malformed](#ignore_malformed)，在索引期间文档中所有被ignore的域、
+&emsp;&emsp;[\_ignored](#_ignored field)：因为[ignore_malformed](#ignore_malformed)，在索引期间文档中所有被ignore的字段、
 
 ##### Routing metadata field
 
@@ -9139,7 +9139,7 @@ PUT my-index-000001
 #### \_doc_count field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-doc-count-field.html)
 
-&emsp;&emsp;Bucket aggregation总是返回一个名为`doc_count`的域，它表示每一个bucket中参与集合的文档数量。计算`doc_count`的值是很简单的。在每一个bucket中，每收集到一篇文档，`doc_count`的值就加一。
+&emsp;&emsp;Bucket aggregation总是返回一个名为`doc_count`的字段，它表示每一个bucket中参与集合的文档数量。计算`doc_count`的值是很简单的。在每一个bucket中，每收集到一篇文档，`doc_count`的值就加一。
 
 &emsp;&emsp;在独立的文档中进行聚合计算时这种简单的方式是很高效的。但是统计那些存储pre-aggregation的文档数量就会丢失精度（比如说[histogram](#Histogram aggregation)或者`aggregate_metric_double`），因为一个summary field中代表了多篇文档（见[Histogram fields](#Histogram fields（Histogram aggregation）)）。
 
@@ -9239,9 +9239,9 @@ GET /_search
 #### \_field_names field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-field-names-field.html)
 
-&emsp;&emsp;` _field_names`字段用来对一篇文档中每一个字段值不是null的域的字段名进行索引。[exists query](#Term query)使用这个字段来查找具有或不具有特定字段的任何非空值的文档。
+&emsp;&emsp;` _field_names`字段用来对一篇文档中每一个字段值不是null的字段的字段名进行索引。[exists query](#Term query)使用这个字段来查找具有或不具有特定字段的任何非空值的文档。
 
-&emsp;&emsp;现在` _field_names`只会对有`doc_values`以及关闭`norms`的域的字段名进行索引。对于有些只开启`doc_values`或者只开启`norms`的域也可以使用[exists query](#Term query)，但是不是通过` _field_names`字段实现的。
+&emsp;&emsp;现在` _field_names`只会对有`doc_values`以及关闭`norms`的字段的字段名进行索引。对于有些只开启`doc_values`或者只开启`norms`的字段也可以使用[exists query](#Term query)，但是不是通过` _field_names`字段实现的。
 
 ##### Disabling \_field_names
 
@@ -9252,11 +9252,11 @@ GET /_search
 #### \_ignored field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-ignored-field.html)
 
-&emsp;&emsp;`_ignored` field 用来索引并存储在索引期间被忽略的文档的所有域的名称。例如字段值是格式错误的并且开启了[ignore_malformed](#ignore_malformed)或者keyword字段值超过了[ignore_above](#ignore_above)中的设置。
+&emsp;&emsp;`_ignored` field 用来索引并存储在索引期间被忽略的文档的所有字段的名称。例如字段值是格式错误的并且开启了[ignore_malformed](#ignore_malformed)或者keyword字段值超过了[ignore_above](#ignore_above)中的设置。
 
-&emsp;&emsp;这个域可以使用 [term](#Term query), [terms](#Terms query), [exists](#Exists query)进行查询。
+&emsp;&emsp;这个字段可以使用 [term](#Term query), [terms](#Terms query), [exists](#Exists query)进行查询。
 
-&emsp;&emsp;下面的例子描述了匹配的文档中包含一个或者多个被忽略的域。
+&emsp;&emsp;下面的例子描述了匹配的文档中包含一个或者多个被忽略的字段。
 
 ```text
 GET _search
@@ -9372,7 +9372,7 @@ GET index_1,index_2/_search
 &emsp;&emsp;第28行，基于`_index`字段排序
 &emsp;&emsp;第37行，在脚本中访问`_index`的值
 
-&emsp;&emsp;`_index` field exposed virtually，它不会作为一个真实的域添加到Lucene的索引中。这意味着你可以在`term`或 `terms`查询中使用` _index` 字段（或任何被重写为 `term` 查询的查询，如 `match`、`query_string` 或 `simple_query_string` 查询），以及 `prefix` 和 `wildcard` 查询。但是，它不支持`regexp` 和 `fuzzy` 查询。
+&emsp;&emsp;`_index` field exposed virtually，它不会作为一个真实的字段添加到Lucene的索引中。这意味着你可以在`term`或 `terms`查询中使用` _index` 字段（或任何被重写为 `term` 查询的查询，如 `match`、`query_string` 或 `simple_query_string` 查询），以及 `prefix` 和 `wildcard` 查询。但是，它不支持`regexp` 和 `fuzzy` 查询。
 
 &emsp;&emsp;对` _index` 字段的查询除了接受具体的索引名称外，还接受索引别名。
 
@@ -9527,7 +9527,7 @@ shard_num = (routing_value % num_routing_shards) / routing_factor
 #### \_source field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-source-field.html)
 
-&emsp;&emsp;`_source`字段包含了在索引期间传给Elasticsearch的原始的JSON格式的文档内容。`_source`自身不会被索引（因此这个域没法用于搜索），又因为它被存储了，所以可以通过`fetch requests`例如[get](#Get API)或者[search](#Search API)方式来获得。
+&emsp;&emsp;`_source`字段包含了在索引期间传给Elasticsearch的原始的JSON格式的文档内容。`_source`自身不会被索引（因此这个字段没法用于搜索），又因为它被存储了，所以可以通过`fetch requests`例如[get](#Get API)或者[search](#Search API)方式来获得。
 
 ##### Disabling the \_source field
 
@@ -9557,7 +9557,7 @@ PUT my-index-000001
 
 ##### Including / Excluding fields from \_source
 
-&emsp;&emsp;这是expert-only的功能使得在`_source`的内容在索引之后、存储之前进行域的剪枝。
+&emsp;&emsp;这是expert-only的功能使得在`_source`的内容在索引之后、存储之前进行字段的剪枝。
 
 > WARNING：从`_source`中移除一些域跟关闭`_source`有着类似的负面问题（downside），特别是你不能从一个Elasticsearch索引重新索引到另一个。可以考虑使用[source filtering](#Retrieve selected fields from a search) 来替代这种方式。
 
@@ -9607,7 +9607,7 @@ GET logs/_search
 ```
 
 &emsp;&emsp;第21、25、27、28行，`_source` 域存储之前会移除这几个域
-&emsp;&emsp;第37行，我们仍然可以通过这个域进行检索，尽管它没有被存储
+&emsp;&emsp;第37行，我们仍然可以通过这个字段进行检索，尽管它没有被存储
 
 #### \_tier field
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-tier-field.html)
@@ -9646,7 +9646,7 @@ GET index_1,index_2/_search
 
 &emsp;&emsp;这一章节提供了不同的mapping 参数（mapping parameters）的详细的介绍，mapping参数用于[filed mappings](#Field data types)：
 
-&emsp;&emsp;下面的mapping参数对于某些或者所有的域的数据类型是通用的：
+&emsp;&emsp;下面的mapping参数对于某些或者所有的字段的数据类型是通用的：
 
 - [analyzer](#analyzer(mapping parameter))
 - [coerce](#coerce)
@@ -9680,13 +9680,13 @@ GET index_1,index_2/_search
 
 > IMPORTANT：只有[text](#Text type family)类型支持`analyzer`参数。
 
-&emsp;&emsp;`analyzer`参数用来指定分词器[analyzer](#Anatomy of an analyzer) 并且用于在索引和查询[text](#Text type family)域时进行文本分词[text analysis](#Text analysis)。
+&emsp;&emsp;`analyzer`参数用来指定分词器[analyzer](#Anatomy of an analyzer) 并且用于在索引和查询[text](#Text type family)字段时进行文本分词[text analysis](#Text analysis)。
 
 &emsp;&emsp;除非用mapping参数[search_analyzer](#search_analyzer)进行覆盖，分词器将同时用于[index and search analysis](#Index and search analysis)，见[Specify an analyzer](#Specify an analyzer)
 
 > TIP：建议在生产中使用前先试用下分词器，见[Test an analyzer](#Test an analyzer)。
 
-> TIP：`analyzer`参数不能通过[update mapping API](#Update mapping API)对已存在的域进行变更。
+> TIP：`analyzer`参数不能通过[update mapping API](#Update mapping API)对已存在的字段进行变更。
 
 ##### search_quote_analyzer
 
@@ -9760,7 +9760,7 @@ GET my-index-000001/_search
 }
 ```
 
-> TIP：可以通过[update mapping API](#Update mapping API)对现有的域更新`search_quote_analyzer`设置。
+> TIP：可以通过[update mapping API](#Update mapping API)对现有的字段更新`search_quote_analyzer`设置。
 
 &emsp;&emsp;第1行，`my_analyzer`对所有的字符串进行分词，包括停用词
 &emsp;&emsp;第2行，`my_stop_analyzer`会移除停用词
@@ -9775,7 +9775,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;Data is not always clean，在JSON中，5这个数字可以用字符串"5"表示，也可以用数值表示，或者应该是整数5，但是在JSON中是一个浮点数，比如5.0，甚至是字符串"5.0"。
 
-&emsp;&emsp;`coerce`会尝试将dirty value转化为某个合适的域的数据类型。比如：
+&emsp;&emsp;`coerce`会尝试将dirty value转化为某个合适的字段的数据类型。比如：
 
 - 字符串会被强制转化为数值
 - 浮点型会被截断为整数
@@ -9809,14 +9809,14 @@ PUT my-index-000001/_doc/2
 }
 ```
 
-&emsp;&emsp;第18行，number_one这个域将包含数值类型的10
+&emsp;&emsp;第18行，number_one这个字段将包含数值类型的10
 &emsp;&emsp;第23行，由于`coerce`被禁用了，所以这篇文档会被reject
 
 > TIP：`coerce`参数可以通过[update mapping API](#Update mapping API)更新。
 
 ##### Index-level default
 
-&emsp;&emsp;`index.mapping.coerce`这个设置能够在索引层全局的关闭所有域的`coerce`的设置
+&emsp;&emsp;`index.mapping.coerce`这个设置能够在索引层全局的关闭所有字段的`coerce`的设置
 
 ``` text
 PUT my-index-000001
@@ -9844,15 +9844,15 @@ PUT my-index-000001/_doc/2
 { "number_two": "10" } 
 ```
 
-&emsp;&emsp;第20行，`number_one`这个域中的设置覆盖了索引层的设置，即开启了`coerce`
+&emsp;&emsp;第20行，`number_one`这个字段中的设置覆盖了索引层的设置，即开启了`coerce`
 &emsp;&emsp;第23行，这个文档会被reject，因为`number_two`继承了索引层的设置，即关闭了`coerce`
 
 #### copy_to
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/copy-to.html)
 
-&emsp;&emsp;`copy_to`参数允许你将多个域的字段值写入到group field中，这个group filed可以被当成一个域进行查询。
+&emsp;&emsp;`copy_to`参数允许你将多个字段的字段值写入到group field中，这个group filed可以被当成一个字段进行查询。
 
-> TIP：如果你经常使用多个域进行查询，你可以使用copy_to写入到较少的域来提高查询速度。
+> TIP：如果你经常使用多个字段进行查询，你可以使用copy_to写入到较少的字段来提高查询速度。
 
 &emsp;&emsp;见[Tune for search speed](#Tune for search speed)。
 
@@ -9898,30 +9898,30 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第7、11行，`first_name`和`last_name`的字段值被拷贝到`full_name`。
-&emsp;&emsp;第30行，`first_name`和`last_name`这两个域依然能分别用来查询frist_name以及last_name，而`full_name`可以用来同时查询frist_name以及last_name。
+&emsp;&emsp;第30行，`first_name`和`last_name`这两个字段依然能分别用来查询frist_name以及last_name，而`full_name`可以用来同时查询frist_name以及last_name。
 
 &emsp;&emsp;一些重要点：
 
 - 字段值被拷贝，而不是terms被拷贝（字段值在进行分词处理后生成的一个或多个最小分词单元成为term）
 - `_source`字段中的值不会显示被拷贝的字段值
-- 同一个字段值可以被拷贝到多个域中：`"copy_to": [ "field_1", "field_2" ]`
-- 你不能递归的方式进行字段值拷贝，比如先field_1拷贝到field_2，然后field_2拷贝到field_3，并且期望通过这种方式将field_1的字段值拷贝到field_3中，这是不可行的。你应该使用将一个字段值直接拷贝到多个域的方式
+- 同一个字段值可以被拷贝到多个字段中：`"copy_to": [ "field_1", "field_2" ]`
+- 你不能递归的方式进行字段值拷贝，比如先field_1拷贝到field_2，然后field_2拷贝到field_3，并且期望通过这种方式将field_1的字段值拷贝到field_3中，这是不可行的。你应该使用将一个字段值直接拷贝到多个字段的方式
 
 
->NOTE：字段值类型是objects的域不支持copy_to，例如date_range。
+>NOTE：字段值类型是objects的字段不支持copy_to，例如date_range。
 
 #### doc_values
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/doc-values.html)
 
-&emsp;&emsp;大部分的域默认情况下都会被[索引](#index)，使得可以被用于搜索。倒排索引使得可以在有序的term集合中找到该term，并且能马上获取到包含 term的文档列表。
+&emsp;&emsp;大部分的字段默认情况下都会被[索引](#index)，使得可以被用于搜索。倒排索引使得可以在有序的term集合中找到该term，并且能马上获取到包含 term的文档列表。
 
-&emsp;&emsp;排序、聚合以及脚本中访问字段值需要一种不同的数据访问模式（data access pattern）。我们需要能够根据文档（文档号）找到这个文档中包含的某个域的所有字段值，而不是根据字段值找到文档。
+&emsp;&emsp;排序、聚合以及脚本中访问字段值需要一种不同的数据访问模式（data access pattern）。我们需要能够根据文档（文档号）找到这个文档中包含的某个字段的所有字段值，而不是根据字段值找到文档。
 
-&emsp;&emsp;DocValues一种 on-disk的数据结构。这种基于文档的索引，使得上述的数据访问模式的成为可能。DocValues使用列式存储column-oriented 存储了跟\_source字段相同的值，使得排序跟聚合更高效。DocValues几乎支持所有的域类型，除了[text](#Text type family)跟annotated_text这两类域。
+&emsp;&emsp;DocValues一种 on-disk的数据结构。这种基于文档的索引，使得上述的数据访问模式的成为可能。DocValues使用列式存储column-oriented 存储了跟\_source字段相同的值，使得排序跟聚合更高效。DocValues几乎支持所有的字段类型，除了[text](#Text type family)跟annotated_text这两类域。
 
 ##### Doc-value-only fields
 
-&emsp;&emsp;[Numeric types](#Numeric field types), [date types](#Date field type),  [boolean type](#Boolean field type), [ip type](#IP field type), [geo_point type](#Geopoint field type) 和[keyword type](#Keyword type family)这些字段只开启了docValues（在Lucene中只用正排的数据结构存储）而没有用倒排索引存储，这些字段仍旧能够实现搜索，但是查询性能较差。这种索引方式是一种disk usage和查询性能的折中（tradeoff），适合用于那些不用于查询或者查询性能不重要的域。这使得只包含docValues的字段非常适合通常不用于过滤的字段，例如metric data上的计量表（gauges）或计数器。
+&emsp;&emsp;[Numeric types](#Numeric field types), [date types](#Date field type),  [boolean type](#Boolean field type), [ip type](#IP field type), [geo_point type](#Geopoint field type) 和[keyword type](#Keyword type family)这些字段只开启了docValues（在Lucene中只用正排的数据结构存储）而没有用倒排索引存储，这些字段仍旧能够实现搜索，但是查询性能较差。这种索引方式是一种disk usage和查询性能的折中（tradeoff），适合用于那些不用于查询或者查询性能不重要的字段。这使得只包含docValues的字段非常适合通常不用于过滤的字段，例如metric data上的计量表（gauges）或计数器。
 
 &emsp;&emsp;Doc-value-only域可以通过下面方式配置：
 
@@ -9943,11 +9943,11 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第6行，`status_code`是一个普通的`long`类型的字段。
-&emsp;&emsp;第10行，`session_id`关闭了`index`，使得该域是`Doc-value-only`字段，并且只开启DocValues。
+&emsp;&emsp;第10行，`session_id`关闭了`index`，使得该字段是`Doc-value-only`字段，并且只开启DocValues。
 
 ##### Disabling doc values
 
-&emsp;&emsp;所有支持DocValues的域都会默认开启DocValues，如果你确定这个域不需要进行聚合、排序，或者在脚本中访问这个域的字段值，那么你可以关闭DocValues来节省磁盘空间：
+&emsp;&emsp;所有支持DocValues的字段都会默认开启DocValues，如果你确定这个字段不需要进行聚合、排序，或者在脚本中访问这个字段的字段值，那么你可以关闭DocValues来节省磁盘空间：
 
 ```text
 PUT my-index-000001
@@ -9970,12 +9970,12 @@ PUT my-index-000001
 
 &emsp;&emsp;`status_code`关闭了`doc_values`，但是仍然能被用于查询。
 
-> NOTE：你不能关闭[wildcard ](#Keyword type family)域的`doc_values`。
+> NOTE：你不能关闭[wildcard ](#Keyword type family)字段的`doc_values`。
 
 #### dynamic(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dynamic.html)
 
-&emsp;&emsp;当你索引的一篇文档中包含一个新的字段时，Elasticsearch会[动态的添加域](#Dynamic mapping)，添加到文档中，或者文档中某个对象域（object field）中，下面的例子在文档中添加了一个String类型的字段`username`，以及对象域`name`，在这个对象域中添加了两个域：
+&emsp;&emsp;当你索引的一篇文档中包含一个新的字段时，Elasticsearch会[动态的添加字段](#Dynamic mapping)，添加到文档中，或者文档中某个对象字段（object field）中，下面的例子在文档中添加了一个String类型的字段`username`，以及对象字段`name`，在这个对象字段中添加了两个字段：
 
 ```text
 PUT my-index-000001/_doc/1
@@ -9990,7 +9990,7 @@ PUT my-index-000001/_doc/1
 GET my-index-000001/_mapping 
 ```
 
-&emsp;&emsp;第4行，`name`对象域下的两个域是`name.first`和`name.last`
+&emsp;&emsp;第4行，`name`对象字段下的两个字段是`name.first`和`name.last`
 &emsp;&emsp;第10行，查看这个索引的mapping
 
 &emsp;&emsp;下面这篇文档增加两个string field： `email`和`name.middle`: 
@@ -10014,7 +10014,7 @@ GET my-index-000001/_mapping
 
 &emsp;&emsp;[inner object](#Object field type)会继承parent object或者mapping type中的`dynamic`参数，在下面的例子，在mapping顶层中关闭了dynamic，所以顶层中新的字段不会被动态添加。
 
-&emsp;&emsp;然而，`user.social_networks`这个object域开启了动态mapping，所以这一层的新的字段会被动态添加：
+&emsp;&emsp;然而，`user.social_networks`这个object字段开启了动态mapping，所以这一层的新的字段会被动态添加：
 
 ```text
 PUT my-index-000001
@@ -10039,7 +10039,7 @@ PUT my-index-000001
 ```
 
 &emsp;&emsp;第4行，mapping类型那一层关闭了动态mapping
-&emsp;&emsp;第6行，`user`这个object域继承了mapping类型一层的`dynamic`的参数
+&emsp;&emsp;第6行，`user`这个object字段继承了mapping类型一层的`dynamic`的参数
 &emsp;&emsp;第12行，`social_networks`这个inner object开启了动态mapping
 
 ##### Parameters for dynamic
@@ -10056,7 +10056,7 @@ PUT my-index-000001
 
 ##### What are global ordinals?
 
-&emsp;&emsp;为了能支持在聚合和其他操作中可以从文档中找到字段值，Elasticsearch使用了一个成为[doc values](#doc_values)的数据结构。例如`keyword`这种Term-based的域类型（field type）会使用ordinal mapping这种更紧凑的数据结构来存储doc values。ordinal mapping的[工作原理](https://www.amazingkoala.com.cn/Lucene/DocValues/2019/0219/SortedDocValues)是给每一个term分配一个基于字典序，递增有序的整数。会为每篇文档存储这个域的doc values的ordinal（数字），而不是字段值对应的原始term，通过一个lookup Structure实现ordinal和term之间的转化。
+&emsp;&emsp;为了能支持在聚合和其他操作中可以从文档中找到字段值，Elasticsearch使用了一个成为[doc values](#doc_values)的数据结构。例如`keyword`这种Term-based的字段类型（field type）会使用ordinal mapping这种更紧凑的数据结构来存储doc values。ordinal mapping的[工作原理](https://www.amazingkoala.com.cn/Lucene/DocValues/2019/0219/SortedDocValues)是给每一个term分配一个基于字典序，递增有序的整数。会为每篇文档存储这个字段的doc values的ordinal（数字），而不是字段值对应的原始term，通过一个lookup Structure实现ordinal和term之间的转化。
 
 &emsp;&emsp;在聚合中使用ordinal能极大的提高性能。例如在分片级别（shard-level）`terms aggregation`中使用ordinal来收集文档号并放入到分桶中，并且在跨分片对查询结果合并（combining）前将ordinal转化为对应的原始的term值。
 
@@ -10065,7 +10065,7 @@ PUT my-index-000001
 &emsp;&emsp;如果查询中包含了下列的component就会使用Global ordinals：
 
 - 一些使用`keyword`，`ip`， `flattened`字段的bucket aggregation。包含了上文中提到的`terms aggregation`，同样的还有`composite`，`diversified_sampler`以及`significant_terms`。
-- 使用`text`字段的bucket aggregation需要这个域开启[fielddata](#fielddata mapping parameter)。
+- 使用`text`字段的bucket aggregation需要这个字段开启[fielddata](#fielddata mapping parameter)。
 - Operations on parent and child documents from a `join`  field, including `has_child` queries and `parent` aggregations.
 
 > NOTE: global ordinal mapping会占用heap memory，属于[field data cache](#Field data cache settings)的一部分。
@@ -10073,7 +10073,7 @@ PUT my-index-000001
 
 ##### Loading global ordinals
 
-&emsp;&emsp;查询期间，在ordinals可以被使用前必须先构建global ordinal mapping。默认情况下，在需要使用global ordinal时并且只在这类查询第一次发起后才会构建这个mapping。如果你想要优化索引速度（Indexing speed），这是一种正确的方式。但如果查询性能的优先级最高，建议尽快生成将要执行聚合的域的global ordinals：
+&emsp;&emsp;查询期间，在ordinals可以被使用前必须先构建global ordinal mapping。默认情况下，在需要使用global ordinal时并且只在这类查询第一次发起后才会构建这个mapping。如果你想要优化索引速度（Indexing speed），这是一种正确的方式。但如果查询性能的优先级最高，建议尽快生成将要执行聚合的字段的global ordinals：
 
 ```text
 PUT my-index-000001/_mapping
@@ -10115,9 +10115,9 @@ PUT my-index-000001/_mapping
 #### enabled(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/enabled.html)
 
-&emsp;&emsp;Elasticsearch会尝试索引你提供的所有的域，但有时候你只是想保存某些域而不想索引它们。例如你想要使用Elasticsearch来存储web session，你也许要索引session ID和 last update time，但是你不想对session data进行查询或者聚合操作。
+&emsp;&emsp;Elasticsearch会尝试索引你提供的所有的字段，但有时候你只是想保存某些字段而不想索引它们。例如你想要使用Elasticsearch来存储web session，你也许要索引session ID和 last update time，但是你不想对session data进行查询或者聚合操作。
 
-&emsp;&emsp;`enabled`参数只能在mapping的顶层top-level定义并且只能应用[object](#Object field type)类型的字段，这会使得Elasticsearch不再解析object域下所有内容，JSON内容仍然可以从[\_source](#\_source field)中检索到，无法通过其他方式查询或者进行存储：
+&emsp;&emsp;`enabled`参数只能在mapping的顶层top-level定义并且只能应用[object](#Object field type)类型的字段，这会使得Elasticsearch不再解析object字段下所有内容，JSON内容仍然可以从[\_source](#\_source field)中检索到，无法通过其他方式查询或者进行存储：
 
 ```text
 UT my-index-000001
@@ -10158,7 +10158,7 @@ PUT my-index-000001/_doc/session_2
 ```
 
 &emsp;&emsp;第11行，`session_data`字段的`enable`参数为false
-&emsp;&emsp;第22行，任意类型的数据都可以赋值给`session_data`字段，Elasticsearch不会解析这些数据（不解析意味着可以给一个object域赋非JSON格式的数据）
+&emsp;&emsp;第22行，任意类型的数据都可以赋值给`session_data`字段，Elasticsearch不会解析这些数据（不解析意味着可以给一个object字段赋非JSON格式的数据）
 &emsp;&emsp;第33行，`session_data`字段同样会忽略不是JSON类型的数据
 
 &emsp;&emsp;可以在mapping中直接定义`enable`参数为false，这样使得所有的内容可以在`_source`字段中检索到但是不会被索引。
@@ -10187,9 +10187,9 @@ GET my-index-000001/_doc/session_1
 GET my-index-000001/_mapping 
 ```
 
-&emsp;&emsp;第4行，`enable`参数将应用mapping中的所有域
+&emsp;&emsp;第4行，`enable`参数将应用mapping中的所有字段
 &emsp;&emsp;第19行，文档可以被检索到
-&emsp;&emsp;第21行，这个索引的mapping中没有任何的域的信息
+&emsp;&emsp;第21行，这个索引的mapping中没有任何的字段的信息
 
 &emsp;&emsp;The `enabled` setting for existing fields and the top-level mapping definition cannot be updated。
 
@@ -10497,7 +10497,7 @@ GET my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第7行，这个域会忽略字符串长度超过20的字段值
+&emsp;&emsp;第7行，这个字段会忽略字符串长度超过20的字段值
 &emsp;&emsp;第13行，这篇文档能成功索引
 &emsp;&emsp;第18行，这篇文档会被索引，但是`message`字段不会被索引
 &emsp;&emsp;第23行，两篇文档都会被搜索到，但聚合中只有第一篇文档的message的值会被呈现present
@@ -10513,7 +10513,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;有时候你不用过度控制待写入的数据，用户可能发送了[date](#Data)类型的`login`字段，但是又发送了一个email地址的`login`字段。
 
-&emsp;&emsp;尝试索引一个数据类型错误的域默认情况下会抛出异常，并且reject这个文档，`ignore_malformed`参数如果设置为true，允许忽略异常，数据格式异常的域不会被索引，其他的域会被正常处理。
+&emsp;&emsp;尝试索引一个数据类型错误的字段默认情况下会抛出异常，并且reject这个文档，`ignore_malformed`参数如果设置为true，允许忽略异常，数据格式异常的字段不会被索引，其他的字段会被正常处理。
 
 ```text
 PUT my-index-000001
@@ -10561,7 +10561,7 @@ PUT my-index-000001/_doc/2
 
 ##### Index-level default
 
-&emsp;&emsp;在索引层index level设置`index.mapping.ignore_malformed`会对mapping中所有域生效，如果mapping中的某些类型不支持这个参数会忽略该设置。
+&emsp;&emsp;在索引层index level设置`index.mapping.ignore_malformed`会对mapping中所有字段生效，如果mapping中的某些类型不支持这个参数会忽略该设置。
 
 ```text
 PUT my-index-000001
@@ -10588,7 +10588,7 @@ PUT my-index-000001
 
 ##### Dealing with malformed fields
 
-&emsp;&emsp;`ignore_malformed`开启后，数据格式错误的字段在索引期间会被忽略，无论如何建议保留那些包含数据格式错误域的文档的数量，否则查询[\_ignored](#\_ignored field)域就没有意义了。Elasticsearch可以使用`_ignored`字段结合`exists`,`term` or `terms`来查询哪些文档中有数据格式错误的域。
+&emsp;&emsp;`ignore_malformed`开启后，数据格式错误的字段在索引期间会被忽略，无论如何建议保留那些包含数据格式错误字段的文档的数量，否则查询[\_ignored](#\_ignored field)字段就没有意义了。Elasticsearch可以使用`_ignored`字段结合`exists`,`term` or `terms`来查询哪些文档中有数据格式错误的字段。
 
 ##### Limits for JSON Objects
 
@@ -10605,16 +10605,16 @@ PUT my-index-000001
 #### index(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-index.html)
 
-&emsp;&emsp;`index`这个参数用来控制字段值是否要索引，该值可以是true或者false，默认值为true，没有进行索引的域通常是无法用于查询的。
+&emsp;&emsp;`index`这个参数用来控制字段值是否要索引，该值可以是true或者false，默认值为true，没有进行索引的字段通常是无法用于查询的。
 
 #### index_options
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-options.html)
 
-&emsp;&emsp;`index_options`参数用来控制哪些信息被添加到倒排索引[inverted index](https://www.amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）)中，用于查询或者高亮。只有term-based的域比如[text](#Text type family)、[keyword](#Keyword type family)才支持该配置。
+&emsp;&emsp;`index_options`参数用来控制哪些信息被添加到倒排索引[inverted index](https://www.amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）)中，用于查询或者高亮。只有term-based的字段比如[text](#Text type family)、[keyword](#Keyword type family)才支持该配置。
 
 &emsp;&emsp;`index_options`参数的可选值如下所示，注意的是每个参数值包含上一个参数值中添加的参数，比如`freq`包含`docs`；`positions`同时包含`freq`和`docs`：
 
-- docs：只有文档号被添加到倒排索引中，可以解决这个问题：term是否在这个域中？
+- docs：只有文档号被添加到倒排索引中，可以解决这个问题：term是否在这个字段中？
 - freqs：文档号跟词频会被添加到倒排索引中，词频会用于打分，词频大意味着文档能获得较高的分数
 - positions（默认值）：文档号跟词频、位置会被添加到倒排索引中，位置信息可以用于[proximity or phrase queries](#Match phrase query)
 - offsets：文档号跟词频、位置。term的开始跟结束的偏移信息（可以用于定位term在字符串中的位置）会被添加到倒排索引中，offsets可以用于提高[highlighting](#Highlighting)的性能。
@@ -10657,7 +10657,7 @@ GET my-index-000001/_search
 #### index_phrases
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-phrases.html)
 
-&emsp;&emsp;开启这个参数后，2个term组成的字段值会被索引到额外的域（separate filed）中。这使得exact phrase（no slop） 查询可以更高效，代价就是索引大小会增加。注意的是只有移除了停用词后才能达到最佳性能，因为包含了停用词的短语将不会使用subsidiary field并且会回滚到标准的短语查询。默认是false。
+&emsp;&emsp;开启这个参数后，2个term组成的字段值会被索引到额外的字段（separate filed）中。这使得exact phrase（no slop） 查询可以更高效，代价就是索引大小会增加。注意的是只有移除了停用词后才能达到最佳性能，因为包含了停用词的短语将不会使用subsidiary field并且会回滚到标准的短语查询。默认是false。
 
 #### index_prefixes
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-prefixes.html)
@@ -10712,7 +10712,7 @@ PUT my-index-000001
 #### meta(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-field-meta.html)
 
-&emsp;&emsp;域的附加元信息（metadata）（key-value键值对信息），元数据对Elasticsearch是不透明的，他只是用来在多个应用间分享在同一个索引中某个域的元信息，比如字段值的单位unit：
+&emsp;&emsp;字段的附加元信息（metadata）（key-value键值对信息），元数据对Elasticsearch是不透明的，他只是用来在多个应用间分享在同一个索引中某个字段的元信息，比如字段值的单位unit：
 
 ```text
 PUT my-index-000001
@@ -10730,11 +10730,11 @@ PUT my-index-000001
 }
 ```
 
->NOTE：域的元数据最多可以设置5个，key的长度必须小于等于20，value的长度必须小于等于50
+>NOTE：字段的元数据最多可以设置5个，key的长度必须小于等于20，value的长度必须小于等于50
 
->NOTE：域的元数据可以通过mapping更新进行变更，新的元信息会覆盖旧的元信息
+>NOTE：字段的元数据可以通过mapping更新进行变更，新的元信息会覆盖旧的元信息
 
-&emsp;&emsp;Elastic产品会使用下面2个标准的域的元数据，你可以遵循这些元数据约定来获得更好的数据开箱即用体验
+&emsp;&emsp;Elastic产品会使用下面2个标准的字段的元数据，你可以遵循这些元数据约定来获得更好的数据开箱即用体验
 
 ##### unit
 
@@ -10747,7 +10747,7 @@ PUT my-index-000001
 #### fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/multi-fields.html)
 
-&emsp;&emsp;经常出于某些目的需要对同一个域执行不同的索引方式，这就是`multi-fields`的设计初衷。例如，一个字符串的字段值可以作为`text`字段使得可以全文检索，也可以作为`keyword`字段使得可以用于排序、聚合：
+&emsp;&emsp;经常出于某些目的需要对同一个字段执行不同的索引方式，这就是`multi-fields`的设计初衷。例如，一个字符串的字段值可以作为`text`字段使得可以全文检索，也可以作为`keyword`字段使得可以用于排序、聚合：
 
 ```text
 PUT my-index-000001
@@ -10800,13 +10800,13 @@ GET my-index-000001/_search
 &emsp;&emsp;第31行，`city`字段可以用于全文检索
 &emsp;&emsp;第35、40行，`city.raw`可以用于排序跟聚合
 
-&emsp;&emsp;你可以通过[update mapping API](#Update mapping API)对现有的域添加`multi-filed`
+&emsp;&emsp;你可以通过[update mapping API](#Update mapping API)对现有的字段添加`multi-filed`
 
 &emsp;&emsp;`multi-field`字段完全独立与parent filed（上面的例子中，`city.raw`的parent filed就是`city`），意味着它不会继承parent field的任何参数。当然了，Multi-fields不会更改`_source`中的内容。
 
 ##### Multi-fields with multiple analyzers
 
-&emsp;&emsp;另一个multi-fields的用例就是对同一个域的字段值采用不同的分词器来得到更好的关联（better relevance）。比如我们可以对字段值使用[standard analyzer](#Standard analyzer)，将这个字段值分为多个词（word），或者对这个字段值使用[english analyzer](#Language analyzers) ，将英文单词转为root format，并且写入到索引：
+&emsp;&emsp;另一个multi-fields的用例就是对同一个字段的字段值采用不同的分词器来得到更好的关联（better relevance）。比如我们可以对字段值使用[standard analyzer](#Standard analyzer)，将这个字段值分为多个词（word），或者对这个字段值使用[english analyzer](#Language analyzers) ，将英文单词转为root format，并且写入到索引：
 
 ```text
 PUT my-index-000001
@@ -10850,11 +10850,11 @@ GET my-index-000001/_search
 &emsp;&emsp;第5行，`text`字段使用`standard`（默认）分词器
 &emsp;&emsp;第8行，`text.english`字段使用`english`分词器
 &emsp;&emsp;第19、22行，索引了两篇文档，一篇文档中包含了`fox`而另一篇则包含了`foxes`
-&emsp;&emsp;第33行，同时查询`text`跟`text.english`字段，这两个域都会影响文档的打分
+&emsp;&emsp;第33行，同时查询`text`跟`text.english`字段，这两个字段都会影响文档的打分
 
 &emsp;&emsp;`text`字段在第一篇文档中包含了`fox`并且在第二篇文档中包含了`foxes`。`text.english`字段在两篇文档中都包含了`fox`，因为`foxes`被词根化stemmed为成了`fox`。
 
-&emsp;&emsp;查询中的字符串同样会对于`text`字段使用`standard`分词器，并且对于`text.english`字段使用`english`分词器。词根化stemmed的域允许如果是查询`foxes`，会去匹配包含`fox`的文档，使得我们可以尽可能的匹配更多的文档。当查询没有词根化unstemmed的`text`字段时，我们会提高那些同时匹配`foxes`的文档的分数。
+&emsp;&emsp;查询中的字符串同样会对于`text`字段使用`standard`分词器，并且对于`text.english`字段使用`english`分词器。词根化stemmed的字段允许如果是查询`foxes`，会去匹配包含`fox`的文档，使得我们可以尽可能的匹配更多的文档。当查询没有词根化unstemmed的`text`字段时，我们会提高那些同时匹配`foxes`的文档的分数。
 
 #### normalizer(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/normalizer.html)
@@ -11027,7 +11027,7 @@ GET index/_search
 
 &emsp;&emsp;`norms`对于打分是很有用的，但是它同时需要很多的磁盘空间（通常在每个文档每个字段上约占一个字节，即使是索引中没有这个特定字段的文档也是如此）。因此，如果你不需要在某个特定字段上进行得分计算，你应该禁用该字段上的规范。特别是对于那些仅用于过滤或聚合的字段。
 
-> TIP：可以通过[update mapping API](#Update mapping API)对关闭现有的域的`norm`。
+> TIP：可以通过[update mapping API](#Update mapping API)对关闭现有的字段的`norm`。
 
 &emsp;&emsp;Norms可以通过[update mapping API](#Update mapping API)按照下面的方式关闭：
 
@@ -11043,12 +11043,12 @@ PUT my-index-000001/_mapping
 }
 ```
 
-> NOTE：Norms不会马上被移除，而是在你继续索引新的文档后，并且在旧的段合并到新段后才会移除。被移除了norm的域将返回不一致的结果，因为有些文档不在有norm，而其他的文档仍然有norm。
+> NOTE：Norms不会马上被移除，而是在你继续索引新的文档后，并且在旧的段合并到新段后才会移除。被移除了norm的字段将返回不一致的结果，因为有些文档不在有norm，而其他的文档仍然有norm。
 
 #### null_value
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/null-value.html)
 
-&emsp;&emsp;`null`不能被索引或者搜索，当一个域被设置为`null`（空的数组或者数组元素都是`null`），该域被认为是没有值的。
+&emsp;&emsp;`null`不能被索引或者搜索，当一个字段被设置为`null`（空的数组或者数组元素都是`null`），该字段被认为是没有值的。
 
 &emsp;&emsp;`null_value`允许将那些为null的字段值替换为你指定的值，使得可以被索引和搜索，例如：
 
@@ -11089,7 +11089,7 @@ GET my-index-000001/_search
 &emsp;&emsp;第20行，空的数组不包含显示的null值，该字段值不会被替换为`NULL`
 &emsp;&emsp;第27行，字段名status_code、字段值NULL的查询可以匹配文档1，不会匹配文档2
 
->IMPORTANT：`null_value`的字段值类型必须跟这个域的类型一致，long类型的字段不能设置为字符串类型的`null_value`
+>IMPORTANT：`null_value`的字段值类型必须跟这个字段的类型一致，long类型的字段不能设置为字符串类型的`null_value`
 
 >NOTE：`null_value`只会影响数据的索引和查询，它不会修改_source中文档的数据
 
@@ -11170,12 +11170,12 @@ GET my-index-000001/_search
 
 ##### 小知识
 
-&emsp;&emsp;在es中定义了"names": [ "John Abraham", "Lincoln Smith"]，如果position_increment_gap的值为0，那么相当于定义了"names": "John Abraham Lincoln Smith"。在Lucene层，es的arrays类型会将每一个数组元素作为Lucene中同一篇文档的相同字段名的多个域信息。以name为例，在Lucene中，会生成两个字段名为name，字段值分别为John Abraham和Lincoln Smith的域。由于这两个域有相同的字段名，那么在[倒排索引](https://amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）/)中，Abraham和Lincoln的位置是相邻的，当然前提是position_increment_gap的值为0。
+&emsp;&emsp;在es中定义了"names": [ "John Abraham", "Lincoln Smith"]，如果position_increment_gap的值为0，那么相当于定义了"names": "John Abraham Lincoln Smith"。在Lucene层，es的arrays类型会将每一个数组元素作为Lucene中同一篇文档的相同字段名的多个字段信息。以name为例，在Lucene中，会生成两个字段名为name，字段值分别为John Abraham和Lincoln Smith的字段。由于这两个字段有相同的字段名，那么在[倒排索引](https://amazingkoala.com.cn/Lucene/Index/2019/0222/倒排表（上）/)中，Abraham和Lincoln的位置是相邻的，当然前提是position_increment_gap的值为0。
 
 #### properties
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/properties.html)
 
-&emsp;&emsp;类型映射，[object fields](#Object field type)和包含子域（sub-field）[nested fiedlds](#Nested field type)都称为`properties`。这些properties可能是任意的数据类型（[date type](#Field data types)），包括`object`和`nested`。可以通过下面的方式添加`properties`：
+&emsp;&emsp;类型映射，[object fields](#Object field type)和包含子字段（sub-field）[nested fiedlds](#Nested field type)都称为`properties`。这些properties可能是任意的数据类型（[date type](#Field data types)），包括`object`和`nested`。可以通过下面的方式添加`properties`：
 
 - 在[creating an index](#Create index API)时显示的定义
 - 通过[update mapping API](#Update mapping API)显示的增加或更新mapping时显示的定义
@@ -11230,7 +11230,7 @@ PUT my-index-000001/_doc/1
 &emsp;&emsp;第13行，在`employees`下定义
 &emsp;&emsp;第22行，索引一篇对应上面定义的mapping的文档
 
-> TIP：`properties`这个配置运行在同一个索引中对同一个字段名有不同的设置。可以通过[update mapping API](#Update mapping API)添加或者更新现有域的properties。
+> TIP：`properties`这个配置运行在同一个索引中对同一个字段名有不同的设置。可以通过[update mapping API](#Update mapping API)添加或者更新现有字段的properties。
 
 ##### Dot notation
 
@@ -11328,23 +11328,23 @@ GET my-index-000001/_search
 
 &emsp;&emsp;第13行，Analysis设置中自定义的分词器`autocomplete`
 &emsp;&emsp;第28，29行，`text`字段使用在索引期间使用`autocomplete`分词器，而在查询期间使用`standard`分词器
-&emsp;&emsp;第37行，这个域对应的这些term会被索引：[q, qu, qui, quic, quick, b, br, bro, brow, brown, f, fo, fox]
+&emsp;&emsp;第37行，这个字段对应的这些term会被索引：[q, qu, qui, quic, quick, b, br, bro, brow, brown, f, fo, fox]
 &emsp;&emsp;第45行，query中查询的term为：[quick, br]
 
 &emsp;&emsp;见[Index time search-as-you- type ](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/_index_time_search_as_you_type.html)查看这个例子的详细介绍。
 
-> TIP：可以使用[update mapping API](#Update mapping API)对现有的域上更新`search_analyzer`设置。注意的是，Note, that in order to do so, any existing "analyzer" setting and "type" need to be repeated in the updated field definition。
+> TIP：可以使用[update mapping API](#Update mapping API)对现有的字段上更新`search_analyzer`设置。注意的是，Note, that in order to do so, any existing "analyzer" setting and "type" need to be repeated in the updated field definition。
 
 #### similarity
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/similarity.html)
 
-&emsp;&emsp;Elasticsearch允许你为每一个域配置一个文本打分算法（text scoring algorithm）或者`similarity`。参数`similarity`允许你提供一个简单文本打分算法而不是使用默认的`BM25`，例如`boolean`。
+&emsp;&emsp;Elasticsearch允许你为每一个字段配置一个文本打分算法（text scoring algorithm）或者`similarity`。参数`similarity`允许你提供一个简单文本打分算法而不是使用默认的`BM25`，例如`boolean`。
 
 |  BM25   | 即[Okapi BM25 algorithm](https://en.wikipedia.org/wiki/Okapi_BM25)，Elasticsearch以及Lucene默认使用这个算法 |
 | :-----: | :----------------------------------------------------------: |
 | boolean | 一个简单的布尔算法，不需要全文本ranking并且打分值基于是否匹配到了查询中的term。Boolean算法给term打出的分数跟它们的query boost一样 |
 
-&emsp;&emsp;参数`similarity`可以在域最开始创建时设置在这个域的层级：
+&emsp;&emsp;参数`similarity`可以在域最开始创建时设置在这个字段的层级：
 
 ```text
 PUT my-index-000001
@@ -11363,18 +11363,18 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;第5行，这个字段名为`default_field`的域使用`BM25`算法
-&emsp;&emsp;第10行，这个字段名为`boolean_sim_field`的域使用`boolean`算法
+&emsp;&emsp;第5行，这个字段名为`default_field`的字段使用`BM25`算法
+&emsp;&emsp;第10行，这个字段名为`boolean_sim_field`的字段使用`boolean`算法
 
 
 #### store(mapping parameter)
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-store.html)
 
-&emsp;&emsp;默认情况下，字段值被[indexed](#index)使得可以被搜索到，但是它们没有存储（store）。意味着该域能用于查询，但是原始的字段值（origin source value）不能被检索到。
+&emsp;&emsp;默认情况下，字段值被[indexed](#index)使得可以被搜索到，但是它们没有存储（store）。意味着该字段能用于查询，但是原始的字段值（origin source value）不能被检索到。
 
-&emsp;&emsp;通常来说没有关系，因为字段值早已经是[\_source](#\_source field)域的一部分，默认被存储了。如果你想检索单个域或者一些域的字段值而不是整个`_source`， 你可以使用[source filtering](#Retrieve selected fields from a search)来达到你的目的。
+&emsp;&emsp;通常来说没有关系，因为字段值早已经是[\_source](#\_source field)字段的一部分，默认被存储了。如果你想检索单个域或者一些字段的字段值而不是整个`_source`， 你可以使用[source filtering](#Retrieve selected fields from a search)来达到你的目的。
 
-&emsp;&emsp;在有些情况下`store`一个域的字段值是合理的（make sense）。比如说你有一篇文档有`title`、`date`以及一个字段值很大的`content`字段。你可能只想获取`title`、`date`的字段值而不用从字段值很大（因为\_source中包含所有域的字段值）的`_source`字段中提取出来：
+&emsp;&emsp;在有些情况下`store`一个字段的字段值是合理的（make sense）。比如说你有一篇文档有`title`、`date`以及一个字段值很大的`content`字段。你可能只想获取`title`、`date`的字段值而不用从字段值很大（因为\_source中包含所有字段的字段值）的`_source`字段中提取出来：
 
 ```text
 PUT my-index-000001
@@ -11416,7 +11416,7 @@ GET my-index-000001/_search
 >
 > Stored fields returned as arrays
 >
-> 为了一致性，stored fields总是以数组方式返回，因为没法知道原始的字段值是单值，多值还是一个空的数组。如果你想获取这个域原始的字段值（输入文档中的值），你应该从`_source`中获取。
+> 为了一致性，stored fields总是以数组方式返回，因为没法知道原始的字段值是单值，多值还是一个空的数组。如果你想获取这个字段原始的字段值（输入文档中的值），你应该从`_source`中获取。
 
 #### term_vector
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/term-vector.html)
@@ -11443,7 +11443,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;fast vector highlighter需要参数`with_positions_offsets`。[term vectors API](#Term vectors API)用来检索存储的信息。
 
-> WARNING：参数`with_positions_offsets`设置后会使得这个域的索引大小翻倍。
+> WARNING：参数`with_positions_offsets`设置后会使得这个字段的索引大小翻倍。
 
 ```text
 PUT my-index-000001
@@ -11483,11 +11483,11 @@ GET my-index-000001/_search
 ### Mapping limit settings
 
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/mapping-settings-limit.html)
-&emsp;&emsp;使用下面的设置限制mapping（手动或者动态创建）中域的数量，防止因为文档（比如每一篇文档都会增加一些域）导致mapping explosion。
+&emsp;&emsp;使用下面的设置限制mapping（手动或者动态创建）中字段的数量，防止因为文档（比如每一篇文档都会增加一些域）导致mapping explosion。
 
 #### index.mapping.total_fields.limit
 
-&emsp;&emsp;索引中域的数量最大值。Field and object mappings，以及field aliases都会纳入到统计中并受到限制。默认值为`1000`。
+&emsp;&emsp;索引中字段的数量最大值。Field and object mappings，以及field aliases都会纳入到统计中并受到限制。默认值为`1000`。
 
 > IMPORTANT：这个限制是为了防止mappings和查询变的很大（too large）。数量越高会导致性能下降以及内存问题，特别是集群处于高负载或者低资源时。
 > 如果你提高这个设置，我们建议你同时提高[indices.query.bool.max_clause_count](#Search settings)，这个设置限制了一个Query中clause数量的最大值。
@@ -11496,7 +11496,7 @@ GET my-index-000001/_search
 
 #### index.mapping.depth.limit
 
-&emsp;&emsp;某个域的最大深度，用来估量inner object的数量。例如，如果所有的域都在root object level，那么深度为`1`。如果某个域有一个object mapping，那么深度就是`2`。默认值为`20`。
+&emsp;&emsp;某个字段的最大深度，用来估量inner object的数量。例如，如果所有的字段都在root object level，那么深度为`1`。如果某个字段有一个object mapping，那么深度就是`2`。默认值为`20`。
 
 #### index.mapping.nested_fields.limit
 
@@ -11508,7 +11508,7 @@ GET my-index-000001/_search
 
 #### index.mapping.field_name_length.limit
 
-&emsp;&emsp;域的名称长度最大值。这个设置不能解决mappings explosion的问题，但是如果你想要限制filed length时仍然是有用的。通常不需要设置它。除非用户增加了大量的域，并且每个域的字段名长度非常的长，否则使用默认值就可以了。默认值是`Long.MAX_VALUE (no limit)`。
+&emsp;&emsp;字段的名称长度最大值。这个设置不能解决mappings explosion的问题，但是如果你想要限制filed length时仍然是有用的。通常不需要设置它。除非用户增加了大量的字段，并且每个字段的字段名长度非常的长，否则使用默认值就可以了。默认值是`Long.MAX_VALUE (no limit)`。
 
 #### index.mapping.dimension_fields.limit
 
@@ -11518,7 +11518,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;索引中时序维度（time series dimension）数量的最大值。默认值为`16`。
 
-&emsp;&emsp;你可以使用[time_series_dimension](#Parameters for ip fields) mapping参数将某个域标记为一个dimension。
+&emsp;&emsp;你可以使用[time_series_dimension](#Parameters for ip fields) mapping参数将某个字段标记为一个dimension。
 
 ### Removal of mapping types
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/removal-of-types.html)
@@ -11532,7 +11532,7 @@ GET my-index-000001/_search
 
 #### When to configure text analysis
 
-&emsp;&emsp;Elasticsearch在索引和查询[text](#Text type family)域时会执行text analysis。
+&emsp;&emsp;Elasticsearch在索引和查询[text](#Text type family)字段时会执行text analysis。
 
 &emsp;&emsp;如果你的索引中没有`text`字段，那你不需要任何设置，可以跳过本章节内容。
 
@@ -12320,7 +12320,7 @@ POST my-index-000001/_analyze
 
 &emsp;&emsp;Elasticsearch会有序的检查下面的参数来检测使用了哪种index analyzer：
 
-- 域的参数[analyzer](#analyzer)，见[Specify the analyzer for a field](#Specify the analyzer for a field)。
+- 字段的参数[analyzer](#analyzer)，见[Specify the analyzer for a field](#Specify the analyzer for a field)。
 - 索引设置：`analysis.analyzer.default`。见[Specify the default analyzer for an index](#Specify the analyzer for a field)
 
 &emsp;&emsp;如果没有指定这些参数，那么默认使用[standard analyzer](#Standard analyzer)。
@@ -14414,7 +14414,7 @@ PUT _component_template/runtime_component_template
 }
 ```
 
-&emsp;&emsp;第18行，这个component template添加了一个名为`day_of_week`的[runtime field](#Map a runtime field)的域，用于一个新的索引匹配到模板时。
+&emsp;&emsp;第18行，这个component template添加了一个名为`day_of_week`的[runtime field](#Map a runtime field)的字段，用于一个新的索引匹配到模板时。
 
 &emsp;&emsp;下面的请求创建了一个由上面的component template组成的index template。
 
@@ -14568,7 +14568,7 @@ POST /_index_template/_simulate
 
 &emsp;&emsp;一个数据流要求有一个匹配的index template（[index template](#Index templates)）。这个模板包含了用于配置流的backing indices的mappings和settings。
 
-&emsp;&emsp;每一个索引到数据流中的文档必须包含一个`@timestamp`字段，映射为[date](#Date field type)或者[date_nanos](#Date nanoseconds field type)域类型。如果index template没有指定`@timestamp`字段。Elasticsearch会根据默认选项映射一个`date`类型的`@timestmap`字段。
+&emsp;&emsp;每一个索引到数据流中的文档必须包含一个`@timestamp`字段，映射为[date](#Date field type)或者[date_nanos](#Date nanoseconds field type)字段类型。如果index template没有指定`@timestamp`字段。Elasticsearch会根据默认选项映射一个`date`类型的`@timestmap`字段。
 
 &emsp;&emsp;同一个index template可以用于多个数据流。你不能删除一个正在被某个数据流使用的index template。
 
@@ -14703,8 +14703,8 @@ PUT _ilm/policy/my-lifecycle-policy
 - 为`@timestamp`字段定义mapping类型，[date](#Date field type)或者[date_nanos](#Date nanoseconds field type)。如果你不指定，Elasticsearch会默认将这个字段作为`date`类型的字段
 - 索引设置`index.lifecycle.name`中给定生命周期策略的名称
 
-> TIP：使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)来映射你的域类型。ECS域默认跟一些Elastic Stack features 集成
-> 如果你不确定如何映射你的域类型，你可以在查询期间使用[runtime fields](#Define runtime fields in a search request)从非结构化的内容[unstructured content](#Wildcard field type)中提取字段。例如你可以将log message索引到一个`wildcard`字段，随后在查询期间从这个域中提取IP地址和其他数据。
+> TIP：使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)来映射你的字段类型。ECS域默认跟一些Elastic Stack features 集成
+> 如果你不确定如何映射你的字段类型，你可以在查询期间使用[runtime fields](#Define runtime fields in a search request)从非结构化的内容[unstructured content](#Wildcard field type)中提取字段。例如你可以将log message索引到一个`wildcard`字段，随后在查询期间从这个字段中提取IP地址和其他数据。
 
 &emsp;&emsp;若要创建在kibana中创建一个组件模版，打开主菜单然后跳转到**Stack Management > Index Management**。在**Index Templates**视图中，点击**Create component template**。
 
@@ -15135,13 +15135,13 @@ PUT /my-data-stream/_mapping?write_index_only=true
 
 #### Change an existing field mapping in a data stream
 
-&emsp;&emsp;每一个[mapping parameter](#Mapping parameters)的文档中都会告知是否可以使用[update mapping API](#Update mapping API)更新现有的域。若要为现有的域更新这些参数，按照下面的步骤执行：
+&emsp;&emsp;每一个[mapping parameter](#Mapping parameters)的文档中都会告知是否可以使用[update mapping API](#Update mapping API)更新现有的字段。若要为现有的字段更新这些参数，按照下面的步骤执行：
 
 1. 更新data steam使用的index template。保证新的field mapping添加到这个stream以后创建的backing index中。
 
 &emsp;&emsp;例如，名为`my-data-stream`的data stream现在使用的是名为`my-data-steram-template`的模板。
 
-&emsp;&emsp;下面的[create or update index template](#Index templates)请求为`host.ip`修改了参数。域的[ignore_malformed](#ignore_malformed)的值设置为`true`。
+&emsp;&emsp;下面的[create or update index template](#Index templates)请求为`host.ip`修改了参数。字段的[ignore_malformed](#ignore_malformed)的值设置为`true`。
 
 ```text
 PUT /_index_template/my-data-stream-template
@@ -15208,9 +15208,9 @@ PUT /my-data-stream/_mapping?write_index_only=true
 }
 ```
 
-&emsp;&emsp;除了支持更新mapping参数，我们不建议更改现有域的mapping或者类型，即使是在data stream匹配到的index template或者它的backing index中。更改现有域的mapping会invalidate已经索引的数据。
+&emsp;&emsp;除了支持更新mapping参数，我们不建议更改现有字段的mapping或者类型，即使是在data stream匹配到的index template或者它的backing index中。更改现有字段的mapping会invalidate已经索引的数据。
 
-&emsp;&emsp;如果你需要修改现有域的mapping，那么创建一个新的data stream然后reindex。见[Use reindex to change mappings or settings](#Use reindex to change mappings or settings)。
+&emsp;&emsp;如果你需要修改现有字段的mapping，那么创建一个新的data stream然后reindex。见[Use reindex to change mappings or settings](#Use reindex to change mappings or settings)。
 
 #### Change a dynamic index setting for a data stream
 
@@ -15288,7 +15288,7 @@ PUT /_index_template/my-data-stream-template
 
 #### Use reindex to change mappings or settings
 
-&emsp;&emsp;你可以使用reindex修改data stream的mapping或settings。这么做通常是因为要对现有的域的类型做变更或者要为backing index更新static index settings。
+&emsp;&emsp;你可以使用reindex修改data stream的mapping或settings。这么做通常是因为要对现有的字段的类型做变更或者要为backing index更新static index settings。
 
 &emsp;&emsp;若要reindex某个data stream。首先创建或者更新index template，这样才能包含你想要的修改后的mapping或settings。你随后就可以将现有的数据reindex到一个新的匹配到模板的data stream中。模板中变更的mapping和setting都会应用到添加到新的data stream中的每一篇文档和backing index。
 
@@ -15922,7 +15922,7 @@ PUT _ingest/pipeline/my-pipeline
 
 &emsp;&emsp;不同于source和metadata field，Elasticsearch默认不会索引ingest metadata。Elasticsearch同样允许以`_ingest`开头的source fields，如果你的数据中包含了这种source fields，使用`_source._ingest`来访问它们。
 
-&emsp;&emsp;pipeline默认只创建名为`_ingest.timestamp`的ingest metadata域。这个域包含的是Elasticsearch收到文档索引请求时的timestamp。若要索引`_ingest.timestamp`或者其他ingest metadata域，使用`set`processor。
+&emsp;&emsp;pipeline默认只创建名为`_ingest.timestamp`的ingest metadata字段。这个字段包含的是Elasticsearch收到文档索引请求时的timestamp。若要索引`_ingest.timestamp`或者其他ingest metadata字段，使用`set`processor。
 
 ```text
 PUT _ingest/pipeline/my-pipeline
@@ -16145,7 +16145,7 @@ PUT _ingest/pipeline/my-pipeline
 }
 ```
 
-&emsp;&emsp;Incoming document通常包含object field。如果一个processor script尝试访问一个域，但是parent object不存在，Elasticsearch会返回一个`NullPointerException`。若要避免这些异常，使用[null safe operators](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-operators-reference.html#null-safe-operator)，例如`?.`，你的script就可以变的null safe。
+&emsp;&emsp;Incoming document通常包含object field。如果一个processor script尝试访问一个字段，但是parent object不存在，Elasticsearch会返回一个`NullPointerException`。若要避免这些异常，使用[null safe operators](https://www.elastic.co/guide/en/elasticsearch/painless/8.2/painless-operators-reference.html#null-safe-operator)，例如`?.`，你的script就可以变的null safe。
 
 &emsp;&emsp;例如，`ctx.network?.name.equalsIgnoreCase('Guest')` 不是null safe。`ctx.network?.name`可能返回null，将脚本重写为`'Guest'.equalsIgnoreCase(ctx.network?.name)`的话就是null safe，因为`Guest`总是non-null。
 
@@ -16508,8 +16508,8 @@ GET my-data-stream/_search?filter_path=hits.hits._source
 &emsp;&emsp;在定义enrich processor时，你必须至少包含下面的内容：
 
 - 需要使用的enrich policy
-- 用来enrich Index与incoming document匹配的域
-- 添加到incoming document的target Field。enrich policy中指定的`match_field`和`enrich_fields`中所有的域将作为`target_field`的字段
+- 用来enrich Index与incoming document匹配的字段
+- 添加到incoming document的target Field。enrich policy中指定的`match_field`和`enrich_fields`中所有的字段将作为`target_field`的字段
 
 &emsp;&emsp;你可以使用`max_matches`选项设置一个incoming document可以匹配的丰富文档的数量。如果设置为默认值的`1`。那么`target_field`字段变成json object否则就是json array。
 
@@ -16641,8 +16641,8 @@ PUT /_enrich/policy/postal_policy
 
 - enrich policy
 - incoming document的`field`用来匹配enrich Index的文档中的geoshape
-- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
-  - target_field可以是一个新的字段名（如果是incoming document中已有的域，会被覆盖）
+- `target_field`用来为incoming document存储追加的enrich data。这个字段中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+  - target_field可以是一个新的字段名（如果是incoming document中已有的字段，会被覆盖）
 - `shape_relation`用来告知processor如何匹配incoming document和enrich index中的geoshapes。见[Spatial Relations ](#Geoshape query)了解更多可选参数以及介绍。
 
 ```text
@@ -16673,7 +16673,7 @@ PUT /users/_doc/0?pipeline=postal_lookup
 }
 ```
 
-&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的字段的信息。可以使用[get API](#Get API)查看索引后的文档：
 
 ```text
 GET /users/_doc/0
@@ -16757,7 +16757,7 @@ POST /_enrich/policy/users-policy/_execute
 
 - enrich polic
 - incoming document的`field`用来匹配enrich Index中的文档
-- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+- `target_field`用来为incoming document存储追加的enrich data。这个字段中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
 
 ```text
 PUT /_ingest/pipeline/user_lookup
@@ -16785,7 +16785,7 @@ PUT /my-index-000001/_doc/my_id?pipeline=user_lookup
 }
 ```
 
-&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的字段的信息。可以使用[get API](#Get API)查看索引后的文档：
 
 ```text
 GET /my-index-000001/_doc/my_id
@@ -16818,7 +16818,7 @@ GET /my-index-000001/_doc/my_id
 #### Example: Enrich your data by matching a value to a range
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/range-enrich-policy-type.html)
 
-&emsp;&emsp;一个`range`类型的[enrich policy](#enrich policy)使用一个[term query](#Term query)匹配incoming document中的数值、日期或者IP地址类型的字段，使用匹配到的字段值去enrich Index中执行同一个域的范围查询。不支持range到range的匹配。
+&emsp;&emsp;一个`range`类型的[enrich policy](#enrich policy)使用一个[term query](#Term query)匹配incoming document中的数值、日期或者IP地址类型的字段，使用匹配到的字段值去enrich Index中执行同一个字段的范围查询。不支持range到range的匹配。
 
 &emsp;&emsp;下面的例子中创建了一个`range`类型的enrich policy，该策略基于IP地址向incoming document中添加描述性网络名称（descriptive network name）和负责部门（responsible department）。然后，它将enrich policy添加到ingest pipeline的一个processor中。
 
@@ -16877,7 +16877,7 @@ POST /_enrich/policy/networks-policy/_execute
 
 - enrich policy
 - incoming document的`field`用来匹配enrich Index中的文档
-- `target_field`用来为incoming document存储追加的enrich data。这个域中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
+- `target_field`用来为incoming document存储追加的enrich data。这个字段中包含了enrich policy中指定的`match_field`和`enrich_fields`信息
 
 ```text
 PUT /_ingest/pipeline/networks_lookup
@@ -16905,7 +16905,7 @@ PUT /my-index-000001/_doc/my_id?pipeline=networks_lookup
 }
 ```
 
-&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的域的信息。可以使用[get API](#Get API)查看索引后的文档：
+&emsp;&emsp;若要验证enrich processor匹配到的、以及追加的字段的信息。可以使用[get API](#Get API)查看索引后的文档：
 
 ```text
 GET /my-index-000001/_doc/my_id
@@ -16939,7 +16939,7 @@ GET /my-index-000001/_doc/my_id
 #### Append processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/append-processor.html)
 
-&emsp;&emsp;如果待追加的域存在，并且是字段值是数组类型，那么追加一个或多个值到现有的数组中。如果待追加的域存在，并且字段值是标量（scalar）类型，那么将其转化为数组类型，然后追加到数组中。如果待追加的域不存在，那么创建一个数组类型的字段值并且追加到这个数组中。可以追加单个值或者数组。
+&emsp;&emsp;如果待追加的字段存在，并且是字段值是数组类型，那么追加一个或多个值到现有的数组中。如果待追加的字段存在，并且字段值是标量（scalar）类型，那么将其转化为数组类型，然后追加到数组中。如果待追加的字段不存在，那么创建一个数组类型的字段值并且追加到这个数组中。可以追加单个值或者数组。
 
 #### Bytes processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/append-processor.html)
@@ -16963,7 +16963,7 @@ GET /my-index-000001/_doc/my_id
 #### Convert processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/convert-processor.html)
 
-&emsp;&emsp;将当前被提取的文档中的域转化为不同的类型。比如将string转化为Integer。如果字段值是个数组，那么所有数组元素都被转化。
+&emsp;&emsp;将当前被提取的文档中的字段转化为不同的类型。比如将string转化为Integer。如果字段值是个数组，那么所有数组元素都被转化。
 
 &emsp;&emsp;支持的类型有：`integer`, `long`, `float`, `double`, `string`, `boolean`, `ip`以及`auto`。
 
@@ -16995,9 +16995,9 @@ GET /my-index-000001/_doc/my_id
 #### Dissect processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dissect-processor.html)
 
-&emsp;&emsp;跟[Grok processor](#Grok processor)类型，`dissect`同样从文档中单个文本域中提取出结构化的域。跟[Grok processor](#Grok processor)不同的是，它不使用[Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression)。这使得dissect的语法更简单并且有些情况下性能快于[Grok processor](#Grok processor)。
+&emsp;&emsp;跟[Grok processor](#Grok processor)类型，`dissect`同样从文档中单个文本域中提取出结构化的字段。跟[Grok processor](#Grok processor)不同的是，它不使用[Regular Expressions](https://en.wikipedia.org/wiki/Regular_expression)。这使得dissect的语法更简单并且有些情况下性能快于[Grok processor](#Grok processor)。
 
-&emsp;&emsp;Dissect根据定义的模式去匹配某个单文本的域。
+&emsp;&emsp;Dissect根据定义的模式去匹配某个单文本的字段。
 
 &emsp;&emsp;比如有下面的模式：
 
@@ -17011,7 +17011,7 @@ GET /my-index-000001/_doc/my_id
 1.2.3.4 - - [30/Apr/1998:22:00:52 +0000] \"GET /english/venues/cities/images/montpellier/18.gif HTTP/1.0\" 200 3171
 ```
 
-&emsp;&emsp;将会生成下面的域：
+&emsp;&emsp;将会生成下面的字段：
 
 ```text
 "doc": {
@@ -17041,12 +17041,12 @@ GET /my-index-000001/_doc/my_id
 #### Dot expander processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/dot-expand-processor.html)
 
-&emsp;&emsp;将用点`.`表示的字段名扩展成一个对象域。这个processor使得可以让点域（field with dot）能在pipeline中被其他processor访问。否则这些点域无法被任何processor访问。
+&emsp;&emsp;将用点`.`表示的字段名扩展成一个对象字段。这个processor使得可以让点域（field with dot）能在pipeline中被其他processor访问。否则这些点域无法被任何processor访问。
 
 ##### Table 14. Dot Expand Options
 
-- field：（Required）待扩展的点域。如果设置为`*`，那么top-level上所有的域都会被扩展。
-- path：（Optional）点域中包含了需要展开的点域。如果你需要展开的点域是另一个对象域的key需要将path指定为对象域的key，因为`field`字段无法理解leaf fields
+- field：（Required）待扩展的点域。如果设置为`*`，那么top-level上所有的字段都会被扩展。
+- path：（Optional）点域中包含了需要展开的点域。如果你需要展开的点域是另一个对象字段的key需要将path指定为对象字段的key，因为`field`字段无法理解leaf fields
   
   ```text
   {
@@ -17101,7 +17101,7 @@ GET /my-index-000001/_doc/my_id
 }
 ```
 
-&emsp;&emsp;如果`bar`已经是`foo`的子域，那么processor合并这两个值。如果这个域属于标量字段（scalar field，即只包含单个值的字段），那么就将这两个字段值用数组表示
+&emsp;&emsp;如果`bar`已经是`foo`的子字段，那么processor合并这两个值。如果这个字段属于标量字段（scalar field，即只包含单个值的字段），那么就将这两个字段值用数组表示
 
 &emsp;&emsp;比如有以下的文档：
 
@@ -17177,7 +17177,7 @@ GET /my-index-000001/_doc/my_id
 }
 ```
 
-&emsp;&emsp;如果leaf field上一层的域跟现有的域冲突，那么需要先重命名。
+&emsp;&emsp;如果leaf field上一层的字段跟现有的字段冲突，那么需要先重命名。
 
 &emsp;&emsp;如果有以下的文档：
 
@@ -17208,7 +17208,7 @@ GET /my-index-000001/_doc/my_id
 }
 ```
 
-&emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个标量字段（scalar field）的域转化为一个对象域。
+&emsp;&emsp;这么做的理由是ingest pipeline不知道如何将一个标量字段（scalar field）的字段转化为一个对象字段。
 
 #### Drop processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/drop-processor.html)
@@ -17223,10 +17223,10 @@ GET /my-index-000001/_doc/my_id
 ##### Table 16. Enrich Options
 
 - policy_name：（Required）enrich policy的名称
-- field：（Required）匹配了enrich policy中`match_field`的，被丰富的文档中的域。用来获取丰富数据（enrichment data）支持[template snippets](#Access source fields in a processor)
-- target_field：（Required）被丰富的文档（incoming document）的域，enrich policy中指定的`match_field`和`enrich_fields`中所有的域将作为`target_field`的字段
+- field：（Required）匹配了enrich policy中`match_field`的，被丰富的文档中的字段。用来获取丰富数据（enrichment data）支持[template snippets](#Access source fields in a processor)
+- target_field：（Required）被丰富的文档（incoming document）的字段，enrich policy中指定的`match_field`和`enrich_fields`中所有的字段将作为`target_field`的字段
 - ignore_missing：（Optional）（默认值：false）如果为`true`并且`field`不存在，那么不会修改文档
-- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
+- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的字段，并且设置为`false`，这个字段就不会被覆盖
 - max_matches：（Optional）（默认值：1）匹配到的文档数量最大值。如果`max_matches` 大于1，那么`target_field`字段变成json array否则就是json object。为了避免文档过大。最大值只能到128
 - shape_relation：（Optional）（默认值：INTERSECTS）一个空间关系操作符，用于将传入文档的[geoshape](#Geoshape field type)与富集索引（enrich index）中的文档进行匹配。这个选项仅用于`geo_match` enrich policy 类型。有关操作符和更多信息，请参见[Spatial Relations](#Spatial Relations)。
 - description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
@@ -17253,7 +17253,7 @@ GET /my-index-000001/_doc/my_id
 
 &emsp;&emsp;所有的ingest processor可以运行在数组或对象的院上。然而如果元素的数量未知，用相同的方法逐一处理它们可能会变得繁琐。
 
-&emsp;&emsp;`foreach` processor可以让你指定一个包含数组或者对象的域，以及一个`processor`运行在域中的每一个元素上。
+&emsp;&emsp;`foreach` processor可以让你指定一个包含数组或者对象的字段，以及一个`processor`运行在域中的每一个元素上。
 
 #### GeoIP processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/geoip-processor.html)
@@ -17268,12 +17268,12 @@ GET /my-index-000001/_doc/my_id
 #### Gsub processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/gsub-processor.html)
 
-&emsp;&emsp;对一个string类型的字段根据一个正则表达式以及替换值进行转化。如果该域是数组类型，则数组中所有的元素会被转化。如果遇到了non-string的域，则抛出一个异常。
+&emsp;&emsp;对一个string类型的字段根据一个正则表达式以及替换值进行转化。如果该字段是数组类型，则数组中所有的元素会被转化。如果遇到了non-string的字段，则抛出一个异常。
 
 #### HTML strip processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/htmlstrip-processor.html)
 
-&emsp;&emsp;移除域中的HTML标签。如果该域是数组类型的，将移除数组中所有元素的HTML tags。
+&emsp;&emsp;移除域中的HTML标签。如果该字段是数组类型的，将移除数组中所有元素的HTML tags。
 
 #### Inference processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/inference-processor.html)
@@ -17283,7 +17283,7 @@ GET /my-index-000001/_doc/my_id
 #### Join processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/join-processor.html)
 
-&emsp;&emsp;将数组中每一个元素通过分隔符组成单个字符串。如果该域不是数组类型则会抛出异常。
+&emsp;&emsp;将数组中每一个元素通过分隔符组成单个字符串。如果该字段不是数组类型则会抛出异常。
 
 #### JSON processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/json-processor.html)
@@ -17310,7 +17310,7 @@ GET /my-index-000001/_doc/my_id
 #### Lowercase processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/network-direction-processor.html)
 
-&emsp;&emsp;将字符串转化为小写。如果该域是数组类型，则数组中所有的元素会被转化。
+&emsp;&emsp;将字符串转化为小写。如果该字段是数组类型，则数组中所有的元素会被转化。
 
 #### Network direction processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/lowercase-processor.html)
@@ -17330,12 +17330,12 @@ GET /my-index-000001/_doc/my_id
 #### Remove processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/remove-processor.html)
 
-&emsp;&emsp;移除现有的域。如果待移除的域不存在，则抛出一个异常。
+&emsp;&emsp;移除现有的字段。如果待移除的字段不存在，则抛出一个异常。
 
 #### Rename processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rename-processor.html)
 
-&emsp;&emsp;重命名一个现有的域。如果该域不存在或者新的名字已被使用，则抛出一个异常。
+&emsp;&emsp;重命名一个现有的字段。如果该字段不存在或者新的名字已被使用，则抛出一个异常。
 
 #### Script processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/script-processor.html)
@@ -17472,14 +17472,14 @@ POST _ingest/pipeline/_simulate
 #### Set processor
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/set-processor.html)
 
-&emsp;&emsp;设置某个域为指定的值。如果域已经存在，那么字段值会被替换。
+&emsp;&emsp;设置某个字段为指定的值。如果域已经存在，那么字段值会被替换。
 
 ##### Table 36. Set Options
 
 - field：（Required）待插入、插入更新（upsert）、更新的字段。支持[template snippets](#Access source fields in a processor)
 - value：（Required,但是不能跟`copy_from`同时指定）用于设置字段值。支持[template snippets](#Access source fields in a processor)。字段值可以通过`value`或者`copy_from`指定
-- copy_from：（Optional）从某个域拷贝到`field`中，不能同时设置`value`。支持的数据类型有`boolean`, `number`, `array`, `object`, `string`, `date`等等
-- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的域，并且设置为`false`，这个域就不会被覆盖
+- copy_from：（Optional）从某个字段拷贝到`field`中，不能同时设置`value`。支持的数据类型有`boolean`, `number`, `array`, `object`, `string`, `date`等等
+- override：（Optional）（默认值：true）如果将要更新已经存在的非null值的字段，并且设置为`false`，这个字段就不会被覆盖
 - ignore_empty_value：（Optional）（默认值：false）如果为`true`并且`value`是[template snippets](#Access source fields in a processor)并计算出`null`值或者是空的字符串时，processor就不会更改这篇文档
 - media_type：（Optional）（默认值：application/json）用来对`value`编码的media Type。只有当`value`是[template snippets](#Access source fields in a processor)时才应用。可能是`application/json`, `text/plain`, 或者 `application/x-www-form-urlencoded`其中一个
 - description：（Optional）processor的描述信息。用来描述配置或这个processor的目的
@@ -17498,7 +17498,7 @@ POST _ingest/pipeline/_simulate
 }
 ```
 
-&emsp;&emsp;这个processor也可以从一个域拷贝字段值到另一个域。例如：
+&emsp;&emsp;这个processor也可以从一个字段拷贝字段值到另一个字段。例如：
 
 ```text
 PUT _ingest/pipeline/set_os
@@ -17553,7 +17553,7 @@ POST _ingest/pipeline/set_os/_simulate
 
 ```
 
-&emsp;&emsp;包含复杂类型的值比如数组跟对象，也可以使用`copy_from`从一个域拷贝到另一个域：
+&emsp;&emsp;包含复杂类型的值比如数组跟对象，也可以使用`copy_from`从一个字段拷贝到另一个字段：
 
 ```text
 PUT _ingest/pipeline/set_bar
@@ -17627,12 +17627,12 @@ POST _ingest/pipeline/set_bar/_simulate
 #### Uppercase processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/uppercase-processor.html)
 
-&emsp;&emsp;将字符串转化为大写。如果该域是数组类型，则数组的元素都会被处理。
+&emsp;&emsp;将字符串转化为大写。如果该字段是数组类型，则数组的元素都会被处理。
 
 #### URL decode processor
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/urldecode-processor.html)
 
-&emsp;&emsp;将编码后的URL解码为字符串。如果该域是数组类型，则数组的元素都会被处理。
+&emsp;&emsp;将编码后的URL解码为字符串。如果该字段是数组类型，则数组的元素都会被处理。
 
 - 例如，如果一个字段的值被编码为 "Hello%20World"，使用URL解码处理器后，该值会被转换为 "Hello World"。
 
@@ -17922,7 +17922,7 @@ POST _aliases
 
 > NOTE：高亮器（highlighter）在提取待高亮的术语时，不会考虑查询的布尔逻辑。因此，对于复杂的布尔查询（如嵌套布尔查询、使用`minimum_should_match`等），可能会高亮显示与查询不匹配的文档部分。
 
-&emsp;&emsp;高亮要求域的真实内容。如果这个域没有存储（即mapping中参数`store`设置为`false`），那么就会加载`_source`的内容，并从`_source`中提取出这个域的内容。
+&emsp;&emsp;高亮要求字段的真实内容。如果这个字段没有存储（即mapping中参数`store`设置为`false`），那么就会加载`_source`的内容，并从`_source`中提取出这个字段的内容。
 
 &emsp;&emsp;例如使用默认的高亮器从`content`字段中获取高亮信息，那么需要再请求体中包含一个`Highlight`对象，在对象中指定`content`字段：
 
@@ -17940,7 +17940,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;Elasticsearch支持三种高亮器：`unified`、`plain`、`fvh`（fast vector highlighter）。你可以为每一个域指定不同的高亮器。
+&emsp;&emsp;Elasticsearch支持三种高亮器：`unified`、`plain`、`fvh`（fast vector highlighter）。你可以为每一个字段指定不同的高亮器。
 
 #### Unified highlighter
 
@@ -18352,23 +18352,23 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 ### Retrieve selected fields from a search
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-fields.html)
 
-&emsp;&emsp;默认情况下，查询响应中的每一个命中的结果中都会包含文档的[\_source](#_source field)，它是一个整个JSON object，即被索引的文档。下面有两个推荐的方法在一次查询请求中获取指定的（selected）的域：
+&emsp;&emsp;默认情况下，查询响应中的每一个命中的结果中都会包含文档的[\_source](#_source field)，它是一个整个JSON object，即被索引的文档。下面有两个推荐的方法在一次查询请求中获取指定的（selected）的字段：
 
-- 在index mapping中使用[fields option](#The fields option)展示要提取的域
+- 在index mapping中使用[fields option](#The fields option)展示要提取的字段
 - 在索引期间使用[\_source option](#The _source option)指定你需要访问的原始数据
 
 &emsp;&emsp;你可以同时使用这些方法，`fields`这个方法更好些因为它能同时参考（consult）文档数据和index mappings。在某些情况下，你可能想要[other methods](#Other methods of retrieving data)来获取数据。
 
 #### The fields option
 
-&emsp;&emsp;若要在查询响应中获取指定的域，则使用`fields`参数。相较于引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
+&emsp;&emsp;若要在查询响应中获取指定的字段，则使用`fields`参数。相较于引用`_source`，`fields`参数提供了几个有点，特别是，使用`fields`参数可以：
 
 - 以一种标准化的方式返回每一个匹配mapping类型的值
 - accepts [multi-fields ](#fields)和[field aliases](#Alias field type)
 - 格式化日期和空间数据类型
 - 获取出[runtime field values](#Retrieve a runtime field)
-- 返回在索引期间通过脚本计算出的域
-- 使用[lookup runtime fields](#Retrieve fields from related indices)返回关联索引中的域
+- 返回在索引期间通过脚本计算出的字段
+- 使用[lookup runtime fields](#Retrieve fields from related indices)返回关联索引中的字段
 
 &emsp;&emsp;Other mapping options are also respected。包括[ignore_above](#ignore_above)，[ignore_malformed](#ignore_malformed)，[null_value](#null_value)。
 
@@ -18376,7 +18376,7 @@ DELETE /_search/scroll/DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAAD4WYm9laVYtZndUQlNsdDcwakFMN
 
 ##### Retrieve specific fields
 
-&emsp;&emsp;下面的查询请求使用`fields`参数获取`user.id`、`http.response`下所有的域、`@timestamp`这些字段的值。
+&emsp;&emsp;下面的查询请求使用`fields`参数获取`user.id`、`http.response`下所有的字段、`@timestamp`这些字段的值。
 
 &emsp;&emsp;使用object notation，你可以传递一个[format](#format(mapping parameter))自定义时间或者地理空间的值的格式。
 
@@ -18407,7 +18407,7 @@ POST my-index-000001/_search
 
 ##### Response always returns an array
 
-&emsp;&emsp;`fields`响应中返回每一个域的数组值，即使有些字段在`_source`是单值。这是因为Elasticsearch没有专门的数组类型，并且任何域都有可能存在多值。`fields`参数同样不能保证数组中的值有一定的顺序。见[arrays](#Arrays)的mapping文档了解更多背景。
+&emsp;&emsp;`fields`响应中返回每一个字段的数组值，即使有些字段在`_source`是单值。这是因为Elasticsearch没有专门的数组类型，并且任何域都有可能存在多值。`fields`参数同样不能保证数组中的值有一定的顺序。见[arrays](#Arrays)的mapping文档了解更多背景。
 
 &emsp;&emsp;响应中的`fields`块中包含一个平铺的list。因为`fields`参数不会获取整个object，只会返回leaf fields。
 
@@ -18446,9 +18446,9 @@ POST my-index-000001/_search
 
 ##### Retrieve nested fields
 
-&emsp;&emsp;使用`fields`返回[nested fields](#Nested field type)的响应中其他普通的object fields都少许不同。在普通的`object`fields 中的leaf values的返回内容是平铺的列表（flat list），而`nested field`返回的内容也是一个平铺的列表，列表中是分组为一个个object，每一个object是nested fields的一个域并且字段值也是一个数组。多层的nested fields按照这个规则嵌套下去。
+&emsp;&emsp;使用`fields`返回[nested fields](#Nested field type)的响应中其他普通的object fields都少许不同。在普通的`object`fields 中的leaf values的返回内容是平铺的列表（flat list），而`nested field`返回的内容也是一个平铺的列表，列表中是分组为一个个object，每一个object是nested fields的一个字段并且字段值也是一个数组。多层的nested fields按照这个规则嵌套下去。
 
-&emsp;&emsp;下面的mapping中，`user`是一个nested field，索引下面的文档并获取`user`field中所有的域：
+&emsp;&emsp;下面的mapping中，`user`是一个nested field，索引下面的文档并获取`user`field中所有的字段：
 
 ```text
 PUT my-index-000001
@@ -18578,7 +18578,7 @@ POST my-index-000001/_search
 
 ##### Retrieve unmapped fields
 
-&emsp;&emsp;默认情况下，`fields`参数只返回mapped fields的值，然而，Elasticsearch允许存储`_source`中的域，并且这些字段是unmapped。 例如设置[dynamic  field mapping](#Dynamic field mapping)的值为`false`或者使用一个object域并且设置`enabled`为`false`。这些选项使得关闭解析并且不索引object的内容。
+&emsp;&emsp;默认情况下，`fields`参数只返回mapped fields的值，然而，Elasticsearch允许存储`_source`中的字段，并且这些字段是unmapped。 例如设置[dynamic  field mapping](#Dynamic field mapping)的值为`false`或者使用一个object字段并且设置`enabled`为`false`。这些选项使得关闭解析并且不索引object的内容。
 
 &emsp;&emsp;若要在object中获取`_source`中的unmapped域，那么在`fields`中 使用`include_unmapped`选项：
 
@@ -18681,10 +18681,10 @@ POST my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第5行，这个域有长度限制
+&emsp;&emsp;第5行，这个字段有长度限制
 &emsp;&emsp;第13行，这个文档有一个字段值超过了长度限制所以没有被索引
 
-&emsp;&emsp;在这个响应中，在`ignored_field_values`路径中包含了被限制了长度的字段值。这个字段值是从文档的原始JSON source中获取出来的并且就是原始的数据，不会被formatted或者任何方式处理。不同于成功写入到索引的域，它们的字段值在`fields`块中返回。
+&emsp;&emsp;在这个响应中，在`ignored_field_values`路径中包含了被限制了长度的字段值。这个字段值是从文档的原始JSON source中获取出来的并且就是原始的数据，不会被formatted或者任何方式处理。不同于成功写入到索引的字段，它们的字段值在`fields`块中返回。
 
 ```text
 {
@@ -18775,11 +18775,11 @@ GET /_search
 
 &emsp;&emsp;为了更好的控制，你可以在`_source`中指定一个object，里面包含`includes`和`excludes` patterns。
 
-&emsp;&emsp;如果使用了`includes`属性，只返回匹配它里面的pattern的域。你可以使`excludes`从这个子集中进一步排除。
+&emsp;&emsp;如果使用了`includes`属性，只返回匹配它里面的pattern的字段。你可以使`excludes`从这个子集中进一步排除。
 
-&emsp;&emsp;如果没有指定`includes`属性，所有的document source都会返回，除了匹配`excludes`中的pattern的域。
+&emsp;&emsp;如果没有指定`includes`属性，所有的document source都会返回，除了匹配`excludes`中的pattern的字段。
 
-&emsp;&emsp;下面的search API请求返回`obj1`和`obj2`的域，但是排除所有child field为`description`的域。
+&emsp;&emsp;下面的search API请求返回`obj1`和`obj2`的字段，但是排除所有child field为`description`的字段。
 
 ```text
 GET /_search
@@ -18800,20 +18800,20 @@ GET /_search
 
 &emsp;&emsp;通常来说使用`field`是比较好的，除非你必须一定要载入stored或者`docvalue_fields`。
 
-&emsp;&emsp;文档的`_source`在Lucene中作为单独一个域存储的。这种结构意味着需要加载整个`_source`对象，即使你只需要里面的部分内容。为了避免这种情况，你可以尝试其他办法加载域：
+&emsp;&emsp;文档的`_source`在Lucene中作为单独一个字段存储的。这种结构意味着需要加载整个`_source`对象，即使你只需要里面的部分内容。为了避免这种情况，你可以尝试其他办法加载域：
 
-- 使用[docvalue_fields](#Doc value fields)参数获取选择的域的字段值。当需要返回较小数量的域时是一个好的选择，支持doc values例如keyword和date。
-- 使用[stored_fields](#Stored fields-1)获取stored field的字段值（使用了[store](#store) mapping parameter的域）
+- 使用[docvalue_fields](#Doc value fields)参数获取选择的字段的字段值。当需要返回较小数量的字段时是一个好的选择，支持doc values例如keyword和date。
+- 使用[stored_fields](#Stored fields-1)获取stored field的字段值（使用了[store](#store) mapping parameter的字段）
 
-&emsp;&emsp;Elasticsearch总是尝试从`_source`中加载字段值。这种方式跟source filtering是一样的实现方式，即Elasticsearch需要加载并解析整个`_source`进行检索，即使只需要获取某一个域。
+&emsp;&emsp;Elasticsearch总是尝试从`_source`中加载字段值。这种方式跟source filtering是一样的实现方式，即Elasticsearch需要加载并解析整个`_source`进行检索，即使只需要获取某一个字段。
 
 ##### Doc value fields
 
-&emsp;&emsp;你可以使用[docvalue_fields](#Doc value fields)参数在查询响应中返回一个或多个[dov values](#doc_values)的域。
+&emsp;&emsp;你可以使用[docvalue_fields](#Doc value fields)参数在查询响应中返回一个或多个[dov values](#doc_values)的字段。
 
-&emsp;&emsp;Doc Values跟`_source`一样都会存储，但以列式存储的数据结构存放，用于排序和聚合。由于每一个域都是各自独立存储，Elasticsearch只需要读取请求中指定的域，并能避免加载整个文档`_source`。
+&emsp;&emsp;Doc Values跟`_source`一样都会存储，但以列式存储的数据结构存放，用于排序和聚合。由于每一个字段都是各自独立存储，Elasticsearch只需要读取请求中指定的字段，并能避免加载整个文档`_source`。
 
-&emsp;&emsp;Doc values are stored for supported fields by default。然而，doc value不支持[text](#Text type family)或者[text_annotated](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/mapper-annotated-text-usage.html)域。
+&emsp;&emsp;Doc values are stored for supported fields by default。然而，doc value不支持[text](#Text type family)或者[text_annotated](https://www.elastic.co/guide/en/elasticsearch/plugins/8.2/mapper-annotated-text-usage.html)字段。
 
 &emsp;&emsp;下面的查询请求使用`docvalue_fields`参数获取user.id，所有以`http.response`开头的以及`@timestamp`的doc value。
 
@@ -18837,7 +18837,7 @@ GET my-index-000001/_search
 ```
 
 &emsp;&emsp;第10行，同时支持完整的字段名和通配符pattern
-&emsp;&emsp;第13行，使用object notation，你可以传递一个`format`参数指定自定义的format应用到doc value上。[Date fields](#Date field type)支持[date format](#format(mapping parameter))，[Numeric fields](#Numeric field types)支持[DecimalFormat pattern](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html)。其他的域不支持`format`参数。
+&emsp;&emsp;第13行，使用object notation，你可以传递一个`format`参数指定自定义的format应用到doc value上。[Date fields](#Date field type)支持[date format](#format(mapping parameter))，[Numeric fields](#Numeric field types)支持[DecimalFormat pattern](https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html)。其他的字段不支持`format`参数。
 
 > TIP：你不可以为nested object使用`docvalue_fields`参数 来获取doc value。如果你指定了一个nested object，则返回一个空的数组。若要访问nested fields，使用[inner_hits](#Retrieve inner hits)参数中的`docvalue_fields`属性
 
@@ -18845,7 +18845,7 @@ GET my-index-000001/_search
 
 &emsp;&emsp;可以使用mapping 参数[store](#store(mapping parameter))来存储字段值。你可以使用`stored_fields`参数在响应中包含存储字段的字段值。
 
-> WARNING：`stored_fields`用于那些在mapping中显示使用`stroed`的域，默认是不启动并且通常不建议启用。建议使用[source fitlering](#The _source option)从原始数据（也就是`_source`）中获取选择的域。
+> WARNING：`stored_fields`用于那些在mapping中显示使用`stroed`的字段，默认是不启动并且通常不建议启用。建议使用[source fitlering](#The _source option)从原始数据（也就是`_source`）中获取选择的字段。
 
 &emsp;&emsp;运行在查询中选择指定文档中的存储字段。
 
@@ -18873,7 +18873,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;想要查询的域如果没有存储（mapping参数`store`设置为`false`），这些字段则会忽略。
+&emsp;&emsp;想要查询的字段如果没有存储（mapping参数`store`设置为`false`），这些字段则会忽略。
 
 &emsp;&emsp;从文档中获取的存储字段总是以数组形式返回。相反，像`_routing`这样的元数据字段从不以数组形式返回。
 
@@ -18899,7 +18899,7 @@ GET /_search
 
 ##### Script fields
 
-&emsp;&emsp;你可以使用`script_fields`参数获取一个[script evaluation](#Scripting)（基于不同的域），例如：
+&emsp;&emsp;你可以使用`script_fields`参数获取一个[script evaluation](#Scripting)（基于不同的字段），例如：
 
 ```text
 GET /_search
@@ -20067,7 +20067,7 @@ POST _render/template
 ### Sort search results
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/sort-search-results.html)
 
-&emsp;&emsp;允许你添加一个或者多个域用于排序。每一个排序即可以正序也可以是倒序。排序规则按域定义，也可以指定一些特殊的字段名例如`_score`意味着根据打分排序，`_doc`意味着根据索引顺序排序。
+&emsp;&emsp;允许你添加一个或者多个字段用于排序。每一个排序即可以正序也可以是倒序。排序规则按域定义，也可以指定一些特殊的字段名例如`_score`意味着根据打分排序，`_doc`意味着根据索引顺序排序。
 
 &emsp;&emsp;假设有以下的index mapping：
 
@@ -20110,7 +20110,7 @@ GET /my-index-000001/_search
 
 #### Sort Values
 
-&emsp;&emsp;查询响应中包含每一个文档的排序值（`sort` value）。可以使用`format`参数为[date](#Date field type)和[date_nanos](#Date nanoseconds field type)域的sort value指定[date format](#format(mapping parameter))。下面的查询返回中，`post_date`字段的字段值作为排序值，并且使用format格式为：`strict_date_optional_time_nanos`。
+&emsp;&emsp;查询响应中包含每一个文档的排序值（`sort` value）。可以使用`format`参数为[date](#Date field type)和[date_nanos](#Date nanoseconds field type)字段的sort value指定[date format](#format(mapping parameter))。下面的查询返回中，`post_date`字段的字段值作为排序值，并且使用format格式为：`strict_date_optional_time_nanos`。
 
 ```text
 GET /my-index-000001/_search
@@ -20262,7 +20262,7 @@ POST /index_long,index_double/_search
 
 #### Sorting within nested objects.
 
-&emsp;&emsp;Elasticsearch同样支持根据object内部的域或者更深层的域进行排序。根据nested filed排序时使用的`nested`排序选项可以有以下的属性：
+&emsp;&emsp;Elasticsearch同样支持根据object内部的字段或者更深层的字段进行排序。根据nested filed排序时使用的`nested`排序选项可以有以下的属性：
 
 - path
   - 定义了对哪一个object排序（Defines on which nested object to sort）。真正的排序字段必须是这个object中的字段。 When sorting by nested field, this field is mandatory
@@ -20370,7 +20370,7 @@ GET /_search
 
 #### Ignoring Unmapped Fields
 
-&emsp;&emsp;默认情况下，如果某个域没有对应的mapping，那么根据这个域排序的请求会失败。`unmapped_type`选项允许你忽略没有对应mapping的域，不根据它们进行排序。这个参数的值可以用于determine what sort values to emit。下面是使用这个参数的例子：
+&emsp;&emsp;默认情况下，如果某个字段没有对应的mapping，那么根据这个字段排序的请求会失败。`unmapped_type`选项允许你忽略没有对应mapping的字段，不根据它们进行排序。这个参数的值可以用于determine what sort values to emit。下面是使用这个参数的例子：
 
 ```text
 GET /_search
@@ -20384,7 +20384,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;如果所有的索引都没有`price`对应的mapping，Elasticsearch将认为存在`long`类型的mapping（防止报错），并且所有的文档都没有这个域的字段值。
+&emsp;&emsp;如果所有的索引都没有`price`对应的mapping，Elasticsearch将认为存在`long`类型的mapping（防止报错），并且所有的文档都没有这个字段的字段值。
 
 #### Geo Distance Sorting
 
@@ -20570,7 +20570,7 @@ GET /_search
 
 #### Track Scores
 
-&emsp;&emsp;当根据某个域排序后，就不会对文档打分。设置`track_scores`为true后才会进行打分计算。
+&emsp;&emsp;当根据某个字段排序后，就不会对文档打分。设置`track_scores`为true后才会进行打分计算。
 
 ```text
 GET /_search
@@ -20589,7 +20589,7 @@ GET /_search
 
 #### Memory Considerations
 
-&emsp;&emsp;排序时，用于排序的域会加载到内存中。这意味着每一个分片都应该有足够的内存来处理它们。对于用于排序的string类型，它不应该设置为analyzed / tokenized。对于数值类型，如果可以的话，建议显示的（explicit）设置为narrower types（例如`short`、`ingeger`以及`float`）。
+&emsp;&emsp;排序时，用于排序的字段会加载到内存中。这意味着每一个分片都应该有足够的内存来处理它们。对于用于排序的string类型，它不应该设置为analyzed / tokenized。对于数值类型，如果可以的话，建议显示的（explicit）设置为narrower types（例如`short`、`ingeger`以及`float`）。
 
 ## Query DSL
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl.html)
@@ -20934,7 +20934,7 @@ GET /_search
 
 &emsp;&emsp;基于匹配到的terms的顺序以及接近度（proximity。term之间在文档中的物理距离或位置接近程度）返回文档。
 
-&emsp;&emsp;`intervals`使用由一小组**matching rules**定义组成。这些规则会应用到指定的一个域的字段值中。
+&emsp;&emsp;`intervals`使用由一小组**matching rules**定义组成。这些规则会应用到指定的一个字段的字段值中。
 
 &emsp;&emsp;定义的规则会生成文本内容中term之间的最小间隔序列（也就是term的顺序跟接近度），并且还可以进一步跟父级中的定义进行组合
 
@@ -20998,11 +20998,11 @@ POST _search
 - ordered：（Optional, Boolean）如果为`true`，匹配到的term必须按照定义的规则有序。默认是`false`
 - analyzer：（Optional, string）[analyzer](#Text analysis)用来对`query`中的文本进行分词。默认是`<field>`中的分词器
 - filter：（Optional,[interval filter](#Intervals query) 规则对象）可选的interval filter
-- use_field：（Optional, string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的字段值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的域中，并搜索stemmed tokens 附近的unstemmed ones
+- use_field：（Optional, string）如果指定，将从该字段而不是顶层字段`<field>`中匹配间隔。使用search analyzer对该字段的字段值进行分词。可以让你跨多个字段搜索，就好像它们是同一个字段一样；例如，你可以将相同的文本索引到stemmed或者unstemmed的字段中，并搜索stemmed tokens 附近的unstemmed ones
 
 ##### prefix rule parameters
 
-&emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用域的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
+&emsp;&emsp;`prefix`规则匹配以指定字符开头的term。最多可以扩展到128个term。如果匹配出超过128个term，Elasticsearch会返回一个错误。你可以使用字段的mapping中的[index-prefixes](#index_prefixes)选项避免这种限制。
 
 - prefix：（Required, string）你想要从顶层的`<field>`中以这个参数为前缀的term
 - analyzer：（Optional, string）[analyzer](#Text analysis)用来标准化`prefix`。默认是`<field>`中的分词器
@@ -21225,12 +21225,12 @@ GET /_search
 
 ##### Top-level parameters for match
 
-- `<filed>`：（Required, object） 待查询的域。
+- `<filed>`：（Required, object） 待查询的字段。
 
 ##### Parameters for \<field>
 
 - query：（Required）你想要从`<field>`中查询的文本、数值、布尔值或者日期。
-  - `match` query在执行查询前会对`query`中的文本进行[analyze](#Text analysis)，意味着`match` query可以对分词后的token进行[text](#Text type family)域的查询而不是进行精确匹配。
+  - `match` query在执行查询前会对`query`中的文本进行[analyze](#Text analysis)，意味着`match` query可以对分词后的token进行[text](#Text type family)字段的查询而不是进行精确匹配。
 - analyzer：（Optional, string）使用[Analyzer](#Text analysis)将`query`中的文本转化为tokens。默认使用在[index-time analyzer](#How Elasticsearch determines the index analyzer)时`<field>`使用的分词器。如果没有指定分词器，则使用索引默认的分词器。
 - auto_generate_synonyms_phrase_query：（Optional, Boolean）如果为`true`，会为multi-term synonyms自动创建[match phrase](#Match phrase query) 。默认值为`true`。
   - 见[Use synonyms with match query](#Synonyms(match))给出的例子。
@@ -21240,7 +21240,7 @@ GET /_search
 - fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
 - fuzzy_rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
   - 如果`fuzziness`参数为0，`match` query默认使用`top_terms_blended_freqs_${max_expansions}`的`fuzzy_rewrite`方法。
-- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)字段中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
 - operator：（Optional, string）用于`query`中值之间的布尔关系。该参数的可选值为：
   - OR（Default）
     - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital OR of OR Hungary`
@@ -21291,13 +21291,13 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;设置`analyzer`可以用来控制如何对文本进行分析处理。默认是mapping定义中这个域对应的设置，或者是默认的search analyzer。
+&emsp;&emsp;设置`analyzer`可以用来控制如何对文本进行分析处理。默认是mapping定义中这个字段对应的设置，或者是默认的search analyzer。
 
 &emsp;&emsp;设置`lenient`为`true`可以用来忽略数据类型不一致导致的异常，比如一个数值类型的字段，在`query`中提供了一个string。默认为`false`。
 
 ###### Fuzziness in the match query
 
-&emsp;&emsp;`fuzziness`根据待查询的域的类型允许执行 `fuzzy matching`。见[Fuzziness](#Common options)了解相关的设置。
+&emsp;&emsp;`fuzziness`根据待查询的字段的类型允许执行 `fuzzy matching`。见[Fuzziness](#Common options)了解相关的设置。
 
 &emsp;&emsp;设置`prefix_length`和`max_expansions`用来控制模糊匹配的处理过程。如果设置了fuzzy选项，那么query会使用`top_terms_blended_freqs_${max_expansions}`作为[rewrite method](#rewrite parameter)，`fuzzy_rewrite`参数允许控制如何对query进行重写（rewrite）。
 
@@ -21483,13 +21483,13 @@ GET /_search
 
 ##### Top-level parameters for match_phrase_prefix
 
--  `<field>`：（Required, object）待查询的域。
+-  `<field>`：（Required, object）待查询的字段。
 
 ##### Parameters for \<field>
 
 - query：（Required, string）你想要在`<field>`中查找的文本。
   - `match_phrase_prefix` query在执行查询前会[analyze](#Text analysis) `query`中的文本。最后一个term会作为一个[prefix](#Prefix query)，匹配以这个term开头的其他term。
-- analyzer：（Optional, string）用于将`query`中的文本转化为token的[Analyzer](#Text analysis)。默认是`<field>`这个域的[index-time analyzer](#How Elasticsearch determines the index analyzer)。如果在mapping中没有指定analyzer，则使用索引默认的分词器。
+- analyzer：（Optional, string）用于将`query`中的文本转化为token的[Analyzer](#Text analysis)。默认是`<field>`这个字段的[index-time analyzer](#How Elasticsearch determines the index analyzer)。如果在mapping中没有指定analyzer，则使用索引默认的分词器。
 - max_expansions：（Optional, integer）最后一个term扩展出其他term的数量最大值。默认值为`50`。
 - slop：匹配到的token之间的最大位置距离。默认为`0`。Transposed terms的slop为`2`。
 - zero_terms_query：（Optional, string）当`analyzer`解析`query`后移除了所有的token，比如使用了`stop` filter，是否不返回任何文档。可选值为：
@@ -21513,7 +21513,7 @@ GET /_search
 #### Combined fields
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-combined-fields-query.html)
 
-&emsp;&emsp;`Combined fields` query支持查询多个`text`字段，就像是这些字段的值索引到一个组合域（combined fields）中。该query是一种"以term为中心"的（term-centric）的视角（见[multi_match](#Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后在所有域中去查找每一个term。这个query特别适用在多个text字段中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
+&emsp;&emsp;`Combined fields` query支持查询多个`text`字段，就像是这些字段的值索引到一个组合域（combined fields）中。该query是一种"以term为中心"的（term-centric）的视角（见[multi_match](#Multi-match query)中以field为中心的内容）：首先将待查询的字符串分词为一个个独立的term，然后在所有字段中去查找每一个term。这个query特别适用在多个text字段中进行匹配，例如一篇文章中的`title`、`abstract`和`body`中。
 
 ```text
 GET /_search
@@ -21528,15 +21528,15 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;`combined_fields` query基于simple BM25F（见[The Probabilistic Relevance Framework: BM25 and Beyond](http://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)）公式这个原则方法进行打分。在对匹配到的文档进行打分时，该query会跨多个域结合term和收集到的统计值，就像是指定的这些字段索引到了单个的、组合域中。This scoring is a best attempt。`combined_fields` makes some approximations and scores will not obey the BM25F model perfectly。
+&emsp;&emsp;`combined_fields` query基于simple BM25F（见[The Probabilistic Relevance Framework: BM25 and Beyond](http://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)）公式这个原则方法进行打分。在对匹配到的文档进行打分时，该query会跨多个字段结合term和收集到的统计值，就像是指定的这些字段索引到了单个的、组合域中。This scoring is a best attempt。`combined_fields` makes some approximations and scores will not obey the BM25F model perfectly。
 
 > WARNING：Filed number limit
-> 默认情况下，某个query中包含的clause的数量是由限制的。定义在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中。默认值为`4096`。对于combined fields query。clause的数量的计算方式为：域的数量和term的数量的乘积。
+> 默认情况下，某个query中包含的clause的数量是由限制的。定义在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中。默认值为`4096`。对于combined fields query。clause的数量的计算方式为：字段的数量和term的数量的乘积。
 > 
 
 ##### Per-field boosting
 
-&emsp;&emsp;每个域的boost通过combined field model描述。例如，如果`title`的boost为`2`，就像是title中的每一个term在synthetic combined field中出现两次。
+&emsp;&emsp;每个字段的boost通过combined field model描述。例如，如果`title`的boost为`2`，就像是title中的每一个term在synthetic combined field中出现两次。
 
 ```text
 GET /_search
@@ -21550,9 +21550,9 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;第6行，每一个域都可以通过`^`符号实现boost。
+&emsp;&emsp;第6行，每一个字段都可以通过`^`符号实现boost。
 
-> NOTE：`combined_fields` query中域的boost是一个大于等于1的值，可以是小数。
+> NOTE：`combined_fields` query中字段的boost是一个大于等于1的值，可以是小数。
 
 ##### Top-level parameters for combined_fields
 
@@ -21569,11 +21569,11 @@ GET /_search
 
 ##### Comparison to multi_match query
 
-&emsp;&emsp;`combined_fields` query提供了一种在多个[text](#Text type family)域中匹配和评分的有原则的方式。为了支持这一点，它要求所有字段具有相同的查询分词器[analyzer](#analyzer(mapping parameter))。
+&emsp;&emsp;`combined_fields` query提供了一种在多个[text](#Text type family)字段中匹配和评分的有原则的方式。为了支持这一点，它要求所有字段具有相同的查询分词器[analyzer](#analyzer(mapping parameter))。
 
 &emsp;&emsp;如果你的某个查询要在不同类型的字段上进行，那么[multi_match](#Multi-match query)比较合适。他同时支持text和非text类型的字段，并且接受在不同的text字段上可以有不同的分词器。
 
-&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种"以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`应用在每一个term上，而不是每个域上。比如有这样的query：
+&emsp;&emsp;`multi_match`主要的两种模式`best_fields`和`most_fields`是种"以field为中心"视角（field-centric view）的查询。与之相反的`combined_fields`则是"以term为中心"视角。`operator`和`minimum_should_match`应用在每一个term上，而不是每个字段上。比如有这样的query：
 
 ```text
 GET /_search
@@ -21595,7 +21595,7 @@ GET /_search
 +(combined("systems", fields:["title", "abstract"]))
 ```
 
-&emsp;&emsp;也就是说，一篇文档中至少有一个域有这个term才能被匹配（换句话说，一篇文档中只要有database，system就满足匹配，这两个term可以分布在不同的域上，最好的情况是这两个term在同一个域上）。
+&emsp;&emsp;也就是说，一篇文档中至少有一个字段有这个term才能被匹配（换句话说，一篇文档中只要有database，system就满足匹配，这两个term可以分布在不同的字段上，最好的情况是这两个term在同一个字段上）。
 
 &emsp;&emsp;`cross_fields` `multi_match`模式同样是"以term为中心"的方法并且`operator`和`minimum_should_match`应用在每一个term上。与`cross_fields`相比，`combined_fields`的主要优势在于其基于BM25F算法的稳健且易于解释的评分方法。
 
@@ -21606,7 +21606,7 @@ GET /_search
 #### Multi-match query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-match-query.html)
 
-&emsp;&emsp;`multi_match`基于[match query](#Match query)，允许在多个域上查询：
+&emsp;&emsp;`multi_match`基于[match query](#Match query)，允许在多个字段上查询：
 
 ```text
 GET /_search
@@ -21621,7 +21621,7 @@ GET /_search
 ```
 
 &emsp;&emsp;第5行是查询语句（query string）
-&emsp;&emsp;第6行，查询的目标域
+&emsp;&emsp;第6行，查询的目标字段
 
 ##### fields and per-field boosting
 
@@ -21641,7 +21641,7 @@ GET /_search
 
 &emsp;&emsp;第6行，在`title`、`first_name`以及`last_name`字段上查询
 
-&emsp;&emsp;不同的域可以通过插入`^`符号来提高权重：
+&emsp;&emsp;不同的字段可以通过插入`^`符号来提高权重：
 
 ```text
 GET /_search
@@ -21657,27 +21657,27 @@ GET /_search
 
 &emsp;&emsp;第6行，在`subject`字段上得出的分数会乘以3，而在`message`字段上的打分则不变
 
-&emsp;&emsp;如果没有提供`fields`，`multi_match`默认在`index.query.default_field`中指定的域上查询，默认是`*`。`*`会从mapping中提取出所有的合适的域并且过滤掉metadata fields。所有提取出的域随后组合构建成一个query。
+&emsp;&emsp;如果没有提供`fields`，`multi_match`默认在`index.query.default_field`中指定的字段上查询，默认是`*`。`*`会从mapping中提取出所有的合适的字段并且过滤掉metadata fields。所有提取出的字段随后组合构建成一个query。
 
 > WARNING：Field number limit
-> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：域的数量\*term的数量
+> 默认情况下，某个query中包含的子query的数量（number of clauses）是有上限的。该上限在[indices.query.bool.max_clause_count](#indices.query.bool.max_clause_count)中定义。默认是`4096`。对于`multi-match`，计算子query数量的方式是：字段的数量\*term的数量
 
 ##### Types of multi_match query:
 
 &emsp;&emsp;`multi_match`在内部执行方式取决于`type`参数，可以设置为以下的值：
 
-- best_fields：（default）找出匹配到任意域的文档，但是`_score`使用最佳域（best field）的打分值，见[best_fields](#best_fields)
-- most_fields：找出匹配到任意域的文档，但是`_score`的值结合了（combine）每一个域的打分值，见[most_fields](#most_fields)
-- cross_fields：所有的字段使用相同的分词器，并且是视为同一类型的字段（they were one big field，例如，名和姓分别在两个字段中，但用于搜索同一个人），在每一个域中搜索关键字。见[cross_fields](#cross_fields)
-- phrase：在每一个域上执行`match_phrase`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#phrase and phrase_prefix)
-- phrase_prefix：在每一个域上执行`match_phrase_prefix`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#phrase and phrase_prefix)
-- bool_prefix：创建一个`match_bool_prefix`，对每一个域进行查询。`_score`的值结合了（combine）每一个域的打分值，见[bool_prefix](#bool_prefix)
+- best_fields：（default）找出匹配到任意字段的文档，但是`_score`使用最佳域（best field）的打分值，见[best_fields](#best_fields)
+- most_fields：找出匹配到任意字段的文档，但是`_score`的值结合了（combine）每一个字段的打分值，见[most_fields](#most_fields)
+- cross_fields：所有的字段使用相同的分词器，并且是视为同一类型的字段（they were one big field，例如，名和姓分别在两个字段中，但用于搜索同一个人），在每一个字段中搜索关键字。见[cross_fields](#cross_fields)
+- phrase：在每一个字段上执行`match_phrase`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#phrase and phrase_prefix)
+- phrase_prefix：在每一个字段上执行`match_phrase_prefix`，`_score`使用最佳域（best field）的打分值。见[phrase and phrase_prefix](#phrase and phrase_prefix)
+- bool_prefix：创建一个`match_bool_prefix`，对每一个字段进行查询。`_score`的值结合了（combine）每一个字段的打分值，见[bool_prefix](#bool_prefix)
 
 ##### best_fields
 
-&emsp;&emsp;当你搜索的多个关键字（word）在同一个域中时，`best_fields`是非常有用的。比如说`brown fox`在单个域中肯定比`brown`在一个域而`fox`在另一个域更有意义。
+&emsp;&emsp;当你搜索的多个关键字（word）在同一个字段中时，`best_fields`是非常有用的。比如说`brown fox`在单个域中肯定比`brown`在一个字段而`fox`在另一个字段更有意义。
 
-&emsp;&emsp;`best_fields`会为每一个域生成一个[match query](#Match query)并且封装到一个[dis_max](#Disjunction max query) query，来找出单个最佳匹配的域。例如：
+&emsp;&emsp;`best_fields`会为每一个字段生成一个[match query](#Match query)并且封装到一个[dis_max](#Disjunction max query) query，来找出单个最佳匹配的字段。例如：
 
 ```text
 GET /_search
@@ -21710,15 +21710,15 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;通常`best_fields`类型会采用匹配到的单个最佳的域对应的打分值，但如果指定了`tie_breaker`，那会考虑下面的情况：
+&emsp;&emsp;通常`best_fields`类型会采用匹配到的单个最佳的字段对应的打分值，但如果指定了`tie_breaker`，那会考虑下面的情况：
 
-- 打分值从最佳匹配的域中获取
-- 加上其他所有匹配到的域中的分数，计算方式：`tie_breaker * _score`
+- 打分值从最佳匹配的字段中获取
+- 加上其他所有匹配到的字段中的分数，计算方式：`tie_breaker * _score`
 
 &emsp;&emsp;同样支持这些参数：`analyzer`, `boost`, `operator`, `minimum_should_match`, `fuzziness`, `lenient`, `prefix_length`, `max_expansions`, `fuzzy_rewrite`, `zero_terms_query`, `auto_generate_synonyms_phrase_query` 以及 `fuzzy_transpositions`，见[match query](#Match query)中的介绍。
 
 > IMPORTANT：operator and minimum_should_match
-> `best_fields`和`most_fields`这两个类型是以域为中心，每一个域都生成了一个`match query`。意味着`operator`和`minimum_should_match`参数是应用到域之间，可能不是你期望的那样。例如下面的query：
+> `best_fields`和`most_fields`这两个类型是以域为中心，每一个字段都生成了一个`match query`。意味着`operator`和`minimum_should_match`参数是应用到域之间，可能不是你期望的那样。例如下面的query：
 > GET /\_search
 >{
 >  "query": {
@@ -21730,7 +21730,7 @@ GET /_search
 >    }
 > }
 >}
->`operator`为`and`说明每个域中必须出现所有的term
+>`operator`为`and`说明每个字段中必须出现所有的term
 >这个query的执行相当于：
 >`(+first_name:will +first_name:smith)| (+last_name:will +last_name:smith)`
 >换句话说，对于匹配到的文档，单个域中必须出现所有的term
@@ -21739,7 +21739,7 @@ GET /_search
 
 ##### most_fields
 
-&emsp;&emsp;`most_fields`类型最适合在多个域中进行查询，并且每个域都索引了相同的文本，但是使用了不同的分词器的情况。例如，主字段可能包含synonyms、stemming term和没有变音符号（diacritics）的term。第二个字段可能包含原始的term，第三个字段可能包含词缀（shingles）。通过结合来自所有这三个字段的分数，我们可以匹配尽可能多的与主字段相符的文档，同时利用第二和第三字段将最相似的结果推到列表的顶部：
+&emsp;&emsp;`most_fields`类型最适合在多个字段中进行查询，并且每个字段都索引了相同的文本，但是使用了不同的分词器的情况。例如，主字段可能包含synonyms、stemming term和没有变音符号（diacritics）的term。第二个字段可能包含原始的term，第三个字段可能包含词缀（shingles）。通过结合来自所有这三个字段的分数，我们可以匹配尽可能多的与主字段相符的文档，同时利用第二和第三字段将最相似的结果推到列表的顶部：
 
 ```text
 GET /_search
@@ -21817,16 +21817,16 @@ GET /_search
 
 ##### cross_fields
 
-&emsp;&emsp;`cross_fields`类型对于在结构化的文档中期望在多个域中进行匹配这种场景就特别的有用。例如，当在`first_name`和`last_name`中查找`Will Smith`，最好的匹配结果应该是`Will`在上面两个域中的一个，并且`Smith`在另一个域中。
+&emsp;&emsp;`cross_fields`类型对于在结构化的文档中期望在多个字段中进行匹配这种场景就特别的有用。例如，当在`first_name`和`last_name`中查找`Will Smith`，最好的匹配结果应该是`Will`在上面两个字段中的一个，并且`Smith`在另一个字段中。
 
-- 这看起来好像使用[most_fields](#most_fields)就可以完成，但是这种方法有两个问题。第一个问题是`operator`跟`minimum_should_match`是应用在每一个域上，而不是每一个term上（见[explanation above](#best_fields)）
+- 这看起来好像使用[most_fields](#most_fields)就可以完成，但是这种方法有两个问题。第一个问题是`operator`跟`minimum_should_match`是应用在每一个字段上，而不是每一个term上（见[explanation above](#best_fields)）
 - 第二个问题是相关性问题：`first_name`跟`last_name`字段中相同term的词频不同会产生非期望的结果
 - 比如说，我们有两个人：`Will Smith`和`Smith Jones`。`Smith`作为last name是非常常见的（因此重要性较低）但是`Smith`作为first name是不常见的（因此重要性高）
 - 如果我们查询`Will Smith`，包含`Smith Jones`的文档应该优于包含`Will Smith`的文档，因为`first_name:Smith`的打分会高于`first_name:will`和`last_name:smith`的打分值和值，这不是我们期望的结果。
 
 &emsp;&emsp;一种解决方式是简单的将`first_name`和`last_name`合成为一个`full_name`。当然，只能在索引期间完成。
 
-&emsp;&emsp;`cross_field`类型能够在查询时间通过一种"以term为中心"的方法解决。它首先将query string分词成单独的term，然后在每一个域中为每一个term进行查找，就好像它们是一个big field。
+&emsp;&emsp;`cross_field`类型能够在查询时间通过一种"以term为中心"的方法解决。它首先将query string分词成单独的term，然后在每一个字段中为每一个term进行查找，就好像它们是一个big field。
 
 ```text
 GET /_search
@@ -21849,9 +21849,9 @@ GET /_search
 +(first_name:smith last_name:smith)
 ```
 
-&emsp;&emsp;换句话说，所有的term必须存在于至少一个域中（所有的term分布在不同的域中，最多一个域中有所有的term）。而`best_field`跟`most_field`则可能做不到这一点。
+&emsp;&emsp;换句话说，所有的term必须存在于至少一个字段中（所有的term分布在不同的字段中，最多一个字段中有所有的term）。而`best_field`跟`most_field`则可能做不到这一点。
 
-- 也就说`cross_field`能保证query string中的每一个term都会出现在匹配的文档中（min_should_match），这些term可能分布在多个域，也有可能同时出现在同一个域。而`best_field`跟`most_field`匹配到的文档中可能无法找到query string中的某些term
+- 也就说`cross_field`能保证query string中的每一个term都会出现在匹配的文档中（min_should_match），这些term可能分布在多个字段，也有可能同时出现在同一个字段。而`best_field`跟`most_field`匹配到的文档中可能无法找到query string中的某些term
 
 &emsp;&emsp;这种类型解决了上述两个问题中的一个问题。term在不同域中词频不同的问题通过`混合词频(blending term frequencies)`来平衡差异性。
 
@@ -21872,7 +21872,7 @@ GET /_search
 
 ###### cross_field and analysis
 
-&emsp;&emsp;查询的域有相同的分词器才能"以term为中心"的模式工作。有相同分词器的域会被划分为一个组。如果有多个组，查询将会使用这些组中打分值最高的那个。
+&emsp;&emsp;查询的字段有相同的分词器才能"以term为中心"的模式工作。有相同分词器的字段会被划分为一个组。如果有多个组，查询将会使用这些组中打分值最高的那个。
 
 &emsp;&emsp;例如，如果`first`和`last`字段有相同的分词器，而`first.edge`和`last.edge`有相同的`edge_ngram`分词器，如下所示：
 
@@ -21938,7 +21938,7 @@ GET /_search
 
 &emsp;&emsp;第11行，`will`或者`smith`必须出现在`frist`或`last`字段中。
 
-&emsp;&emsp;你可以通过在请求中指定分词器将所有的域归为一个组：
+&emsp;&emsp;你可以通过在请求中指定分词器将所有的字段归为一个组：
 
 ```text
 GET /_search
@@ -21954,7 +21954,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;第7行，所有的域使用`standard`分词器。
+&emsp;&emsp;第7行，所有的字段使用`standard`分词器。
 
 &emsp;&emsp;这个请求按照下面的方式执行：
 
@@ -22005,7 +22005,7 @@ GET /_search
 
 &emsp;&emsp;这个query使用一个[syntax](#Query string syntax)进行解析并且基于`AND`或者`NOT`操作符对query string进行切分。然后在返回匹配的文档前，这个query独立的 [analyzer](#Text analysis)每一个切分的文本。
 
-&emsp;&emsp;你可以使用`query_string` query创建一个包含通配符，跨多个域以及更多信息的复杂查询。虽然具备很多功能（versatile），但这个query的语法很严格，如果query string中包含任何无效语法，则返回错误。
+&emsp;&emsp;你可以使用`query_string` query创建一个包含通配符，跨多个字段以及更多信息的复杂查询。虽然具备很多功能（versatile），但这个query的语法很严格，如果query string中包含任何无效语法，则返回错误。
 
 >WARNING：由于任意非法语法都会导致这个query返回错误，我们不建议在搜索框（search boxes）中使用`query_string`中使用这个查询。
 >如果你不需要支持query syntax，可以考虑使用[match query](#Match query)。如果你需要query syntax的功能，可以使用[simple_query_string](#Simple query string query)，这种query没有那么严格的语法。
@@ -22030,10 +22030,10 @@ GET /_search
 
 - query：（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Query string syntax](#Query string syntax)。
 - default_field：（Required, string）如果没有在query string指定字段，那么就使用这个默认域进行查询。支持通配符（\*）。
-  - 默认是index setting中的[index.query.default_field](#index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的域。如果没有指定`prefix`，所有提取出来的域会构建成一个query。
-  - 查询会跨所有符合的域但是不包括[nested documents](#Nested field type)，可以使用[nested query](#Nested query)来查询。
+  - 默认是index setting中的[index.query.default_field](#index.query.default_field)，默认值是`*`。`*`会提取出所有符合（eligible）term queries and filters the metadata fields的字段。如果没有指定`prefix`，所有提取出来的字段会构建成一个query。
+  - 查询会跨所有符合的字段但是不包括[nested documents](#Nested field type)，可以使用[nested query](#Nested query)来查询。
   - 对于定义了大量字段的mapping，在所有符合的（eligible）域上进行搜索的开销是很大的。
-  - 单次查询有clause数量（域的数量 \* term数量）的限制，在[search setting](#Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
+  - 单次查询有clause数量（字段的数量 \* term数量）的限制，在[search setting](#Search settings)中定义了`indices.query.bool.max_clause_count`，默认值是4096。
 - allow_leading_wildcard：（Optional, Boolean)）如果为`true`，通配符`*`以及`?`允许作为query string的首个字符。默认值是`true`。
 - analyze_wildcard：（Optional, Boolean）如果为`true`，会尝试分析（analyze）query string中的通配字符。默认值是`false`。
 - analyzer：（Optional, string） [Analyzer](#Text analysis)用于将query string中的文本转化成token。默认值为`default_field`字段在[index-time analyzer](#Specify an analyzer)中的分词器。如果没有设置analyzer，则使用索引默认的分词器。
@@ -22046,13 +22046,13 @@ GET /_search
   - AND
     - 例如，`query`的值是`capital of Hungary`会解析成（interpret）`capital AND of AND Hungary`
 - enable_position_increments：（Optional, Boolean）如果为`true`，在`query_string`查询中构造的query中，开启position increments。默认值为`true`。
-- fields：（Optional, array of strings）待查询的域的列表。支持通配符（`*`）。
-  - 你可以使用这个参数跨多个域进行查询。见[Search multiple fields](#Search multiple fields（query string）)。
+- fields：（Optional, array of strings）待查询的字段的列表。支持通配符（`*`）。
+  - 你可以使用这个参数跨多个字段进行查询。见[Search multiple fields](#Search multiple fields（query string）)。
 - fuzziness：（Optional, strings）fuzzy匹配时允许的最大编辑距离。见[Fuzziness](#Fuzziness（query string）)了解fuzzy语法。
 - fuzzy_max_expansions：（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
 - fuzzy_prefix_length：（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
 - fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
-- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)字段中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
 - max_determinized_states：（Optional, integer）查询所需最大自动机状态（[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)）数。默认值为`10000`。
   - Elasticsearch使用Apache Lucene解析正则表达式。Lucene将正则表达式转化为一个有一定状态数的[有限自动状态机](https://amazingkoala.com.cn/unsupported/Automaton.html)。
   - 可以使用这个参数防止这个转化过程造成资源的过度使用。当然你可能需要提高这个限制来允许复杂的正则表达式。
@@ -22127,7 +22127,7 @@ author:"John Smith"
 first\ name:Alice
 ```
 
-- `book.title`，`book.content`或者`book.date`中任意一个域中包含`qucik`或者`brown`（注意的是我们需要\*使用反斜杠）
+- `book.title`，`book.content`或者`book.date`中任意一个字段中包含`qucik`或者`brown`（注意的是我们需要\*使用反斜杠）
 
 ```text
 book.\*:(quick OR brown)
@@ -22319,7 +22319,7 @@ quick brown +fox -news
 (quick OR brown) AND fox
 ```
 
-&emsp;&emsp;分组还可以用于应用到某个特定的域上，或者boost这个子query的打分：
+&emsp;&emsp;分组还可以用于应用到某个特定的字段上，或者boost这个子query的打分：
 
 ```text
 status:(active OR pending) title:(full text search)^2
@@ -22361,9 +22361,9 @@ GET /my-index-000001/_search
 
 ###### Search multiple fields（query string）
 
-&emsp;&emsp;你可以使用`field`参数在多个域上执行`quert_string` query。
+&emsp;&emsp;你可以使用`field`参数在多个字段上执行`quert_string` query。
 
-&emsp;&emsp;多个域上执行`quert_string` query的设计是能query term能实现`OR`的查询：
+&emsp;&emsp;多个字段上执行`quert_string` query的设计是能query term能实现`OR`的查询：
 
 ```text
 field1:query_term OR field2:query_term | ...
@@ -22411,7 +22411,7 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;简单的通配符可以用于查询文档内部的元素（inner elements of the document）。例如，如果我们有一个`city`字段，它有多个子域（或者它是一个object），我们可以自动的在`city`的所有域上查询：
+&emsp;&emsp;简单的通配符可以用于查询文档内部的元素（inner elements of the document）。例如，如果我们有一个`city`字段，它有多个子字段（或者它是一个object），我们可以自动的在`city`的所有字段上查询：
 
 ```text
 GET /_search
@@ -22440,7 +22440,7 @@ GET /_search
 
 > NOTE：由于反斜杠在json字符串中是一个特殊字符，所以它需要被转移术，因此上面的`query_string`中有两个反斜杠。
 
-&emsp;&emsp;`field`参数中可以有基于字段名的pattern，允许自动扩展到相关的域（会自动的引入包含的域）。例如：
+&emsp;&emsp;`field`参数中可以有基于字段名的pattern，允许自动扩展到相关的字段（会自动的引入包含的字段）。例如：
 
 ```text
 GET /_search
@@ -22456,15 +22456,15 @@ GET /_search
 
 ###### Additional parameters for multiple field searches
 
-&emsp;&emsp;在多个域上运行`query_string` query时，支持以下额外的参数：
+&emsp;&emsp;在多个字段上运行`query_string` query时，支持以下额外的参数：
 
 - type：（Optional, string）决定这个query如何匹配文档以及打分。合法的值如下所示：
   - best_fields (Default)：从任意域中找到[\_score](#Relevance scores)最高的那个文档。见[best_fileds](#best_fields)
-  - bool_prefix：在每个query上创建一个`match_bool_prefix` query并且结合每一个域上的`_score`。见[bool_prefix](#bool_prefix)
-  - cross_fields：将所有的域视为有相同的`analyzer`，就像它们是一个big filed，在每一个域中查找每一个word。见[cross_fields](#cross_fields)
-  - most_fields：只要匹配到任何一个域，这篇文档就认为是匹配的，并且结合每一个域的`_score`。见[most_fields](#most_fields)
-  - phrase：在每一个域上执行`match_phrase`并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#phrase and phrase_prefix)
-  - phrase_prefix：在每一个域上执行`match_phrase_prefix` query并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#phrase and phrase_prefix)
+  - bool_prefix：在每个query上创建一个`match_bool_prefix` query并且结合每一个字段上的`_score`。见[bool_prefix](#bool_prefix)
+  - cross_fields：将所有的字段视为有相同的`analyzer`，就像它们是一个big filed，在每一个字段中查找每一个word。见[cross_fields](#cross_fields)
+  - most_fields：只要匹配到任何一个字段，这篇文档就认为是匹配的，并且结合每一个字段的`_score`。见[most_fields](#most_fields)
+  - phrase：在每一个字段上执行`match_phrase`并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#phrase and phrase_prefix)
+  - phrase_prefix：在每一个字段上执行`match_phrase_prefix` query并且使用匹配度最佳的那个域上的`_score`。见[phrase and phrase_prefix](#phrase and phrase_prefix)
 
 &emsp;&emsp;注意的是，基于[type](#Types of multi_match query:)值的不同，`multi_match`查询可能支持额外的顶级参数。
 
@@ -22580,7 +22580,7 @@ GET /_search
 
 ###### How minimum_should_match works for cross-field searches
 
-&emsp;&emsp;`type`参数使用了`cross_files`值后，意味着所有域使用使用了相同的分词器。
+&emsp;&emsp;`type`参数使用了`cross_files`值后，意味着所有字段使用使用了相同的分词器。
 
 ```text
 GET /_search
@@ -22637,10 +22637,10 @@ GET /_search
 ##### Top-level parameters for simple_query_string
 - query：（Required, string）你想要解析并且用于查询的查询字符串（query string）。见[Simple query string syntax](#Simple query string syntax)。
 - fields：（Optional, array of string）你想要查询的字段名数组。
-  - 字段名可以使用通配符表达式。你也可以对特定的域使用`^`符号来提高（boost）匹配时的相关性。见[Wildcards and per-field boosts in the fields parameter](#Wildcards and per-field boosts in the fields parameter)。
-  - 默认使用索引设置中的`index.query.default_field`，该参数默认值为`*`，`*`值会提取出所有满足term query的域，会过滤掉元数据域（[metadata field](#Metadata fields)）。提取出的域组成一个query，如果没有指定`prefix`的话。
+  - 字段名可以使用通配符表达式。你也可以对特定的字段使用`^`符号来提高（boost）匹配时的相关性。见[Wildcards and per-field boosts in the fields parameter](#Wildcards and per-field boosts in the fields parameter)。
+  - 默认使用索引设置中的`index.query.default_field`，该参数默认值为`*`，`*`值会提取出所有满足term query的字段，会过滤掉元数据域（[metadata field](#Metadata fields)）。提取出的字段组成一个query，如果没有指定`prefix`的话。
 
-  > WARNING：域的数量在查询时候有一定的限制。该值定义在[search setting](#Search settings)中的`indices.query.bool.max_clause_count`中，默认值为`1024`。
+  > WARNING：字段的数量在查询时候有一定的限制。该值定义在[search setting](#Search settings)中的`indices.query.bool.max_clause_count`中，默认值为`1024`。
 
 - default_operator：（Optional, string）如果没有指定该配置，则默认使用布尔逻辑来解析（interpret）query string中的文本。可选值为：
   - OR（Default）
@@ -22654,7 +22654,7 @@ GET /_search
 - fuzzy_max_expansions：（Optional, integer）fuzzy匹配时允许扩展出的term的数量最大值。默认值为`50`。
 - fuzzy_prefix_length：（Optional, integer）fuzzy匹配时起始字符保留的数量。默认值为`0`。
 - fuzzy_transpositions：（Optional, Boolean）如果为`true`，模糊匹配中的编辑距离包含两个字符交换（ab->ba）。默认值为`true`。
-- lenient：（Optional, Boolean）如果`为true`，例如当在一个[numeric](#Numeric field types)域中，query的内容为文本时会忽略format-based的错误，默认值为`false`。
+- lenient：（Optional, Boolean）如果`为true`，例如当在一个[numeric](#Numeric field types)字段中，query的内容为文本时会忽略format-based的错误，默认值为`false`。
 - minimum_should_match：（Optional, string） 匹配到的文档必须至少满足clause（一个子query视为一个query clause）的数量。见[minimum_should_match parameter](#minimum_should_match parameter)查看更多信息。
 - quote_field_suffix：（Optional, string）query string中引用的文本对应的后缀名。
   - 例如说有一个mapping：
@@ -22763,7 +22763,7 @@ GET /_search
 
 &emsp;&emsp;第6行，请求`title`、`first_name`以及`last_name`字段
 
-&emsp;&emsp;每个域可以分别使用`^`符号进行boost，提高该域的相关性：
+&emsp;&emsp;每个字段可以分别使用`^`符号进行boost，提高该字段的相关性：
 
 ```text
 GET /_search
@@ -22815,7 +22815,7 @@ GET /_search
 #### Nested query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-nested-query.html#query-dsl-nested-query)
 
-&emsp;&emsp;封装了其他query，用于查询[nested](#Nested field type)域的一种query。
+&emsp;&emsp;封装了其他query，用于查询[nested](#Nested field type)字段的一种query。
 
 &emsp;&emsp;`nested` query查询nested对象时，就像这些对象分别索引在不同的文档中一样（见下面中`must_not clauses and nested queries
 `的介绍）。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
@@ -22824,7 +22824,7 @@ GET /_search
 
 ##### Index setup
 
-&emsp;&emsp;若要使用`nested` query，你必须有一个mapping类型为[nested](#Nested field type)的域。例如：
+&emsp;&emsp;若要使用`nested` query，你必须有一个mapping类型为[nested](#Nested field type)的字段。例如：
 
 ```text
 PUT /my-index-000001
@@ -22864,7 +22864,7 @@ GET /my-index-000001/_search
 #### Top-level parameters for nested
 
 - path：（Required, string）你想要查询的nested对象的路径
-- query：（Required, query object）你想要对`path`中指定的域使用的query。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
+- query：（Required, query object）你想要对`path`中指定的字段使用的query。如果某个对象满足匹配查询，`nested` query返回所在的root parent document。
   - 你可以使用符号`.`给出完整的路径进行查询，比如`obj1.name`
   - 一个嵌套里面还有嵌套，Elasticsearch可以自动识别并处理这种多级嵌套。这就意味着，如果你的查询是在一个嵌套查询里面的嵌套对象上，Elasticsearch会智能地把查询应用在正确的嵌套层级上，而不是只在最顶层或者根部进行搜索。
   - 见[Multi-level nested queries](#Multi-level nested queries)
@@ -22886,7 +22886,7 @@ GET /my-index-000001/_search
 
 ##### Multi-level nested queries
 
-&emsp;&emsp;若要了解multi-level的nested query是如何工作的，首先你有一个含有nested类型的字段的索引。下面的请求在索引`drivers`中定义了含有`make`和`model` nested域的mapping。
+&emsp;&emsp;若要了解multi-level的nested query是如何工作的，首先你有一个含有nested类型的字段的索引。下面的请求在索引`drivers`中定义了含有`make`和`model` nested字段的mapping。
 
 ```text
 PUT /drivers
@@ -23249,32 +23249,32 @@ GET /_search
 
 &emsp;&emsp;跟[full-text queries](#Full text queries)不同的是，term-level queries不会对查询词（search term）分词。而是跟字段值精确匹配。
 
-> NOTE：对于mapping类型为`keyword`并且含有`normalizer`属性的域，Term-level queries查询该域时仍然会标准化查询词。更多信息见[normalizer](#normalizer)
+> NOTE：对于mapping类型为`keyword`并且含有`normalizer`属性的字段，Term-level queries查询该字段时仍然会标准化查询词。更多信息见[normalizer](#normalizer)
 
 ##### Types of term-level queries
 
-- [`exists` query](#Exists query)：返回的文档中包含待查询的域，不关心字段值是什么
-- [`fuzzy` query](#Fuzzy query)：返回的文档中，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度
+- [`exists` query](#Exists query)：返回的文档中包含待查询的字段，不关心字段值是什么
+- [`fuzzy` query](#Fuzzy query)：返回的文档中，待查询的字段包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度
 - [`ids` query](#IDs)：基于[document IDs](#\_id field)返回文档
-- [`prefix` query](#Prefix query)：返回的文档中，待查询的域的字段值包含指定的前缀
-- [`range` query](#Range query)：返回的文档中，待查询的域的字段值属于指定的范围
-- [`regexp` query](#Regexp query)：返回的文档中，待查询的域的字段值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)
-- [`term` query](#Term query)：返回的文档中，待查询的域的字段值精确匹配查询词
-- [`terms` query](#Terms query)：返回的文档中，待查询的域的字段值精确匹配一个或多个查询词
-- [`terms_set` query](#Terms set query)：返回的文档中，待查询的域的字段值精确匹配一个或多个查询词，你可以使用一个域或者脚本定义至少要匹配的查询词数量。
-- [`wildcard` query](#Wildcard query)：返回的文档中，待查询的域的字段值匹配了一个通配符模式（wildcard pattern）
+- [`prefix` query](#Prefix query)：返回的文档中，待查询的字段的字段值包含指定的前缀
+- [`range` query](#Range query)：返回的文档中，待查询的字段的字段值属于指定的范围
+- [`regexp` query](#Regexp query)：返回的文档中，待查询的字段的字段值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)
+- [`term` query](#Term query)：返回的文档中，待查询的字段的字段值精确匹配查询词
+- [`terms` query](#Terms query)：返回的文档中，待查询的字段的字段值精确匹配一个或多个查询词
+- [`terms_set` query](#Terms set query)：返回的文档中，待查询的字段的字段值精确匹配一个或多个查询词，你可以使用一个字段或者脚本定义至少要匹配的查询词数量。
+- [`wildcard` query](#Wildcard query)：返回的文档中，待查询的字段的字段值匹配了一个通配符模式（wildcard pattern）
 
 #### Exists query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-exists-query.html)
 
-&emsp;&emsp;返回的文档中包含待查询的域，不关心字段值是什么。
+&emsp;&emsp;返回的文档中包含待查询的字段，不关心字段值是什么。
 
 &emsp;&emsp;索引一个文档后，文档中的字段没有被索引的原因有以下几种：
 
 - 在原始的JSON中，这个字段是`null`或者`[]`
-- 这个域的mapping 参数为`"index" : false`
-- 这个域的字段值超过了mapping中`ignore_above`的长度
-- 这个域的字段值格式不对并且同时在mapping中定义了`ignore_malformed`
+- 这个字段的mapping 参数为`"index" : false`
+- 这个字段的字段值超过了mapping中`ignore_above`的长度
+- 这个字段的字段值格式不对并且同时在mapping中定义了`ignore_malformed`
 
 ##### Example request
 
@@ -23292,7 +23292,7 @@ GET /_search
 ##### Top-level parameters for exists
 
 - field：（Required, string）待查询的字段名
-  - 如果在JSON中的值是`null`或者`[]`，这个域就被认为是不存在的。下面这些值会认为这个域不存在：
+  - 如果在JSON中的值是`null`或者`[]`，这个字段就被认为是不存在的。下面这些值会认为这个字段不存在：
     - 空的字符串，比如`""`或者`-`
     - 包含`null`跟其他值的数组，比如`[null, "foo"]`
     - 定义在mapping中，自定义的[null-value](#null_value)
@@ -23301,7 +23301,7 @@ GET /_search
 
 ###### Find documents missing indexed values
 
-&emsp;&emsp;若要查找的文档中某个域是缺失的，可以在`must_not` [boolean query](#Boolean query)中使用`exists` query：
+&emsp;&emsp;若要查找的文档中某个字段是缺失的，可以在`must_not` [boolean query](#Boolean query)中使用`exists` query：
 
 &emsp;&emsp;下面的查询返回的文档中缺失了`user.id`字段。
 
@@ -23323,7 +23323,7 @@ GET /_search
 #### Fuzzy query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-fuzzy-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度。
+&emsp;&emsp;返回的文档中，待查询的字段包含跟查询词相似的term。Elasticsearch 使用 [Levenshtein edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)来衡量相似性或模糊度。
 
 &emsp;&emsp;编辑距离是将一个term转为其他term时字符变化的数量。这些变化可以是：
 
@@ -23373,7 +23373,7 @@ GET /_search
 
 ##### Top-level parameters for fuzzy
 
-- `<field>`：（Required, object）待查询的域
+- `<field>`：（Required, object）待查询的字段
 
 ##### Parameters for \<field>
 
@@ -23416,7 +23416,7 @@ GET /_search
 #### Prefix query
 （8,2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-prefix-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值包含指定的前缀。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值包含指定的前缀。
 
 ##### Example request
 
@@ -23437,13 +23437,13 @@ GET /_search
 
 ##### Top-level parameters for prefix
 
-- `<field>`：（Required, object）待查询的域
+- `<field>`：（Required, object）待查询的字段
 
 ##### Parameters for \<field>
 
 - value：（Required, string）待查询的前缀值
 - rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
-- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于字段的mapping
   - 7.10.0新增的参数
 
 ##### Notes
@@ -23463,7 +23463,7 @@ GET /_search
 
 ###### Speed up prefix queries
 
-&emsp;&emsp;你可以通过使用mapping 参数[ndex_prefixes](#index_prefixes)提高prefix query的查询。开启这个参数后，Elasticsearch会将前缀索引到一个域中。这样能让Elasticsearch在大型索引中能更快的执行prefix query。
+&emsp;&emsp;你可以通过使用mapping 参数[ndex_prefixes](#index_prefixes)提高prefix query的查询。开启这个参数后，Elasticsearch会将前缀索引到一个字段中。这样能让Elasticsearch在大型索引中能更快的执行prefix query。
 
 ###### Allow expensive queries（Prefix query）
 
@@ -23472,7 +23472,7 @@ GET /_search
 #### Range query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-range-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值属于指定的范围。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值属于指定的范围。
 
 ##### Example request
 
@@ -23495,7 +23495,7 @@ GET /_search
 
 ##### Top-level parameters for range
 
-- `<field>`：（Required, object）待查询的域
+- `<field>`：（Required, object）待查询的字段
 
 ##### Parameters for \<field>
 
@@ -23612,7 +23612,7 @@ GET /_search
 #### Regexp query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-regexp-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值匹配了一个[正则表达式](https://en.wikipedia.org/wiki/Regular_expression)。
 
 &emsp;&emsp;正则表达式是一种使用称为操作符的占位符字符来匹配数据中模式的方法。有关 regexp 查询支持的操作符列表，请参见[正则表达式语法](#Regular expression syntax)。
 
@@ -23639,7 +23639,7 @@ GET /_search
 
 ##### Top-level parameters for regexp
 
-- `<field>`：（Required, object）待查询的域
+- `<field>`：（Required, object）待查询的字段
 
 ##### Parameters for \<field>
 
@@ -23649,7 +23649,7 @@ GET /_search
   > WARNING：`regexp` query的性能非常取决于提供的正则表达式。若要提高性能，避免使用通配符模式，比如`.*`或者`.*?+`，没有后缀或前缀。
 
 - flags：（Optional, string）允许使用的正则表达式操作符。对于可用的操作符以及更多信息见[Regular expression syntax]()
-- case_insensitive：（Optional, Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于字段的mapping
 - max_determinized_states：（Optional, integer）Query要求[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)的最大值。默认值为`1000`
   - Elasticsearch在内部使用[Lucene](https://lucene.apache.org/core/)的正则表达式。Lucene将每一个正则表达式转化为一个[有限自动状态](https://amazingkoala.com.cn/Lucene/gongjulei/2019/0417/Automaton/)
 - rewrite：（Optional, string）用于重写query的方法。见[rewrite parameter](#rewrite parameter)了解更多信息。
@@ -23663,7 +23663,7 @@ GET /_search
 #### Term query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-term-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值精确匹配查询词
+&emsp;&emsp;返回的文档中，待查询的字段的字段值精确匹配查询词
 
 &emsp;&emsp;你可以使用`term` query基于精确的值来超找文档。比如价格、产品ID或者用户名。
 
@@ -23688,7 +23688,7 @@ GET /_search
 ```
 ##### Top-level parameters for term
 
-- `<field>`：（Required, object）待查询的域
+- `<field>`：（Required, object）待查询的字段
 
 ##### Parameters for \<field>
 
@@ -23696,7 +23696,7 @@ GET /_search
 - boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
   - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
   - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
-- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于字段的mapping
   - 7.10.0新增的参数
 
 ##### NOTES
@@ -23803,7 +23803,7 @@ GET my-index-000001/_search?pretty
 #### Terms query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值精确匹配一个或多个查询词。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值精确匹配一个或多个查询词。
 
 &emsp;&emsp;`terms` query跟[term query](#Term query)是相同的，差别就是你可以查询多个值。
 
@@ -23825,7 +23825,7 @@ GET /_search
 
 ##### Top-level parameters for terms
 
-- `<field>`：（Required, object）待查询的域。
+- `<field>`：（Required, object）待查询的字段。
   - 这个参数的值是一个term数组，这些term是你希望在`<field>`能匹配到的字段值。若要返回一篇文档，必须精确匹配提供的term，包括空格和大小写。
   - 默认情况下，Elasticsearch限制`terms`中的数量最大值为`65,536`。你可以使用[index.max_terms_count](#index.max_terms_count)修改这个限制
   
@@ -23848,7 +23848,7 @@ GET /_search
 
 &emsp;&emsp;Terms lookup获取现有的文档中的字段值。Elasticsearch随后使用这些值作为查询词。当查询大量的term集合时可能比较有用。
 
-&emsp;&emsp;若要运行一个terms lookup。必须开启域的[\_source](#\_source field)。你不能再远端索引中使用cross-cluster search运行terms lookup。
+&emsp;&emsp;若要运行一个terms lookup。必须开启字段的[\_source](#\_source field)。你不能再远端索引中使用cross-cluster search运行terms lookup。
 
 > NOTE：默认情况下，Elasticsearch限制`terms` query的term数量为`65536`。包括通过terms lookup获取的term。你可以使用[index.max_terms_count](#index.max_terms_count)修改这个限制
 
@@ -23860,7 +23860,7 @@ GET /_search
 
 - index：（Required, string）索引的名字用来获取字段值
 - id：（Required, string）文档的[ID](#\_id field)用来获取字段值
-- path：（Required, string）域的名字用来获取字段值。Elasticsearch使用这些字段值作为query的查询词
+- path：（Required, string）字段的名字用来获取字段值。Elasticsearch使用这些字段值作为query的查询词
   - 如果字段值包含嵌套的内部对象，你可以点符号访问这些对象
 - routing：（Optional, string）自定义的文档[routing value](#\_routing field)来获取term值。如果在索引期间这个提供了这个自定义的路由值，那么这个参数是必须要有的
 
@@ -23962,22 +23962,22 @@ GET my-index-000001/_search?pretty
 #### Terms set query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-terms-set-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值精确匹配一个或多个查询词，你可以使用一个域或者脚本定义至少要匹配的查询词数量。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值精确匹配一个或多个查询词，你可以使用一个字段或者脚本定义至少要匹配的查询词数量。
 
 &emsp;&emsp;`terms_set`跟[terms query](#Terms query)是一样的，差别是你可以定义一篇文档至少要匹配term的数量：
 
-- 比如有一个名为`programming_languages`的域，包含了熟知的编程语言，有C++、Java或者php。你可以用这个query来匹配文档，并且要求必须至少匹配到两种编程语言。
-- 比如你有一个`permission`的域，包含某个应用的可能的用户权限。你可以使用这个query来匹配文档，并且要求必须匹配一个权限子集
+- 比如有一个名为`programming_languages`的字段，包含了熟知的编程语言，有C++、Java或者php。你可以用这个query来匹配文档，并且要求必须至少匹配到两种编程语言。
+- 比如你有一个`permission`的字段，包含某个应用的可能的用户权限。你可以使用这个query来匹配文档，并且要求必须匹配一个权限子集
 
 ##### Example request
 
 ###### Index setup
 
-&emsp;&emsp;大多数情况下，你需要包含一个[numeric](#Numeric field types)类型的字段来使用`terms_set` query。这个域的字段值为满足匹配的文档要求匹配的term数量。
+&emsp;&emsp;大多数情况下，你需要包含一个[numeric](#Numeric field types)类型的字段来使用`terms_set` query。这个字段的字段值为满足匹配的文档要求匹配的term数量。
 
 &emsp;&emsp;若要查看如何为`terms_set` query设置一个索引，尝试下面的例子
 
-1. 创建一个名为`job-candidates`的索引，该索引有以下的域
+1. 创建一个名为`job-candidates`的索引，该索引有以下的字段
 - 名为`name`的[keyword](#Keyword type family)类型的字段。字段值为求职者的姓名
 - 名为`programming_languages`的[keyword](#Keyword type family)类型的字段。字段值为求职者熟知的编程语言
 - 名为`required_matches`的[numeric](#Numeric field types)类型的字段。字段值为满足匹配的文档要求匹配的term数量
@@ -24061,7 +24061,7 @@ GET /job-candidates/_search
 
 ##### Top-level parameters for terms_set
 
-- `<field>`：（Required, object）待查询的域。
+- `<field>`：（Required, object）待查询的字段。
 
 ##### Parameters for \<field\>
 
@@ -24110,7 +24110,7 @@ GET /job-candidates/_search
 #### Wildcard query
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-wildcard-query.html)
 
-&emsp;&emsp;返回的文档中，待查询的域的字段值匹配了一个通配符模式（wildcard pattern）。
+&emsp;&emsp;返回的文档中，待查询的字段的字段值匹配了一个通配符模式（wildcard pattern）。
 
 &emsp;&emsp;通配符的操作符是一个占位符来匹配一个或多个字符。例如，通配符操作符`*`匹配0个或多个字符。你可以组合通配符的操作符来创建一个通配符模式。
 
@@ -24135,14 +24135,14 @@ GET /_search
 
 ##### Top-level parameters for wildcard
 
-- `<field>`：（Required, object）待查询的域。
+- `<field>`：（Required, object）待查询的字段。
 
 ##### Parameters for \<field\>
 
 - boost：（Optional, float）浮点值，用于提高或者降低query的[relevance scores](#Relevance-scores)。默认值为`1.0`。
   - 你可以使用这个参数调整包含了两个或更多子query的查询的relevance scores
   - boost的值默认关联的值为`1.0`。`0`到`1.0`之间的值会降低relevance score，大于`1.0`的值会提高relevance score。
-- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于域的mapping
+- case_insensitive：（Optional, Boolean）设置为`true`后，对大小写不敏感。默认为`false`，那么是否大小写敏感取决于字段的mapping
   - 7.10.0新增的参数
 - rewrite：（Optional, string）用来用来重写query的方法。更多信息见[rewrite parameter](#rewrite parameter)
 - value：（Required, string）你想要从`<field>`中匹配的，带有通配符的term
@@ -24184,7 +24184,7 @@ GET /_search
 
 #### Run an aggregation
 
-&emsp;&emsp;你可以在[search API](#Search API)中指定`agg`参数，将其作为[search](#Search your data)的一部分。下面的查询在名为`my-field`的域上运行一个[term aggregation](#Terms aggregation)：
+&emsp;&emsp;你可以在[search API](#Search API)中指定`agg`参数，将其作为[search](#Search your data)的一部分。下面的查询在名为`my-field`的字段上运行一个[term aggregation](#Terms aggregation)：
 
 ```text
 GET /my-index-000001/_search
@@ -24405,7 +24405,7 @@ GET /my-index-000001/_search?typed_keys
 
 &emsp;&emsp;响应中，聚合类型会作为聚合名称的前缀。
 
-> IMPORTANT：一些聚合返回跟请求中不同的聚合类型。例如，terms、[significant terms](#Significant terms aggregation)、[percentiles aggregations](#Percentiles aggregation) 会返回不同的聚合类型，这取决于被聚合的域的数据类型。
+> IMPORTANT：一些聚合返回跟请求中不同的聚合类型。例如，terms、[significant terms](#Significant terms aggregation)、[percentiles aggregations](#Percentiles aggregation) 会返回不同的聚合类型，这取决于被聚合的字段的数据类型。
 
 ```text
 {
@@ -24422,7 +24422,7 @@ GET /my-index-000001/_search?typed_keys
 
 #### Use scripts in an aggregation
 
-&emsp;&emsp;当某个域不能完全满足你想要的聚合目的，你应该在[runtime field](#Runtime fields)上聚合：
+&emsp;&emsp;当某个字段不能完全满足你想要的聚合目的，你应该在[runtime field](#Runtime fields)上聚合：
 
 ```text
 GET /my-index-000001/_search?size=0
@@ -24598,7 +24598,7 @@ POST /sales/_search?size=0
 
 &emsp;&emsp;在Elasticsearch内部实现中，日期用64位的时间戳表示，也就是milliseconds-since-the-epoch（01/01/1970 midnight UTC）。这些时间戳将作为分桶的key。`key_as_string`则是使用相同的时间戳根据`format`转化成格式化后的日期字符串：
 
-> TIP：如果你不指定`format`，则使用域的mapping中第一个date [format](#format(mapping parameter))。
+> TIP：如果你不指定`format`，则使用字段的mapping中第一个date [format](#format(mapping parameter))。
 
 ```text
 POST /sales/_search?size=0
@@ -25093,7 +25093,7 @@ POST child_example/_search?size=0
 
 ###### \_Terms
 
-&emsp;&emsp;`terms`这个value source类似一个简答的`terms` aggregation。这个值从一个域中提出出来，跟`terms` aggregation一样。
+&emsp;&emsp;`terms`这个value source类似一个简答的`terms` aggregation。这个值从一个字段中提出出来，跟`terms` aggregation一样。
 
 &emsp;&emsp;例子：
 
@@ -25798,7 +25798,7 @@ POST /sales/_search?size=0
 
 &emsp;&emsp;在Elasticsearch内部实现中，日期用64位的时间戳表示，也就是milliseconds-since-the-epoch（01/01/1970 midnight UTC）。这些时间戳将作为分桶的key。`key_as_string`则是使用相同的时间戳根据`format`转化成格式化后的日期字符串：
 
-> TIP：如果你不指定`format`，则使用域的mapping中第一个date [format](#format(mapping parameter))。
+> TIP：如果你不指定`format`，则使用字段的mapping中第一个date [format](#format(mapping parameter))。
 
 ```text
 POST /sales/_search?size=0
@@ -26092,7 +26092,7 @@ POST /sales/_search?size=0
 
 ###### Missing value
 
-&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
+&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的字段时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
 
 ```text
 POST /sales/_search?size=0
@@ -26531,7 +26531,7 @@ POST /museums/_search?size=0
 }
 ```
 
-&emsp;&emsp;待聚合的域必须是`geo_point`类型（只能在mapping中显示的指定该类型）。`geo_point`类型也可以包含一个geo_point字段的数组，在聚合时候所有的点都会考虑进去。`origing`的值可以有跟[geo_point](#Geopoint field type)一样的格式：
+&emsp;&emsp;待聚合的字段必须是`geo_point`类型（只能在mapping中显示的指定该类型）。`geo_point`类型也可以包含一个geo_point字段的数组，在聚合时候所有的点都会考虑进去。`origing`的值可以有跟[geo_point](#Geopoint field type)一样的格式：
 
 - 对象格式：`{ "lat" : 52.3760, "lon" : 4.894 }`。这是最安全的格式，因为显示的指明了`lat`和`lon`的值
 - 字符串格式：`"52.3760, 4.894"` 。第一个数值是`lat`，第二个数值是`lon`
@@ -26689,7 +26689,7 @@ POST /museums/_search?size=0
 #### Histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
 
-&emsp;&emsp;它属于multi-bucket Values Source aggregation，作用到从文档中提取出的数值类型或者数值类型范围值。他动态在值之间构建固定大小（bucket size，也就是间隔interval）。例如，如果文档中有一个名为价格的域（数值），我们可以将这个聚合自动的配置为`5`的间隔（因为价格可以是`5$`）当执行聚合时，每一个文档中的价格会被评估并且下舍入（rounded down）到最近的分桶。比如说价格为`32`并且间隔为`5`，那么`32`被下舍入到`30`，因此"落入"到key为`30`的分桶中。正式点的表达就是，使用了以下的舌入函数：
+&emsp;&emsp;它属于multi-bucket Values Source aggregation，作用到从文档中提取出的数值类型或者数值类型范围值。他动态在值之间构建固定大小（bucket size，也就是间隔interval）。例如，如果文档中有一个名为价格的字段（数值），我们可以将这个聚合自动的配置为`5`的间隔（因为价格可以是`5$`）当执行聚合时，每一个文档中的价格会被评估并且下舍入（rounded down）到最近的分桶。比如说价格为`32`并且间隔为`5`，那么`32`被下舍入到`30`，因此"落入"到key为`30`的分桶中。正式点的表达就是，使用了以下的舌入函数：
 
 ```text
 bucket_key = Math.floor((value - offset) / interval) * interval + offset
@@ -26925,7 +26925,7 @@ POST /sales/_search?size=0
 
 ##### Missing value
 
-&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的域时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
+&emsp;&emsp;`missing`参数定义了文档中缺失被聚合的字段时，如何进行聚合。默认这些文档会被忽略但也可以把这些文档看成有一个值。
 
 ```text
 POST /sales/_search?size=0
@@ -27407,7 +27407,7 @@ GET metrics_index/_search?size=0&filter_path=aggregations
 #### Avg aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-avg-aggregation.html)
 
-&emsp;&emsp;单值的指标聚合（Single-value metric aggregation）计算是从被聚合的文档中提取出数值的平均值。可以指定文档中数值类型的字段（numeric filed）或者[histogram域](#Histogram field type)用于avg aggregation。
+&emsp;&emsp;单值的指标聚合（Single-value metric aggregation）计算是从被聚合的文档中提取出数值的平均值。可以指定文档中数值类型的字段（numeric filed）或者[histogram字段](#Histogram field type)用于avg aggregation。
 
 &emsp;&emsp;假设下面的文档描述的是学生的考试成绩（0~100分），我们可以使用下面的请求计算考试成绩平均值：
 
@@ -27420,7 +27420,7 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;上面的聚合会计算所有文档下的平均成绩。聚合的类型是`avg`并且`field`定义为一个数值类型的字段，计算这个域的平均值。上述请求会返回下面的内容：
+&emsp;&emsp;上面的聚合会计算所有文档下的平均成绩。聚合的类型是`avg`并且`field`定义为一个数值类型的字段，计算这个字段的平均值。上述请求会返回下面的内容：
 
 ```text
 {
@@ -27485,7 +27485,7 @@ POST /exams/_search?size=0
 
 ##### Histogram fields
 
-&emsp;&emsp;如果对[histogram](#Histogram field type)域进行聚合计算，聚合的结果会结合`value`数组中的值以及对应在`count`数组中的数量进行计算。
+&emsp;&emsp;如果对[histogram](#Histogram field type)字段进行聚合计算，聚合的结果会结合`value`数组中的值以及对应在`count`数组中的数量进行计算。
 
 &emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
 
@@ -27541,7 +27541,7 @@ POST /metrics_index/_search?size=0
 #### Boxplot aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-boxplot-aggregation.html)
 
-&emsp;&emsp;箱线图指标聚合（boxplot metric aggregation）计算的是从被聚合的文档中提取出的数值的箱线图数据。可以指定文档中数值类型的字段（numeric filed）或者[histogram域](#Histogram field type)用于boxplot aggregation。
+&emsp;&emsp;箱线图指标聚合（boxplot metric aggregation）计算的是从被聚合的文档中提取出的数值的箱线图数据。可以指定文档中数值类型的字段（numeric filed）或者[histogram字段](#Histogram field type)用于boxplot aggregation。
 
 &emsp;&emsp;boxplot aggregation返回必要的信息用于成为一个箱线图：最小值（minimum）、最大值（maximum）、中位数（median、Q2）、下四分位数/第一四分位数（first quartile，25th percentile、Q1）、上四分位数/第三四分位数（third quartile，75th percentile、Q3）。
 
@@ -27759,7 +27759,7 @@ POST /sales/_search?size=0
 
 ##### Script
 
-&emsp;&emsp;如果你要计算的目标是两个域的组合值，可以使用[runtime field](#Runtime fields)
+&emsp;&emsp;如果你要计算的目标是两个字段的组合值，可以使用[runtime field](#Runtime fields)
 
 ```text
 POST /sales/_search?size=0
@@ -27836,7 +27836,7 @@ GET /exams/_search
 }
 ```
 
-&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`exteneed_stats`并且`field`定义了文档中的数值类型的字段并计算该域的统计数据。上面中请求的响应如下所示：
+&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`exteneed_stats`并且`field`定义了文档中的数值类型的字段并计算该字段的统计数据。上面中请求的响应如下所示：
 
 &emsp;&emsp;`std_deviation`和`variance`是基于总体指标（population metric）计算的，所以它们的值分别跟`std_deviation_population`和`variance_population`相同。
 
@@ -27983,7 +27983,7 @@ POST /sales/_search?size=0
 
 ##### Script
 
-&emsp;&emsp;相较于在一个域上计算`max`，你可以通过[runtime field](#Runtime fields)执行更复杂的聚合。
+&emsp;&emsp;相较于在一个字段上计算`max`，你可以通过[runtime field](#Runtime fields)执行更复杂的聚合。
 
 ```text
 POST /sales/_search
@@ -28031,7 +28031,7 @@ POST /sales/_search
 
 ##### Histogram fields
 
-&emsp;&emsp;如果对[histogram](#Histogram field type)域进行聚合计算，聚合的结果是`value`数组中所有元素的最大值。注意的是，这个直方图的`counts`数组会被忽略。
+&emsp;&emsp;如果对[histogram](#Histogram field type)字段进行聚合计算，聚合的结果是`value`数组中所有元素的最大值。注意的是，这个直方图的`counts`数组会被忽略。
 
 &emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
 
@@ -28119,7 +28119,7 @@ POST /sales/_search?size=0
 
 ##### Script
 
-&emsp;&emsp;相较于在一个域上计算`min`，你可以通过[runtime field](#Runtime fields)执行更复杂的聚合。
+&emsp;&emsp;相较于在一个字段上计算`min`，你可以通过[runtime field](#Runtime fields)执行更复杂的聚合。
 
 ```text
 POST /sales/_search
@@ -28168,7 +28168,7 @@ POST /sales/_search
 
 ##### Histogram fields
 
-&emsp;&emsp;如果对[histogram](#Histogram field type)域进行聚合计算，聚合的结果是`value`数组中所有元素的最小值。注意的是，这个直方图的`counts`数组会被忽略。
+&emsp;&emsp;如果对[histogram](#Histogram field type)字段进行聚合计算，聚合的结果是`value`数组中所有元素的最小值。注意的是，这个直方图的`counts`数组会被忽略。
 
 &emsp;&emsp;例如，下面的索引存储了预先聚合好的、不同网络的延迟指标直方图：
 
@@ -28303,7 +28303,7 @@ POST /exams/_search?size=0
 }
 ```
 
-&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`stats`并且`field`定义了文档中的数值类型的字段并计算该域的统计数据。上面中请求的响应如下所示：
+&emsp;&emsp;上文的聚合基于所有的文档计算了考试成绩的统计数据。聚合的类型为`stats`并且`field`定义了文档中的数值类型的字段并计算该字段的统计数据。上面中请求的响应如下所示：
 
 ```text
 {
@@ -28388,7 +28388,7 @@ POST /exams/_search?size=0
 ## Scripting 
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html)
 
-&emsp;&emsp;通过编写脚本，你可以在Elasticsearch中计算自定义的表达式。比如，你可以使用脚本为一个域返回字段值或者为一个query计算自定义的打分。
+&emsp;&emsp;通过编写脚本，你可以在Elasticsearch中计算自定义的表达式。比如，你可以使用脚本为一个字段返回字段值或者为一个query计算自定义的打分。
 
 &emsp;&emsp;默认的脚本语言是[Painless](#Painless)。另外`lang`插件允许运行其他的余燕语言。你可以任何运行脚本的地方指定脚本语言。
 
@@ -28455,7 +28455,7 @@ PUT my-index-000001/_doc/1
 }
 ```
 
-&emsp;&emsp;我们然后就可以编写一个脚本，并且在`my_field`上操作并且运行脚本，其作为查询的一部分。下面的请求使用了Search API中的[script_fields](#Script fields)参数来获取一个脚本结果。这个查询会发生很多事情，但我们会进行拆解然后一个一个的去理解。现在，你只需要知道脚本获取了`my_field`然后对这个域进行操作。
+&emsp;&emsp;我们然后就可以编写一个脚本，并且在`my_field`上操作并且运行脚本，其作为查询的一部分。下面的请求使用了Search API中的[script_fields](#Script fields)参数来获取一个脚本结果。这个查询会发生很多事情，但我们会进行拆解然后一个一个的去理解。现在，你只需要知道脚本获取了`my_field`然后对这个字段进行操作。
 
 ```text
 GET my-index-000001/_search
@@ -28720,7 +28720,7 @@ POST my-index-000001/_update/1
 #### Field extraction
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/scripting-field-extraction.html)
 
-&emsp;&emsp;field extraction的目的简单：你的数据有很多携带了大量信息的域，但你只是想要提取出部分内容。
+&emsp;&emsp;field extraction的目的简单：你的数据有很多携带了大量信息的字段，但你只是想要提取出部分内容。
 
 &emsp;&emsp;你有两个选项可以使用：
 
@@ -28789,7 +28789,7 @@ PUT my-index/_mappings
 
 &emsp;&emsp;第8行，这个条件保证了即使没有匹配到也不会输出任何信息
 
-&emsp;&emsp;你可以定义一个简单的query来查询指定的IP地址并且返回相关的域。在search API中使用`fields`参数可以返回`http.clientip`这类runtime field。
+&emsp;&emsp;你可以定义一个简单的query来查询指定的IP地址并且返回相关的字段。在search API中使用`fields`参数可以返回`http.clientip`这类runtime field。
 
 ```text
 GET my-index/_search
@@ -29707,7 +29707,7 @@ GET timeseries-*/_ilm/explain
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/management_index_component_template.png">
 
 2. 定义Index settings（可选）。对于这个教程，可以不填
-3. 定义一个mapping，它包含一个名为`geo`类型为[object](#Object field type)域，以及名为`coordinates`类型为[geo_point](#Geopoint field type)的子域（child filed）
+3. 定义一个mapping，它包含一个名为`geo`类型为[object](#Object field type)字段，以及名为`coordinates`类型为[geo_point](#Geopoint field type)的子字段（child filed）
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/management-index-templates-mappings.png">
 
@@ -29911,7 +29911,7 @@ GET /my-index-000001,my-index-000002
 &emsp;&emsp;每一个data stream要求一个[index template](#Index templates)，模板中包括：
 
 - 用于data stream的名称或者通配符（`*`)
-- data stream的timestamp域。这个域必须是[date](#Date field typec)或者[date_nanos](#Date nanoseconds field type)的date类型，每一篇索引到data stream的文档都要包含这个域
+- data stream的timestamp域。这个字段必须是[date](#Date field typec)或者[date_nanos](#Date nanoseconds field type)的date类型，每一篇索引到data stream的文档都要包含这个字段
 - mappings和settings要应用到每一个创建的[backing index](#Backing indices)_上
 
 &emsp;&emsp;Data streams为append-only data设计，data stream name可以用于作为操作（read，write，shrink等等）目标。如果你的用例要求就地（in place）更新数据。你可以使用[index aliases](#Aliases)来管理你的时序数据。然而需要一些配置步骤以及概念：
@@ -31673,7 +31673,7 @@ PUT /_template/custom_monitoring
 
 &emsp;&emsp;Rollup功能提供了新的search endpoint（`_rollup_search` vs 标准的`/_search`），这个endpoint知道如何查询rolled-up的数据。重要的是，这个endpoint接受100%普通的（normal）Elasticsearch Query DSL。你的应用不需要学习新的DSL来inspect历史数据，很容易重新使用现有的查询跟dashboard。
 
-&emsp;&emsp;这个功能也是有一些限制。不是所有的查询和聚合都支持的，一些查询功能（高亮）被禁用了并且可以使用的域（available fields）取决于Rollup的配置。更多的限制见[Rollup Search limitations](#Rollup search limitations)。
+&emsp;&emsp;这个功能也是有一些限制。不是所有的查询和聚合都支持的，一些查询功能（高亮）被禁用了并且可以使用的字段（available fields）取决于Rollup的配置。更多的限制见[Rollup Search limitations](#Rollup search limitations)。
 
 &emsp;&emsp;But if your queries, aggregations and dashboards only use the available functionality, redirecting them to historical data is trivial。
 
@@ -31998,7 +31998,7 @@ GET /sensor_rollup/_rollup_search
 }
 ```
 
-&emsp;&emsp;允许在`timestamp`字段上使用`date_histogram`。在`hostname`和`datacenter`字段上使用`terms aggregation`，并且可以在`load`、`net_in`、`net_out`的任意一个域上使用`histograms`。
+&emsp;&emsp;允许在`timestamp`字段上使用`date_histogram`。在`hostname`和`datacenter`字段上使用`terms aggregation`，并且可以在`load`、`net_in`、`net_out`的任意一个字段上使用`histograms`。
 
 &emsp;&emsp;更重要的是，这些 agg/fields可以任何的组合：
 
@@ -32067,7 +32067,7 @@ GET /sensor_rollup/_rollup_search
 }
 ```
 
-&emsp;&emsp;最后，在对一个job配置`groups`时，考虑好在以后的查询会用到哪些字段用于分组，那么将这些字段都添加到配置中就可以了。因为Rollup Search允许任意的先后顺序或者分组的字段的组合。你只需要决定好某个域是否会在以后用于聚合，以及你可能希望使用某一种聚合方式（terms、histogram等等）。
+&emsp;&emsp;最后，在对一个job配置`groups`时，考虑好在以后的查询会用到哪些字段用于分组，那么将这些字段都添加到配置中就可以了。因为Rollup Search允许任意的先后顺序或者分组的字段的组合。你只需要决定好某个字段是否会在以后用于聚合，以及你可能希望使用某一种聚合方式（terms、histogram等等）。
 
 ##### Calendar vs fixed time intervals
 
@@ -32224,7 +32224,7 @@ GET sensor_rollup/_rollup_search
 }
 ```
 
-&emsp;&emsp;在响应中会告诉你不能对这个域做这次聚合操作，因为没有一个rollup job中包含这个域的`avg`的metric信息：
+&emsp;&emsp;在响应中会告诉你不能对这个字段做这次聚合操作，因为没有一个rollup job中包含这个字段的`avg`的metric信息：
 
 ```text
 {
@@ -32269,9 +32269,9 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 - MatchAll Query
 - Any compound query (Boolean, Boosting, ConstantScore, etc)
 
-&emsp;&emsp;这些query同样只能使用在rollup job的`group`中配置的域。如果你想要过滤出keyword类型的`hostname`字段，那么这个域必须在rollup job中配置`term` grouping。
+&emsp;&emsp;这些query同样只能使用在rollup job的`group`中配置的字段。如果你想要过滤出keyword类型的`hostname`字段，那么这个字段必须在rollup job中配置`term` grouping。
 
-&emsp;&emsp;如果你尝试使用一个不支持的query，或者query引用了一个没有在rollup job中配置的域，那么会抛出一个异常。我们预计随着时间推移会增加更多的query支持。
+&emsp;&emsp;如果你尝试使用一个不支持的query，或者query引用了一个没有在rollup job中配置的字段，那么会抛出一个异常。我们预计随着时间推移会增加更多的query支持。
 
 ##### Timezones
 
@@ -32314,7 +32314,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 &emsp;&emsp;Transforms让你定义一个pivot，它是一个特征集合（a set of features）将索引transform到一个不同的，更加易于提取（digestible）的格式。Pivoting会将汇总后的数据输出到一个新的索引。
 
-&emsp;&emsp;要定义一个pivot，你首先要选择一个或者多个域，你将使用这些字段对你的数据进行分组。你可以选择可以用于分类的域（categorical field）以及numerical fields用于分组。如果你使用了numerical fields，则使用你指定的间隔对这些字段的字段值进行分桶。
+&emsp;&emsp;要定义一个pivot，你首先要选择一个或者多个字段，你将使用这些字段对你的数据进行分组。你可以选择可以用于分类的字段（categorical field）以及numerical fields用于分组。如果你使用了numerical fields，则使用你指定的间隔对这些字段的字段值进行分桶。
 
 &emsp;&emsp;第二步就是决定好你想要如何对分组的数据进行聚合。When using aggregations, you practically ask questions about the index。聚合的类型很有多，每一种都有其作用和输出。见[Create transform](#Create transform API)了解更多关于支持的聚合和分组依据字段的内容。
 
@@ -32330,7 +32330,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 ##### Latest transforms
 
-&emsp;&emsp;你可以使用 latest transform将最近的文档拷贝到新的索引中（You can use the latest type of transform to copy the most recent documents into a new index）。你必须指定一个或者多个域作为一个唯一键用于对数据进行分组，同时还要一个时间域（date field）来进行时间排序（sort the data chronologicallly）。比如说你可以使用这种类型的transform来跟踪每一个用户最新付款的时间或者每一台服务器最新的事件（the latest event for each host）。
+&emsp;&emsp;你可以使用 latest transform将最近的文档拷贝到新的索引中（You can use the latest type of transform to copy the most recent documents into a new index）。你必须指定一个或者多个字段作为一个唯一键用于对数据进行分组，同时还要一个时间域（date field）来进行时间排序（sort the data chronologicallly）。比如说你可以使用这种类型的transform来跟踪每一个用户最新付款的时间或者每一台服务器最新的事件（the latest event for each host）。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/pivot-preview.png">
 
@@ -32397,7 +32397,7 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 - 你需要一个复杂的特征索引（feature index）而不是top-N的集合
   - 在机器学习中，你通常需要一个复杂的behavioral feature的集合而不是top-N。 如果你要预测客户流失（customer churn），你可能需要观察例如上一周网页访问数量、销售量、或者邮件发出的数量（the number of emails sent）。Elastic Stack的机器学习功能（machine learning feature）会创建基于多维特性空间（multi-dimensional feature space）的模型，就可以受益于由transforms创建的全特征索引（full feature index）
-  - 这个场景同样可以应用于跨一个或多个聚合结果进行查询。聚合结果可以被排序或者过滤，但是会受到返回的分桶数量上限的约束（constraint），见[limitations to ordering](#Terms aggregation)和[filtering by bucket selector](#Bucket selector aggregation)。如果你想要查询所有的聚合结果，你需要创建完整的数据帧（data frame）。如果你需要根据多个域对聚合结果进行排序或者过滤，那么transforms就特别的有用。
+  - 这个场景同样可以应用于跨一个或多个聚合结果进行查询。聚合结果可以被排序或者过滤，但是会受到返回的分桶数量上限的约束（constraint），见[limitations to ordering](#Terms aggregation)和[filtering by bucket selector](#Bucket selector aggregation)。如果你想要查询所有的聚合结果，你需要创建完整的数据帧（data frame）。如果你需要根据多个字段对聚合结果进行排序或者过滤，那么transforms就特别的有用。
 - 你需要通过pipeline aggregation对聚合结果进行排序
   - [Pipeline aggregations](#Pipeline aggregations)不能用于排序。技术上来说这是因为pipeline aggregation是在所有的聚合已经完成后的reduce phase期间运行的。如果你创建了一个transforms，你可以有效的对多个数据进行传递。
 - 你想要创建summary tables来优化查询
@@ -32517,9 +32517,9 @@ Perhaps not immediately apparent，在aggregation请求中指定的间隔必须�
 
 ##### Using the ingest timestamp for syncing the transform
 
-&emsp;&emsp;在大多数的情况下，强烈建议提取（ingest）source index中的时间戳用于同步transform。这是一种能让transform区分发生变更最好的方法（the optimal way）。如果你的数据源（data source）遵循[ECS standard](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)，那你已经有一个[event.ingested](https://www.elastic.co/guide/en/ecs/8.2/ecs-event.html#field-event-ingested)域，这时候就可以将`event.ingested`作为transform的`sync.time.field`属性。
+&emsp;&emsp;在大多数的情况下，强烈建议提取（ingest）source index中的时间戳用于同步transform。这是一种能让transform区分发生变更最好的方法（the optimal way）。如果你的数据源（data source）遵循[ECS standard](https://www.elastic.co/guide/en/ecs/8.2/ecs-reference.html)，那你已经有一个[event.ingested](https://www.elastic.co/guide/en/ecs/8.2/ecs-event.html#field-event-ingested)字段，这时候就可以将`event.ingested`作为transform的`sync.time.field`属性。
 
-&emsp;&emsp;如果你没有`event.ingested`或者没有生成（populated）。你可以通过一个ingest pipeline进行设置。创建一个ingest pipeline可以使用[ingest pipeline API](#Create or update pipeline API)或者通过Kibana中的`Stack Management > Ingest Pipelines`。使用[set processor](#Set processor)来设置这个域并关联提取的timestamp的值。
+&emsp;&emsp;如果你没有`event.ingested`或者没有生成（populated）。你可以通过一个ingest pipeline进行设置。创建一个ingest pipeline可以使用[ingest pipeline API](#Create or update pipeline API)或者通过Kibana中的`Stack Management > Ingest Pipelines`。使用[set processor](#Set processor)来设置这个字段并关联提取的timestamp的值。
 
 ```text
 PUT _ingest/pipeline/set_ingest_time
@@ -32590,7 +32590,7 @@ _transform/
 2. 选择source index
    -  在这个例子中， 我们将使用电子商务订单的样例数据(eCommerce orders sample data)。如果你不熟悉`kibana_sample_data_ecommerce`这个索引，使用Kibana中的**Revenue**了解下。考虑下你能从这些电子商务数据中获得哪些insight
 3. 选出transform的pivot类型，并使用各种用于分组和聚合的选项
-   - 目前有两种类型的transform，但首先我们先要`Pivoting`你的数据，也就是至少使用一个域进行分组（apply）并应用一个聚合。你可以先预览转化后的数据（transformed data）， so go ahead and play with it! 你也可以开启histogram chart来更好的了解你的数据分布。
+   - 目前有两种类型的transform，但首先我们先要`Pivoting`你的数据，也就是至少使用一个字段进行分组（apply）并应用一个聚合。你可以先预览转化后的数据（transformed data）， so go ahead and play with it! 你也可以开启histogram chart来更好的了解你的数据分布。
    - 比如说你可能想要根据产品ID进行分组并且统计每一个产品的销售额和平均价格。或者你可能想要查看每一个客户的行为，计算每一个客户的总消费以及它们为多少种产品付费。或者你可能想要将货币和地区考虑进去。What are the most interesting ways you can transform and interpret this data?
 
 &emsp;&emsp;进入Kibana中的**Management > Stack Management > Data > Transforms**，使用向导（use the wizard）来创建一个transform：
@@ -32654,7 +32654,7 @@ POST _transform/_preview
 
 4. 如果你满意这个预览数据，那么就可以创建这个transform了。
    a. 提供一个transform ID，destination index的名称以及描述信息（可选）。如果destination index不存在，则会在transform启动的时候创建。
-   b. 先确定好transform要运行一次还是一直运行（once or continuous）。由于样例数据是不会发生变更，那就让transform运行一次。If you want to try it out, however, go ahead and click on **Continuous mode**。你必须选择一个域，transform就可以根据这个域检查是否发生了变更。一般情况下，使用ingest timestamp域是个不错的主意。在这个例子中，你可以使用`order_filed`字段。
+   b. 先确定好transform要运行一次还是一直运行（once or continuous）。由于样例数据是不会发生变更，那就让transform运行一次。If you want to try it out, however, go ahead and click on **Continuous mode**。你必须选择一个字段，transform就可以根据这个字段检查是否发生了变更。一般情况下，使用ingest timestamp域是个不错的主意。在这个例子中，你可以使用`order_filed`字段。
    c. 获取你可以配置一个retention policy来应用到你的transform中。选择一个date域用于明确destination index中的旧文档并且提供一个最大的寿命（age）。destination index中超过这个寿命的文档会被移除。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/ecommerce-pivot3.png">
@@ -32984,7 +32984,7 @@ POST _transform/_preview
 ```
 &emsp;&emsp;第5行，从数据源中筛选出没有被取消的航班
 &emsp;&emsp;第13行，transform中的destination index，在`_preview`中可以忽略
-&emsp;&emsp;第17行，根据`Carrier`字段进行分组，这个域的字段值是航空公司的名称
+&emsp;&emsp;第17行，根据`Carrier`字段进行分组，这个字段的字段值是航空公司的名称
 &emsp;&emsp;第24行，这个`bucket_script`会对聚合返回的结果进行计算。在这个特定的例子中，它会计算出延误占飞行时间的比例。
 
 &emsp;&emsp;预览可以让你看到在新的索引中将含有每家航空公司的这样的数据：
@@ -33132,7 +33132,7 @@ GET sample_weblogs_by_clientip/_search
 
 &emsp;&emsp;这个例子使用网页日志样例数据集来找出一个IP地址最后的那条日志。我们使用continuous模式下的`latest`类型的transform。它从最新的source data中拷贝出每一个唯一的key对应的最新文档信息到destination index中，并且在新的数据进入到source data后，将其更新到destination index中。
 
-&emsp;&emsp;选择`clientip`作为唯一的key。根据这个域对数据进行分组。选择`timestamp`字段作为时间类型的字段用来对数据进行排序。对于continuous mode，指定一个时间类型的字段用于识别在source index中新的文档，以及用于周期性检查是否发生变更的间隔时间。
+&emsp;&emsp;选择`clientip`作为唯一的key。根据这个字段对数据进行分组。选择`timestamp`字段作为时间类型的字段用来对数据进行排序。对于continuous mode，指定一个时间类型的字段用于识别在source index中新的文档，以及用于周期性检查是否发生变更的间隔时间。
 
 <img src="http://www.amazingkoala.com.cn/uploads/Elasticsearch/8.2/transform-ex4-1.jpg">
 
@@ -33178,7 +33178,7 @@ PUT _transform/last-log-from-clientip
 }
 ```
 
-&emsp;&emsp;第9行，指定用于对数据分组的域
+&emsp;&emsp;第9行，指定用于对数据分组的字段
 &emsp;&emsp;第12行，指定用于对数据排序的date域
 &emsp;&emsp;第14行，设置时间间隔用于周期性检查source index中是否发生了变化
 &emsp;&emsp;第18行，这里面的date域和delay的设置用于同步source index跟destination index
@@ -33384,7 +33384,7 @@ POST _transform/_preview
 ```
 
 &emsp;&emsp;第7行，在`customer_id`字段上使用`terms aggregation`对数据进行分组
-&emsp;&emsp;第16行，根据时间降序排序返回指定的域（email和名称）
+&emsp;&emsp;第16行，根据时间降序排序返回指定的字段（email和名称）
 
 &emsp;&emsp;API返回结果大致如下：
 
@@ -33436,7 +33436,7 @@ POST _transform/_preview
 >
 >尽管下面的例子中的上下文是transform的用例，但是它内部的painless脚本可以在Elasticsearch的其他查询聚合中使用。
 >
->下面的所有的例子都使用了脚本，但是transform无法推测出脚本生成的用于mapping的域。Transform不会在destination index中创建这些字段的mapping，意味着是动态映射的（dynamic mapped）。如果你要显示的mapping，你可以在启动Transform前创建好destination index。
+>下面的所有的例子都使用了脚本，但是transform无法推测出脚本生成的用于mapping的字段。Transform不会在destination index中创建这些字段的mapping，意味着是动态映射的（dynamic mapped）。如果你要显示的mapping，你可以在启动Transform前创建好destination index。
 
 ##### Getting top hits by using scripted metric aggregation
 
@@ -33883,7 +33883,7 @@ POST _transform/_preview
 
 ###### Transforms perform better on indexed fields
 
-&emsp;&emsp;transform使用用户定义的时间域（time filed）进行排序，这个域会被经常访问。如果时间域是一个[runtime filed](#Runtime fields)，在查询期间对于计算字段值的性能影响会显著的降低transform。在使用transform时使用一个indexed field作为时间域。
+&emsp;&emsp;transform使用用户定义的时间域（time filed）进行排序，这个字段会被经常访问。如果时间域是一个[runtime filed](#Runtime fields)，在查询期间对于计算字段值的性能影响会显著的降低transform。在使用transform时使用一个indexed field作为时间域。
 
 ###### Continuous transform scheduling limitations
 
@@ -33893,11 +33893,11 @@ POST _transform/_preview
 
 ###### Aggregation responses may be incompatible with destination index mappings
 
-&emsp;&emsp;当pivot transform首先启动后，它会为destination index推测出mapping。这种处理基于source index中的域的类型以及使用的aggregation。如果域是从[scripted_metrics](#Scripted metric aggregation)或者[bucket_scripts](#Bucket script aggregation)中衍生（derive）出来的，会使用[dynamic mappings](#Dynamic mapping)。在有些情况下（in some instances），推测出来的mapping（deduced mapping）可能跟真正的数据不兼容。比如说可能会发生numeric overflow或者动态映射出的字段同时包含numbers和strings。如果你觉得发生了上述的问题，可以检查Elasticsearch的日志。
+&emsp;&emsp;当pivot transform首先启动后，它会为destination index推测出mapping。这种处理基于source index中的字段的类型以及使用的aggregation。如果域是从[scripted_metrics](#Scripted metric aggregation)或者[bucket_scripts](#Bucket script aggregation)中衍生（derive）出来的，会使用[dynamic mappings](#Dynamic mapping)。在有些情况下（in some instances），推测出来的mapping（deduced mapping）可能跟真正的数据不兼容。比如说可能会发生numeric overflow或者动态映射出的字段同时包含numbers和strings。如果你觉得发生了上述的问题，可以检查Elasticsearch的日志。
 
 &emsp;&emsp;你可以使用[preview transform API预览推测出的mapping。见API response中`generated_dest_index`对象。
 
-&emsp;&emsp;如果有必要的话，你可以在transform启动前，使用[create index API](#Create index API)先创建一个自定义的destination index使得可以自定义mapping。由于推测的mapping不能被index template overwrite，所以就使用create index API来自定义mapping。index template只能应用于（apply to）脚本中使用dynamic mapping衍生出的域。
+&emsp;&emsp;如果有必要的话，你可以在transform启动前，使用[create index API](#Create index API)先创建一个自定义的destination index使得可以自定义mapping。由于推测的mapping不能被index template overwrite，所以就使用create index API来自定义mapping。index template只能应用于（apply to）脚本中使用dynamic mapping衍生出的字段。
 
 ###### Batch transforms may not account for changed documents
 
@@ -35353,7 +35353,7 @@ xpack.searchable.snapshot.shared_cache.size: 4TB
 
 ##### Data transfer costs
 
-&emsp;&emsp;当常规索引的分片在节点间移动时，分片的内容从集群中的另一个节点拷贝。在许多环境中，在节点间移动数据的开销是很大的。特别是在节点位于不同区域的云环境中运行时。相反的是，当mount一个searchable snapshot index或者移动其中一个分片时，总是从快照仓库中拷贝。通常来说成本是很低的。
+&emsp;&emsp;当常规索引的分片在节点间移动时，分片的内容从集群中的另一个节点拷贝。在许多环境中，在节点间移动数据的开销是很大的。特别是在节点位于不同区字段的云环境中运行时。相反的是，当mount一个searchable snapshot index或者移动其中一个分片时，总是从快照仓库中拷贝。通常来说成本是很低的。
 
 > WARNING：Most cloud providers charge significant fees for data transferred between regions and for data transferred out of their platforms. You should only mount snapshots into a cluster that is in the same region as the snapshot repository. If you wish to search data across multiple regions, configure multiple clusters and use [cross-cluster search](#Search across clusters) or [cross-cluster replication](#Cross-cluster replication) instead of searchable snapshots.
 
@@ -35463,13 +35463,13 @@ xpack.searchable.snapshot.shared_cache.size: 4TB
 
 #### Don’t return large result sets
 
-&emsp;&emsp;Elasticsearch 被设计为一个搜索引擎，这使得它非常擅长取回与查询匹配的top documents。然而将Elasticsearch作为数据库领域的那种工作负载是不太好的，比如返回满足某个查询的所有文档。如果你真的需要这么做，确保使用[Scroll](#Scroll search results) API来实现。
+&emsp;&emsp;Elasticsearch 被设计为一个搜索引擎，这使得它非常擅长取回与查询匹配的top documents。然而将Elasticsearch作为数据库领字段的那种工作负载是不太好的，比如返回满足某个查询的所有文档。如果你真的需要这么做，确保使用[Scroll](#Scroll search results) API来实现。
 
 #### Avoid large documents
 
 &emsp;&emsp;默认的[http.max_content_length](#http.max_content_length)的值为100M。Elasticsearch会拒绝索引大于该值的文档。你可能想要增加这个特定的设置，但 Lucene 仍然有大约 2GB 的限制。
 
-&emsp;&emsp;即使抛开这些硬性的限制，索引一个large document不是一个很好的实践。large document会对网络、内存使用量和硬盘造成更多的压力。即使查询请求中不要求查询`_source`，Elasticsearch在所有情况下都需要获取文档的`_id`，而获取large document的这个域的开销由于文件系统缓存的原因会更大。索引这个文档可能使用的内存量是文档原始大小的倍数。Proximity search（phrase queries for instance）和[highlighting](#Highlighting)同样会变得开销昂贵，因为它们的开销直接取决于原始文档的大小。
+&emsp;&emsp;即使抛开这些硬性的限制，索引一个large document不是一个很好的实践。large document会对网络、内存使用量和硬盘造成更多的压力。即使查询请求中不要求查询`_source`，Elasticsearch在所有情况下都需要获取文档的`_id`，而获取large document的这个字段的开销由于文件系统缓存的原因会更大。索引这个文档可能使用的内存量是文档原始大小的倍数。Proximity search（phrase queries for instance）和[highlighting](#Highlighting)同样会变得开销昂贵，因为它们的开销直接取决于原始文档的大小。
 
 &emsp;&emsp;It is sometimes useful to reconsider what the unit of information should be。例如，如果你想要让一本书可以被搜索到，并不是意味着文档中包含这一整本书的内容。一种可能比较好的方式是使用章节（chapter）或者甚至是段落（paragraph）作为一篇文档，并且在这个文档中有其他的属性（property）来标识属于哪一本书。这种方式不仅仅会避免索引large document，同时也使得查询体验会更好。比如说用户想要查询两个单词`foo`和`bar`。跨章节的匹配结果可能较差，而段落中同时出现这两个单词的匹配结果则看起来是好的。的
 
@@ -35627,9 +35627,9 @@ GET index/_search
 }
 ```
 
-&emsp;&emsp;This is not something that is easy to expose to end users，我们需要找出一个方法来知道用户是想要查找一个精确匹配（exact match），如果不是的话我们就重定向到一个合适的域。还需要考虑的是如果查询中的一部分需要精确匹配而其他部分仍然要stemming？
+&emsp;&emsp;This is not something that is easy to expose to end users，我们需要找出一个方法来知道用户是想要查找一个精确匹配（exact match），如果不是的话我们就重定向到一个合适的字段。还需要考虑的是如果查询中的一部分需要精确匹配而其他部分仍然要stemming？
 
-&emsp;&emsp;幸运的是，`query_string`和`simple_query_string`有一个功能来解决这个exact problem: `quote_field_suffix`。这个参数会告诉Elasticsearch被双引号包起来的词需要重定向到另一个不同的域，如下所示：
+&emsp;&emsp;幸运的是，`query_string`和`simple_query_string`有一个功能来解决这个exact problem: `quote_field_suffix`。这个参数会告诉Elasticsearch被双引号包起来的词需要重定向到另一个不同的字段，如下所示：
 
 ```text
 GET index/_search
@@ -35676,7 +35676,7 @@ GET index/_search
 
 &emsp;&emsp;在上面的例子中，`ski`使用了双引号（in-between quotes），根据`quote_field_suffix`参数将在`body.exact`字段上查询。所以只有文档1返回。这允许用户基于自己喜好混合查询exact search和 stemming search。
 
-> NOTE：如果`quote_field_suffix`中的字段不存在，那么查询就会回滚（fall back）到使用默认的域进行查询。
+> NOTE：如果`quote_field_suffix`中的字段不存在，那么查询就会回滚（fall back）到使用默认的字段进行查询。
 
 #### Getting consistent scoring
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/consistent-scoring.html)
@@ -35707,7 +35707,7 @@ GET index/_search
 
 &emsp;&emsp;其他推荐的方式就是使用[dfs_query_then_fetch](#search_type)的查询类型来work around这个问题。这使得Elasticsearch会遍历所有涉及的分片，向这些分片索要跟这次请求相关的index statistics，然后coordinating node会合并这些index statistics，伴随着查询将合并后的index statistics发给查询的分片，这样分片就可以使用全局的index statistics而不是自身的index statistics进行打分。
 
-&emsp;&emsp;大多数情况下，这个额外的round trip开销非常小。然而有些查询如果包含了数量很多的域或者term，由于所有的term都需要从[terms dictionary](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2019/0401/索引文件之tim&&tip)中查找并收集统计值使得开销不会很小。
+&emsp;&emsp;大多数情况下，这个额外的round trip开销非常小。然而有些查询如果包含了数量很多的字段或者term，由于所有的term都需要从[terms dictionary](https://www.amazingkoala.com.cn/Lucene/suoyinwenjian/2019/0401/索引文件之tim&&tip)中查找并收集统计值使得开销不会很小。
 
 #### Incorporating static relevance signals into the score
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/static-scoring-signals.html)
@@ -35764,9 +35764,9 @@ GET _search
 }
 ```
 
-&emsp;&emsp;第10行，`pagerank`必须是[rank_feature](#Rank feature field type)域。
+&emsp;&emsp;第10行，`pagerank`必须是[rank_feature](#Rank feature field type)字段。
 
-&emsp;&emsp;两种方式都可以获得相同的分数，但是各有取舍（trade-off）：[script_score](#Script score query) query 提供了更多的灵活性，使得可以让你用文本相关性分数跟你想要的static singles进行组合。另外[rank_feature](#Rank feature query) query只暴露（expose）了一些方法将static singles纳入到分数中。然而它基于[rank_feature](#Rank feature field type)跟[rank_features](#Rank features field type)域，这两个域的字段值通过了特殊的方式进行索引，使得[rank_feature](#Rank feature query) query可以跳过不具竞争力（non-competitive）的文档并快速的返回top match。
+&emsp;&emsp;两种方式都可以获得相同的分数，但是各有取舍（trade-off）：[script_score](#Script score query) query 提供了更多的灵活性，使得可以让你用文本相关性分数跟你想要的static singles进行组合。另外[rank_feature](#Rank feature query) query只暴露（expose）了一些方法将static singles纳入到分数中。然而它基于[rank_feature](#Rank feature field type)跟[rank_features](#Rank features field type)字段，这两个字段的字段值通过了特殊的方式进行索引，使得[rank_feature](#Rank feature query) query可以跳过不具竞争力（non-competitive）的文档并快速的返回top match。
 
 
 ### Tune for indexing speed
@@ -35864,7 +35864,7 @@ GET _search
 
 ##### Search as few fields as possible
 
-&emsp;&emsp;[query_string](#Query string query)或者[multi_match](#Multi-match query)查询的域越多，查询越慢。一个常用的用于提高查询速度的技术就是在索引阶段将多个域的值索引到单个域，然后只查询这个域。可以通过[copy_to](#copy_to)实现自动的映射并且不需要更改源文档。下面的例子是一个包含电影的索引，该例子通过将电影的名称跟情节索引到`name_and_plot`字段来优化查询。
+&emsp;&emsp;[query_string](#Query string query)或者[multi_match](#Multi-match query)查询的字段越多，查询越慢。一个常用的用于提高查询速度的技术就是在索引阶段将多个字段的值索引到单个域，然后只查询这个字段。可以通过[copy_to](#copy_to)实现自动的映射并且不需要更改源文档。下面的例子是一个包含电影的索引，该例子通过将电影的名称跟情节索引到`name_and_plot`字段来优化查询。
 
 ```text
 PUT movies
@@ -35961,7 +35961,7 @@ GET index/_search
 ##### Consider mapping identifiers as keyword
 
 &emsp;&emsp;不是所有的数值类型的数据都必须用[numeric](#Numeric field types)类型的。Elasticsearch为`integer`、`long`这些数值类型的字段优化了[range](#Range query
-)查询。然而[keyword](#Keyword type family)域更适合用于[term](#Term query)或者[term-level](#Terms query)的查询。
+)查询。然而[keyword](#Keyword type family)字段更适合用于[term](#Term query)或者[term-level](#Terms query)的查询。
 
 &emsp;&emsp;类似ISBN或者产品ID的唯一标示（identifier），它们很少用于范围查询，然而它们经常使用term-level的查询。
 
@@ -36079,7 +36079,7 @@ GET index/_search
 
 ##### Warm up global ordinals
 
-&emsp;&emsp;[Global ordinals](#eager_global_ordinals)是一个用来优化聚合的数据结构。它会被延迟计算并且保存在JVM堆中作为[field data cache](#Field data cache settings)的一部分。用于频繁桶聚合（heavily used for bucket aggregation）的域，可以在查询这些字段之前，让Elasticsearch对这些字段构造并且缓存global ordinals。注意的是这种操作会增加堆内存的使用并且增加[refreshes](#Refresh API) 的时间。可以通过mapping参数eager global ordinals对现有的mapping进行动态的更新。
+&emsp;&emsp;[Global ordinals](#eager_global_ordinals)是一个用来优化聚合的数据结构。它会被延迟计算并且保存在JVM堆中作为[field data cache](#Field data cache settings)的一部分。用于频繁桶聚合（heavily used for bucket aggregation）的字段，可以在查询这些字段之前，让Elasticsearch对这些字段构造并且缓存global ordinals。注意的是这种操作会增加堆内存的使用并且增加[refreshes](#Refresh API) 的时间。可以通过mapping参数eager global ordinals对现有的mapping进行动态的更新。
 
 ```text
 PUT index
@@ -36216,7 +36216,7 @@ GET bicycles,other_cycles/_search
 
 &emsp;&emsp;在`other_cycles`索引上，Elasticsearch会快速的判断出在`cycle_type`字段中不存在bicycles然后不返回任何的命中。
 
-&emsp;&emsp;将常用的值放在专用的索引上是一种非常有力的使得查询开销很小的一种方式。这个想法可以跨多个域进行组合：比如说，如果你要跟踪每一种车子的颜色，并且`bicycles`索引中有大量的黑色的bicycles，那么你可以继续将索引划分成`bicycles-black`和`bicycles-other-colors`的两个索引。
+&emsp;&emsp;将常用的值放在专用的索引上是一种非常有力的使得查询开销很小的一种方式。这个想法可以跨多个字段进行组合：比如说，如果你要跟踪每一种车子的颜色，并且`bicycles`索引中有大量的黑色的bicycles，那么你可以继续将索引划分成`bicycles-black`和`bicycles-other-colors`的两个索引。
 
 &emsp;&emsp;这种优化不是一定严格需要`constant_keyword`的：也可以在客户端的逻辑中基于不同的filter将查询路由到对应的索引上。然而`constant_keyword`能够让这个过程透明，并允许将搜索请求与索引拓扑分离，以换取非常少的开销。
 
@@ -36225,7 +36225,7 @@ GET bicycles,other_cycles/_search
 
 #### Disable the features you do not need
 
-&emsp;&emsp;默认情况下，Elasticsearch对大部分的域同时进行索引（倒排、bkd）和添加doc value（正排），使得这些字段默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的字段，并且你需要在这个域上进行histogram并且从来不会应用于filter，那你可以在[mappings](#Mappings（create index api）)中安全的关闭索引（只使用bkd存储，不用倒排）：
+&emsp;&emsp;默认情况下，Elasticsearch对大部分的字段同时进行索引（倒排、bkd）和添加doc value（正排），使得这些字段默认（out of box）可以用于查询和聚合。比如说你有一个名为`foo`的数值类型的字段，并且你需要在这个字段上进行histogram并且从来不会应用于filter，那你可以在[mappings](#Mappings（create index api）)中安全的关闭索引（只使用bkd存储，不用倒排）：
 
 ```text
 PUT index
@@ -36298,17 +36298,17 @@ PUT index
 
 #### Use the smallest numeric type that is sufficient
 
-&emsp;&emsp;为[numeric data](#Numeric field types)选择不同的域会对磁盘使用有着很大的影响。特别是integer应该使用integer类型（比如说`byte`、`short`、`integer`、`long`）存储并且浮点型数据应该要么使用`scaled_float`（如果合适的话），要么使用最小的类型（比特位）：使用`float`而不是用`double`，使用`half_float`而不是用`float`也能帮助节省磁盘空间。
+&emsp;&emsp;为[numeric data](#Numeric field types)选择不同的字段会对磁盘使用有着很大的影响。特别是integer应该使用integer类型（比如说`byte`、`short`、`integer`、`long`）存储并且浮点型数据应该要么使用`scaled_float`（如果合适的话），要么使用最小的类型（比特位）：使用`float`而不是用`double`，使用`half_float`而不是用`float`也能帮助节省磁盘空间。
 
 #### Use index sorting to colocate similar documents
 
-&emsp;&emsp;当Elasticsearch存储`_source`时，会一次性的处理多个文档来提高压缩率。比如文档间包含相同的域是很常见的，并且这些字段包含相同的值也是很常见的。especially on fields that have a low cardinality or a zipfian distribution。
+&emsp;&emsp;当Elasticsearch存储`_source`时，会一次性的处理多个文档来提高压缩率。比如文档间包含相同的字段是很常见的，并且这些字段包含相同的值也是很常见的。especially on fields that have a low cardinality or a zipfian distribution。
 
 &emsp;&emsp;默认情况下会按照添加到索引的顺序对文档进行压缩。如果你开启了[index sorting](#Index Sorting)后则会根据排序后的文档进行压缩。排序后的文档有着类似的结构、域、字段值，使得可以提高压缩率。
 
 #### Put fields in the same order in documents
 
-&emsp;&emsp;由于是多篇文档被压缩到block中，所以如果每篇文档中`_source`中的域是有序的，那么更容易找到更长的相同的值（duplicate strings）。
+&emsp;&emsp;由于是多篇文档被压缩到block中，所以如果每篇文档中`_source`中的字段是有序的，那么更容易找到更长的相同的值（duplicate strings）。
 
 #### Roll up historical data
 
@@ -36612,7 +36612,7 @@ PUT _cluster/settings
 
 ###### Prevent mapping explosions
 
-&emsp;&emsp;定义太多的域，或者嵌套的域太深会导致[mapping explosions](#Settings to prevent mapping explosion)，使得占用大量的内存。若要防止mapping explosions，使用[mapping limit settings ](#Mapping limit settings)来限制域的数量。
+&emsp;&emsp;定义太多的字段，或者嵌套的字段太深会导致[mapping explosions](#Settings to prevent mapping explosion)，使得占用大量的内存。若要防止mapping explosions，使用[mapping limit settings ](#Mapping limit settings)来限制字段的数量。
 
 ###### Spread out bulk requests
 
@@ -36887,9 +36887,9 @@ GET /_tasks?filter_path=nodes.*.tasks
 
 &emsp;&emsp;段（segment）在分片的资源使用中起着重要的作用。大多数的分片包含多个段，段中存放了索引数据。Elasticsearch会在内存中保留一些segment metadata用于快速的查询。随着分片的增长，分片中的段会[merged](#Merge)成数量更少，体积更大的段。合并可以降低段的数量，意味着在堆内存中保留更少的metadata。
 
-&emsp;&emsp;mapping中的每一个域都会带有一些内存使用和磁盘空间的开销。默认情况下，Elasticsearch会自动创建被索引的文档中每一个域的mapping，但是你可以通过[take control of your mappings](#Explicit mapping)来关闭这个行为。
+&emsp;&emsp;mapping中的每一个字段都会带有一些内存使用和磁盘空间的开销。默认情况下，Elasticsearch会自动创建被索引的文档中每一个字段的mapping，但是你可以通过[take control of your mappings](#Explicit mapping)来关闭这个行为。
 
-&emsp;&emsp;并且segment会为每一个mapped field分配少量的堆内存。这个 per-segment-per-field的内存开销包括copy of the field name，使用 ISO-8859-1或者UTF-16编码。尽管它们占用的内存量不是很显著（not noticeable），但如果你的分片有很多的段，相关的mapping中包含了很多的域或者非常长的字段名，这时候你是需要考虑它们的开销的。
+&emsp;&emsp;并且segment会为每一个mapped field分配少量的堆内存。这个 per-segment-per-field的内存开销包括copy of the field name，使用 ISO-8859-1或者UTF-16编码。尽管它们占用的内存量不是很显著（not noticeable），但如果你的分片有很多的段，相关的mapping中包含了很多的字段或者非常长的字段名，这时候你是需要考虑它们的开销的。
 
 ##### Elasticsearch automatically balances shards within a data tier
 
@@ -36966,7 +36966,7 @@ GET _cat/shards?v=true
 
 ##### Data nodes should have at least 1kB of heap per field per index, plus overheads
 
-&emsp;&emsp;每一个mapped field需要的准确的资源使用量取决于域的类型，但是一般的经验法则是允许每一个索引的每一个域要有接近1KB的内存。你必须还要允许有足够的堆内存用于Elasticsearch最基本的用于索引，查询或者聚合所需要的内存。0.5GB的内存对于大多数的合理的工作负载都是够用的。如果你的工作负载是轻量级的那么可以需要更少的内存，反之需要更多的内存。
+&emsp;&emsp;每一个mapped field需要的准确的资源使用量取决于字段的类型，但是一般的经验法则是允许每一个索引的每一个字段要有接近1KB的内存。你必须还要允许有足够的堆内存用于Elasticsearch最基本的用于索引，查询或者聚合所需要的内存。0.5GB的内存对于大多数的合理的工作负载都是够用的。如果你的工作负载是轻量级的那么可以需要更少的内存，反之需要更多的内存。
 
 &emsp;&emsp;例如，如果节点中有1000个索引，每一个索引包含了4000个mapped field，那么你应该允许为这些字段分配接近1000 \* 4000 \* 1KB =  4GB的内存，以及额外的0.5GB用于工作负载和其他开销。因此这个节点需要至少4.5GB。
 
@@ -36989,7 +36989,7 @@ PUT my-index-000001/_settings
 
 ##### Avoid unnecessary mapped fields
 
-&emsp;&emsp;默认情况下，Elasticsearch会为文档中的每一个域[automatically creates a mapping](#Dynamic mapping)。每一个mapped field对应磁盘上的一些数据结构，使得用于高效的查询，检索以及聚合。Details about each mapped field are also held in memory。在很多用例中这种开销是不需要的因为有些域没有用于查询或者聚合。使用[Explicit mapping](#Explicit mapping)替换dynamic mapping来防止创建从不会被使用的域。如果有些域通常一起使用，考虑在索引阶段使用[copy_to](#copy_to)。如果一个域很少被使用，使用[Runtime field](#Runtime fields)可能更合适。
+&emsp;&emsp;默认情况下，Elasticsearch会为文档中的每一个字段[automatically creates a mapping](#Dynamic mapping)。每一个mapped field对应磁盘上的一些数据结构，使得用于高效的查询，检索以及聚合。Details about each mapped field are also held in memory。在很多用例中这种开销是不需要的因为有些域没有用于查询或者聚合。使用[Explicit mapping](#Explicit mapping)替换dynamic mapping来防止创建从不会被使用的字段。如果有些域通常一起使用，考虑在索引阶段使用[copy_to](#copy_to)。如果一个字段很少被使用，使用[Runtime field](#Runtime fields)可能更合适。
 
 &emsp;&emsp;你可以通过[Field usage stats API](#Field usage stats API)获取哪些域正在被使用的信息，并且你可以通过[Analyze index disk usage API](#Analyze index disk usage API)分析mapped field的磁盘使用。注意的是，不必要的mapped field也会带来一些内存开销以及它们的磁盘使用。
 
@@ -37310,7 +37310,7 @@ PUT _ilm/policy/my-lifecycle-policy
 > TIP：当对域进行映射时，使用[Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/8.2/index.html)。ECS fields integrate with several Elastic Stack features by default。
 > 
 > 如果你不确定如何映射域，使用[runtime fields](#Define runtime fields in a search request)在查询期间从[unstructured content ](#Wildcard field type
-)中提取域。例如你可以索引一条日志消息为`wildcard`，随后在查询中从这个域中提取出IP address和其他数据。
+)中提取域。例如你可以索引一条日志消息为`wildcard`，随后在查询中从这个字段中提取出IP address和其他数据。
 
 &emsp;&emsp;若要在Kibana中创建一个component template，那么打开主菜单然后跳转到**Stack Management > Index Management**。在**Index Templates**视图中，点击**Create component template**。
 
@@ -37670,7 +37670,7 @@ POST my-data-stream/_async_search
     - segments.memory、sm、segmentsMemory：段的内存使用量，例如`4`
     - segments.index_writer_memory、siwm、segmentsIndexWriterMemory：index writer的内存使用量，例如`1.4kb`
     - segments.version_map_memory、svmm、segmentsVersionMapMemory：版本映射（version map）的内存使用量，例如`1.0kb`
-    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](#Nested field type)类型的字段和[join](#Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
+    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](#Nested field type)类型的字段和[join](#Join field type)字段中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
     - suggest.current、suc、suggestCurrent：当前suggest操作的数量，比如`0`
     - suggest.time、suti、suggestTime：suggest花费的时间，例如`0`
     - suggest.total、suto、suggestTotal：suggest操作的数量，比如`0`
@@ -37809,7 +37809,7 @@ veJR 127.0.0.1 59938 8.2.3 *
     - segments.memory、sm、segmentsMemory：段的内存使用量，例如`4`
     - segments.index_writer_memory、siwm、segmentsIndexWriterMemory：index writer的内存使用量，例如`1.4kb`
     - segments.version_map_memory、svmm、segmentsVersionMapMemory：版本映射（version map）的内存使用量，例如`1.0kb`
-    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](#Nested field type)类型的字段和[join](#Join field type)域中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
+    - segments.fixed_bitset_memory、sfbm、fixedBitsetMemory：[nested object](#Nested field type)类型的字段和[join](#Join field type)字段中类型应用的类型过滤使用的固定比特位的内存使用量，例如`1.0kb`
     - seq_no.global_checkpoint、sqg、globalCheckpoint：全局检查点（global checkpoint）
     - seq_no.local_checkpoint、sql、localCheckpoint：本地检查点（local checkpoint）
     - seq_no.max、sqm、maxSeqNo：sequence数值最大值
@@ -41329,7 +41329,7 @@ POST /_data_stream/_modify
 &emsp;&emsp;主分片遵循下面基本的步骤：
 
 - 检查索引操作，如果结构非法则reject它（例如期望值是数值类型的字段值，但是期望值是数值）
-- 本地执行操作。例如索引或者删除相关的文档。同样会检查域的内容，如果必要的话会reject。（例如Keyword类型的字段值太长，Lucene中无法处理它）
+- 本地执行操作。例如索引或者删除相关的文档。同样会检查字段的内容，如果必要的话会reject。（例如Keyword类型的字段值太长，Lucene中无法处理它）
 - 将操作转发到`in-sync`列表中的副本分片。如果列表中有多个副本分片，则会并发处理
 - 一旦`in-sync`列表中所有的副本分片都成功执行了操作并且响应了主分片，主分片会将成功完成请求的消息响应给客户端
 
@@ -41519,7 +41519,7 @@ wait_time = target_time - write_time = 2 seconds - .5 seconds = 1.5 seconds
   默认值为`all`。
 - from：（Optional,integer）这次请求从哪个文档开始，即该文档的偏移值。非负的值，默认值为`0`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定的data stream或者index如果缺失的话会返回一个错误。默认是`false`
-- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)域中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
+- lenient：（Optional, Boolean）如果为`true`，例如当在一个[numeric](#Numeric field types)字段中，`query`的内容为文本时会忽略format-based的错误，默认值为`false`。
 - max_docs：（Optional, integer）最多可以处理的文档数量。默认是所有的文档。当该值设置了一个不大于`scroll_size`的值时，那么就不会使用scroll机制
 - pipeline：（Optional, string）pipeline的ID，用来预先处理待处理的文档
 - preference：（Optional, string）指定在哪个节点或分片上执行。默认是随机
@@ -41845,7 +41845,7 @@ POST my-index-000001/_search?size=0&q=extra:test&filter_path=hits.total
 
 ###### Pick up a new property
 
-&emsp;&emsp;比如说你没有使用动态mapping创建了一个索引，写入了数据并且然后添加了mapping来从数据获取更多的域：
+&emsp;&emsp;比如说你没有使用动态mapping创建了一个索引，写入了数据并且然后添加了mapping来从数据获取更多的字段：
 
 ```text
 PUT test
@@ -42048,11 +42048,11 @@ PUT /_enrich/policy/<enrich-policy>
 - `<policy-type>`：（Required,object）配置enrich policy。key是enrich policy的类型。value可以是以下选项：
   - geo_match：基于[geo_shape query](#Geoshape query)丰富数据到incoming document中。例如，见[Example: Enrich your data based on geolocation](#Example: Enrich your data based on geolocation)
   - match：基于[term query](#Term query)丰富数据到IMcoming document中。例如，见[Example: Enrich your data based on exact values](#Example: Enrich your data based on exact values)
-  - range：基于[term query](#Term query)去incoming document中匹配数值、日期或者IP地址类型的字段，然后使用匹配到的字段值去enrich index使用相同的域执行一个范围查询。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
+  - range：基于[term query](#Term query)去incoming document中匹配数值、日期或者IP地址类型的字段，然后使用匹配到的字段值去enrich index使用相同的字段执行一个范围查询。例如，见[Example: Enrich your data by matching a value to a range](#Example: Enrich your data by matching a value to a range)
   - indices：（Required, string or array of strings）用来创建enrich index的一个或多个source index
     - 如果指定了多个索引，他们必须有一个共同的`match_field`
-  - match_field：（Required, string）source index中的域，用来跟incoming document匹配
-  - enrich_fields：（Required, array of strings）将`enrich_fields`中指定的域添加到匹配到的incoming document中。source index中必须存在这些字段
+  - match_field：（Required, string）source index中的字段，用来跟incoming document匹配
+  - enrich_fields：（Required, array of strings）将`enrich_fields`中指定的字段添加到匹配到的incoming document中。source index中必须存在这些字段
   - query：（Optional, [Query DSL query object)](#Query DSL)）用来过滤enrich index中的每一篇文档。enrich policy只使用匹配这个query的文档去丰富incoming document。默认是[match_all](#Match all query) query
 
 #### Delete enrich policy API
@@ -42595,7 +42595,7 @@ POST /<index>/_analyze
 - attributes：（Optional, array of strings）token属性列表用来`explain`参数中的输出信息
 - char_filter：（Optional, array of strings）character filter列表，用来在分词之前对文本的字符进下处理。见[Character filters reference](#Character filters reference)
 - explain：（Optional, Boolean）如果为`true`，响应中包含token attribution和额外的详情。默认为`false`
-- field：（Optional, string）用来获取分词器的域。若使用这个参数，你必须指定一个索引
+- field：（Optional, string）用来获取分词器的字段。若使用这个参数，你必须指定一个索引
   - 如果指定该参数，`analyzer`参数会覆盖这个值
   - 如果未指定字段，该接口使用索引默认的分词器
   - 如果未指定索引，或者索引没有一个默认的分词器，该接口则使用[standard analyzer](#Standard analyzer)
@@ -42687,7 +42687,7 @@ GET /analyze_sample/_analyze
 
 ###### Derive analyzer from a field mapping
 
-&emsp;&emsp;也可以通过某个域的mappings获取分词器，例如：
+&emsp;&emsp;也可以通过某个字段的mappings获取分词器，例如：
 
 ```text
 GET /analyze_sample/_analyze
@@ -42814,7 +42814,7 @@ GET /analyze_sample/_analyze
 
 >WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
 
-&emsp;&emsp;分析index或data stream中每一个域的磁盘使用情况。这个API可能不支持在旧版本中创建的索引。对于较小的索引，由于 API 可能无法分析索引的某些部分，结果可能不准确。
+&emsp;&emsp;分析index或data stream中每一个字段的磁盘使用情况。这个API可能不支持在旧版本中创建的索引。对于较小的索引，由于 API 可能无法分析索引的某些部分，结果可能不准确。
 
 ##### Request
 
@@ -42841,7 +42841,7 @@ POST /<target>/_disk_usage
   默认值为`open`
 - flush：（Optional, Boolean）如果为`true`，该接口在开始分析之前会执行一次flush。如果为`false`，响应中可能会不包括未提交的数据。默认值为`true`
 - ignore_unavailable：（Optional, Boolean）如果为`false`，请求中指定index如果缺失的话或者已关闭会返回一个错误。默认是`false`
-- run_expensive_tasks：（Required, Boolean）分析域的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
+- run_expensive_tasks：（Required, Boolean）分析字段的使用情况属于资源密集型。若要使用这个接口，这个参数必须设置为`true`。默认为`false`。
 - wait_for_active_shards：（Optional, string） 操作开始前已经启用的shard copy（主分片跟副本分片）的数量。设置成`all`或者一个正整数（不能超过索引的分片总数），默认值1. 见[Active shards](#Index API)。
 
 ##### Example
@@ -43186,7 +43186,7 @@ PUT /<index>
 &emsp;&emsp;你可以使用该接口将一个新索引添加到集群中。在创建一个索引时，你可以指定下面的内容：
 
 - 定义索引的settings
-- 定义索引中域的mapping
+- 定义索引中字段的mapping
 - 定义索引别名
 
 ##### Path parameters
@@ -44300,9 +44300,9 @@ GET /_component_template
 #### Get field mapping API
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/indices-get-field-mapping.html)
 
-&emsp;&emsp;获取一个或多个域的[mapping definitions](#Mapping)。对于data stream，该接口返回流中backing indices的域的mapping。
+&emsp;&emsp;获取一个或多个字段的[mapping definitions](#Mapping)。对于data stream，该接口返回流中backing indices的字段的mapping。
 
-&emsp;&emsp;当你不需要[完整的mapping](#Get mapping API)，或者当某个索引中包含很多数量的域时，这个接口就非常的有用。
+&emsp;&emsp;当你不需要[完整的mapping](#Get mapping API)，或者当某个索引中包含很多数量的字段时，这个接口就非常的有用。
 
 ```text
 GET /my-index-000001/_mapping/field/user
@@ -44322,7 +44322,7 @@ GET /<target>/_mapping/field/<field>
 ##### Path parameters
 
 - `<target>`：（Optional, string）用逗号隔开的data stream、indices以及aliases的名称来限制请求。支持通配符（`*`）。若要获取所有的data streams和indices，可以忽略这个参数或者使用`*`、`_all`
-- `<field>`：（Optional, string）用逗号隔开的，或者通配符表达式的域
+- `<field>`：（Optional, string）用逗号隔开的，或者通配符表达式的字段
 
 ##### Query parameters
 
@@ -44340,7 +44340,7 @@ GET /<target>/_mapping/field/<field>
 
 ###### Example with index setup
 
-&emsp;&emsp;你可以在创建一个新的索引时提供域的mappings。下面[create index](#Create index API) API的请求创建了一个名为`publications`的索引，并且定义了一些域的mappings。
+&emsp;&emsp;你可以在创建一个新的索引时提供字段的mappings。下面[create index](#Create index API) API的请求创建了一个名为`publications`的索引，并且定义了一些字段的mappings。
 
 ```text
 PUT /publications
@@ -44388,9 +44388,9 @@ GET publications/_mapping/field/title
 
 ###### Specifying fields
 
-&emsp;&emsp;该接口允许你指定用逗号隔开的域的列表。
+&emsp;&emsp;该接口允许你指定用逗号隔开的字段的列表。
 
-&emsp;&emsp;例如选择了`author`字段的子域`id`，你必须使用全名`author.id`。
+&emsp;&emsp;例如选择了`author`字段的子字段`id`，你必须使用全名`author.id`。
 
 ```text
 GET publications/_mapping/field/author.id,abstract,name
@@ -44467,15 +44467,15 @@ GET publications/_mapping/field/a*
 
 ###### Multiple targets and fields
 
-&emsp;&emsp;该接口可以用来通过单次请求从多个data streams或者indices中获取多个域的mapping。
+&emsp;&emsp;该接口可以用来通过单次请求从多个data streams或者indices中获取多个字段的mapping。
 
 &emsp;&emsp;`<target>`和`<field>`参数都支持用逗号隔开的列表以及通配符表达式。
 
 &emsp;&emsp;你可以忽略`<target>`参数或者使用`*`、`_all`来获取集群中所有的data streams和indices。
 
-&emsp;&emsp;同样的，你可以忽略`<field>`参数或者使用`*`来获取目标data stream或者index中所有域的mapping。然而，`<field>`参数不支持`_all`。
+&emsp;&emsp;同样的，你可以忽略`<field>`参数或者使用`*`来获取目标data stream或者index中所有字段的mapping。然而，`<field>`参数不支持`_all`。
 
-&emsp;&emsp;比如，下面的请求从名为`my-index-000001`或`my-index-000002`的data stream或index中获取名为`message`的域的mapping。
+&emsp;&emsp;比如，下面的请求从名为`my-index-000001`或`my-index-000002`的data stream或index中获取名为`message`的字段的mapping。
 
 ```text
 GET /my-index-000001,my-index-000002/_mapping/field/message
@@ -44487,7 +44487,7 @@ GET /my-index-000001,my-index-000002/_mapping/field/message
 GET /_all/_mapping/field/message
 ```
 
-&emsp;&emsp;下面的请求获取集群中data  stream 或者index中有`id`属性的所有域的mapping。
+&emsp;&emsp;下面的请求获取集群中data  stream 或者index中有`id`属性的所有字段的mapping。
 
 ```text
 GET /_all/_mapping/field/*.id
@@ -46225,11 +46225,11 @@ PUT /<target>/_mapping
 
 ##### Response body
 
-- properties：（Required, [mappings object](#Mapping)）域的mappings。对于新的字段，mappings中包括：
+- properties：（Required, [mappings object](#Mapping)）字段的mappings。对于新的字段，mappings中包括：
   - Field names
   - [Field data types](#Field data types)
   - [Mapping parameters](#Mapping parameters)
-  &emsp;&emsp;对于现有的域，见[Change the mapping of an existing field](#Change the mapping of an existing field)。
+  &emsp;&emsp;对于现有的字段，见[Change the mapping of an existing field](#Change the mapping of an existing field)。
 
 ##### Example
 
@@ -46278,9 +46278,9 @@ PUT /my-index-000001,my-index-000002/_mapping
 
 ###### Add new properties to an existing object field
 
-&emsp;&emsp;你可以使用这个这个接口，将新的属性（properties）添加到现有的[object](#Object field type)域中。若要观察它是如何工作，见下面的例子：
+&emsp;&emsp;你可以使用这个这个接口，将新的属性（properties）添加到现有的[object](#Object field type)字段中。若要观察它是如何工作，见下面的例子：
 
-&emsp;&emsp;使用[create index](#Create index API)接口创建一个名为`name`的object类型的字段以及`name`下名为`first`的`text`类型的子域。
+&emsp;&emsp;使用[create index](#Create index API)接口创建一个名为`name`的object类型的字段以及`name`下名为`first`的`text`类型的子字段。
 
 ```text
 PUT /my-index-000001
@@ -46299,7 +46299,7 @@ PUT /my-index-000001
 }
 ```
 
-&emsp;&emsp;使用当前接口在`name`下添加一个新的名为`last`的`text`类型的子域。
+&emsp;&emsp;使用当前接口在`name`下添加一个新的名为`last`的`text`类型的子字段。
 
 ```text
 PUT /my-index-000001/_mapping
@@ -46318,7 +46318,7 @@ PUT /my-index-000001/_mapping
 
 ###### Add multi-fields to an existing field
 
-&emsp;&emsp;[multi-fields](#fields)可以让你对同一个域定义不同的mappings 类型。你可以使用该接口更新mappings 参数`fields`，为现有的域开启multi-fields。
+&emsp;&emsp;[multi-fields](#fields)可以让你对同一个字段定义不同的mappings 类型。你可以使用该接口更新mappings 参数`fields`，为现有的字段开启multi-fields。
 
 &emsp;&emsp;若要观察它是如何工作，见下面的例子：
 
@@ -46395,11 +46395,11 @@ PUT /my-index-000001/_mapping
 
 ###### Change the mapping of an existing field
 
-&emsp;&emsp;除了支持修改[mapping parameters](#Mapping parameters)，你不能更改现有域的mapping类型。修改现有域的类型可能使已经索引的数据无效。
+&emsp;&emsp;除了支持修改[mapping parameters](#Mapping parameters)，你不能更改现有字段的mapping类型。修改现有字段的类型可能使已经索引的数据无效。
 
-&emsp;&emsp;如果你需要修改data stream的backing indices中域的类型，见[Change mappings and settings for a data stream](#Change mappings and settings for a data stream)。
+&emsp;&emsp;如果你需要修改data stream的backing indices中字段的类型，见[Change mappings and settings for a data stream](#Change mappings and settings for a data stream)。
 
-&emsp;&emsp;如果你需要修改其他索引中的域的类型，你只能创建一个新的索引，并且使用正确的mapping类型，让通过[reindex](#Reindex API)重新写入数据。
+&emsp;&emsp;如果你需要修改其他索引中的字段的类型，你只能创建一个新的索引，并且使用正确的mapping类型，让通过[reindex](#Reindex API)重新写入数据。
 
 &emsp;&emsp;若要观察它是如何工作，见下面的例子。
 
@@ -46463,9 +46463,9 @@ POST /_reindex
 
 ###### Rename a field
 
-&emsp;&emsp;重命名域的名称会让旧名称的域对应的数据失效。你可以添加一个[alias](#Alias field type)来作为替代方案。
+&emsp;&emsp;重命名字段的名称会让旧名称的字段对应的数据失效。你可以添加一个[alias](#Alias field type)来作为替代方案。
 
-&emsp;&emsp;例如，使用[create index](#Create index API)创建一个索引，它包含了名为`user_identifier`的域。
+&emsp;&emsp;例如，使用[create index](#Create index API)创建一个索引，它包含了名为`user_identifier`的字段。
 
 ```text
 PUT /my-index-000001
@@ -46480,7 +46480,7 @@ PUT /my-index-000001
 }
 ```
 
-&emsp;&emsp;使用该接口向现有的域`user_identifier`中添加名为`user_id`的域的别名（field alias）。
+&emsp;&emsp;使用该接口向现有的字段`user_identifier`中添加名为`user_id`的字段的别名（field alias）。
 
 ```text
 PUT /my-index-000001/_mapping
@@ -48716,7 +48716,7 @@ GET /_searchable_snapshots/<node_id>/cache/stats
       - evictions：（long）从shared cache文件中驱逐（reject）的区域（region，shared cache file（共享缓存文件）被划分的小块或段）数量
       - num_regions：（integer）shared cache文件中的区域数量
       - size_in_bytes：（long）shared cache文件的总大小（以字节为单位）
-      - region_size_in_bytes：（long）shared cache文件中一个区域的大小（以字节为单位）
+      - region_size_in_bytes：（long）shared cache文件中一个区字段的大小（以字节为单位）
 
 ##### Example
 
