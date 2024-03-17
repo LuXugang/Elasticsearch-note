@@ -9655,7 +9655,7 @@ GET index_1,index_2/_search
 - [dynamic](#dynamic(mapping parameter))
 - [eager_global_ordinals](#eager_global_ordinals)
 - [enabled](#enabled(mapping parameter))
-- [fielddata](#fielddata mapping parameter(1))
+- [fielddata](#fielddata mapping parameter-1)
 - [fields](#fields)
 - [format](#format(mapping parameter))
 - [ignore_above](#ignore_above)
@@ -29049,6 +29049,189 @@ GET my-index/_search
   }
 }
 ```
+
+### Accessing document fields and special variables
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting-fields.html)
+
+&emsp;&emsp;根据你脚本运行的位置，有不同的可以访问的变量以及文档字段。
+
+#### Update scripts
+
+&emsp;&emsp;在[update](#Update API)、[update-by-query](#Update By Query API)、[reindex](#Reindex API)中使用脚本时可以访问`ctx`变量：
+
+- `ctx._source`：访问文档的[\_source](#\_source field)字段
+- `ctx.op`：应用到文档的操作：`index`或`delete`
+- `ctx._index`等等：访问文档的[metadata fields](#Metadata fields)，有些是只读的。
+
+#### Search and aggregation scripts
+
+&emsp;&emsp;除了每次搜索命中时执行一次的[script field](#Script fields)外，用于搜索和聚合的脚本将对可能匹配查询或聚合的每个文档执行一次。根据你拥有的文档数量，这可能意味着执行了数百万次或数十亿次：这些脚本需要快速执行！
+
+&emsp;&emsp;字段值可以通过使用文档值（[doc-values](#Doc values)）、[\_source](#The document \_source)字段或[stored fields](#Stored fields（painless）)从脚本中访问，每种方式如下所述。
+
+#### Accessing the score of a document within a script
+
+&emsp;&emsp;在[function_score query](#Function score query)、[script-based sorting](#
+Sort search results)、[aggregations](#Aggregations)中使用脚本时，可以访问`_score`变量，它代表了一篇文档的相关性打分。
+
+&emsp;&emsp;下面的例子中在[function_score query ](#Function score query)中使用了脚本来修改每一篇文档的相关性打分：
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "text": "quick brown fox",
+  "popularity": 1
+}
+
+PUT my-index-000001/_doc/2?refresh
+{
+  "text": "quick fox",
+  "popularity": 5
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "match": {
+          "text": "quick brown fox"
+        }
+      },
+      "script_score": {
+        "script": {
+          "lang": "expression",
+          "source": "_score * doc['popularity']"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Doc values
+
+&emsp;&emsp;目前为止在脚本中访问字段最快的方式就是使用`doc['field_name']`语法，它从[doc values](#doc_values)中提取字段值。Doc Values是列式存储除了[analyzed text field](#Text type family)，其他类型字段mapping都是默认开启的。
+
+```text
+PUT my-index-000001/_doc/1?refresh
+{
+  "cost_price": 100
+}
+
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "sales_price": {
+      "script": {
+        "lang":   "expression",
+        "source": "doc['cost_price'] * markup",
+        "params": {
+          "markup": 0.2
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;Doc-values可以返回"简单的"字段值比如数值、日期、地理值、term等等或者当字段是多值字段时返回一个数字。不能返回JSON对象。
+
+> NOTE：Missing fields
+> 如果`field`缺失的话，`doc['field']`会抛出异常。在`painless`中，可以首先通过`doc.containsKey('field')`进行检查使得安全访问`doc`。不过无法在`expression`中检查mapping中的字段在文档中是否存在
+
+> NOTE：Doc Values and text fields
+> `doc['field']`语法同样可以用于[analyzed text fields](##Text type family)，前提是开启了[fielddata](#fielddata mapping parameter-1)。**注意的是**，开启后会将所有的term加载到JVM堆中，对于内存和CPU的开销都很大。在脚本中访问`text`域往往没有什么意义
+
+#### The document \_source
+
+&emsp;&emsp;可以通过`_source.field_name`语法访问文档的[\_source](#\_source field)。`_source`作为map-of-maps的方式加载，因此在对象字段（object field）中的属性也可以访问。比如`_source.name.first`。
+
+> IMPORTANT：Prefer doc-values to\_source
+> 访问`_source`往往比doc-values要慢，`_source`字段在每一个结果中用于返回一些字段时有优化，而doc values在许多文档中访问某个字段的值时有优化。
+> 
+> 在查询结果中为前10个命中生成[script field](#Retrieve selected fields from a search)时使用`_source`比较合适，而在其他查询和聚合用例中，通常使用doc valus更合适。
+
+&emsp;&emsp;比如：
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "first_name": {
+        "type": "text"
+      },
+      "last_name": {
+        "type": "text"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1?refresh
+{
+  "first_name": "Barry",
+  "last_name": "White"
+}
+
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "full_name": {
+      "script": {
+        "lang": "painless",
+        "source": "params._source.first_name + ' ' + params._source.last_name"
+      }
+    }
+  }
+}
+```
+
+#### Stored fields
+
+&emsp;&emsp;`Stored fields`也即是mapping参数定义了["store"\: true](#store(mapping parameter))，可以使用`_fields['field_name'].value`或者`_fields['field_name']`的语法。
+
+```text
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "full_name": {
+        "type": "text",
+        "store": true
+      },
+      "title": {
+        "type": "text",
+        "store": true
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1?refresh
+{
+  "full_name": "Alice Ball",
+  "title": "Professor"
+}
+
+GET my-index-000001/_search
+{
+  "script_fields": {
+    "name_with_title": {
+      "script": {
+        "lang": "painless",
+        "source": "params._fields['title'].value + ' ' + params._fields['full_name'].value"
+      }
+    }
+  }
+}
+```
+
+> TIP：**Stored vs \_source**
+> `_source`字段其实是一个特殊的stored field，因此性能上跟其他的stored fields是相似的。`_source`可以访问原始的文档内容（包括原始文档中某些因为空值而在索引过程中被移除，简单的标量值在索引后变成单值的数组）
+> 
+> 只有在`_srouce`特别大时使用stored fields才有意义，因为这样只会加载指定的较小的stored field而不是加载整个`_source`
 
 ## Data management
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/data-management.html)
@@ -50329,7 +50512,7 @@ POST _slm/stop
 
 &emsp;&emsp;见[Date math support in index and index alias names](#Date math support in index and index alias names)
 
-### fielddata mapping parameter(1)
+### fielddata mapping parameter-1
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-gateway-dangling-indices.html)
 
 &emsp;&emsp;见[fielddata mapping parameter](#fielddata mapping parameter)。
