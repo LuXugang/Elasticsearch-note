@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/17）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/18）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -36,15 +36,15 @@
 
 &emsp;&emsp;定义你自己的mapping可以让你：
 
-- 区分出full-text string field跟exact value string field
+- 区分出full-text string 字段跟exact value string 字段
 - 执行特定语言的文本分析
 - 为部分匹配对字段进行优化
 - 使用自定义的date formats
 - 使用`geo_point` 和 `geo_shape`这些不能被自动检测的数据类型
 
-&emsp;&emsp;基于不同的目的，用不同的方式索引同一个字段通常是很有用的。例如你可能想要将一个string field索引为text field用于全文检索以及keyword用于排序、聚合。或者你可能会选择使用多个语言分词器来处理包含用户输入的内容。
+&emsp;&emsp;基于不同的目的，用不同的方式索引同一个字段通常是很有用的。例如你可能想要将一个string 字段索引为text field用于全文检索以及keyword用于排序、聚合。或者你可能会选择使用多个语言分词器来处理包含用户输入的内容。
 
-&emsp;&emsp;在索引期间应用到full-text field的analysis chain在查询期间同样需要使用。当你查询一个full-text field，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
+&emsp;&emsp;在索引期间应用到full-text字段的analysis chain在查询期间同样需要使用。当你查询一个full-text 字段，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
 
 ### Information out: search and analyze
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-analyze.html)
@@ -4957,7 +4957,7 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;或者你可以创建一个dynamic template将你的string field在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且字段的类型为`keyword`。
+&emsp;&emsp;或者你可以创建一个dynamic template将你的string 字段在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且字段的类型为`keyword`。
 
 &emsp;&emsp;尽管你的`string`字段不会被索引，但是它们的值会存储在`_source`中并且可以用于查询请求，聚合，过滤和排序。
 
@@ -9993,7 +9993,7 @@ GET my-index-000001/_mapping
 &emsp;&emsp;第4行，`name`对象字段下的两个字段是`name.first`和`name.last`
 &emsp;&emsp;第10行，查看这个索引的mapping
 
-&emsp;&emsp;下面这篇文档增加两个string field： `email`和`name.middle`: 
+&emsp;&emsp;下面这篇文档增加两个string 字段： `email`和`name.middle`: 
 
 ```text
 PUT my-index-000001/_doc/2
@@ -21857,7 +21857,7 @@ GET /_search
 
 &emsp;&emsp;在实践中，`first_name:smith`被视为跟`last_name:smith`有相同的词频并且加1。这使得匹配`first_name`和`last_name`时有可比较的打分值，但`last_name`会有轻微优势，因为它更可能包含词`smith`
 
-&emsp;&emsp;`cross_fields`类型查询通常仅适用于短的string field，且这些字段的boost值为1。如果字段有不同的boost、freq和length normalization，则混合词频统计可能失去意义
+&emsp;&emsp;`cross_fields`类型查询通常仅适用于短的string 字段，且这些字段的boost值为1。如果字段有不同的boost、freq和length normalization，则混合词频统计可能失去意义
 
 &emsp;&emsp;如果你通过[Validate](#Validate API)运行上面的query，它会返回这种解释：
 
@@ -36247,7 +36247,7 @@ PUT index
 
 &emsp;&emsp;[dynamic string mappings](#Dynamic mapping)会默认将字符串的值用[text](#Text type family)和[keyword](#Keyword type family)进行索引，如果你只需要其中一种，那么显然这种默认的方式会有一些浪费。比如说`id`类型的值只需要用`keyword`字段类型进行索引而`body`类型的值只要用`text`字段类型进行索引。
 
-&emsp;&emsp;可以通过显示的（explicit）在string field上或者在dynamic templates上进行配置，使得将string filed使用`keyword`或者`text`索引。
+&emsp;&emsp;可以通过显示的（explicit）在string 字段上或者在dynamic templates上进行配置，使得将string filed使用`keyword`或者`text`索引。
 
 &emsp;&emsp;比如，下面的模板将string filed使用`keyword`索引：
 
