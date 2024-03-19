@@ -36,13 +36,13 @@
 
 &emsp;&emsp;定义你自己的mapping可以让你：
 
-- 区分出full-text string 字段跟exact value string 字段
+- 区分出全文检索字段（full-text string ）跟精确匹配字段（exact value string field）
 - 执行特定语言的文本分析
 - 为部分匹配对字段进行优化
 - 使用自定义的date formats
 - 使用`geo_point` 和 `geo_shape`这些不能被自动检测的数据类型
 
-&emsp;&emsp;基于不同的目的，用不同的方式索引同一个字段通常是很有用的。例如你可能想要将一个string 字段索引为text field用于全文检索以及keyword用于排序、聚合。或者你可能会选择使用多个语言分词器来处理包含用户输入的内容。
+&emsp;&emsp;基于不同的目的，用不同的方式索引同一个字段通常是很有用的。例如你可能想要将一个字符串字段索引为text field用于全文检索以及keyword用于排序、聚合。或者你可能会选择使用多个语言分词器来处理包含用户输入的内容。
 
 &emsp;&emsp;在索引期间应用到full-text字段的analysis chain在查询期间同样需要使用。当你查询一个full-text 字段，在索引中查找term前，它的请求文本（query text）也会经历（undergo）相同的analysis。
 
@@ -3727,7 +3727,7 @@ WARNING：：该配置如果设置为0，可能导致在节点重启时临时可
 ### Analysis
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/index-modules-analysis.html)
 
-&emsp;&emsp;The index analysis module acts as a configurable registry of analyzers用于将一个string filed转化为不同的term：
+&emsp;&emsp;The index analysis module acts as a configurable registry of analyzers用于将一个字符串字段转化为不同的term：
 
 - 添加到倒排索引（inverted index）中使得文档可以被搜索到
 - 用于high level query，比如[match query](#Match query)，生成用于搜索的term
@@ -4671,20 +4671,20 @@ PUT my-index-000001/_doc/1
 
 &emsp;&emsp;如果提供的mapping中包含了一个非法的mapping 片段（snippet），则返回一个validation error。Validation会在索引期间应用dynamic template时发生，并且在大多数情况下发生在dynamic template更新后。提供一个非法的mapping片段可能会因为下面的一些条件导致更新或者dynamic template的校验失败：
 
-- If no `match_mapping_type` has been specified but the template is valid for at least one predefined mapping type, mapping片段式合法的。然而，如果匹配了模板的某个字段索引为不同的类型，那么会返回validation error。例如，配置一个没有`match_mapping_type`的dynamic template在索引期间认为string类型是合法的，但是匹配了模板的某个字段索引为了long类型，那么会返回一个validation error。建议在mapping片段中配置`mathc_mapping_type`为期望的JSON类型或者想要的`type`
+- 如果你创建了一个动态模板（dynamic template）但没有指定match_mapping_type，这个模板仍然可以是有效的，前提是它至少对一个预定义的映射类型（如字符串）有效。然而，如果匹配了模板的某个字段索引为不同的类型，那么会返回validation error。例如，配置一个没有`match_mapping_type`的dynamic template在索引期间认为string类型是合法的，但是匹配了模板的某个字段索引为了long类型，那么会返回一个validation error。建议在mapping片段中配置`mathc_mapping_type`为期望的JSON类型或者想要的`type`
 - 如果在mapping片段中使用`{name}`占位符，那当更新dynamic template时会跳过validation。这是因为在那个时间点字段名是未知的。在索引期间应用模版时才进行validation。
 
 &emsp;&emsp;模版是有序处理的，使用匹配到的第一个模板。当通过[update mapping](#Update mapping API) API更新新的dynamic template后，所有现有的模板会被覆盖。这使得最开始添加的模板可以被重新排序或者被删除。
 
 ##### Mapping runtime fields in a dynamic template
 
-&emsp;&emsp;如果你想要Elasticsearch的动态的映射某些类型的新字段作为runtime field，那么在索引mapping中设置`"dynamic":"runtime"`。这些字段不会被索引，在查询期间从`_source`中获取。
+&emsp;&emsp;如果你想要Elasticsearch动态映射某些类型的新字段作为runtime field，那么在索引mapping中设置`"dynamic":"runtime"`。这些字段不会被索引，在查询期间从`_source`中获取。
 
 &emsp;&emsp;或者你可以使用默认的动态mapping规则，然后创建dynamic模版将指定的字段映射为runtime field。你可以在索引mapping中设置`"dynamic":"true"`然后创建一个dynamic template将某些类型的新字段映射为runtime field。
 
 &emsp;&emsp;比如说你的数据中的每一个字段的字段名都是以`ip_`开始的。基于[dynamic mapping rules](#match_mapping_type)，Elasticsearch将通过了`numeric`检测的字段映射为`float`或者`long`，然而你可以创建一个dynamic template将string类型的值映射为runtime filed并且字段的类型为`ip`。
 
-&emsp;&emsp;下面的请求中定义了一个名为`strings_as_ip`的dynamic template。当Elasticsearch检测到新的字段值为`string`字段匹配到了`ip*`这个pattern，它就会将这些字段映射为runtime field并且字段的类型为[ip](#ip)。因为`ip`字段没有动态映射，你可以使用带`"dynamic":"true"`或者`"dynamic":"runtime"`的模版。
+&emsp;&emsp;下面的请求中定义了一个名为`strings_as_ip`的dynamic template。当Elasticsearch检测到新的字段值为字符串字段匹配到了`ip*`这个pattern，它就会将这些字段映射为runtime field并且字段的类型为[ip](#ip)。因为`ip`字段没有动态映射，你可以使用带`"dynamic":"true"`或者`"dynamic":"runtime"`的模版。
 
 ```text
 PUT my-index-000001/
@@ -4705,11 +4705,11 @@ PUT my-index-000001/
 }
 ```
 
-&emsp;&emsp;见[this template](#text-only mappings for strings)来了解如何使用dynamic template将`string`字段映射为indexed filed或者runtime field。
+&emsp;&emsp;见[this template](#text-only mappings for strings)来了解如何使用dynamic template将字符串字段映射为indexed filed或者runtime field。
 
 ##### match_mapping_type
 
-&emsp;&emsp;`match_mapping_type`是数据类型，用于JSON parser。因为JSON不能区分`integer`和`long`，`double`和`float`。浮点型数值都被认为是`double`的JSON数据类型，`integer`数值都被认为是`long`。
+&emsp;&emsp;`match_mapping_type`是数据类型，用于JSON parser。由于JSON不能区分`integer`和`long`，`double`和`float`，浮点型数值都被认为是`double`的JSON数据类型，`integer`数值都被认为是`long`。
 
 > NOTE：在dynamic mappings中，Elasticsearch总是选择wider data type。唯一特例是`float`，它需要比`double`更少的存储空间并且对于大多数应用来说精度是足够的。Runtime field不支持`float`，这就是为什么`"dynamic":"runtime"`使用的是`double`。
 
@@ -4730,7 +4730,7 @@ PUT my-index-000001/
 
 &emsp;&emsp;使用通配符(`*`)匹配所有的数据类型。
 
-&emsp;&emsp;例如，如果想要将integer field都映射为`integer`而不是`long`，并且所有的`string` field映射为`text`和`keyword`，我们可以使用下面的模板：
+&emsp;&emsp;例如，如果想要将数值类型的字段都映射为`integer`而不是`long`，并且所有的字符串字段映射为`text`和`keyword`，我们可以使用下面的模板：
 
 ```text
 PUT my-index-000001
@@ -4784,7 +4784,7 @@ PUT my-index-000001/_doc/1
   "match": "^profit_\d+$"
 ```
 
-&emsp;&emsp;下面的例子匹配了所有名称以`long_`开头的字段，但是排除了以`_text`结尾的字段，并将它们的字段值映射为`long`：
+&emsp;&emsp;下面的例子匹配了所有字段名以`long_`开头的字段，但是排除了以`_text`结尾的字段，并将它们的字段值映射为`long`：
 
 ```text
 PUT my-index-000001
@@ -4869,7 +4869,7 @@ PUT my-index-000001/_doc/2
 
 ##### Template variables
 
-&emsp;&emsp;`{name}`和`{dynamic_type}`是mapping中的占位符，它们分别用字段名和检测到的动态类型（detected dynamic type）进行值的替换。下面的例子中将所有字段值为string的字段名作为[analyzer](#analyzer)的值，并且关闭所有不是string类型的字段的[doc_values](#doc_values)：
+&emsp;&emsp;`{name}`和`{dynamic_type}`是mapping中的占位符，它们分别用字段名和检测到的动态类型（detected dynamic type）进行值的替换。下面的例子中将所有字段值为字符串的字段名作为[analyzer](#analyzer)的值，并且关闭所有不是字符串类型的字段的[doc_values](#doc_values)：
 
 ```text
 PUT my-index-000001
@@ -4915,7 +4915,7 @@ PUT my-index-000001/_doc/1
 
 ###### Structured search
 
-&emsp;&emsp;当你设置了`"dynamic":"true"`，Elasticsearch会将string filed映射为`text`字段以及`keyword`的子字段。如果你只要索引结构化的内容并且对不需要全文检索，你可以让Elasticsearch只映射为`keyword`字段。然而，你在查询那些被索引的字段时，你必须提供精确的关键字。
+&emsp;&emsp;当你设置了`"dynamic":"true"`，Elasticsearch会将字符串字段映射为`text`字段以及`keyword`的子字段。如果你只要索引结构化的内容并且对不需要全文检索，你可以让Elasticsearch只映射为`keyword`字段。然而，你在查询那些被索引的字段时，你必须提供精确的关键字。
 
 ```text
 PUT my-index-000001
@@ -4937,7 +4937,7 @@ PUT my-index-000001
 
 ###### text-only mappings for strings
 
-&emsp;&emsp;与上一个例子相反的（contrary）是，如果你只关心string filed上的全文检索并且不计划使用聚合，排序或者精确（exact ）查询，你可以让Elasticsearch映射为`text`了：
+&emsp;&emsp;与上一个例子相反的（contrary）是，如果你只关心字符串字段上的全文检索并且不计划使用聚合，排序或者精确（exact ）查询，你可以让Elasticsearch映射为`text`了：
 
 ```text
 PUT my-index-000001
@@ -4957,11 +4957,11 @@ PUT my-index-000001
 }
 ```
 
-&emsp;&emsp;或者你可以创建一个dynamic template将你的string 字段在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且字段的类型为`keyword`。
+&emsp;&emsp;或者你可以创建一个dynamic template将你的字符串字段在mapping的runtime块映射为`keyword`字段。当Elasticsearch检测到`string`类型的字段，会将这些字段创建为runtime field并且字段的类型为`keyword`。
 
-&emsp;&emsp;尽管你的`string`字段不会被索引，但是它们的值会存储在`_source`中并且可以用于查询请求，聚合，过滤和排序。
+&emsp;&emsp;尽管你的字符串字段不会被索引，但是它们的值会存储在`_source`中并且可以用于查询请求，聚合，过滤和排序。
 
-&emsp;&emsp;例如下面的请求创建了一个dynamic template将`string`字段映射为runtime field并且字段的类型为`keyword`，尽管`runtime`的定义是空白的。但是基于Elasticsearch用于添加字段的类型到mapping的[dynamic mapping rules](#Dynamic field mapping)，新的`string`字段会被映射为runtime field并且字段的类型为`keyword`。所有没有通过date detection和numeric detection的`string`都会被自动的映射为`keyword`：
+&emsp;&emsp;例如下面的请求创建了一个dynamic template将字符串字段映射为runtime field并且字段的类型为`keyword`，尽管`runtime`的定义是空白的。但是基于Elasticsearch用于添加字段的类型到mapping的[dynamic mapping rules](#Dynamic field mapping)，新的字符串字段会被映射为runtime field并且字段的类型为`keyword`。所有没有通过date detection和numeric detection的`string`都会被自动的映射为`keyword`：
 
 ```text
 PUT my-index-000001
@@ -6580,7 +6580,7 @@ GET my-index-000001/_search
 
 ##### Multi-fields
 
-&emsp;&emsp;通常来说对同一个字段使用不同方式索引时很有用的。例如，一个`string`字段可以映射为`text`字段用于全文检索，映射为`keyword`用于排序或者聚合。你还可以索引一个text字段时，使用[standard analyzer](#Standard analyzer)、[english analyzer](#Standard analyzer)以及[french analyzer](#Standard analyzer)。
+&emsp;&emsp;通常来说对同一个字段使用不同方式索引时很有用的。例如，一个字符串字段可以映射为`text`字段用于全文检索，映射为`keyword`用于排序或者聚合。你还可以索引一个text字段时，使用[standard analyzer](#Standard analyzer)、[english analyzer](#Standard analyzer)以及[french analyzer](#Standard analyzer)。
 
 &emsp;&emsp;这就是multi-fields的目的。大多数的字段类型通过[fields](#fields)参数来支持multi-fields。
 
@@ -6907,7 +6907,7 @@ GET my-index-000001/_search
 }
 ```
 
-&emsp;&emsp;第4行，`tags`字段自动添加为`string`字段。
+&emsp;&emsp;第4行，`tags`字段自动添加为字符串字段（string field）。
 &emsp;&emsp;第5行，`lists`字段自动添加为`object`字段。
 &emsp;&emsp;第17行，第二篇文档没有包含数组，但是会被索引成相同的字段。
 &emsp;&emsp;第31行，这个query在`tags`字段中查找`elasticsearch`，并且匹配到这两篇文档。
@@ -9993,7 +9993,7 @@ GET my-index-000001/_mapping
 &emsp;&emsp;第4行，`name`对象字段下的两个字段是`name.first`和`name.last`
 &emsp;&emsp;第10行，查看这个索引的mapping
 
-&emsp;&emsp;下面这篇文档增加两个string 字段： `email`和`name.middle`: 
+&emsp;&emsp;下面这篇文档增加两个字符串字段： `email`和`name.middle`: 
 
 ```text
 PUT my-index-000001/_doc/2
@@ -21857,7 +21857,7 @@ GET /_search
 
 &emsp;&emsp;在实践中，`first_name:smith`被视为跟`last_name:smith`有相同的词频并且加1。这使得匹配`first_name`和`last_name`时有可比较的打分值，但`last_name`会有轻微优势，因为它更可能包含词`smith`
 
-&emsp;&emsp;`cross_fields`类型查询通常仅适用于短的string 字段，且这些字段的boost值为1。如果字段有不同的boost、freq和length normalization，则混合词频统计可能失去意义
+&emsp;&emsp;`cross_fields`类型查询通常仅适用于短的字符串字段，且这些字段的boost值为1。如果字段有不同的boost、freq和length normalization，则混合词频统计可能失去意义
 
 &emsp;&emsp;如果你通过[Validate](#Validate API)运行上面的query，它会返回这种解释：
 
@@ -36247,9 +36247,9 @@ PUT index
 
 &emsp;&emsp;[dynamic string mappings](#Dynamic mapping)会默认将字符串的值用[text](#Text type family)和[keyword](#Keyword type family)进行索引，如果你只需要其中一种，那么显然这种默认的方式会有一些浪费。比如说`id`类型的值只需要用`keyword`字段类型进行索引而`body`类型的值只要用`text`字段类型进行索引。
 
-&emsp;&emsp;可以通过显示的（explicit）在string 字段上或者在dynamic templates上进行配置，使得将string filed使用`keyword`或者`text`索引。
+&emsp;&emsp;可以通过显示的（explicit）在字符串字段上或者在dynamic templates上进行配置，使得将字符串字段使用`keyword`或者`text`索引。
 
-&emsp;&emsp;比如，下面的模板将string filed使用`keyword`索引：
+&emsp;&emsp;比如，下面的模板将字符串字段使用`keyword`索引：
 
 ```text
 PUT index
