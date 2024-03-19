@@ -24834,7 +24834,9 @@ POST /sales/_search?size=0
 #### Categorize text aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
 
-&emsp;&emsp;它属于multi-bucket aggregation，将半结构化（semi-structured）的文档分组到分桶内。每一个`text`类型的字段使用自定义的analyzer重新分析。
+>WARNING：这个功能目前处于技术预览阶段，未来的版本中可能会进行更改或移除。Elastic会努力修复任何问题，但是技术预览中的功能不受官方正式发布（GA）功能的支持服务级别协议（SLA）约束。
+
+&emsp;&emsp;它属于multi-bucket aggregation，将半结构化（semi-structured）的文档分组到分桶内。每一个`text`类型的字段使用自定义的analyzer重新分析。产生的token随后被分组，创建出格式相似的文本值桶。这种聚合最适合机器生成的文本，如系统日志。仅使用前100个分词后的token来分组文本。
 
 #### Children aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
@@ -25339,283 +25341,6 @@ GET my-index-000001/_search?size=0
 ##### Order（Composite）
 
 ##### Missing bucket（Composite）
-
-#### Filter aggregation
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
-
-&emsp;&emsp;它属于single bucket aggregation（一个过滤条件只会生成一个分桶），将满足[query](#Query DSL)的文档落入到单个桶内。
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "avg_price": { "avg": { "field": "price" } },
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;这个例子尖酸了所有衣服的平均价格同时将`t-shirt`类型的衣服划分为一个桶，并且计算了桶内的平均价格。
-
-&emsp;&emsp;响应如下：
-
-```text
-{
-  "aggregations": {
-    "avg_price": { "value": 140.71428571428572 },
-    "t_shirts": {
-      "doc_count": 3,
-      "avg_price": { "value": 128.33333333333334 }
-    }
-  }
-}
-```
-
-##### Use a top-level query to limit all aggregations
-
-&emsp;&emsp;若要限制在查询运行时目标文档数量，可以使用一个top-level `query`。这样能加快带有sub-aggregation的`filter` aggregation。
-
-&emsp;&emsp;使用下面的例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "query": { "term": { "type": "t-shirt" } },
-  "aggs": {
-    "avg_price": { "avg": { "field": "price" } }
-  }
-}
-```
-
-&emsp;&emsp;而不是使用下面的例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-##### Use the filters aggregation for multiple filters
-
-&emsp;&emsp;若要使用多个filter对文档进行分组，可以使用[filters aggregation](#Filters aggregation)，它比使用多个`filter` aggregations更快。
-
-&emsp;&emsp;例如应该这个例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "f": {
-      "filters": {
-        "filters": {
-          "hats": { "term": { "type": "hat" } },
-          "t_shirts": { "term": { "type": "t-shirt" } }
-        }
-      },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;而不是使用这个例子：
-
-```text
-POST /sales/_search?size=0&filter_path=aggregations
-{
-  "aggs": {
-    "hats": {
-      "filter": { "term": { "type": "hat" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    },
-    "t_shirts": {
-      "filter": { "term": { "type": "t-shirt" } },
-      "aggs": {
-        "avg_price": { "avg": { "field": "price" } }
-      }
-    }
-  }
-}
-```
-
-#### Filters aggregation
-（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
-
-&emsp;&emsp;它属于multi-bucket aggregation，每一个分桶中的文档满足定义的[query](#Query DSL)。
-
-&emsp;&emsp;例子：
-
-```text
-PUT /logs/_bulk?refresh
-{ "index" : { "_id" : 1 } }
-{ "body" : "warning: page could not be rendered" }
-{ "index" : { "_id" : 2 } }
-{ "body" : "authentication error" }
-{ "index" : { "_id" : 3 } }
-{ "body" : "warning: connection timed out" }
-
-GET logs/_search
-{
-  "size": 0,
-  "aggs" : {
-    "messages" : {
-      "filters" : {
-        "filters" : {
-          "errors" :   { "match" : { "body" : "error"   }},
-          "warnings" : { "match" : { "body" : "warning" }}
-        }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;上面的例子中，我们对日志信息进行解析。该聚合会构建两类日志信息的分桶，一个是包含`error`的，另一个是包含`warning`的。
-
-&emsp;&emsp;响应：
-
-```text
-{
-  "took": 9,
-  "timed_out": false,
-  "_shards": ...,
-  "hits": ...,
-  "aggregations": {
-    "messages": {
-      "buckets": {
-        "errors": {
-          "doc_count": 1
-        },
-        "warnings": {
-          "doc_count": 2
-        }
-      }
-    }
-  }
-}
-```
-
-##### Anonymous filters
-
-&emsp;&emsp;可以将多个过滤条件作为一个filters数组。如下所示：
-
-```text
-GET logs/_search
-{
-  "size": 0,
-  "aggs" : {
-    "messages" : {
-      "filters" : {
-        "filters" : [
-          { "match" : { "body" : "error"   }},
-          { "match" : { "body" : "warning" }}
-        ]
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;响应中两个分桶的先后顺序跟请求中定义的顺序一样。这个例子的响应如下：
-
-```text
-{
-  "took": 4,
-  "timed_out": false,
-  "_shards": ...,
-  "hits": ...,
-  "aggregations": {
-    "messages": {
-      "buckets": [
-        {
-          "doc_count": 1
-        },
-        {
-          "doc_count": 2
-        }
-      ]
-    }
-  }
-}
-```
-
-##### `Other` Bucket
-
-&emsp;&emsp;可以设置参数`other_bucket`将不满足所有过滤条件的文档落入到一个桶中并添加到响应中。这个参数的值可以是：
-
-- false：不计算`other` bucket
-- true：如果请求中过滤条件指定了名字，那么在响应中`other bucket`的名字默认是`_other_`，如果请求中过滤条件没有指定名字（Anonymous filters），那么`other bucket`就是数组中的最后一个（上面的例子中，没有给过滤条件指定名字）
-
-&emsp;&emsp;可以定义`other_bucket_key`参数指定`other_bucket`的名字，而不是使用默认的`_other_`（如果过滤条件没有指定名字，设置这个参数不会生效）。设置这个参数会默认将`other_bucket`设置为`true`。
-
-&emsp;&emsp;下面的片段中`other bucket`的名字设置为`other_messages`：
-
-```text
-PUT logs/_doc/4?refresh
-{
-  "body": "info: user Bob logged out"
-}
-
-GET logs/_search
-{
-  "size": 0,
-  "aggs" : {
-    "messages" : {
-      "filters" : {
-        "other_bucket_key": "other_messages",
-        "filters" : {
-          "errors" :   { "match" : { "body" : "error"   }},
-          "warnings" : { "match" : { "body" : "warning" }}
-        }
-      }
-    }
-  }
-}
-```
-
-&emsp;&emsp;响应差不多是这样的：
-
-```text
-{
-  "took": 3,
-  "timed_out": false,
-  "_shards": ...,
-  "hits": ...,
-  "aggregations": {
-    "messages": {
-      "buckets": {
-        "errors": {
-          "doc_count": 1
-        },
-        "warnings": {
-          "doc_count": 2
-        },
-        "other_messages": {
-          "doc_count": 1
-        }
-      }
-    }
-  }
-}
-```
-
 
 #### Date histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-datehistogram-aggregation.html#calendar_and_fixed_intervals)
@@ -26451,6 +26176,9 @@ POST /sales/_search?size=0
 }
 ```
 
+#### Diversified sampler aggregation
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-diversified-sampler-aggregation.html)
+
 #### Geo-distance aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-geodistance-aggregation.html)
 
@@ -26685,6 +26413,295 @@ POST /museums/_search?size=0
   }
 }
 ```
+
+
+#### Filter aggregation
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filter-aggregation.html)
+
+&emsp;&emsp;它属于single bucket aggregation（一个过滤条件只会生成一个分桶），将满足[query](#Query DSL)的文档落入到单个桶内。
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;这个例子尖酸了所有衣服的平均价格同时将`t-shirt`类型的衣服划分为一个桶，并且计算了桶内的平均价格。
+
+&emsp;&emsp;响应如下：
+
+```text
+{
+  "aggregations": {
+    "avg_price": { "value": 140.71428571428572 },
+    "t_shirts": {
+      "doc_count": 3,
+      "avg_price": { "value": 128.33333333333334 }
+    }
+  }
+}
+```
+
+##### Use a top-level query to limit all aggregations
+
+&emsp;&emsp;若要限制在查询运行时目标文档数量，可以使用一个top-level `query`。这样能加快带有sub-aggregation的`filter` aggregation。
+
+&emsp;&emsp;使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "query": { "term": { "type": "t-shirt" } },
+  "aggs": {
+    "avg_price": { "avg": { "field": "price" } }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用下面的例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+##### Use the filters aggregation for multiple filters
+
+&emsp;&emsp;若要使用多个filter对文档进行分组，可以使用[filters aggregation](#Filters aggregation)，它比使用多个`filter` aggregations更快。
+
+&emsp;&emsp;例如应该这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "f": {
+      "filters": {
+        "filters": {
+          "hats": { "term": { "type": "hat" } },
+          "t_shirts": { "term": { "type": "t-shirt" } }
+        }
+      },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;而不是使用这个例子：
+
+```text
+POST /sales/_search?size=0&filter_path=aggregations
+{
+  "aggs": {
+    "hats": {
+      "filter": { "term": { "type": "hat" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirt" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "price" } }
+      }
+    }
+  }
+}
+```
+
+#### Filters aggregation
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-filters-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket aggregation，每一个分桶中的文档满足定义的[query](#Query DSL)。
+
+&emsp;&emsp;例子：
+
+```text
+PUT /logs/_bulk?refresh
+{ "index" : { "_id" : 1 } }
+{ "body" : "warning: page could not be rendered" }
+{ "index" : { "_id" : 2 } }
+{ "body" : "authentication error" }
+{ "index" : { "_id" : 3 } }
+{ "body" : "warning: connection timed out" }
+
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "filters" : {
+          "errors" :   { "match" : { "body" : "error"   }},
+          "warnings" : { "match" : { "body" : "warning" }}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;上面的例子中，我们对日志信息进行解析。该聚合会构建两类日志信息的分桶，一个是包含`error`的，另一个是包含`warning`的。
+
+&emsp;&emsp;响应：
+
+```text
+{
+  "took": 9,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": {
+        "errors": {
+          "doc_count": 1
+        },
+        "warnings": {
+          "doc_count": 2
+        }
+      }
+    }
+  }
+}
+```
+
+##### Anonymous filters
+
+&emsp;&emsp;可以将多个过滤条件作为一个filters数组。如下所示：
+
+```text
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "filters" : [
+          { "match" : { "body" : "error"   }},
+          { "match" : { "body" : "warning" }}
+        ]
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应中两个分桶的先后顺序跟请求中定义的顺序一样。这个例子的响应如下：
+
+```text
+{
+  "took": 4,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": [
+        {
+          "doc_count": 1
+        },
+        {
+          "doc_count": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+##### `Other` Bucket
+
+&emsp;&emsp;可以设置参数`other_bucket`将不满足所有过滤条件的文档落入到一个桶中并添加到响应中。这个参数的值可以是：
+
+- false：不计算`other` bucket
+- true：如果请求中过滤条件指定了名字，那么在响应中`other bucket`的名字默认是`_other_`，如果请求中过滤条件没有指定名字（Anonymous filters），那么`other bucket`就是数组中的最后一个（上面的例子中，没有给过滤条件指定名字）
+
+&emsp;&emsp;可以定义`other_bucket_key`参数指定`other_bucket`的名字，而不是使用默认的`_other_`（如果过滤条件没有指定名字，设置这个参数不会生效）。设置这个参数会默认将`other_bucket`设置为`true`。
+
+&emsp;&emsp;下面的片段中`other bucket`的名字设置为`other_messages`：
+
+```text
+PUT logs/_doc/4?refresh
+{
+  "body": "info: user Bob logged out"
+}
+
+GET logs/_search
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "other_bucket_key": "other_messages",
+        "filters" : {
+          "errors" :   { "match" : { "body" : "error"   }},
+          "warnings" : { "match" : { "body" : "warning" }}
+        }
+      }
+    }
+  }
+}
+```
+
+&emsp;&emsp;响应差不多是这样的：
+
+```text
+{
+  "took": 3,
+  "timed_out": false,
+  "_shards": ...,
+  "hits": ...,
+  "aggregations": {
+    "messages": {
+      "buckets": {
+        "errors": {
+          "doc_count": 1
+        },
+        "warnings": {
+          "doc_count": 2
+        },
+        "other_messages": {
+          "doc_count": 1
+        }
+      }
+    }
+  }
+}
+```
+
+#### Geohash grid aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-geohashgrid-aggregation.html)
+
+#### Geohex grid aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-geohexgrid-aggregation.html)
+
+#### Geotile grid aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-geotilegrid-aggregation.html)
+
+#### Global aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-global-aggregation.html)
 
 #### Histogram aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-histogram-aggregation.html)
@@ -27019,7 +27036,29 @@ POST /metrics_index/_search?size=0
 #### IP prefix aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
 
-&emsp;&emsp;根据网络地址或者IP address的子网络对文档进行分组。
+#### IP range aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-iprange-aggregation.html)
+
+#### Missing aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-missing-aggregation.html)
+
+&emsp;&emsp;它属于single bucket aggregation，它创建一个包含当前文档集上下文（根据query过滤后的文档集合）中所有缺少字段值的文档的桶（实际上，是缺少一个字段或已设置了配置的NULL值的文档）。这种聚合器通常与其他字段数据桶聚合器（如range aggregation）结合使用，以返回无法因缺少字段数据值而放置在任何其他桶中的所有文档的信息。
+
+#### Multi Terms aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-multi-terms-aggregation.html)
+
+&emsp;&emsp;它属于multi-bucket value source based aggregation，分桶自动构建（每一个分桶键为多个字段的字段值的组合）。multi terms aggregation跟[terms aggregation](#Terms aggregation)很类似，然而大多数情况下比terms aggregation慢并且会消耗更多的内存。因此如果经常需要使用固定的字段组合（mapping中定义一个runtime field），那么可以将其字段组合在索引时作为单独一个字段，然后使用terms aggregation。
+
+#### Nested aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-nested-aggregation.html)
+
+&emsp;&emsp;它属于特殊的single bucket aggregation，用于对嵌套文档（nested document）聚合。
+
+#### Parent aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-parent-aggregation.html)
+
+#### Random sampler aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-random-sampler-aggregation.html)
 
 #### Range aggregation
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-aggregation.html)
@@ -27389,13 +27428,35 @@ GET metrics_index/_search?size=0&filter_path=aggregations
 > IMPORTANT： Histogram aggregation是一种bucket aggregation，它将文档分配到桶中，而不是像metric aggregation那样对字段进行计算。每个桶代表了一组文档，可以在其上运行sub-aggregation。另一方面，[Histogram field](#Histogram field type)是一种预聚合字段，表示单个字段内的多个值：数值数据的桶和每个桶的项目/文档计数。这种在histogram聚合预期输入（期望原始文档）和Histogram field（提供摘要信息）之间的不匹配，限制了聚合的结果仅为每个桶的文档计数。
 >因此，当在Histogram field上执行range aggregation时，不允许进行sub-aggregation。
 
+
+#### Rare terms aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-rare-terms-aggregation.html)
+
+#### Reverse nested aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-reverse-nested-aggregation.html)
+
+#### Sampler aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-sampler-aggregation.html)
+
+#### Significant terms aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-significantterms-aggregation.html)
+
 #### Significant text aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-significanttext-aggregation.html)
 
 #### Terms aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-terms-aggregation.html)
 
+&emsp;&emsp;它属于multi-bucket value source based aggregation，分桶自动构建，每一种字段值作为一个分桶key。
+
 ##### Execution hint
+
+#### Variable width histogram aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-variablewidthhistogram-aggregation.html)
+
+#### Subtleties of bucketing range fields
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-range-field-note.html)
+
 
 ### Metrics aggregations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-metrics-stats-aggregation.html)
