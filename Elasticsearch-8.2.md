@@ -18220,7 +18220,9 @@ GET /_search
 
 - fragment_size：
 
-- highlight_query：
+- highlight_query：高亮显示除搜索查询外的其他查询匹配到的内容。这特别有用，如果你使用了[rescore query](#Rescore filtered search results)，因为默认情况下这些不会被高亮显示。
+
+  > IMPORTANT：Elasticsearch不验证`highlight_query`中是否包含搜索查询，因此有可能定义它使合法的查询结果不被高亮显示。通常，你应该将搜索查询作为`highlight_query`的一部分。
 
 - matched_fields：
 
@@ -18234,7 +18236,7 @@ GET /_search
 
 - post_tags：
 
-- require_field_match：
+- require_field_match：默认满足query的字段才会被高亮，将`require_field_match`设置为`false`则高亮所有字段，默认值为`false`
 
 - max_analyzed_offset：
 
@@ -18281,7 +18283,7 @@ GET /_search
 
 ##### Specify a highlight query
 
-&emsp;&emsp;你可以指定一个`highlight_query`，在高亮时可以添加额外的高亮条件。例如下面的例子中在`highlight_query`中同时包含了`search query`以及`rescore query`。如果没有`highlight_query`，则置灰考虑`search query`中的条件。
+&emsp;&emsp;你可以指定一个`highlight_query`，在高亮时可以添加额外的高亮。例如下面的例子中在`highlight_query`中同时包含了`search query`以及`rescore query`。如果没有`highlight_query`，则只会考虑`search query`中的条件。
 
 ```text
 GET /_search
@@ -18341,21 +18343,120 @@ GET /_search
 }
 ```
 
-&emsp;&emsp;
-
 ##### Set highlighter type
 
-&emsp;&emsp;
+&emsp;&emsp;`type`字段可以强制指定一个高亮器的类型。可选值有`unified`、`plain`、`fvh`。下面的例子使用了plain高亮器：
+
+```text
+GET /_search
+{
+  "query": {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight": {
+    "fields": {
+      "comment": { "type": "plain" }
+    }
+  }
+}
+```
+
 ##### Configure highlighting tags
-&emsp;&emsp;
+
+&emsp;&emsp;Elasticsearch默认使用`<em>`跟`</em>`指定高亮范围。可以通过`pre_tags`和`post_tags`设置。
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "pre_tags" : ["<tag1>"],
+    "post_tags" : ["</tag1>"],
+    "fields" : {
+      "body" : {}
+    }
+  }
+}
+```
+
+&emsp;&emsp;当使用fast vector 高亮器时，你可以指定额外的标签以及"importance" is ordered。
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "pre_tags" : ["<tag1>", "<tag2>"],
+    "post_tags" : ["</tag1>", "</tag2>"],
+    "fields" : {
+      "body" : {}
+    }
+  }
+}
+```
+
+&emsp;&emsp;你可以使用内置的`styled`标签策略（tag scheme）：
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "tags_schema" : "styled",
+    "fields" : {
+      "comment" : {}
+    }
+  }
+}
+```
 
 ##### Highlight on source
-&emsp;&emsp;
+
+&emsp;&emsp;强制高亮器基于`_soure`对字段进行高亮，即使字段没有单独存储。默认为`false`：
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "fields" : {
+      "comment" : {"force_source" : true}
+    }
+  }
+}
+```
 
 ##### Highlight in all fields
-&emsp;&emsp;
+
+&emsp;&emsp;默认只会请求中匹配到的字段进行高亮。将`require_field_match`设置为`false`则对所有字段高亮。
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "require_field_match": false,
+    "fields": {
+      "body" : { "pre_tags" : ["<em>"], "post_tags" : ["</em>"] }
+    }
+  }
+}
+```
 
 ##### Combine matches on multiple fields
+
+> WARNING：只能在`fvh`高亮器中支持
+
 &emsp;&emsp;
 
 ##### Explicitly order highlighted fields
