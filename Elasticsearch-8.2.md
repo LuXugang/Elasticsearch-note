@@ -17914,6 +17914,230 @@ POST _aliases
 ## Search your data
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-your-data.html)
 
+### Filter search results
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/filter-search-results.html#rescore)
+
+&emsp;&emsp;你可以使用两种方式对查询结果进行过滤：
+
+- 使用带有一个`filter` clause的boolean query。查询请求会将[boolean filters](#Boolean query)同时应用到查询命中（search hits）和[aggregation](#Aggregations)上。
+- 使用search API的`post_filter`参数。查询请求会将[post filters](#Post filter)应用到查询命中上，但不会应用到aggregation上。你可以使用一个post filter基于一个更大的结果集来计算聚合，然后进一步收缩（narrow）结果。
+
+&emsp;&emsp;你也可以在post filter后使用对命中的结果[recore](#Rescore filtered search results)来提高相关性以及重排结果（reorder filter）。
+
+#### Post filter
+
+&emsp;&emsp;当你使用`post_filter`过滤查询结果时，会在聚合完成后对查询命中过滤。post filter不会对聚合结果有影响。
+
+&emsp;&emsp;比如说，你正在出售衬衫（shirt），并且有以下的属性：
+
+```text
+PUT /shirts
+{
+  "mappings": {
+    "properties": {
+      "brand": { "type": "keyword"},
+      "color": { "type": "keyword"},
+      "model": { "type": "keyword"}
+    }
+  }
+}
+
+PUT /shirts/_doc/1?refresh
+{
+  "brand": "gucci",
+  "color": "red",
+  "model": "slim"
+}
+```
+
+&emsp;&emsp;比如某个用户指定了两个filter：
+
+&emsp;&emsp;`color:red`以及`brand:gucci`。你只想要在查询结果中显示品牌为Gucci的红色衬衫。通常你会使用[bool query](#Boolean query)实现：
+
+```text
+GET /shirts/_search
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "color": "red"   }},
+        { "term": { "brand": "gucci" }}
+      ]
+    }
+  }
+}
+```
+
+&emsp;&emsp;然而，你还想要使用`faceted navigation`显示一些可以让用户点击的选项，可能你有一个样式（`model`）字段允许用户限制他们的查询结果为T恤衫（`t-shirts`）以及正装衬衫（`dress-shirts`）。
+
+&emsp;&emsp;那么可以用[terms aggregation](#Terms aggregation)实现：
+
+```text
+GET /shirts/_search
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "color": "red"   }},
+        { "term": { "brand": "gucci" }}
+      ]
+    }
+  },
+  "aggs": {
+    "models": {
+      "terms": { "field": "model" } 
+    }
+  }
+}
+```
+
+&emsp;&emsp;第13行，返回Gucci的最流行红色衬衫的样式。
+
+&emsp;&emsp;但是你可能想要告诉用户**其他颜色**的Gucci衬衫。如果你在`color`字段上添加一个`terms` aggregation，你只会获取到红色的衬衫，因为你的请求只会返回红色的Gucci衬衫。
+
+&emsp;&emsp;你可能想要在聚合中包含所有颜色的衬衫，然后只对查询结果应用`colors`过滤。那么你就可以使用`post_filter`：
+
+```text
+GET /shirts/_search
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "term": { "brand": "gucci" } 
+      }
+    }
+  },
+  "aggs": {
+    "colors": {
+      "terms": { "field": "color" } 
+    },
+    "color_red": {
+      "filter": {
+        "term": { "color": "red" } 
+      },
+      "aggs": {
+        "models": {
+          "terms": { "field": "model" } 
+        }
+      }
+    }
+  },
+  "post_filter": { 
+    "term": { "color": "red" }
+  }
+}
+```
+
+&emsp;&emsp;第6行，请求现在会找到所有颜色的Gucci衬衫
+&emsp;&emsp;第12行，对`colors`的聚合返回Gucci的所有颜色
+&emsp;&emsp;第16、20行，`color_red`聚合将对`models`的聚合限制在红色的Gucci衬衫中
+&emsp;&emsp;第25行，最终， `post_filter`从查询命中里移除了红色以外的结果。
+
+#### Rescore filtered search results
+
+&emsp;&emsp;rescore可以对[query](#Search API)以及[post_filter](#Post filter)返回的Top文档使用一个通常有额外开销的次级算法（secondary algorithm）重新排序来提高精确度。而不是将这个次级算法应用到索引中所有文档上。
+
+&emsp;&emsp;`rescore` 请求在每一个分片上执行，然后通过节点重新排序来处理所有的查询请求。
+
+&emsp;&emsp;目前，rescore API只有一种实现方式：查询重评分器（[query rescorer](#Query rescorer)），它使用查询来微调评分。将来，可能会提供其他类型的重评分器，例如成对重评分器（pair-wise rescorer）。
+
+> NOTE：如果在rescore query中提供了显式[sort](#Sort search results)（除了降序的\_score外），则会抛出错误。
+
+> NOTE：当向用户展示分页时，你在浏览每一页时不应更改`window_size`（通过传递不同的`from`值），因为这可能会改变顶部命中，导致用户在翻页时结果出现令人困惑的变化。
+
+##### Query rescorer
+
+&emsp;&emsp;Query rescorer在[query](#Search API)以及[post_filter](#Post filter)返回的Top-K的结果上执行一个次级的query。可以通过参数`window_size`控制每一个分片上的计算的文档数量，默认值为`10`。
+
+&emsp;&emsp;默认情况下，original query和rescore query的得分会线性组合以产生每个文档的最终\_score。original query和rescore query的相对重要性可以分别通过`query_weight`和`rescore_query_weight`来控制，这两个参数默认值都是1。
+
+```text
+POST /_search
+{
+   "query" : {
+      "match" : {
+         "message" : {
+            "operator" : "or",
+            "query" : "the quick brown"
+         }
+      }
+   },
+   "rescore" : {
+      "window_size" : 50,
+      "query" : {
+         "rescore_query" : {
+            "match_phrase" : {
+               "message" : {
+                  "query" : "the quick brown",
+                  "slop" : 2
+               }
+            }
+         },
+         "query_weight" : 0.7,
+         "rescore_query_weight" : 1.2
+      }
+   }
+}
+```
+
+&emsp;&emsp;分数组合可以由`score_mode`控制：
+
+| Score Mode | Description                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `total`    | Add the original score and the rescore query score. The default. |
+| `multiply` | Multiply the original score by the rescore query score. Useful for [`function query`](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-function-score-query.html) rescores. |
+| `avg`      | Average the original score and the rescore query score.      |
+| `max`      | Take the max of original score and the rescore query score.  |
+| `min`      | Take the min of the original score and the rescore query score. |
+
+##### Multiple rescores
+
+&emsp;&emsp;也可以有序的执行多个rescore：
+
+```text
+POST /_search
+{
+   "query" : {
+      "match" : {
+         "message" : {
+            "operator" : "or",
+            "query" : "the quick brown"
+         }
+      }
+   },
+   "rescore" : [ {
+      "window_size" : 100,
+      "query" : {
+         "rescore_query" : {
+            "match_phrase" : {
+               "message" : {
+                  "query" : "the quick brown",
+                  "slop" : 2
+               }
+            }
+         },
+         "query_weight" : 0.7,
+         "rescore_query_weight" : 1.2
+      }
+   }, {
+      "window_size" : 10,
+      "query" : {
+         "score_mode": "multiply",
+         "rescore_query" : {
+            "function_score" : {
+               "script_score": {
+                  "script": {
+                    "source": "Math.log10(doc.count.value + 2)"
+                  }
+               }
+            }
+         }
+      }
+   } ]
+}
+```
+
+&emsp;&emsp;第一个rescore基于query 的结果排序，第二个rescore根据第一个rescores排序后的结果再排序。第二个rescore可以看到第一个rescore的排序结果因此可以在第一个rescore中使用大的窗口然后再第二个rescore中使用较小的窗口。
 
 ### Highlighting
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/highlighting.html)
@@ -17970,55 +18194,187 @@ GET /_search
 - term vector。如果通过在mapping中将`term_vector`设置为`with_positions_offsets`使得能提供`term_verctor`信息，那么`unified`高亮器会自动的使用`term_vector`来高亮字段（Highlight field）。当为large field（>  `1MB`）以及为例如`prefix`、`wildcard`这类multi-term query高亮时特别快。因为他能访问每一篇文档中term的字典。`fvh`高亮器总是使用term vectors。
 - Plain Highlight。该模式是`unified`高亮器在没有其他选择时使用的模式。它创建一个小型内存索引，并通过Lucene的查询执行规划器重新运行原始查询标准，以获取当前文档的底层匹配信息。这个过程会对每个需要高亮的字段和文档重复执行。`plain`高亮器始终使用plain highlighting 。
 
-> WARNING：Plain Highlight对于大型文本可能要求更多的内存和处理时间。因此文本的字符数量会被限制为1000000来应对这个问题。可以通过[index.highlight.max_analyzed_offset]()为特定的索引修改这个限制
+> WARNING：Plain Highlight对于大型文本可能要求更多的内存和处理时间。因此文本的字符数量会被限制为1000000来应对这个问题。可以通过[index.highlight.max_analyzed_offset](#index.highlight.max_analyzed_offset)为特定的索引修改这个限制
 
 #### Highlighting settings
 
 &emsp;&emsp;高亮设置可以为全局（global-level）并且覆盖域层（field-level）的设置。
 
-##### boundary_chars
+- boundary_chars：
+
+- boundary_max_scan：
+
+- boundary_scanner：
+
+- boundary_scanner_locale：
+
+- encoder：
+
+- fields：
+
+- force_source：
+
+- fragmenter：
+
+- fragment_offset：
+
+- fragment_size：
+
+- highlight_query：
+
+- matched_fields：
+
+- no_match_size：
+
+- number_of_fragments：
+
+- order：
+
+- phrase_limit：
+
+- post_tags：
+
+- require_field_match：
+
+- max_analyzed_offset：
+
+- tags_schema：
+
+- type：
+
+#### Highlighting examples
+
+- [Override global settings](#Override global settings)
+- [Specify a highlight query](#Specify a highlight query)
+- [Set highlighter type](#Set highlighter type)
+- [Configure highlighting tags](#Configure highlighting tags)
+- [Highlight source](#Highlight on source)
+- [Highlight all fields](#Highlight in all fields)
+- [Combine matches on multiple fields](#Combine matches on multiple fields)
+- [Explicitly order highlighted fields](#Explicitly order highlighted fields)
+- [Control highlighted fragments](#Control highlighted fragments)
+- [Highlight using the postings list](#Highlight using the postings list)
+- [Specify a fragmenter for the plain highlighter](#Specify a fragmenter for the plain highlighter)
+
+##### Override global settings
+
+&emsp;&emsp;你可以指定全局设置并且可以为不同的字段选择性的覆盖这些设置、
+
+```text
+GET /_search
+{
+  "query" : {
+    "match": { "user.id": "kimchy" }
+  },
+  "highlight" : {
+    "number_of_fragments" : 3,
+    "fragment_size" : 150,
+    "fields" : {
+      "body" : { "pre_tags" : ["<em>"], "post_tags" : ["</em>"] },
+      "blog.title" : { "number_of_fragments" : 0 },
+      "blog.author" : { "number_of_fragments" : 0 },
+      "blog.comment" : { "number_of_fragments" : 5, "order" : "score" }
+    }
+  }
+}
+```
+
+##### Specify a highlight query
+
+&emsp;&emsp;你可以指定一个`highlight_query`，在高亮时可以添加额外的高亮条件。例如下面的例子中在`highlight_query`中同时包含了`search query`以及`rescore query`。如果没有`highlight_query`，则置灰考虑`search query`中的条件。
+
+```text
+GET /_search
+{
+  "query": {
+    "match": {
+      "comment": {
+        "query": "foo bar"
+      }
+    }
+  },
+  "rescore": {
+    "window_size": 50,
+    "query": {
+      "rescore_query": {
+        "match_phrase": {
+          "comment": {
+            "query": "foo bar",
+            "slop": 1
+          }
+        }
+      },
+      "rescore_query_weight": 10
+    }
+  },
+  "_source": false,
+  "highlight": {
+    "order": "score",
+    "fields": {
+      "comment": {
+        "fragment_size": 150,
+        "number_of_fragments": 3,
+        "highlight_query": {
+          "bool": {
+            "must": {
+              "match": {
+                "comment": {
+                  "query": "foo bar"
+                }
+              }
+            },
+            "should": {
+              "match_phrase": {
+                "comment": {
+                  "query": "foo bar",
+                  "slop": 1,
+                  "boost": 10.0
+                }
+              }
+            },
+            "minimum_should_match": 0
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 &emsp;&emsp;
 
-##### boundary_max_scan
+##### Set highlighter type
 
-##### boundary_scanner
+&emsp;&emsp;
+##### Configure highlighting tags
+&emsp;&emsp;
 
-##### boundary_scanner_locale
+##### Highlight on source
+&emsp;&emsp;
 
-##### encoder
+##### Highlight in all fields
+&emsp;&emsp;
 
-##### fields
+##### Combine matches on multiple fields
+&emsp;&emsp;
 
-##### force_source
+##### Explicitly order highlighted fields
+&emsp;&emsp;
 
-##### fragmenter
+##### Control highlighted fragments
+&emsp;&emsp;
 
-##### fragment_offset
+##### Highlight using the postings list
+&emsp;&emsp;
 
-##### fragment_size
+##### Specify a fragmenter for the plain highlighter
+&emsp;&emsp;
 
-##### highlight_query
+##### How highlighters work internally
+&emsp;&emsp;
 
-##### matched_fields
-
-##### no_match_size
-
-##### number_of_fragments
-
-##### order
-
-##### phrase_limit
-
-##### post_tags
-
-##### require_field_match
-
-##### max_analyzed_offset
-
-##### tags_schema
-
-##### type
+##### An example of the work of the unified highlighter
+&emsp;&emsp;
 
 ### Long-running searches
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/async-search-intro.html)
@@ -50626,6 +50982,10 @@ POST _slm/stop
 #### Repository plugins
 
 &emsp;&emsp;见[Self-managed repository types.](#Self-managed repository types)
+
+#### Rescoring parameter for request body search API-1
+
+&emsp;&emsp;见[Rescore filtered search results](#Rescore filtered search results)。
 
 #### Change index settings during restore
 
