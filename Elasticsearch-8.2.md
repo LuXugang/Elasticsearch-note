@@ -1,4 +1,4 @@
-# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/18）
+# [Elasticsearch-8.2](https://luxugang.github.io/Elasticsearch/2022/0905/Elasticsearch-8-2/)（2024/03/26）
 
 ## What is Elasticsearch?
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/elasticsearch-intro.html)
@@ -28988,11 +28988,111 @@ POST /exams/_search?size=0
 ### Pipeline aggregations
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline.html)
 
+#### Average bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-avg-bucket-aggregation.html)
+
+&emsp;&emsp;Average bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），它计算在兄弟聚合（sibling aggregation）中指定指标的平均值。所指定的指标必须是数值型，且兄弟聚合必须是多桶聚合（multi-bucket aggregation）。
+
 #### Bucket script aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-bucket-script-aggregation.html)
 
+&emsp;&emsp;Bucket script aggregation是一种父级管道聚合（parent pipeline aggregation），它通过执行一个脚本来对父多桶聚合中指定的度量进行每个桶的计算。指定的指标必须是数值型，且脚本必须返回一个数值结果。
+
+#### Bucket count K-S test correlation aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-count-ks-test-aggregation.html)
+
+&emsp;&emsp;
+
+#### Bucket correlation aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-bucket-correlation-aggregation.html)
+
+&emsp;&emsp;
+
 #### Bucket selector aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-bucket-selector-aggregation.html)
+
+&emsp;&emsp;Bucket selector aggregation是一个父级管道聚合（parent pipeline aggregation），它通过执行一个脚本来决定当前的桶是否会保留在父多桶聚合中。指定的指标必须是数值型，脚本返回一个布尔值。如果脚本语言是`expression`，那么允许返回数值，其中0.0会被认为是假（false），所有其他值被认为是真（true）
+
+#### Bucket sort aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-bucket-sort-aggregation.html)
+
+&emsp;&emsp;Bucket sort aggregation是一种父级管道聚合（parent pipeline aggregation），用于对其父多桶聚合中的桶进行排序。可以指定零个或多个排序字段以及相应的排序顺序。每个桶可以基于其\_key、\_count或子聚合进行排序。此外，还可以设置`from`和`size`参数来截断结果桶。
+
+#### Change point aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-change-point-aggregation.html)
+
+&emsp;&emsp;
+
+#### Cumulative cardinality aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-cumulative-cardinality-aggregation.html)
+
+&emsp;&emsp;Cumulative cardinality aggregation是一种（parent pipeline aggregation），用于计算父直方图（或日期直方图）聚合中的累积基数。指定的指标必须是基数聚合（cardinality aggregation），并且封闭的直方图必须将`min_doc_count`设置为0（直方图聚合的默认设置）。累积基数聚合对于寻找“总新项目”很有用，例如，每天网站的新访客数量。它能帮助区分“新”访客和“重复”访客，了解每天的独特访客中有多少是“新”的。
+
+#### Cumulative sum aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-cumulative-sum-aggregation.html)
+
+&emsp;&emsp;Cumulative sum aggregation是一种父级管道聚合（parent pipeline aggregation），它用于计算父直方图（或日期直方图）聚合中指定指标的累积和（累加每个分桶中的某个指标值）。指定的指标必须是数值型，并且封闭的直方图必须将`min_doc_count`设置为0（直方图聚合的默认设置）
+
+#### Derivative aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-derivative-aggregation.html)
+
+&emsp;&emsp;
+
+#### Extended stats bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-extended-stats-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Inference bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-inference-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Max bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-max-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Min bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-min-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Moving function aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-movfn-aggregation.html)
+
+&emsp;&emsp;
+
+#### Moving percentiles aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-moving-percentiles-aggregation.html)
+
+&emsp;&emsp;
+
+#### Normalize aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-normalize-aggregation.html)
+
+&emsp;&emsp;
+
+#### Percentiles bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-percentiles-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Serial differencing aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-serialdiff-aggregation.html)
+
+&emsp;&emsp;
+
+#### Stats bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-stats-bucket-aggregation.html)
+
+&emsp;&emsp;
+
+#### Sum bucket aggregation
+[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-sum-bucket-aggregation.html)
+
+&emsp;&emsp;
+
 
 ## Scripting 
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/modules-scripting.html)
