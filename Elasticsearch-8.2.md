@@ -24105,7 +24105,7 @@ GET /_search
 
   > WARNING：`regexp` query的性能非常取决于提供的正则表达式。若要提高性能，避免使用通配符模式，比如`.*`或者`.*?+`，没有后缀或前缀。
 
-- flags：（Optional, string）允许使用的正则表达式操作符。对于可用的操作符以及更多信息见[Regular expression syntax]()
+- flags：（Optional, string）允许使用的正则表达式操作符。对于可用的操作符以及更多信息见[Regular expression syntax](#Regular expression syntax)
 - case_insensitive：（Optional, Boolean）设置为`true`后，匹配时大小写不敏感。默认为`false`，那么是否大小写敏感取决于字段的mapping
 - max_determinized_states：（Optional, integer）Query要求[automaton states](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)的最大值。默认值为`1000`
   - Elasticsearch在内部使用[Lucene](https://lucene.apache.org/core/)的正则表达式。Lucene将每一个正则表达式转化为一个[有限自动状态](https://amazingkoala.com.cn/Lucene/gongjulei/2019/0417/Automaton/)
@@ -24622,6 +24622,97 @@ GET /_search
 
 ### rewrite parameter
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/query-dsl-multi-term-rewrite.html)
+
+### Regular expression syntax
+（8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/regexp-syntax.html)
+
+&emsp;&emsp;[regular expression](https://en.wikipedia.org/wiki/Regular_expression)是一种使用占位符（称为操作符）匹配数据的方式。
+
+&emsp;&emsp;Elasticsearch支持在下面的请求中使用regular expression：
+
+- [regexp](#Regexp query)
+- [query_string](#Query string query)
+
+&emsp;&emsp;Elasticsearch使用[Apache Lucene](https://lucene.apache.org/core/)的正则表达式引擎来解析这些query。
+
+#### Reserved characters
+
+&emsp;&emsp;Lucene的正则表达式引擎支持搜友的Unicode字段，然而下面的字符会被保留用作操作符：
+
+`. ? + * | { } [ ] ( ) " \`
+
+&emsp;&emsp;根据开启的[optional operators](#Optional operators)，下面的字符可能也会被保留：
+
+`# @ & < >  ~`
+
+&emsp;&emsp;若要字面上使用这些字符，需要用反斜杠进行转移或者用双引号修饰
+
+`\@                  # renders as a literal '@'`
+`\\                  # renders as a literal '\'`
+`"john@smith.com"    # renders as 'john@smith.com'`
+
+#### Standard operators
+
+&emsp;&emsp;Lucene的正则表达式引擎不使用[Perl Compatible Regular Expressions (PCRE)](https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions)库，但支持下面标准的操作符：
+
+- `.`：匹配任意的字符，比如：
+  - `ab.     # matches 'aba', 'abb', 'abz' ,etc.`
+- `?`：重复前一个字符零次或一次。通常用于使前一个字符变为可选。例如：
+  - `abc?     # matches 'ab' and 'abc'`
+- `+`：重复前一个字符0次或者多次。例如：
+  - `ab+     # matches 'ab', 'abb', 'abbb', etc.`
+- `*`：重复前一个字符0次或者多次。例如：
+  - `ab*     # matches 'a', 'ab', 'abb', 'abbb', etc.`
+- `{}`：重复前一个字符最小或最大次数。例如：
+  - `a{2}    # matches 'aa'`
+  - `a{2,4}  # matches 'aa', 'aaa', and 'aaaa'`
+  - `a{2,}   # matches 'a` repeated two or more times`
+- `|`：OR操作符。如果左侧或右侧的最长模式匹配成功，则匹配将成功。例如：
+  - `abc|xyz  # matches 'abc' and 'xyz'`
+- `( ... )`：形成一个组。您可以使用组将表达式的一部分视为单个字符。例如
+  - `abc(def)?  # matches 'abc' and 'abcdef' but not 'abcd'`
+- `[ … ]`：匹配括号中的其中一个字符。例如：
+  - `[abc]   # matches 'a', 'b', 'c'`
+  - 在括号中，`-`表示一个范围，除了`-`作为第一个字符或被转义。例如：
+  - `[a-c]   # matches 'a', 'b', or 'c'`
+  - `[-abc]  # '-' is first character. Matches '-', 'a', 'b', or 'c'`
+  - `[abc\-] # Escapes '-'. Matches 'a', 'b', 'c', or '-'`
+  - 括号中某个字符前有一个`^`表示匹配除开字符或某个范围。
+  - `[^abc]      # matches any character except 'a', 'b', or 'c'`
+  - `[^a-c]      # matches any character except 'a', 'b', or 'c'`
+  - `[^-abc]     # matches any character except '-', 'a', 'b', or 'c'`
+  - `[^abc\-]    # matches any character except 'a', 'b', 'c', or '-'`
+
+#### Optional operators
+
+&emsp;&emsp;你可以使用`flags`参数开启更多可选的操作符用于Lucene的正则表达式引擎中。
+
+&emsp;&emsp;若要开启多个操作符，可以使用`|`分隔符。例如，`flag`为`COMPLEMENT|INTERVAL`开启了`COMPLEMENT`以及`INTERVAL`两个操作符。
+
+##### Valid values
+
+- `ALL (Default)`：开启所有可选的操作符
+- `"" (empty string)`：`ALL`的别名
+- `COMPLEMENT`：开启`~`操作符。你可以使用`~`匹配不是后面一个字符的内容。比如：
+  - `a~bc   # matches 'adc' and 'aec' but not 'abc'`
+- `EMPTY`：开启`#`操作符。这个操作符不匹配任何的string，甚至是一个空的string
+  - 如果你通过编程方式组合数值来创建正则表达式，你可以传递#来指定"没有字符串"。这样可以避免意外匹配空字符串或其他不需要的字符串。例如：
+    - `#|abc  # matches 'abc' but nothing else, not even an empty string`
+- `INTERVAL`：开启`<>`操作符。你可以使用`<>`匹配一个数值范围。例如：
+  - `foo<1-100>      # matches 'foo1', 'foo2' ... 'foo99', 'foo100'`
+  - `foo<01-100>     # matches 'foo01', 'foo02' ... 'foo99', 'foo100'`
+- `INTERSECTION`：
+  - 开启`&`操作符，相当于AND操作符。如果左右两边都匹配则满足。例如：
+    - `aaa.+&.+bbb  # matches 'aaabbb'`
+- `ANYSTRING`：开启`@`操作符。你可以使用`@`匹配任意整个string
+  - 你可以组合`@`、`&`以及`~`创建一个`everything except`的逻辑。例如：
+    - `@&~(abc.+)  # matches everything except terms beginning with 'abc'`
+- `NONE`：不启用可选的操作符
+
+#### Unsupported operators
+
+&emsp;&emsp;Lucene的正则表达式引擎不支持锚点运算符（anchor operator）。比如`^`（行的开头）或`$`（行的结尾）。要匹配一个term，正则表达式必须匹配整个字符串。
+
 
 ## Aggregations
 （8.2）[link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations.html)
