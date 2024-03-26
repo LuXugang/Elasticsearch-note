@@ -29041,7 +29041,7 @@ POST /exams/_search?size=0
 #### Extended stats bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-extended-stats-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Extended stats bucket aggregation是一种同级管道聚合（sibling pipeline aggregation）可以计算指定指标在同级聚合的所有桶中的各种统计信息。这些指标必须是数值型，且相关的同级聚合必须是多桶聚合。与stats_bucket聚合相比，这种聚合提供了更多统计信息（如平方和、标准差等）。
 
 #### Inference bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-inference-bucket-aggregation.html)
@@ -29051,12 +29051,12 @@ POST /exams/_search?size=0
 #### Max bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-max-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Max bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），用于识别在同级聚合中指定指标值最大的桶，并输出该桶的值和键。指定的指标必须是数值型，且同级聚合必须是多桶聚合。
 
 #### Min bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-min-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Min bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），用于识别在同级聚合中指定指标值最小的桶，并输出该桶的值和键。指定的指标必须是数值型，且同级聚合必须是多桶聚合。
 
 #### Moving function aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-movfn-aggregation.html)
@@ -29076,7 +29076,7 @@ POST /exams/_search?size=0
 #### Percentiles bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-percentiles-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Percentiles bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），用于计算在同级聚合中指定指标的所有桶的百分位数。指定的指标必须是数值型，且同级聚合必须是多桶聚合。
 
 #### Serial differencing aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-serialdiff-aggregation.html)
@@ -29086,12 +29086,12 @@ POST /exams/_search?size=0
 #### Stats bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-stats-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Stats bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），可以计算指定指标在所有桶中的各种统计数据，包括平均值、最小值、最大值等。指标必须是数值型，且聚合必须是多桶聚合。
 
 #### Sum bucket aggregation
 [link](https://www.elastic.co/guide/en/elasticsearch/reference/8.2/search-aggregations-pipeline-sum-bucket-aggregation.html)
 
-&emsp;&emsp;
+&emsp;&emsp;Sum bucket aggregation是一种同级管道聚合（sibling pipeline aggregation），用于计算在同级聚合中指定指标的所有桶的总和。所指定的指标必须是数值型，且同级聚合必须是多桶聚合。
 
 
 ## Scripting 
